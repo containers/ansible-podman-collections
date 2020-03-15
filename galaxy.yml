@@ -1,6 +1,6 @@
 namespace: containers
 name: podman
-version: 0.1.1
+version: 0.2.0
 readme: README.md
 authors: Podman
 description: Podman container Ansible modules
@@ -20,4 +20,5 @@ build_ignore:
   - "*.tar.gz"
   - zuul.yaml
   - .gitignore
-
+  - tests/output
+  - ".history"
