@@ -20,12 +20,6 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import json
-from distutils.version import LooseVersion
-import yaml
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -843,6 +837,13 @@ container:
             ...
     }'
 """
+# noqa: F402
+import json  # noqa: F402
+from distutils.version import LooseVersion  # noqa: F402
+import yaml  # noqa: F402
+
+from ansible.module_utils.basic import AnsibleModule  # noqa: F402
+from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 
 
 class PodmanModuleParams:
@@ -1766,11 +1767,13 @@ class PodmanContainer:
 
     def get_info(self):
         """Inspect container and gather info about it."""
+        # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
             [self.module.params['executable'], b'container', b'inspect', self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
+        # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
             [self.module.params['executable'], b'--version'])
         if rc != 0 or not out or "version" not in out:
