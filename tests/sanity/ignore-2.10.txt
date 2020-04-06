@@ -5,6 +5,8 @@ plugins/modules/podman_image.py validate-modules:parameter-type-not-in-doc
 plugins/modules/podman_image.py validate-modules:undocumented-parameter
 plugins/modules/podman_image_info.py validate-modules:parameter-list-no-elements
 plugins/modules/podman_image_info.py validate-modules:parameter-type-not-in-doc
-plugins/modules/podman_container.py validate-modules!skip
+plugins/modules/podman_container.py validate-modules:invalid-ansiblemodule-schema
+plugins/modules/podman_container.py validate-modules:missing-gplv3-license
+plugins/modules/podman_container.py validate-modules:parameter-list-no-elements
 plugins/modules/podman_container.py import-3.7!skip
 plugins/modules/podman_container.py import-2.7!skip
