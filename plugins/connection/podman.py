@@ -88,6 +88,7 @@ class Connection(ConnectionBase):
         # container filesystem will be mounted here on host
         self._mount_point = None
         self.user = self._play_context.remote_user
+        display.vvvv("Using podman connection from collection")
 
     def _podman(self, cmd, cmd_args=None, in_data=None, use_container_id=True):
         """

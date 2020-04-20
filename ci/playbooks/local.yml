@@ -1,0 +1,18 @@
+---
+- include: pre.yml
+  vars:
+    host: localhost
+    ansible_venv: /tmp/ansible-test
+    ansible_venv_site_packages: true
+    clean_venv: true
+
+- include: build.yml
+  vars:
+    host: localhost
+    repo_dir: "{{ source | default('/tmp/ansible-podman-collections-test') }}"
+    clone_repo: "{{ source is not defined }}"
+
+- include: connection_test.yml
+  vars:
+    host: localhost
+    repo_dir: "{{ source | default('/tmp/ansible-podman-collections-test') }}"

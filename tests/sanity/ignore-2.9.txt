@@ -5,3 +5,6 @@ plugins/modules/podman_image_info.py validate-modules:parameter-type-not-in-doc
 plugins/modules/podman_container.py validate-modules!skip
 plugins/modules/podman_container.py import-3.7!skip
 plugins/modules/podman_container.py import-2.7!skip
+ci/run_connection_test.sh shebang!skip
+tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
+tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086

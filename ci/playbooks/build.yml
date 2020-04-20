@@ -1,0 +1,73 @@
+- hosts: "{{ host|default('all') }}"
+  gather_facts: true
+  vars:
+    repo_url: https://github.com/containers/ansible-podman-collections.git
+    repo_dir: "/home/{{ ansible_user }}/ansible-podman-collections"
+    temp_collect: /tmp/collection
+    distro: "{{ ansible_distribution }}{{ ansible_distribution_major_version }}"
+  tasks:
+
+    - name: Set PR vars if defined
+      set_fact:
+        pr_branch: "pull/{{ pr }}/head"
+        pr_refspec: "refs/pull/{{ pr }}/head:refs/remotes/origin/pull/{{ pr }}/head"
+      when: pr is defined
+
+    - name: Clone collection
+      git:
+        dest: "{{ repo_dir }}"
+        repo: "{{ repo_url }}"
+        version: "{{ pr_branch|default('master') }}"
+        refspec: "{{ pr_refspec|default(omit) }}"
+        force: true
+      register: git_clone
+      ignore_errors: true
+      when: clone_repo|default(true)|bool
+
+    # https://github.com/ansible/ansible/issues/67972
+    - name: Update manually if need
+      command: git fetch -f -u origin {{ pr_branch }}:{{ pr_branch }}
+      args:
+        chdir: "{{ repo_dir }}"
+      when:
+        - git_clone is failed
+        - pr is defined
+
+    - name: Remove temporary collection dir
+      file:
+        path: "{{ temp_collect }}"
+        state: absent
+
+    - name: Create temporary collection dir
+      file:
+        path: "{{ temp_collect }}"
+        state: directory
+
+    - name: Build collection
+      shell: >-
+        {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate;{% endif %}
+        ansible-galaxy collection build --output-path {{ temp_collect }} --force
+      args:
+        chdir: "{{ repo_dir }}"
+
+    - name: Find a path of collection file
+      find:
+        paths: "{{ temp_collect }}/"
+        patterns: "*tar.gz"
+      register: file_path
+
+    - name: Install collection
+      become: "{{ distro == 'CentOS7' }}"
+      shell: >-
+        {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate;{% endif %}
+        ansible-galaxy collection install {{ file_path.files.0.path }} --force
+      args:
+        chdir: "{{ repo_dir }}"
+
+    - name: Install collection for root
+      become: true
+      shell: >-
+        {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate;{% endif %}
+        ansible-galaxy collection install {{ file_path.files.0.path }} --force
+      args:
+        chdir: "{{ repo_dir }}"

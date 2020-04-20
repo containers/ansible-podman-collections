@@ -40,12 +40,12 @@ DOCUMENTATION = '''
 #            - name: remote_user
 '''
 
+import os
 import shlex
 import shutil
-
 import subprocess
 
-import ansible.constants as C
+from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_bytes, to_native
 from ansible.plugins.connection import ConnectionBase, ensure_connect
 from ansible.utils.display import Display
@@ -73,6 +73,7 @@ class Connection(ConnectionBase):
         # `buildah inspect` doesn't contain info about what the default user is -- if it's not
         # set, it's empty
         self.user = self._play_context.remote_user
+        display.vvvv("Using buildah connection from collection")
 
     def _set_user(self):
         self._buildah(b"config", [b"--user=" + to_bytes(self.user, errors='surrogate_or_strict')])
@@ -96,6 +97,9 @@ class Connection(ConnectionBase):
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         stdout, stderr = p.communicate(input=in_data)
+        display.vvvvv("STDOUT %s" % stdout)
+        display.vvvvv("STDERR %s" % stderr)
+        display.vvvvv("RC CODE %s" % p.returncode)
         stdout = to_bytes(stdout, errors='surrogate_or_strict')
         stderr = to_bytes(stderr, errors='surrogate_or_strict')
         return p.returncode, stdout, stderr
@@ -107,8 +111,12 @@ class Connection(ConnectionBase):
         """
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._buildah("mount")
-        self._mount_point = self._mount_point.strip()
-        display.vvvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
+        if rc != 0:
+            display.v("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
+            raise AnsibleError(stderr.strip())
+        else:
+            self._mount_point = self._mount_point.strip() + to_bytes(os.path.sep, errors='surrogate_or_strict')
+            display.vvvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
         self._connected = True
 
     @ensure_connect

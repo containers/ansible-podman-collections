@@ -393,7 +393,7 @@ def main():
 
     name = module.params['name']
     executable = module.get_bin_path(module.params['executable'], required=True)
-
+    # pylint: disable=unused-variable
     inspect_results, out, err = get_containers_facts(module, executable, name)
 
     results = {
