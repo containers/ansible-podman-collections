@@ -88,10 +88,28 @@ class Connection(ConnectionBase):
         :param outfile_stdout: file for writing STDOUT to
         :return: return code, stdout, stderr
         """
-        local_cmd = ['buildah', cmd, '--', self._container_id]
+        buildah_exec = 'buildah'
+        local_cmd = [buildah_exec]
+
+        if isinstance(cmd, str):
+            local_cmd.append(cmd)
+        else:
+            local_cmd.extend(cmd)
+        if self.user and self.user != 'root':
+            if cmd == 'run':
+                local_cmd.extend(("--user", self.user))
+            elif cmd == 'copy':
+                local_cmd.extend(("--chown", self.user))
+        local_cmd.append(self._container_id)
+
         if cmd_args:
-            local_cmd += cmd_args
-        local_cmd = [to_bytes(i, errors='surrogate_or_strict') for i in local_cmd]
+            if isinstance(cmd_args, str):
+                local_cmd.append(cmd_args)
+            else:
+                local_cmd.extend(cmd_args)
+
+        local_cmd = [to_bytes(i, errors='surrogate_or_strict')
+                     for i in local_cmd]
 
         display.vvv("RUN %s" % (local_cmd,), host=self._container_id)
         if outfile_stdout:
@@ -140,7 +158,7 @@ class Connection(ConnectionBase):
         """ Place a local file located in 'in_path' inside container at 'out_path' """
         super(Connection, self).put_file(in_path, out_path)
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._container_id)
-        if not self._mount_point:
+        if not self._mount_point or self.user:
             rc, stdout, stderr = self._buildah(
                 "copy", [in_path, out_path])
             if rc != 0:
