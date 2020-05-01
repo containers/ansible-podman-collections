@@ -78,13 +78,14 @@ class Connection(ConnectionBase):
     def _set_user(self):
         self._buildah(b"config", [b"--user=" + to_bytes(self.user, errors='surrogate_or_strict')])
 
-    def _buildah(self, cmd, cmd_args=None, in_data=None):
+    def _buildah(self, cmd, cmd_args=None, in_data=None, outfile_stdout=None):
         """
         run buildah executable
 
         :param cmd: buildah's command to execute (str)
         :param cmd_args: list of arguments to pass to the command (list of str/bytes)
         :param in_data: data passed to buildah's stdin
+        :param outfile_stdout: file for writing STDOUT to
         :return: return code, stdout, stderr
         """
         local_cmd = ['buildah', cmd, '--', self._container_id]
@@ -93,13 +94,17 @@ class Connection(ConnectionBase):
         local_cmd = [to_bytes(i, errors='surrogate_or_strict') for i in local_cmd]
 
         display.vvv("RUN %s" % (local_cmd,), host=self._container_id)
+        if outfile_stdout:
+            stdout_fd = open(outfile_stdout, "wb")
+        else:
+            stdout_fd = subprocess.PIPE
         p = subprocess.Popen(local_cmd, shell=False, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                             stdout=stdout_fd, stderr=subprocess.PIPE)
 
         stdout, stderr = p.communicate(input=in_data)
-        display.vvvvv("STDOUT %s" % stdout)
-        display.vvvvv("STDERR %s" % stderr)
-        display.vvvvv("RC CODE %s" % p.returncode)
+        display.vvvv("STDOUT %s" % stdout)
+        display.vvvv("STDERR %s" % stderr)
+        display.vvvv("RC CODE %s" % p.returncode)
         stdout = to_bytes(stdout, errors='surrogate_or_strict')
         stderr = to_bytes(stderr, errors='surrogate_or_strict')
         return p.returncode, stdout, stderr
@@ -113,10 +118,9 @@ class Connection(ConnectionBase):
         rc, self._mount_point, stderr = self._buildah("mount")
         if rc != 0:
             display.v("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
-            raise AnsibleError(stderr.strip())
         else:
             self._mount_point = self._mount_point.strip() + to_bytes(os.path.sep, errors='surrogate_or_strict')
-            display.vvvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
+            display.vvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
         self._connected = True
 
     @ensure_connect
@@ -129,40 +133,52 @@ class Connection(ConnectionBase):
 
         rc, stdout, stderr = self._buildah("run", cmd_args_list, in_data)
 
-        display.vvvvv("STDOUT %r STDERR %r" % (stderr, stderr))
+        display.vvvv("STDOUT %r\nSTDERR %r" % (stderr, stderr))
         return rc, stdout, stderr
 
     def put_file(self, in_path, out_path):
         """ Place a local file located in 'in_path' inside container at 'out_path' """
         super(Connection, self).put_file(in_path, out_path)
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._container_id)
-
-        real_out_path = self._mount_point + to_bytes(out_path, errors='surrogate_or_strict')
-        shutil.copyfile(
-            to_bytes(in_path, errors='surrogate_or_strict'),
-            to_bytes(real_out_path, errors='surrogate_or_strict')
-        )
-        # alternatively, this can be implemented using `buildah copy`:
-        # rc, stdout, stderr = self._buildah(
-        #     "copy",
-        #     [to_bytes(in_path, errors='surrogate_or_strict'),
-        #      to_bytes(out_path, errors='surrogate_or_strict')]
-        # )
+        if not self._mount_point:
+            rc, stdout, stderr = self._buildah(
+                "copy", [in_path, out_path])
+            if rc != 0:
+                raise AnsibleError(
+                    "Failed to copy file from %s to %s in container %s\n%s" % (
+                        in_path, out_path, self._container_id, stderr)
+                )
+        else:
+            real_out_path = self._mount_point + to_bytes(out_path, errors='surrogate_or_strict')
+            shutil.copyfile(
+                to_bytes(in_path, errors='surrogate_or_strict'),
+                to_bytes(real_out_path, errors='surrogate_or_strict')
+            )
 
     def fetch_file(self, in_path, out_path):
         """ obtain file specified via 'in_path' from the container and place it at 'out_path' """
         super(Connection, self).fetch_file(in_path, out_path)
-        display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._container_id)
-
-        real_in_path = self._mount_point + to_bytes(in_path, errors='surrogate_or_strict')
-        shutil.copyfile(
-            to_bytes(real_in_path, errors='surrogate_or_strict'),
-            to_bytes(out_path, errors='surrogate_or_strict')
-        )
+        display.vvv("FETCH %s TO %s" %
+                    (in_path, out_path), host=self._container_id)
+        if not self._mount_point:
+            rc, stdout, stderr = self._buildah(
+                "run",
+                ["cat", to_bytes(in_path, errors='surrogate_or_strict')],
+                outfile_stdout=out_path)
+            if rc != 0:
+                raise AnsibleError("Failed to fetch file from %s to %s from container %s\n%s" % (
+                    in_path, out_path, self._container_id, stderr))
+        else:
+            real_in_path = self._mount_point + \
+                to_bytes(in_path, errors='surrogate_or_strict')
+            shutil.copyfile(
+                to_bytes(real_in_path, errors='surrogate_or_strict'),
+                to_bytes(out_path, errors='surrogate_or_strict')
+            )
 
     def close(self):
         """ unmount container's filesystem """
         super(Connection, self).close()
         rc, stdout, stderr = self._buildah("umount")
-        display.vvvvv("RC %s STDOUT %r STDERR %r" % (rc, stdout, stderr))
+        display.vvvv("RC %s STDOUT %r STDERR %r" % (rc, stdout, stderr))
         self._connected = False
