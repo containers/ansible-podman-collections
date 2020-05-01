@@ -1,10 +1,8 @@
-name: Collection test suite
+name: Collection build and tests
 
 on:
   push:
   pull_request:
-  schedule:
-    - cron: 3 0 * * *  # Run daily at 0:03 UTC
 
 jobs:
   build-collection-artifact:
@@ -18,8 +16,6 @@ jobs:
           - git+https://github.com/ansible/ansible.git@devel
         runner-python-version:
           - 3.7
-
-
     steps:
       - name: Check out ${{ github.repository }} on disk
         uses: actions/checkout@master
@@ -97,4 +93,4 @@ jobs:
         working-directory: >-
           /home/runner/.ansible/collections/ansible_collections/containers/podman
 
-  # When we have unit tests, add them here
+#  When we have unit tests, add them here

@@ -1,0 +1,87 @@
+---
+- hosts: "{{ host|default('all') }}"
+  gather_facts: true
+  vars:
+    ansible_pip_version: '<2.10'
+    distro: "{{ ansible_distribution }}{{ ansible_distribution_major_version }}"
+  tasks:
+
+    - become: true
+      block:
+
+        - name: Install Python3 and pip
+          package:
+            name:
+              - python3
+              - python3-pip
+          when:
+            - distro != 'CentOS7'
+            - setup_python|default(true)|bool
+
+        - name: Install EPEL for CentOS 7
+          package:
+            name:
+              - epel-release
+          when:
+            - distro == 'CentOS7'
+            - setup_python|default(true)|bool
+
+        - name: Install Python and pip for CentOS 7
+          package:
+            name:
+              - python
+              - python-pip
+          when:
+            - distro == 'CentOS7'
+            - setup_python|default(true)|bool
+
+        - name: Upgrade pip
+          pip:
+            name: pip
+            extra_args: --upgrade
+
+        - name: Install virtualenv
+          pip:
+            name:
+              - virtualenv
+          when: ansible_venv is defined
+
+        - name: Remove virtualenv if need
+          file:
+            path: "{{ ansible_venv }}"
+            state: absent
+          when:
+            - clean_venv|default(false)|bool
+            - ansible_venv is defined
+
+        - name: Install ansible
+          pip:
+            name: ansible
+            version: "{{ ansible_pip_version }}"
+            extra_args: --upgrade
+            virtualenv: "{{ ansible_venv|default(omit) }}"
+            virtualenv_site_packages: "{{ ansible_venv_site_packages|default(omit) }}"
+          environment:
+            PATH: /usr/local/bin:{{ ansible_env.PATH }}
+          when:
+            - ansible_venv is defined
+
+        - name: Install repositories if need
+          include_tasks: install_repos.yml
+
+        - name: Install podman
+          package:
+            name:
+              - podman
+              - buildah
+              - git
+              - vim
+
+        - name: Get podman version
+          shell: |
+            podman version
+            buildah version
+            podman info --debug
+            buildah info --debug
+            conmon --version
+            runc --version

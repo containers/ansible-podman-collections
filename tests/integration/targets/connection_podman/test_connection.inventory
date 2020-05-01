@@ -11,5 +11,5 @@ podman-container
 #      podman stop podman-container
 #      podman rm podman-container
 ansible_host=podman-container
-ansible_connection=podman
+ansible_connection=containers.podman.podman
 ansible_python_interpreter=/usr/local/bin/python

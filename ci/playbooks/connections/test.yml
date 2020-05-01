@@ -1,0 +1,19 @@
+---
+- hosts: "{{ host|default('all') }}"
+  connection: "{{ connection_type }}"
+  tasks:
+
+    - name: Copy file
+      copy:
+        src: /tmp/local_file
+        dest: ~/
+
+    - name: Copy file from container
+      fetch:
+        src: ~/local_file
+        dest: /tmp/remote_file
+        flat: true
+
+    - name: Compare test files
+      shell: diff -q /tmp/local_file /tmp/remote_file
+      delegate_to: localhost
