@@ -232,6 +232,6 @@ jobs:
           -e ansible_connection=local \
           -e setup_python=false
 
+          ROOT= ./ci/run_connection_test.sh buildah
           ROOT=true ./ci/run_connection_test.sh buildah
-          # ROOT= ./ci/run_connection_test.sh buildah # not supported yet
         shell: bash
