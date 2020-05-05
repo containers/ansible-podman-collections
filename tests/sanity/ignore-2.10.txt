@@ -10,3 +10,6 @@ plugins/modules/podman_container.py validate-modules:missing-gplv3-license
 plugins/modules/podman_container.py validate-modules:parameter-list-no-elements
 plugins/modules/podman_container.py import-3.7!skip
 plugins/modules/podman_container.py import-2.7!skip
+ci/run_connection_test.sh shebang!skip
+tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
+tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086

@@ -1,0 +1,14 @@
+---
+- hosts: "{{ host|default('all') }}"
+  gather_facts: true
+  vars:
+    repo_dir: "/home/{{ ansible_user }}/ansible-podman-collections"
+    distro: "{{ ansible_distribution }}{{ ansible_distribution_major_version }}"
+  tasks:
+
+    - name: Run test script
+      become: "{{ distro == 'CentOS7' }}"
+      shell: >-
+        {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate; {% endif %}
+
+        {{ repo_dir }}/ci/run_connection_test.sh

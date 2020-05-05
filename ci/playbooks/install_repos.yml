@@ -1,0 +1,9 @@
+---
+- name: Install repo for ubuntu
+  become: true
+  shell: |
+    . /etc/os-release
+    echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key | apt-key add -
+    apt-get update
+  when: ansible_distribution|lower == "ubuntu"
