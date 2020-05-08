@@ -5,7 +5,7 @@ set -eux
 CON_TYPE="${1:-podman}"
 SUDO=${ROOT:+"sudo -E"}
 
-ANSIBLECMD=$(command -v ansible-playbook)
+ANSIBLECMD=${ANSIBLECMD:-$(command -v ansible-playbook)}
 echo "Testing $CON_TYPE connection ${ROOT:+'with root'}"
 
 if [[ "$CON_TYPE" == "podman" ]]; then
