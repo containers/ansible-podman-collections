@@ -1,7 +1,4 @@
 - name: Test podman_network_info
-  when:
-    - ansible_facts.virtualization_type != 'docker'
-    - ansible_facts.distribution == 'RedHat'
   become: true
   block:
 
