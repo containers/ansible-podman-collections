@@ -1,7 +1,4 @@
 - name: Test podman_volume_info
-  when:
-    - ansible_facts.virtualization_type != 'docker'
-    - ansible_facts.distribution == 'RedHat'
   block:
 
     - name: Print podman version

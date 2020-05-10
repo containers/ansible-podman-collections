@@ -1,0 +1,6 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - include_role:
+        name: podman_container_info

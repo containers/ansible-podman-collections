@@ -1,31 +1,31 @@
-name: Podman image
+name: Podman container info
 
 on:
   push:
     paths:
-      - '.github/workflows/podman_image.yml'
+      - '.github/workflows/podman_container_info.yml'
       - 'ci/*.yml'
-      - 'ci/containers/podman_image.yml'
-      - 'plugins/modules/podman_image.py'
-      - 'plugins/modules/podman_image_info.py'
-      - 'tests/integration/targets/podman_image/**'
+      - 'ci/containers/podman_container_info.yml'
+      - 'plugins/modules/podman_container.py'
+      - 'plugins/modules/podman_container_info.py'
+      - 'tests/integration/targets/podman_container_info/**'
     branches:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_image.yml'
+      - '.github/workflows/podman_container_info.yml'
       - 'ci/*.yml'
-      - 'ci/containers/podman_image.yml'
-      - 'plugins/modules/podman_image.py'
-      - 'plugins/modules/podman_image_info.py'
-      - 'tests/integration/targets/podman_image/**'
+      - 'ci/containers/podman_container_info.yml'
+      - 'plugins/modules/podman_container.py'
+      - 'plugins/modules/podman_container_info.py'
+      - 'tests/integration/targets/podman_container_info/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC
 
 jobs:
 
-  test_podman_image:
-    name: Podman image ${{ matrix.ansible-version }}-${{ matrix.os.vm || 'ubuntu-latest' }}
+  test_podman_container_info:
+    name: Podman container info ${{ matrix.ansible-version }}-${{ matrix.os.vm || 'ubuntu-latest' }}
     runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
     defaults:
       run:
@@ -97,5 +97,5 @@ jobs:
           -e ansible_connection=local \
           -e setup_python=false
 
-          TEST2RUN=podman_image ./ci/run_containers_tests.sh
+          TEST2RUN=podman_container_info ./ci/run_containers_tests.sh
         shell: bash

@@ -1,7 +1,4 @@
 - name: Test podman_image_info
-  when:
-    - ansible_facts.virtualization_type != 'docker'
-    - ansible_facts.distribution == 'RedHat'
   block:
     - name: Pull image
       command: podman pull quay.io/coreos/etcd
