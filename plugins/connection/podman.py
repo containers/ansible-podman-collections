@@ -166,7 +166,7 @@ class Connection(ConnectionBase):
         """ Place a local file located in 'in_path' inside container at 'out_path' """
         super(Connection, self).put_file(in_path, out_path)
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._container_id)
-        if not self._mount_point:
+        if not self._mount_point or self.user:
             rc, stdout, stderr = self._podman(
                 "cp", [in_path, self._container_id + ":" + out_path], use_container_id=False
             )
