@@ -1,6 +1,6 @@
 namespace: containers
 name: podman
-version: 0.2.0
+version: 0.3.0
 readme: README.md
 authors: Podman
 description: Podman container Ansible modules

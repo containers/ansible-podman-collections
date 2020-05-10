@@ -11,5 +11,7 @@ plugins/modules/podman_container.py validate-modules:parameter-list-no-elements
 plugins/modules/podman_container.py import-3.7!skip
 plugins/modules/podman_container.py import-2.7!skip
 ci/run_connection_test.sh shebang!skip
+ci/run_containers_tests.sh shellcheck!skip
+ci/run_containers_tests.sh shebang!skip
 tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
 tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086

@@ -3,8 +3,10 @@ name: Test connection plugins
 on:
   push:
     paths:
-      - '.github/workflows/*'
-      - 'ci/**'
+      - '.github/workflows/connections_tests.yml'
+      - 'ci/*.yml'
+      - 'ci/playbooks/connections/**'
+      - 'ci/run_connection_test.sh'
       - 'plugins/connection/**'
       - 'tests/integration/targets/connection/**'
       - 'tests/integration/targets/connection_*/**'
@@ -12,8 +14,10 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/*'
-      - 'ci/**'
+      - '.github/workflows/connections_tests.yml'
+      - 'ci/*.yml'
+      - 'ci/playbooks/connections/**'
+      - 'ci/run_connection_test.sh'
       - 'plugins/connection/**'
       - 'tests/integration/targets/connection/**'
       - 'tests/integration/targets/connection_*/**'

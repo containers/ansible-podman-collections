@@ -7,14 +7,14 @@
       command: podman pull quay.io/coreos/etcd
 
     - name: Get info on all images
-      podman_image_info:
+      containers.podman.podman_image_info:
       register: all_image_result
 
     - name: Pull another image
       command: podman pull quay.io/coreos/dnsmasq
 
     - name: Get info on specific image
-      podman_image_info:
+      containers.podman.podman_image_info:
         name: dnsmasq
       register: named_image_result
 
@@ -26,19 +26,19 @@
           - "'dnsmasq' in named_image_result.images[0]['RepoTags'][0]"
 
     - name: Get info on single image that does not exist
-      podman_image_info:
+      containers.podman.podman_image_info:
         name: nope
       register: single_nonexistant
 
     - name: Get info on multiple images that do not exist
-      podman_image_info:
+      containers.podman.podman_image_info:
         name:
           - nope
           - reallynope
       register: multiple_nonexistant
 
     - name: Get info with one image that does not exist
-      podman_image_info:
+      containers.podman.podman_image_info:
         name:
           - dnsmasq
           - nope

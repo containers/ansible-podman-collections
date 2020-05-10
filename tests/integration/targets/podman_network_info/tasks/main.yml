@@ -17,7 +17,7 @@
       ignore_errors: true
 
     - name: Get missing network info
-      podman_network_info:
+      containers.podman.podman_network_info:
         name: "{{ network_name }}"
       register: nonexist
       ignore_errors: true
@@ -32,7 +32,7 @@
       command: podman network create {{ network_name }}
 
     - name: Get existing network info
-      podman_network_info:
+      containers.podman.podman_network_info:
         name: "{{ network_name }}"
       register: existing_network
 

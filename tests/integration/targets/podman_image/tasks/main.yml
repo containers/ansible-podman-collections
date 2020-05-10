@@ -4,12 +4,12 @@
     - ansible_facts.distribution == 'RedHat'
   block:
     - name: Pull image
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/alpine-sh
       register: pull1
 
     - name: Pull image again
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/alpine-sh
       register: pull2
 
@@ -25,13 +25,13 @@
           - "'alpine-sh' in images.stdout"
 
     - name: Remove image
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/alpine-sh
         state: absent
       register: rmi1
 
     - name: Remove image again
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/alpine-sh
         state: absent
       register: rmi2
@@ -48,13 +48,13 @@
           - "'alpine-sh' not in images.stdout"
 
     - name: Pull a specific version of an image
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/etcd
         tag: v3.3.11
       register: specific_image1
 
     - name: Pull a specific version of an image again
-      podman_image:
+      containers.podman.podman_image:
         name: quay.io/coreos/etcd
         tag: v3.3.11
       register: specific_image2
@@ -81,19 +81,19 @@
         dest: /var/tmp/build/Dockerfile
 
     - name: Build OCI image
-      podman_image:
+      containers.podman.podman_image:
         name: testimage
         path: /var/tmp/build
       register: oci_build1
 
     - name: Build OCI image again
-      podman_image:
+      containers.podman.podman_image:
         name: testimage
         path: /var/tmp/build
       register: oci_build2
 
     - name: Inspect build image
-      podman_image_info:
+      containers.podman.podman_image_info:
         name: testimage
       register: testimage_info
 
@@ -105,7 +105,7 @@
           - "'localhost/testimage:latest' in testimage_info.images[0]['RepoTags'][0]"
 
     - name: Build Docker image
-      podman_image:
+      containers.podman.podman_image:
         name: dockerimage
         path: /var/tmp/build
         build:
@@ -113,7 +113,7 @@
       register: docker_build1
 
     - name: Build Docker image again
-      podman_image:
+      containers.podman.podman_image:
         name: dockerimage
         path: /var/tmp/build
         build:
@@ -121,7 +121,7 @@
       register: docker_build2
 
     - name: Inspect build image
-      podman_image_info:
+      containers.podman.podman_image_info:
         name: dockerimage
       register: dockerimage_info
 
@@ -134,7 +134,7 @@
 
   always:
     - name: Cleanup images
-      podman_image:
+      containers.podman.podman_image:
         name: "{{ item }}"
         state: absent
       loop:
