@@ -1,7 +1,4 @@
 - name: Test podman_container_info
-  when:
-    - ansible_facts.virtualization_type != 'docker'
-    - ansible_facts.distribution == 'RedHat'
   block:
 
     - name: Generate random value for container name
