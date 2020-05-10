@@ -1291,8 +1291,6 @@ class PodmanDefaults:
             "tty": False,
             "user": "",
             "uts": "",
-            "volume": [],
-            "workdir": "/",
         }
 
     def default_dict(self):
@@ -1654,7 +1652,10 @@ class PodmanContainerDiff:
                     volumes.append([m['source'], m['destination']])
             before = [":".join(v) for v in volumes]
         # Ignore volumes option for idempotency
-        after = [":".join(v.split(":")[:2]) for v in self.params['volume']]
+        if self.params['volume'] is not None:
+            after = [":".join(v.split(":")[:2]) for v in self.params['volume']]
+        else:
+            after = before
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
@@ -1665,7 +1666,10 @@ class PodmanContainerDiff:
 
     def diffparam_workdir(self):
         before = self.info['config']['workingdir']
-        after = self.params['workdir']
+        if self.params['workdir'] is not None:
+            after = self.params['workdir']
+        else:
+            after = before
         return self._diff_update_and_compare('workdir', before, after)
 
     def is_different(self):
