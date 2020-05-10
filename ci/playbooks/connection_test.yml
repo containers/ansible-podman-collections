@@ -12,3 +12,5 @@
         {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate; {% endif %}
 
         {{ repo_dir }}/ci/run_connection_test.sh
+      args:
+        chdir: "{{ repo_dir }}"

@@ -17,7 +17,7 @@
       git:
         dest: "{{ repo_dir }}"
         repo: "{{ repo_url }}"
-        version: "{{ pr_branch|default('master') }}"
+        version: "{{ pr_branch|default(omit) }}"
         refspec: "{{ pr_refspec|default(omit) }}"
         force: true
       register: git_clone
@@ -49,6 +49,7 @@
         ansible-galaxy collection build --output-path {{ temp_collect }} --force
       args:
         chdir: "{{ repo_dir }}"
+        executable: bash
 
     - name: Find a path of collection file
       find:
@@ -63,6 +64,7 @@
         ansible-galaxy collection install {{ file_path.files.0.path }} --force
       args:
         chdir: "{{ repo_dir }}"
+        executable: bash
 
     - name: Install collection for root
       become: true
@@ -71,3 +73,5 @@
         ansible-galaxy collection install {{ file_path.files.0.path }} --force
       args:
         chdir: "{{ repo_dir }}"
+        executable: bash
+      when: install_root|default(true)|bool

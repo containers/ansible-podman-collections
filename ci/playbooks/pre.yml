@@ -6,7 +6,8 @@
     distro: "{{ ansible_distribution }}{{ ansible_distribution_major_version }}"
   tasks:
 
-    - become: true
+    - when: os_setup|default(true)|bool
+      become: true
       block:
 
         - name: Install Python3 and pip
@@ -39,32 +40,16 @@
           pip:
             name: pip
             extra_args: --upgrade
+          environment:
+            PATH: /usr/local/bin:{{ ansible_env.PATH }}
 
         - name: Install virtualenv
           pip:
             name:
               - virtualenv
-          when: ansible_venv is defined
-
-        - name: Remove virtualenv if need
-          file:
-            path: "{{ ansible_venv }}"
-            state: absent
-          when:
-            - clean_venv|default(false)|bool
-            - ansible_venv is defined
-
-        - name: Install ansible
-          pip:
-            name: ansible
-            version: "{{ ansible_pip_version }}"
-            extra_args: --upgrade
-            virtualenv: "{{ ansible_venv|default(omit) }}"
-            virtualenv_site_packages: "{{ ansible_venv_site_packages|default(omit) }}"
           environment:
             PATH: /usr/local/bin:{{ ansible_env.PATH }}
-          when:
-            - ansible_venv is defined
+          when: ansible_venv is defined
 
         - name: Install repositories if need
           include_tasks: install_repos.yml
@@ -77,11 +62,32 @@
               - git
               - vim
 
-        - name: Get podman version
-          shell: |
-            podman version
-            buildah version
-            podman info --debug
-            buildah info --debug
-            conmon --version
-            runc --version
+    - name: Remove virtualenv if need
+      file:
+        path: "{{ ansible_venv }}"
+        state: absent
+      when:
+        - clean_venv|default(false)|bool
+        - ansible_venv is defined
+
+    - name: Install ansible
+      pip:
+        name: ansible
+        version: "{{ ansible_pip_version }}"
+        extra_args: --upgrade
+        virtualenv: "{{ ansible_venv|default(omit) }}"
+        virtualenv_site_packages: "{{ ansible_venv_site_packages|default(omit) }}"
+      environment:
+        PATH: /usr/local/bin:{{ ansible_env.PATH }}
+      when:
+        - ansible_venv is defined
+
+    - name: Get podman version
+      shell: |
+        podman version
+        buildah version
+        podman info --debug
+        buildah info --debug
+        conmon --version
+        runc --version
+      changed_when: false
