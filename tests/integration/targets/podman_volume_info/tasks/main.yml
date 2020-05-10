@@ -16,7 +16,7 @@
       ignore_errors: true
 
     - name: Get missing volume info
-      podman_volume_info:
+      containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
       register: nonexist
       ignore_errors: true
@@ -31,7 +31,7 @@
       command: podman volume create {{ volume_name }}
 
     - name: Get existing volume info
-      podman_volume_info:
+      containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
       register: existing_volume
 

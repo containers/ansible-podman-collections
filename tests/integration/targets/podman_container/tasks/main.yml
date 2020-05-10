@@ -1,8 +1,7 @@
 - name: Test podman_container
-  become: true
   block:
     - name: Delete all container leftovers from tests
-      podman_container:
+      containers.podman.podman_container:
         name: "{{ item }}"
         state: absent
       loop:
@@ -11,20 +10,20 @@
         - "container2"
 
     - name: Test no image with default action
-      podman_container:
+      containers.podman.podman_container:
         name: container
       ignore_errors: true
       register: no_image
 
     - name: Test no image with state 'started'
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: started
       ignore_errors: true
       register: no_image1
 
     - name: Test no image with state 'present'
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: present
       ignore_errors: true
@@ -43,12 +42,12 @@
         success_msg: No image test passed!
 
     - name: Ensure image doesn't exist
-      podman_image:
+      containers.podman.podman_image:
         name: alpine:3.7
         state: absent
 
     - name: Check pulling image
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: alpine:3.7
         state: present
@@ -56,7 +55,7 @@
       register: image
 
     - name: Check using already pulled image
-      podman_container:
+      containers.podman.podman_container:
         name: container2
         image: alpine:3.7
         state: present
@@ -80,7 +79,7 @@
         success_msg: Pulling image test passed!
 
     - name: Check failed image pull
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: ineverneverneverexist
         state: present
@@ -96,7 +95,7 @@
 
 
     - name: Force container recreate
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: alpine
         state: present
@@ -115,13 +114,13 @@
         success_msg: Force recreate test passed!
 
     - name: Stop container
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: stopped
       register: stopped
 
     - name: Stop the same container again (idempotency)
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: stopped
       register: stopped_again
@@ -141,13 +140,13 @@
         success_msg: Stopping container test passed!
 
     - name: Delete stopped container
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: absent
       register: deleted
 
     - name: Delete again container (idempotency)
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: absent
       register: deleted_again
@@ -167,7 +166,7 @@
         success_msg: Deleting stopped container test passed!
 
     - name: Create container, but don't run
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: alpine:3.7
         state: stopped
@@ -186,12 +185,12 @@
         success_msg: "Creating stopped container test passed!"
 
     - name: Delete created container
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: absent
 
     - name: Start container that was deleted
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: alpine:3.7
         state: started
@@ -207,13 +206,13 @@
           - "'pulled image alpine:3.7' not in started.actions"
 
     - name: Delete started container
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: absent
       register: deleted
 
     - name: Delete again container (idempotency)
-      podman_container:
+      containers.podman.podman_container:
         name: container
         state: absent
       register: deleted_again
@@ -233,7 +232,7 @@
         success_msg: Deleting started container test passed!
 
     - name: Recreate container with parameters
-      podman_container:
+      containers.podman.podman_container:
         name: container
         image: docker.io/alpine:3.7
         state: started
@@ -260,7 +259,6 @@
           BAR: foo
           TEST: 1
           BOOL: false
-        group_add: "somegroup"
         label:
           somelabel: labelvalue
           otheralbe: othervalue
@@ -321,14 +319,14 @@
         success_msg: Parameters container test passed!
 
     - name: Check basic idempotency of running container
-      podman_container:
+      containers.podman.podman_container:
         name: testidem
         image: docker.io/alpine
         state: present
         command: sleep 20m
 
     - name: Check basic idempotency of running container - run it again
-      podman_container:
+      containers.podman.podman_container:
         name: testidem
         image: alpine:latest
         state: present
@@ -341,7 +339,7 @@
           - not idem.changed
 
     - name: Run changed container (with tty enabled)
-      podman_container:
+      containers.podman.podman_container:
         name: testidem
         image: alpine
         state: present
@@ -355,7 +353,7 @@
           - idem1 is changed
 
     - name: Run changed container without specifying an option, use defaults
-      podman_container:
+      containers.podman.podman_container:
         name: testidem
         image: alpine
         state: present
@@ -368,7 +366,7 @@
           - idem2 is changed
 
     - name: Remove container
-      podman_container:
+      containers.podman.podman_container:
         name: testidem
         state: absent
       register: remove
@@ -380,7 +378,7 @@
 
   always:
     - name: Delete all container leftovers from tests
-      podman_container:
+      containers.podman.podman_container:
         name: "{{ item }}"
         state: absent
       loop:

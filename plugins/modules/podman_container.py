@@ -1258,7 +1258,6 @@ class PodmanDefaults:
         self.defaults = {
             "blkio_weight": 0,
             "cgroups": "default",
-            "cgroup_parent": "",
             "cidfile": "",
             "cpus": 0.0,
             "cpu_shares": 0,
@@ -1382,6 +1381,8 @@ class PodmanContainerDiff:
     def diffparam_cgroup_parent(self):
         before = self.info['hostconfig']['cgroupparent']
         after = self.params['cgroup_parent']
+        if after is None:
+            after = before
         return self._diff_update_and_compare('cgroup_parent', before, after)
 
     def diffparam_cgroups(self):
