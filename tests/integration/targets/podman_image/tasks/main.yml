@@ -1,7 +1,4 @@
 - name: Test podman_image
-  when:
-    - ansible_facts.virtualization_type != 'docker'
-    - ansible_facts.distribution == 'RedHat'
   block:
     - name: Pull image
       containers.podman.podman_image:
