@@ -1295,6 +1295,10 @@ class PodmanDefaults:
 
     def default_dict(self):
         # make here any changes to self.defaults related to podman version
+        # https://github.com/containers/libpod/pull/5669
+        if (LooseVersion(self.version) >= LooseVersion('1.8.0')
+                and LooseVersion(self.version) < LooseVersion('1.9.0')):
+            self.defaults['cpu_shares'] = 1024
         return self.defaults
 
 
@@ -1534,6 +1538,8 @@ class PodmanContainerDiff:
     def diffparam_ipc(self):
         before = self.info['hostconfig']['ipcmode']
         after = self.params['ipc']
+        if self.params['pod'] and not after:
+            after = before
         return self._diff_update_and_compare('ipc', before, after)
 
     def diffparam_label(self):
@@ -1583,6 +1589,8 @@ class PodmanContainerDiff:
     def diffparam_network(self):
         before = [self.info['hostconfig']['networkmode']]
         after = self.params['network']
+        if self.params['pod'] and not self.module.params['network']:
+            after = before
         return self._diff_update_and_compare('network', before, after)
 
     def diffparam_no_hosts(self):
@@ -1639,6 +1647,8 @@ class PodmanContainerDiff:
     def diffparam_uts(self):
         before = self.info['hostconfig']['utsmode']
         after = self.params['uts']
+        if self.params['pod'] and not after:
+            after = before
         return self._diff_update_and_compare('uts', before, after)
 
     def diffparam_volume(self):
@@ -1666,9 +1676,8 @@ class PodmanContainerDiff:
 
     def diffparam_workdir(self):
         before = self.info['config']['workingdir']
-        if self.params['workdir'] is not None:
-            after = self.params['workdir']
-        else:
+        after = self.params['workdir']
+        if after is None:
             after = before
         return self._diff_update_and_compare('workdir', before, after)
 
