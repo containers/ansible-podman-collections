@@ -351,6 +351,12 @@ options:
       - 'bind'
       - 'tmpfs'
       - 'ignore'
+  image_strict:
+    description:
+      - Whether to compare images in idempotency by taking into account a full
+        name with registry and namespaces.
+    type: bool
+    default: False
   init:
     description:
       - Run an init inside the container that forwards signals and reaps
@@ -1050,7 +1056,7 @@ class PodmanModuleParams:
         return c
 
     def addparam_healthcheck(self, c):
-        return c + ['--healthcheck', self.params['healthcheck']]
+        return c + ['--healthcheck-command', self.params['healthcheck']]
 
     def addparam_healthcheck_interval(self, c):
         return c + ['--healthcheck-interval',
@@ -1167,7 +1173,9 @@ class PodmanModuleParams:
         return c + ['--restart=%s' % self.params['restart_policy']]
 
     def addparam_rm(self, c):
-        return c + ['--rm=%s' % self.params['rm']]
+        if self.params['rm']:
+            c += ['--rm']
+        return c
 
     def addparam_rootfs(self, c):
         return c + ['--rootfs=%s' % self.params['rootfs']]
@@ -1513,6 +1521,18 @@ class PodmanContainerDiff:
         after = self.params['group_add']
         return self._diff_update_and_compare('group_add', before, after)
 
+    # Healthcheck is only defined in container config if a healthcheck
+    # was configured; otherwise the config key isn't part of the config.
+    def diffparam_healthcheck(self):
+        if 'healthcheck' in self.info['config']:
+            # the "test" key is a list of 2 items where the first one is
+            # "CMD-SHELL" and the second one is the actual healthcheck command.
+            before = self.info['config']['healthcheck']['test'][1]
+        else:
+            before = ''
+        after = self.params['healthcheck'] or before
+        return self._diff_update_and_compare('healthcheck', before, after)
+
     # Because of hostname is random generated, this parameter has partial idempotency only.
     def diffparam_hostname(self):
         before = self.info['config']['hostname']
@@ -1520,17 +1540,16 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
-        # TODO(sshnaidm): for strict image compare use SHAs
+        # TODO(sshnaidm): for strict image compare mode use SHAs
         before = self.info['config']['image']
         after = self.params['image']
-        strip_from_name = [
-            "docker.io/library/",
-            "docker.io/",
-            ":latest",
-        ]
-        for repl in strip_from_name:
-            before = before.replace(repl, "")
-            after = after.replace(repl, "")
+        mode = self.params['image_strict']
+        if mode is None or not mode:
+            # In a idempotency 'lite mode' assume all images from different registries are the same
+            before = before.replace(":latest", "")
+            after = after.replace(":latest", "")
+            before = before.split("/")[-1]
+            after = after.split("/")[-1]
         return self._diff_update_and_compare('image', before, after)
 
     def diffparam_ipc(self):
@@ -1669,7 +1688,8 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('volume', before, after)
 
     def diffparam_volumes_from(self):
-        before = self.info['hostconfig']['volumesfrom'] or []
+        # Possibly volumesfrom is not in config
+        before = self.info['hostconfig'].get('volumesfrom', []) or []
         after = self.params['volumes_from'] or []
         return self._diff_update_and_compare('volumes_from', before, after)
 
