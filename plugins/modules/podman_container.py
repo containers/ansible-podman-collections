@@ -1287,9 +1287,7 @@ class PodmanDefaults:
             "privileged": False,
             "rm": False,
             "security_opt": [],
-            "stop_signal": 15,
             "tty": False,
-            "user": "",
             "uts": "",
         }
 
@@ -1629,6 +1627,8 @@ class PodmanContainerDiff:
     def diffparam_stop_signal(self):
         before = self.info['config']['stopsignal']
         after = self.params['stop_signal']
+        if after is None:
+            after = before
         return self._diff_update_and_compare('stop_signal', before, after)
 
     def diffparam_tty(self):
@@ -1638,10 +1638,9 @@ class PodmanContainerDiff:
 
     def diffparam_user(self):
         before = self.info['config']['user']
-        if self.module.params['user'] is None and before:
+        after = self.params['user']
+        if after is None:
             after = before
-        else:
-            after = self.params['user']
         return self._diff_update_and_compare('user', before, after)
 
     def diffparam_uts(self):
