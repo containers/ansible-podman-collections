@@ -12,8 +12,13 @@ function run_ansible {
 
 }
 
+# First run as root
 run_ansible "$@"
 
-ANSIBLE_VERBOSITY=4 ANSIBLE_REMOTE_USER="1000" run_ansible "$@" | tee check_log
+# Create a normal user
+${SUDO:-} ansible all -i "test_connection.inventory" -m "user" -a 'name="testuser"'
+
+# Second run as normal user
+ANSIBLE_VERBOSITY=4 ANSIBLE_REMOTE_USER="testuser" run_ansible "$@" | tee check_log
 ${SUDO:-} grep -q "Using buildah connection from collection" check_log
 ${SUDO:-} rm -f check_log
