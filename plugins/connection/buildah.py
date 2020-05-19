@@ -46,7 +46,7 @@ import shutil
 import subprocess
 
 from ansible.errors import AnsibleError
-from ansible.module_utils._text import to_bytes, to_native
+from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.plugins.connection import ConnectionBase, ensure_connect
 from ansible.utils.display import Display
 
@@ -120,8 +120,8 @@ class Connection(ConnectionBase):
                              stdout=stdout_fd, stderr=subprocess.PIPE)
 
         stdout, stderr = p.communicate(input=in_data)
-        display.vvvv("STDOUT %s" % stdout)
-        display.vvvv("STDERR %s" % stderr)
+        display.vvvv("STDOUT %s" % to_text(stdout))
+        display.vvvv("STDERR %s" % to_text(stderr))
         display.vvvv("RC CODE %s" % p.returncode)
         stdout = to_bytes(stdout, errors='surrogate_or_strict')
         stderr = to_bytes(stderr, errors='surrogate_or_strict')
