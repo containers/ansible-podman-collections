@@ -3,10 +3,12 @@ plugins/modules/podman_image.py validate-modules:parameter-type-not-in-doc
 plugins/modules/podman_image.py validate-modules:undocumented-parameter
 plugins/modules/podman_image_info.py validate-modules:parameter-type-not-in-doc
 plugins/modules/podman_container.py validate-modules!skip
-plugins/modules/podman_container.py import-3.7!skip
+plugins/modules/podman_container.py import-2.6!skip
+plugins/modules/podman_container.py compile-2.6!skip
 plugins/modules/podman_container.py import-2.7!skip
-ci/run_connection_test.sh shebang!skip
-ci/run_containers_tests.sh shellcheck!skip
-ci/run_containers_tests.sh shebang!skip
+plugins/modules/podman_container.py import-3.5!skip
+plugins/modules/podman_container.py import-3.6!skip
+plugins/modules/podman_container.py import-3.7!skip
+plugins/modules/podman_container.py import-3.8!skip
 tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
 tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086
