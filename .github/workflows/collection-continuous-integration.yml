@@ -89,7 +89,8 @@ jobs:
           ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
       - name: Run collection sanity tests
         run: >-
-          ~/.local/bin/ansible-test sanity --color --requirements --docker --python "${{ matrix.python-version }}" -vvv
+          ~/.local/bin/ansible-test sanity --color --requirements --python "${{ matrix.python-version }}" -vvv
+          plugins/ tests/
         working-directory: >-
           /home/runner/.ansible/collections/ansible_collections/containers/podman
 

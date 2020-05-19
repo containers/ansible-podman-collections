@@ -15,11 +15,12 @@ documentation: https://github.com/containers/ansible-podman-collections
 homepage: https://github.com/containers/ansible-podman-collections
 issues: https://github.com/containers/ansible-podman-collections/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
+  - ci
+  - tests/output
   - build_artifact
   - "*.tar.gz"
-  - zuul.yaml
-  - .gitignore
-  - tests/output
+  - ".gitignore"
   - ".history"
   - ".vscode"
   - ".idea"
+  - ".github"
