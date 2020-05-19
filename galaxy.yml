@@ -5,7 +5,6 @@ readme: README.md
 authors: Podman
 description: Podman container Ansible modules
 license: Apache-2.0
-license_file: COPYING
 tags:
   - containers
   - podman
@@ -16,9 +15,11 @@ documentation: https://github.com/containers/ansible-podman-collections
 homepage: https://github.com/containers/ansible-podman-collections
 issues: https://github.com/containers/ansible-podman-collections/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
-  - build_artifact/
+  - build_artifact
   - "*.tar.gz"
   - zuul.yaml
   - .gitignore
   - tests/output
   - ".history"
+  - ".vscode"
+  - ".idea"
