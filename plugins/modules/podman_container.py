@@ -31,7 +31,7 @@ DOCUMENTATION = """
 module: podman_container
 author:
   - "Sagi Shnaidman (@sshnaidm)"
-version_added: '2.9'
+version_added: '1.0.0'
 short_description: Manage podman containers
 notes: []
 description:
@@ -1260,9 +1260,10 @@ class PodmanModuleParams:
 
 
 class PodmanDefaults:
-    def __init__(self, module, podman_version):
+    def __init__(self, module, image_info, podman_version):
         self.module = module
         self.version = podman_version
+        self.image_info = image_info
         self.defaults = {
             "blkio_weight": 0,
             "cgroups": "default",
@@ -1295,7 +1296,10 @@ class PodmanDefaults:
             "privileged": False,
             "rm": False,
             "security_opt": [],
+            "stop_signal": self.image_info['config'].get('stopsignal', "15"),
             "tty": False,
+            "user": self.image_info.get('user', ''),
+            "workdir": self.image_info['config'].get('workingdir', '/'),
             "uts": "",
         }
 
@@ -1309,15 +1313,16 @@ class PodmanDefaults:
 
 
 class PodmanContainerDiff:
-    def __init__(self, module, info, podman_version):
+    def __init__(self, module, info, image_info, podman_version):
         self.module = module
         self.version = podman_version
         self.default_dict = None
         self.info = yaml.safe_load(json.dumps(info).lower())
+        self.image_info = yaml.safe_load(json.dumps(image_info).lower())
         self.params = self.defaultize()
         self.diff = {'before': {}, 'after': {}}
         self.non_idempotent = {
-            'env_file',
+            'env_file',  # We can't get env vars from file to check
             'env_host',
             "ulimit",  # Defaults depend on user and platform, impossible to guess
         }
@@ -1325,7 +1330,7 @@ class PodmanContainerDiff:
     def defaultize(self):
         params_with_defaults = {}
         self.default_dict = PodmanDefaults(
-            self.module, self.version).default_dict()
+            self.module, self.image_info, self.version).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
@@ -1561,7 +1566,7 @@ class PodmanContainerDiff:
 
     def diffparam_label(self):
         before = self.info['config']['labels'] or {}
-        after = before.copy()
+        after = self.image_info.get('labels') or {}
         if self.params['label']:
             after.update({
                 str(k).lower(): str(v).lower()
@@ -1632,6 +1637,27 @@ class PodmanContainerDiff:
         after = self.params['pid']
         return self._diff_update_and_compare('pid', before, after)
 
+    # TODO(sshnaidm) Need to add port ranges support
+    def diffparam_publish(self):
+        ports = self.info['networksettings']['ports']
+        before = [":".join([
+            i['hostip'],
+            str(i["hostport"]),
+            str(i["containerport"])
+        ]).strip(':') for i in ports]
+        after = self.params['publish'] or []
+        if self.params['publish_all']:
+            image_ports = self.image_info['config'].get('exposedports', {})
+            if image_ports:
+                after += list(image_ports.keys())
+        after = [i.replace("/tcp", "") for i in after]
+        # No support for port ranges yet
+        for ports in after:
+            if "-" in ports:
+                return self._diff_update_and_compare('publish', '', '')
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        return self._diff_update_and_compare('publish', before, after)
+
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
         after = self.params['rm']
@@ -1644,10 +1670,46 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('security_opt', before, after)
 
     def diffparam_stop_signal(self):
-        before = self.info['config']['stopsignal']
-        after = self.params['stop_signal']
-        if after is None:
-            after = before
+        signals = {
+            "sighup": "1",
+            "sigint": "2",
+            "sigquit": "3",
+            "sigill": "4",
+            "sigtrap": "5",
+            "sigabrt": "6",
+            "sigiot": "6",
+            "sigbus": "7",
+            "sigfpe": "8",
+            "sigkill": "9",
+            "sigusr1": "10",
+            "sigsegv": "11",
+            "sigusr2": "12",
+            "sigpipe": "13",
+            "sigalrm": "14",
+            "sigterm": "15",
+            "sigstkflt": "16",
+            "sigchld": "17",
+            "sigcont": "18",
+            "sigstop": "19",
+            "sigtstp": "20",
+            "sigttin": "21",
+            "sigttou": "22",
+            "sigurg": "23",
+            "sigxcpu": "24",
+            "sigxfsz": "25",
+            "sigvtalrm": "26",
+            "sigprof": "27",
+            "sigwinch": "28",
+            "sigio": "29",
+            "sigpwr": "30",
+            "sigsys": "31"
+        }
+        before = str(self.info['config']['stopsignal'])
+        if not before.isdigit():
+            before = signals[before]
+        after = str(self.params['stop_signal'])
+        if not after.isdigit():
+            after = signals[after]
         return self._diff_update_and_compare('stop_signal', before, after)
 
     def diffparam_tty(self):
@@ -1658,8 +1720,6 @@ class PodmanContainerDiff:
     def diffparam_user(self):
         before = self.info['config']['user']
         after = self.params['user']
-        if after is None:
-            after = before
         return self._diff_update_and_compare('user', before, after)
 
     def diffparam_uts(self):
@@ -1674,16 +1734,13 @@ class PodmanContainerDiff:
         if before:
             volumes = []
             for m in before:
-                if m['type'] == 'volume':
-                    volumes.append([m['name'], m['destination']])
-                else:
+                if m['type'] != 'volume':
                     volumes.append([m['source'], m['destination']])
             before = [":".join(v) for v in volumes]
-        # Ignore volumes option for idempotency
         if self.params['volume'] is not None:
             after = [":".join(v.split(":")[:2]) for v in self.params['volume']]
         else:
-            after = before
+            after = []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
@@ -1696,8 +1753,6 @@ class PodmanContainerDiff:
     def diffparam_workdir(self):
         before = self.info['config']['workingdir']
         after = self.params['workdir']
-        if after is None:
-            after = before
         return self._diff_update_and_compare('workdir', before, after)
 
     def is_different(self):
@@ -1776,7 +1831,11 @@ class PodmanContainer:
     @property
     def different(self):
         """Check if container is different."""
-        diffcheck = PodmanContainerDiff(self.module, self.info, self.version)
+        diffcheck = PodmanContainerDiff(
+            self.module,
+            self.info,
+            self.get_image_info(),
+            self.version)
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
         if self.module._diff and is_different and diffs['before'] and diffs['after']:
@@ -1803,6 +1862,13 @@ class PodmanContainer:
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
             [self.module.params['executable'], b'container', b'inspect', self.name])
+        return json.loads(out)[0] if rc == 0 else {}
+
+    def get_image_info(self):
+        """Inspect container image and gather info about it."""
+        # pylint: disable=unused-variable
+        rc, out, err = self.module.run_command(
+            [self.module.params['executable'], b'image', b'inspect', self.module.params['image']])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):

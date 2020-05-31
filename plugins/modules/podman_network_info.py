@@ -16,7 +16,7 @@ DOCUMENTATION = """
 module: podman_network_info
 author:
   - "Sagi Shnaidman (@sshnaidm)"
-version_added: '2.10'
+version_added: '1.0.0'
 short_description: Gather info about podman networks
 notes: []
 description:
