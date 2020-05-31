@@ -75,7 +75,7 @@ jobs:
           ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
           sudo ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
 
-      - name: Run collection tests for connection
+      - name: Run collection tests for podman image info
         run: |
           export PATH=~/.local/bin:$PATH
 

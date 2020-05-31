@@ -1,0 +1,29 @@
+---
+- name: Create directory for user build images
+  file:
+    path: /tmp/usr_img
+    state: directory
+
+- name: Copy files to container build directory
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/usr_img/{{ item }}"
+    mode: 777
+  loop:
+    - Dockerfile
+    - start.sh
+
+- name: Build test docker image for regular user
+  containers.podman.podman_image:
+    name: "{{ idem_image }}"
+    path: /tmp/usr_img
+    build:
+      format: docker
+
+- name: Build test docker image for root user
+  containers.podman.podman_image:
+    name: "{{ idem_image }}"
+    path: /tmp/usr_img
+    build:
+      format: docker
+  become: true
