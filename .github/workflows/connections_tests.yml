@@ -1,0 +1,241 @@
+name: Test connection plugins
+
+on:
+  push:
+    paths:
+      - '.github/workflows/connections_tests.yml'
+      - 'ci/*.yml'
+      - 'ci/playbooks/connections/**'
+      - 'ci/run_connection_test.sh'
+      - 'plugins/connection/**'
+      - 'tests/integration/targets/connection/**'
+      - 'tests/integration/targets/connection_*/**'
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '.github/workflows/connections_tests.yml'
+      - 'ci/*.yml'
+      - 'ci/playbooks/connections/**'
+      - 'ci/run_connection_test.sh'
+      - 'plugins/connection/**'
+      - 'tests/integration/targets/connection/**'
+      - 'tests/integration/targets/connection_*/**'
+  schedule:
+    - cron: 3 0 * * *  # Run daily at 0:03 UTC
+
+jobs:
+  build-collection-artifact-connection-tests:
+    name: Build artifact
+    runs-on: ${{ matrix.runner-os }}
+    strategy:
+      matrix:
+        runner-os:
+          - ubuntu-16.04
+        ansible-version:
+          - git+https://github.com/ansible/ansible.git@devel
+        runner-python-version:
+          - 3.7
+    steps:
+      - name: Check out ${{ github.repository }} on disk
+        uses: actions/checkout@master
+      - name: Set up Python ${{ matrix.runner-python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.runner-python-version }}
+      - name: Set up pip cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: >-
+          python -m pip install --user '${{ matrix.ansible-version }}'
+      - name: Build a collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection build --output-path
+          "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
+      - name: Store migrated collection artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: collection
+          path: .cache/collection-tarballs
+
+  test-podman-connection:
+    name: Podman connection VM ${{ matrix.os.vm || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
+    needs:
+      - build-collection-artifact-connection-tests
+    runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - ansible<2.10
+          - git+https://github.com/ansible/ansible.git@devel
+        os:
+          - vm: ubuntu-latest
+          #- vm: ubuntu-16.04
+          #- vm: macos-latest
+        python-version:
+          #- 3.8
+          - 3.7
+          #- 3.6
+          #- 3.5
+          #- 2.7
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip and display Python and PIP versions
+        run: |
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python -m pip install --user '${{ matrix.ansible-version }}'
+
+      - name: Download migrated collection artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: collection
+          path: .cache/collection-tarballs
+
+      - name: Install the collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+
+      - name: Run collection tests for connection
+        run: |
+          export PATH=~/.local/bin:$PATH
+
+          if [[ '${{ matrix.ansible-version }}'  == 'git+https://github.com/ansible/ansible.git@devel' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+          elif [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-2.9.cfg
+          fi
+
+          echo $ANSIBLE_CONFIG
+          command -v ansible-playbook
+          pip --version
+          python --version
+          ansible-playbook --version
+
+          ansible-playbook -vv ci/playbooks/pre.yml \
+          -e host=localhost \
+          -i localhost, \
+          -e ansible_connection=local \
+          -e setup_python=false
+
+          ROOT= ./ci/run_connection_test.sh podman
+          ROOT=true ./ci/run_connection_test.sh podman
+        shell: bash
+
+  test-buildah-connection:
+    name: Buildah connection VM ${{ matrix.os.vm || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
+    needs:
+      - build-collection-artifact-connection-tests
+    runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - ansible<2.10
+          - git+https://github.com/ansible/ansible.git@devel
+        os:
+          - vm: ubuntu-latest
+          #- vm: ubuntu-16.04
+          #- vm: macos-latest
+        python-version:
+          #- 3.8
+          - 3.7
+          #- 3.6
+          #- 3.5
+          #- 2.7
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip and display Python and PIP versions
+        run: |
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python -m pip install --user '${{ matrix.ansible-version }}'
+
+      - name: Download migrated collection artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: collection
+          path: .cache/collection-tarballs
+
+      - name: Install the collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+
+      - name: Run collection tests for connection
+        run: |
+          export PATH=~/.local/bin:$PATH
+
+          if [[ '${{ matrix.ansible-version }}'  == 'git+https://github.com/ansible/ansible.git@devel' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+          elif [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-2.9.cfg
+          fi
+
+          echo $ANSIBLE_CONFIG
+          command -v ansible-playbook
+          pip --version
+          python --version
+          ansible-playbook --version
+
+          ansible-playbook -vv ci/playbooks/pre.yml \
+          -e host=localhost \
+          -i localhost, \
+          -e ansible_connection=local \
+          -e setup_python=false
+
+          ROOT= ./ci/run_connection_test.sh buildah
+          ROOT=true ./ci/run_connection_test.sh buildah
+        shell: bash
