@@ -499,8 +499,11 @@ class PodmanImageManager(object):
             cred_string = '{user}:{password}'.format(user=self.username, password=self.password)
             args.extend(['--creds', cred_string])
 
-        if self.validate_certs:
-            args.append('--tls-verify')
+        if self.validate_certs is not None:
+            if self.validate_certs:
+                args.append('--tls-verify')
+            else:
+                args.append('--tls-verify=false')
 
         if self.ca_cert_dir:
             args.extend(['--cert-dir', self.ca_cert_dir])
@@ -514,8 +517,11 @@ class PodmanImageManager(object):
         args = ['build', '-q']
         args.extend(['-t', self.image_name])
 
-        if self.validate_certs:
-            args.append('--tls-verify')
+        if self.validate_certs is not None:
+            if self.validate_certs:
+                args.append('--tls-verify')
+            else:
+                args.append('--tls-verify=false')
 
         annotation = self.build.get('annotation')
         if annotation:
@@ -562,8 +568,11 @@ class PodmanImageManager(object):
     def push_image(self):
         args = ['push']
 
-        if self.validate_certs:
-            args.append('--tls-verify')
+        if self.validate_certs is not None:
+            if self.validate_certs:
+                args.append('--tls-verify')
+            else:
+                args.append('--tls-verify=false')
 
         if self.ca_cert_dir:
             args.extend(['--cert-dir', self.ca_cert_dir])
