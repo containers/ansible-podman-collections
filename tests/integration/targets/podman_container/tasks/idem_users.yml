@@ -1,0 +1,169 @@
+# Users
+- containers.podman.podman_container:
+    name: idempotency
+    state: absent
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test1
+
+- name: check test1
+  assert:
+    that: test1 is not changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    user: user
+    command: 1h
+  register: test2
+
+- name: check test2
+  assert:
+    that: test2 is not changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test3
+
+- name: check test3
+  assert:
+    that: test3 is not changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    user: user2
+    command: 1h
+  register: test4
+
+- name: check test4
+  assert:
+    that: test4 is changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    user: user2
+    command: 1h
+  register: test5
+
+- name: check test5
+  assert:
+    that: test5 is not changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test6
+
+- name: check test6
+  assert:
+    that: test6 is changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    user: user2
+    command: 1h
+  register: test7
+
+- name: check test7
+  assert:
+    that: test7 is changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    user: user
+    command: 1h
+  register: test8
+
+- name: check test8
+  assert:
+    that: test8 is changed
+
+- containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test9
+
+- name: check test9
+  assert:
+    that: test9 is not changed
+
+- containers.podman.podman_container:
+    name: idempotency1
+    state: absent
+
+- containers.podman.podman_container:
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+
+- containers.podman.podman_container:
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+  register: test10
+
+- name: check test10
+  assert:
+    that: test10 is not changed
+
+- containers.podman.podman_container:
+    image: alpine
+    name: idempotency1
+    state: present
+    user: nobody
+    command: sleep 1h
+  register: test11
+
+- name: check test11
+  assert:
+    that: test11 is changed
+
+- containers.podman.podman_container:
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+  register: test12
+
+- name: check test12
+  assert:
+    that: test12 is changed
+
+- containers.podman.podman_container:
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+  register: test13
+
+- name: check test13
+  assert:
+    that: test13 is not changed
