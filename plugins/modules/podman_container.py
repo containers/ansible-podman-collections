@@ -1731,16 +1731,23 @@ class PodmanContainerDiff:
 
     def diffparam_volume(self):
         before = self.info['mounts']
+        before_local_vols = []
         if before:
             volumes = []
+            local_vols = []
             for m in before:
                 if m['type'] != 'volume':
                     volumes.append([m['source'], m['destination']])
+                elif m['type'] == 'volume':
+                    local_vols.append([m['name'], m['destination']])
             before = [":".join(v) for v in volumes]
+            before_local_vols = [":".join(v) for v in local_vols]
         if self.params['volume'] is not None:
             after = [":".join(v.split(":")[:2]) for v in self.params['volume']]
         else:
             after = []
+        if before_local_vols:
+            after = list(set(after).difference(before_local_vols))
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
