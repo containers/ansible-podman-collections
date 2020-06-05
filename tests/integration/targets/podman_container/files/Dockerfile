@@ -18,7 +18,7 @@ RUN chmod a+rwx /start
 EXPOSE 80
 EXPOSE 8080/tcp
 
-VOLUME ["/data"]
+VOLUME ["/data", "/data2"]
 USER user
 WORKDIR /work
 STOPSIGNAL 9
