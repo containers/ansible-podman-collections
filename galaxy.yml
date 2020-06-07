@@ -1,12 +1,12 @@
 namespace: containers
 name: podman
-version: 1.0.1
+version: 9.9.9
 readme: README.md
 authors:
   - Sagi Shnaidman <sshnaidm@redhat.com>
   - Ansible team
 description: Podman container Ansible modules
-license: Apache-2.0
+license: GPL-3.0-or-later
 tags:
   - containers
   - podman

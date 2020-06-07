@@ -102,4 +102,4 @@ on `#ansible-podman` channel on Freenode IRC.
 
 ## License
 
-Apache-2.0
+GPL-3.0-or-later
