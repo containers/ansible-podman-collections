@@ -1,6 +1,6 @@
 namespace: containers
 name: podman
-version: 9.9.9
+# version:
 readme: README.md
 authors:
   - Sagi Shnaidman <sshnaidm@redhat.com>
@@ -27,5 +27,4 @@ build_ignore:
   - ".idea"
   - ".github"
   - contrib
-  - galaxy.yml.in
   - importer_result.json
