@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - include_role:
+        name: podman_container_idempotency
+      vars:
+        idem_image: idempotency_test

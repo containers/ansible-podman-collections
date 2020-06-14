@@ -1,0 +1,21 @@
+---
+- name: Prepare a container
+  include_tasks: build_test_container.yml
+
+- name: Test idempotency of users
+  include_tasks: idem_users.yml
+
+- name: Test idempotency of workdir
+  include_tasks: idem_workdir.yml
+
+- name: Test idempotency of labels
+  include_tasks: idem_labels.yml
+
+- name: Test idempotency of stop signal
+  include_tasks: idem_stopsignal.yml
+
+- name: Test idempotency of ports
+  include_tasks: idem_ports.yml
+
+- name: Test idempotency of volumes
+  include_tasks: idem_volumes.yml
