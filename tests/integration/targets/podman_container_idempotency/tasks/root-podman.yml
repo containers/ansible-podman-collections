@@ -1,0 +1,77 @@
+---
+# Ulimits testing
+- name: Make sure container doesn't exist
+  containers.podman.podman_container:
+    name: root-idempotency
+    state: absent
+
+- name: Run container as is
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+
+- name: Run containers with ulimits
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ulimit:
+      - 'nofile=55535:55535'
+      - 'memlock=-1:-1'
+  register: info
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info is changed
+
+- name: Run containers with ulimits - idempotency
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ulimit:
+      - 'nofile=55535:55535'
+      - 'memlock=-1:-1'
+  register: info1
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info1 is not changed
+
+- name: Run containers with changed ulimits
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ulimit:
+      - 'nofile=55535:65535'
+      - 'memlock=-1:-1'
+  register: info2
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info2 is changed
+
+- name: Run containers with changed ulimits - idempotency
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ulimit:
+      - 'nofile=55535:65535'
+      - 'memlock=-1:-1'
+  register: info3
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info3 is not changed
