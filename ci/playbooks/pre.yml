@@ -61,6 +61,7 @@
               - buildah
               - git
               - vim
+              - dnsmasq
 
     - name: Remove virtualenv if need
       file:

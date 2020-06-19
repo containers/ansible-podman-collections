@@ -1,0 +1,609 @@
+- name: Test podman pod
+  block:
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version to 1
+      set_fact:
+        podman_version: 1
+      when: podman_v.stdout is version('2.0.0', 'lt')
+
+    - name: Set podman version to 2
+      set_fact:
+        podman_version: 2
+      when: podman_v.stdout is version('2.0.0', '>=')
+
+    - name: Discover cgroups version
+      shell: podman info | grep cgroupVersion | awk {'print $2'}
+      register: cgroups
+
+    - name: Set cgroups version
+      set_fact:
+        cgroups_version: "{{ cgroups.stdout }}"
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "pod1"
+        - "pod2"
+
+    - name: Create pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: created
+      register: pod1_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod1_info.pod['State']['status'] is defined and
+             pod1_info.pod['State']['status'] == 'Created') or
+             (pod1_info.pod['State']['status'] is not defined and
+             pod1_info.pod['State'] == 'Created')
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod2_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod2_info.pod['State']['status'] is defined and
+             pod2_info.pod['State']['status'] == 'Running') or
+             (pod2_info.pod['State']['status'] is not defined and
+             pod2_info.pod['State'] == 'Running')
+
+    - name: Pause pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: paused
+      register: pod3_info
+      when: cgroups_version == 'v2'
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod3_info.pod['State']['status'] is defined and
+             pod3_info.pod['State']['status'] == 'Paused') or
+             (pod3_info.pod['State']['status'] is not defined and
+             pod3_info.pod['State'] == 'Paused')
+      when: cgroups_version == 'v2'
+
+    - name: Unpause pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: unpaused
+      register: pod4_info
+      when: cgroups_version == 'v2'
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod4_info.pod['State']['status'] is defined and
+             pod4_info.pod['State']['status'] == 'Running') or
+             (pod4_info.pod['State']['status'] is not defined and
+             pod4_info.pod['State'] == 'Running')
+      when: cgroups_version == 'v2'
+
+    - name: Stop pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: stopped
+      register: pod5_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod5_info.pod['State']['status'] is defined and
+             pod5_info.pod['State']['status'] != 'Running') or
+             (pod5_info.pod['State']['status'] is not defined and
+             pod5_info.pod['State'] != 'Running')
+
+    - name: Kill pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: killed
+      register: pod6_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod6_info.pod['State']['status'] is defined and
+             pod6_info.pod['State']['status'] == 'Exited') or
+             (pod6_info.pod['State']['status'] is not defined and
+             pod6_info.pod['State'] == 'Exited')
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod7_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod7_info.pod['State']['status'] is defined and
+             pod7_info.pod['State']['status'] == 'Running') or
+             (pod7_info.pod['State']['status'] is not defined and
+             pod7_info.pod['State'] == 'Running')
+
+    - name: Start pod again for idempotency
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod8_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod8_info is not changed
+
+    - name: Start pod with ports
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "1212:5555"
+          - "8888:19191/udp"
+          - "1900:1900/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:12122:8876/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+      register: pod9_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod9_info is changed
+
+    - name: Start pod with ports for idempotency
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "1212:5555"
+          - "8888:19191/udp"
+          - "1900:1900/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:12122:8876/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+      register: pod10_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod10_info is not changed
+
+    - name: Start pod again for idempotency
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod11_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod11_info is changed
+
+    - name: Start pod with share
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        share: uts
+      register: pod12_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod12_info is changed
+
+    - name: Start pod with share for idempotency
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        share: uts
+      register: pod13_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod13_info is not changed
+
+    - name: Start pod without shares
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        share: ""
+      register: pod14_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod14_info is changed
+
+    - name: Start pod with default shares
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod15_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_info is changed
+
+    - name: Start pod with labels
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+      register: pod16_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod16_info is changed
+
+    - name: Start pod with labels again for idempotency
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+      register: pod17_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod17_info is not changed
+
+    - name: Start pod with different labels
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: 23434dfsd
+          somekey: someval
+      register: pod18_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod18_info is changed
+
+    - name: Start pod without labels
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod19_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod19_info is changed
+
+    - name: Start pod with dns and hosts settings
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod20_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod20_info is changed
+
+    - name: Start pod with dns and hosts settings again
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod21_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod21_info is not changed
+
+    - name: Start pod with changed dns
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod22_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod22_info is changed
+
+    - name: Start pod with changed add host
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod23_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod23_info is changed
+
+    - name: Start pod with changed dns option
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod24_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod24_info is changed
+
+    - name: Start pod with changed dns search
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+        hostname: happypod
+      register: pod25_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod25_info is changed
+
+    - name: Start pod with changed hostname
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+        hostname: bestpod
+      register: pod26_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod26_info is changed
+
+    - name: Start pod with removed dns search
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        hostname: bestpod
+      register: pod27_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod27_info is changed
+
+    - name: Start pod with removed dns option
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        hostname: bestpod
+      register: pod28_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod28_info is changed
+
+    - name: Start pod with removed dns
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        hostname: bestpod
+      register: pod29_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod29_info is changed
+
+    - name: Start pod with removed add host
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        hostname: bestpod
+      register: pod30_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod30_info is changed
+
+    - name: Start pod without infra
+      containers.podman.podman_pod:
+        name: pod1
+        state: created
+        infra: false
+      register: pod31_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod31_info is changed
+
+    - name: Start pod without infra again
+      containers.podman.podman_pod:
+        name: pod1
+        state: created
+        infra: false
+      register: pod32_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod32_info is not changed
+
+    - name: Start pod with infra
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+      register: pod33_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod33_info is changed
+
+    - name: Start pod with different infra image
+      containers.podman.podman_pod:
+        name: pod1
+        state: created
+        infra_image: alpine:3.9
+      register: pod34_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod34_info is changed
+
+    - name: Start pod with different infra image again
+      containers.podman.podman_pod:
+        name: pod1
+        state: created
+        infra_image: alpine:3.9
+      register: pod35_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod35_info is not changed
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "pod1"
+        - "pod2"
+
+- name: Test idempotency for root pods
+  include_tasks: root-pod.yml
+  args:
+    apply:
+      become: true
+
+- name: Test idempotency for root pods and networks
+  include_tasks: net-pod.yml
+  args:
+    apply:
+      become: true

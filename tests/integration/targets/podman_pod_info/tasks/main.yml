@@ -1,0 +1,103 @@
+- name: Test podman_pod_info
+  block:
+
+    - name: Print podman version
+      command: podman info --debug
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_version
+
+    - name: Generate random value for pod name
+      set_fact:
+        pod_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure pod doesn't exist
+      containers.podman.podman_pod:
+        name: "{{ pod_name }}"
+        state: absent
+
+    - name: Get missing pod info
+      containers.podman.podman_pod_info:
+        name: "{{ pod_name }}"
+      register: nonexist
+
+    - name: Check info for missing pod
+      assert:
+        that:
+          - nonexist.pods == []
+
+    - name: Get all missing pods info
+      containers.podman.podman_pod_info:
+      register: nonexist2
+
+    - name: Check info for missing pod
+      assert:
+        that:
+          - nonexist2.pods == []
+
+    - name: Create test pod
+      containers.podman.podman_pod:
+        name: "{{ pod_name }}"
+
+    - name: Get all pods info
+      containers.podman.podman_pod_info:
+      register: info
+
+    - name: Check info for pod
+      assert:
+        that:
+          - info.pods | length == 1
+          - >-
+             (info.pods[0]['Config']['name'] is defined and
+             info.pods[0]['Config']['name'] == pod_name) or
+             (info.pods[0]['Name'] is defined and
+             info.pods[0]['Name'] == pod_name)
+
+    - name: Get specific pod info
+      containers.podman.podman_pod_info:
+        name: "{{ pod_name }}"
+      register: info2
+
+    - name: Check info for pod
+      assert:
+        that:
+          - info2.pods | length == 1
+          - >-
+             (info2.pods[0]['Config']['name'] is defined and
+             info2.pods[0]['Config']['name'] == pod_name) or
+             (info2.pods[0]['Name'] is defined and
+             info2.pods[0]['Name'] == pod_name)
+
+    - name: Create another test pod
+      containers.podman.podman_pod:
+        name: "{{ pod_name }}_1"
+
+    - name: Get specific another pod info
+      containers.podman.podman_pod_info:
+        name: "{{ pod_name }}"
+      register: info3
+
+    - name: Check info for missing pod
+      assert:
+        that:
+          - info3.pods | length == 1
+
+    - name: Get pods info
+      containers.podman.podman_pod_info:
+      register: info4
+
+    - name: Check info for pods
+      assert:
+        that:
+          - info4.pods | length == 2
+
+  always:
+
+    - name: Make sure pod doesn't exist
+      containers.podman.podman_pod:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ pod_name }}"
+        - "{{ pod_name }}_1"
