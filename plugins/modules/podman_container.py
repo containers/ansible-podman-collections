@@ -1306,7 +1306,6 @@ class PodmanContainerDiff:
         self.non_idempotent = {
             'env_file',  # We can't get env vars from file to check
             'env_host',
-            "ulimit",  # Defaults depend on user and platform, impossible to guess
         }
 
     def defaultize(self):
@@ -1703,6 +1702,32 @@ class PodmanContainerDiff:
         before = self.info['config']['user']
         after = self.params['user']
         return self._diff_update_and_compare('user', before, after)
+
+    def diffparam_ulimit(self):
+        after = self.params['ulimit'] or []
+        # In case of latest podman
+        if 'createcommand' in self.info['config']:
+            ulimits = []
+            for k, c in enumerate(self.info['config']['createcommand']):
+                if c == '--ulimit':
+                    ulimits.append(self.info['config']['createcommand'][k + 1])
+            before = ulimits
+            before, after = sorted(before), sorted(after)
+            return self._diff_update_and_compare('ulimit', before, after)
+        if after:
+            ulimits = self.info['hostconfig']['ulimits']
+            before = {
+                u['name'].replace('rlimit_', ''): "%s:%s" % (u['soft'], u['hard']) for u in ulimits}
+            after = {i.split('=')[0]: i.split('=')[1] for i in self.params['ulimit']}
+            new_before = []
+            new_after = []
+            for u in list(after.keys()):
+                # We don't support unlimited ulimits because it depends on platform
+                if u in before and "-1" not in after[u]:
+                    new_before.append([u, before[u]])
+                    new_after.append([u, after[u]])
+            return self._diff_update_and_compare('ulimit', new_before, new_after)
+        return self._diff_update_and_compare('ulimit', '', '')
 
     def diffparam_uts(self):
         before = self.info['hostconfig']['utsmode']

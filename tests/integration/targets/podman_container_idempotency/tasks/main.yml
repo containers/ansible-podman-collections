@@ -19,3 +19,9 @@
 
 - name: Test idempotency of volumes
   include_tasks: idem_volumes.yml
+
+- name: Test idempotency for root containers
+  include_tasks: root-podman.yml
+  args:
+    apply:
+      become: true
