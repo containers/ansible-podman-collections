@@ -13,7 +13,7 @@ jobs:
         runner-os:
           - ubuntu-16.04
         ansible-version:
-          - git+https://github.com/ansible/ansible.git@devel
+          - git+https://github.com/ansible/ansible.git@stable-2.10
         runner-python-version:
           - 3.7
     steps:
