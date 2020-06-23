@@ -3,6 +3,8 @@ name: Collection build and tests
 on:
   push:
   pull_request:
+  schedule:
+    - cron: 3 0 * * *  # Run daily at 0:03 UTC
 
 jobs:
   build-collection-artifact:
