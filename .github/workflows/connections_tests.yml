@@ -76,10 +76,11 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          - ansible<2.10
+          #- ansible<2.10
           - git+https://github.com/ansible/ansible.git@devel
         os:
-          - vm: ubuntu-latest
+          #- vm: ubuntu-latest
+          - vm: ubuntu-20.04
           #- vm: ubuntu-16.04
           #- vm: macos-latest
         python-version:
@@ -165,9 +166,10 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@devel
+          #- git+https://github.com/ansible/ansible.git@devel
         os:
-          - vm: ubuntu-latest
+          #- vm: ubuntu-latest
+          - vm: ubuntu-20.04
           #- vm: ubuntu-16.04
           #- vm: macos-latest
         python-version:

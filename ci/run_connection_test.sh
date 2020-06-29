@@ -39,4 +39,4 @@ if [[ "$CON_TYPE" == "podman" ]]; then
 elif [[ "$CON_TYPE" == "buildah" ]]; then
     ${SUDO} buildah rm buildah-container
 fi
-${SUDO} rm -f /tmp/local_file
+sudo rm -f /tmp/local_file /tmp/remote_file

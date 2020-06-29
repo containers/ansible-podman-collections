@@ -1,41 +1,41 @@
-name: Collection release and publish
-on:
-  push:
-    tags:
-      - '[0-9]+\.[0-9]+\.[0-9]+'
+# name: Collection release and publish
+# on:
+#   push:
+#     tags:
+#       - '[0-9]+\.[0-9]+\.[0-9]+'
 
-jobs:
-  publish-collection-artifact:
-    name: Publish
-    runs-on: ${{ matrix.runner-os }}
-    strategy:
-      matrix:
-        runner-os:
-          - ubuntu-16.04
-        ansible-version:
-          - git+https://github.com/ansible/ansible.git@stable-2.10
-        runner-python-version:
-          - 3.7
-    steps:
+# jobs:
+#   publish-collection-artifact:
+#     name: Publish
+#     runs-on: ${{ matrix.runner-os }}
+#     strategy:
+#       matrix:
+#         runner-os:
+#           - ubuntu-16.04
+#         ansible-version:
+#           - git+https://github.com/ansible/ansible.git@stable-2.10
+#         runner-python-version:
+#           - 3.7
+#     steps:
 
-      - name: Check out ${{ github.repository }} on disk
-        uses: actions/checkout@master
+#       - name: Check out ${{ github.repository }} on disk
+#         uses: actions/checkout@master
 
-      - name: Set up Python ${{ matrix.runner-python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.runner-python-version }}
+#       - name: Set up Python ${{ matrix.runner-python-version }}
+#         uses: actions/setup-python@v1
+#         with:
+#           python-version: ${{ matrix.runner-python-version }}
 
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: |
-          python -m pip install --user -r contrib/publish-requirements.txt
-          python -m pip install --user -U --force '${{ matrix.ansible-version }}'
-          python -m virtualenv /tmp/new-ansible
-          /tmp/new-ansible/bin/pip install '${{ matrix.ansible-version }}'
+#       - name: Install Ansible ${{ matrix.ansible-version }}
+#         run: |
+#           python -m pip install --user -r contrib/publish-requirements.txt
+#           python -m pip install --user -U --force '${{ matrix.ansible-version }}'
+#           python -m virtualenv /tmp/new-ansible
+#           /tmp/new-ansible/bin/pip install '${{ matrix.ansible-version }}'
 
-      - name: Generate a version from tag
-        run: >-
-          ./contrib/publish.sh ${GITHUB_REF##*/}
-        env:
-          API_GALAXY_TOKEN: ${{ secrets.API_GALAXY_TOKEN }}
-          GALAXY_PATH: /tmp/new-ansible/bin/ansible-galaxy
+#       - name: Generate a version from tag
+#         run: >-
+#           ./contrib/publish.sh ${GITHUB_REF##*/}
+#         env:
+#           API_GALAXY_TOKEN: ${{ secrets.API_GALAXY_TOKEN }}
+#           GALAXY_PATH: /tmp/new-ansible/bin/ansible-galaxy
