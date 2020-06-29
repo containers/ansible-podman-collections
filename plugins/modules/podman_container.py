@@ -1598,9 +1598,13 @@ class PodmanContainerDiff:
 
     def diffparam_network(self):
         before = [self.info['hostconfig']['networkmode']]
-        after = self.params['network']
-        if self.params['pod'] and not self.module.params['network']:
+        # TODO(sshnaidm): special case for rootful container > v2.
+        # Discover later what is running user and set default accordingly
+        if not self.module.params['network'] and (
+                before == ['bridge'] or self.params['pod']):
             after = before
+        else:
+            after = self.params['network']
         return self._diff_update_and_compare('network', before, after)
 
     def diffparam_no_hosts(self):
@@ -1653,6 +1657,8 @@ class PodmanContainerDiff:
 
     def diffparam_security_opt(self):
         before = self.info['hostconfig']['securityopt']
+        # In rootful containers with apparmor there is a default security opt
+        before = [o for o in before if 'apparmor=containers-default' not in o]
         after = self.params['security_opt']
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('security_opt', before, after)

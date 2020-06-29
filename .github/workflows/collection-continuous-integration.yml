@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         runner-os:
-          - ubuntu-16.04
+          - ubuntu-latest
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.10
         runner-python-version:
@@ -65,6 +65,16 @@ jobs:
         python-version:
           - 2.7
           - 3.7
+        exclude:
+          - runner-os: ubuntu-latest
+            runner-python-version: 3.7
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.7
+        include:
+          - runner-os: ubuntu-20.04
+            runner-python-version: 3.7
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.7
 
     steps:
       - name: Set up Python ${{ matrix.runner-python-version }}
