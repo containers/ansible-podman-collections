@@ -1,103 +1,103 @@
-name: Collection build and tests
+# name: Collection build and tests
 
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: 3 0 * * *  # Run daily at 0:03 UTC
+# on:
+#   push:
+#   pull_request:
+#   schedule:
+#     - cron: 3 0 * * *  # Run daily at 0:03 UTC
 
-jobs:
-  build-collection-artifact:
-    name: Build
-    runs-on: ${{ matrix.runner-os }}
-    strategy:
-      matrix:
-        runner-os:
-          - ubuntu-16.04
-        ansible-version:
-          - git+https://github.com/ansible/ansible.git@stable-2.10
-        runner-python-version:
-          - 3.7
-    steps:
-      - name: Check out ${{ github.repository }} on disk
-        uses: actions/checkout@master
-      - name: Set up Python ${{ matrix.runner-python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.runner-python-version }}
-      - name: Set up pip cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: >-
-          python -m pip install --user '${{ matrix.ansible-version }}'
-      - name: Build a collection tarball
-        run: >-
-          ~/.local/bin/ansible-galaxy collection build --output-path
-          "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
-      - name: Store migrated collection artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: collection
-          path: .cache/collection-tarballs
+# jobs:
+#   build-collection-artifact:
+#     name: Build
+#     runs-on: ${{ matrix.runner-os }}
+#     strategy:
+#       matrix:
+#         runner-os:
+#           - ubuntu-16.04
+#         ansible-version:
+#           - git+https://github.com/ansible/ansible.git@stable-2.10
+#         runner-python-version:
+#           - 3.7
+#     steps:
+#       - name: Check out ${{ github.repository }} on disk
+#         uses: actions/checkout@master
+#       - name: Set up Python ${{ matrix.runner-python-version }}
+#         uses: actions/setup-python@v1
+#         with:
+#           python-version: ${{ matrix.runner-python-version }}
+#       - name: Set up pip cache
+#         uses: actions/cache@v1
+#         with:
+#           path: ~/.cache/pip
+#           key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
+#           restore-keys: |
+#             ${{ runner.os }}-pip-
+#             ${{ runner.os }}-
+#       - name: Install Ansible ${{ matrix.ansible-version }}
+#         run: >-
+#           python -m pip install --user '${{ matrix.ansible-version }}'
+#       - name: Build a collection tarball
+#         run: >-
+#           ~/.local/bin/ansible-galaxy collection build --output-path
+#           "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
+#       - name: Store migrated collection artifacts
+#         uses: actions/upload-artifact@v1
+#         with:
+#           name: collection
+#           path: .cache/collection-tarballs
 
-  sanity-test-collection-via-containers:
-    name: Sanity in container via Py-${{ matrix.python-version }} & ${{ matrix.ansible-version }}
-    needs:
-      - build-collection-artifact
-    runs-on: ${{ matrix.runner-os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner-os:
-          - ubuntu-latest
-        runner-python-version:
-          - 3.7
-        ansible-version:
-          - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.10
-          - git+https://github.com/ansible/ansible.git@devel
-        python-version:
-          - 2.7
-          - 3.7
+#   sanity-test-collection-via-containers:
+#     name: Sanity in container via Py-${{ matrix.python-version }} & ${{ matrix.ansible-version }}
+#     needs:
+#       - build-collection-artifact
+#     runs-on: ${{ matrix.runner-os }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         runner-os:
+#           - ubuntu-latest
+#         runner-python-version:
+#           - 3.7
+#         ansible-version:
+#           - ansible<2.10
+#           - git+https://github.com/ansible/ansible.git@stable-2.10
+#           - git+https://github.com/ansible/ansible.git@devel
+#         python-version:
+#           - 2.7
+#           - 3.7
 
-    steps:
-      - name: Set up Python ${{ matrix.runner-python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.runner-python-version }}
-      - name: Set up pip cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ github.ref }}-sanity-containers
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: >-
-          python -m pip install --user '${{ matrix.ansible-version }}'
-      - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v1
-        with:
-          name: collection
-          path: .cache/collection-tarballs
-      - name: Install the collection tarball
-        run: >-
-          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
-      - name: Run collection sanity tests
-        run: >-
-          ~/.local/bin/ansible-test sanity
-          --color
-          --requirements
-          --python "${{ matrix.python-version }}" -vvv
-          plugins/ tests/
-        working-directory: >-
-          /home/runner/.ansible/collections/ansible_collections/containers/podman
+#     steps:
+#       - name: Set up Python ${{ matrix.runner-python-version }}
+#         uses: actions/setup-python@v1
+#         with:
+#           python-version: ${{ matrix.runner-python-version }}
+#       - name: Set up pip cache
+#         uses: actions/cache@v1
+#         with:
+#           path: ~/.cache/pip
+#           key: ${{ runner.os }}-pip-${{ github.ref }}-sanity-containers
+#           restore-keys: |
+#             ${{ runner.os }}-pip-
+#             ${{ runner.os }}-
+#       - name: Install Ansible ${{ matrix.ansible-version }}
+#         run: >-
+#           python -m pip install --user '${{ matrix.ansible-version }}'
+#       - name: Download migrated collection artifacts
+#         uses: actions/download-artifact@v1
+#         with:
+#           name: collection
+#           path: .cache/collection-tarballs
+#       - name: Install the collection tarball
+#         run: >-
+#           ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+#       - name: Run collection sanity tests
+#         run: >-
+#           ~/.local/bin/ansible-test sanity
+#           --color
+#           --requirements
+#           --python "${{ matrix.python-version }}" -vvv
+#           plugins/ tests/
+#         working-directory: >-
+#           /home/runner/.ansible/collections/ansible_collections/containers/podman
 
-#  When we have unit tests, add them here
+# #  When we have unit tests, add them here
