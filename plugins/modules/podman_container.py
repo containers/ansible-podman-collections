@@ -1291,6 +1291,11 @@ class PodmanDefaults:
         if (LooseVersion(self.version) >= LooseVersion('1.8.0')
                 and LooseVersion(self.version) < LooseVersion('1.9.0')):
             self.defaults['cpu_shares'] = 1024
+        if (LooseVersion(self.version) >= LooseVersion('2.0.0')):
+            self.defaults['network'] = ["slirp4netns"]
+            self.defaults['ipc'] = "private"
+            self.defaults['uts'] = "private"
+            self.defaults['pid'] = "private"
         return self.defaults
 
 
@@ -1621,11 +1626,19 @@ class PodmanContainerDiff:
     # TODO(sshnaidm) Need to add port ranges support
     def diffparam_publish(self):
         ports = self.info['networksettings']['ports']
-        before = [":".join([
-            i['hostip'],
-            str(i["hostport"]),
-            str(i["containerport"])
-        ]).strip(':') for i in ports]
+        # before 2.0.0 we have ports as a list, after 2.0.0 it's a dictionary
+        if isinstance(ports, list):
+            before = [":".join([
+                i['hostip'],
+                str(i["hostport"]),
+                str(i["containerport"])
+            ]).strip(':') for i in ports]
+        elif isinstance(ports, dict):
+            before = [":".join([
+                j[0]['hostip'],
+                str(j[0]["hostport"]),
+                i.replace('/tcp', '')
+            ]).strip(':') for i, j in ports.items()]
         after = self.params['publish'] or []
         if self.params['publish_all']:
             image_ports = self.image_info['config'].get('exposedports', {})
