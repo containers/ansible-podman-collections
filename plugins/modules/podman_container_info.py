@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: podman_container_info
 author:
     - Sagi Shnaidman (@sshnaidm)
@@ -32,21 +32,23 @@ options:
     default: 'podman'
     type: str
 '''
-EXAMPLES = """
+
+EXAMPLES = r"""
 - name: Gather facts for all containers
-  podman_container_info:
+  containers.podman.podman_container_info:
 
 - name: Gather facts on a specific container
-  podman_container_info:
+  containers.podman.podman_container_info:
     name: web1
 
 - name: Gather facts on several containers
-  podman_container_info:
+  containers.podman.podman_container_info:
     name:
       - redis
       - web1
 """
-RETURN = """
+
+RETURN = r"""
 containers:
     description: Facts from all or specificed containers
     returned: always

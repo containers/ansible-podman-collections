@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: podman_image_info
 author:
   - Sam Doran (@samdoran)
@@ -24,25 +24,27 @@ options:
   name:
     description:
       - List of tags or UID to gather info about. If no name is given return info about all images.
+    type: list
+    elements: str
 
 '''
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Gather info for all images
-  podman_image_info:
+  containers.podman.podman_image_info:
 
 - name: Gather info on a specific image
-  podman_image_info:
+  containers.podman.podman_image_info:
     name: nginx
 
 - name: Gather info on several images
-  podman_image_info:
+  containers.podman.podman_image_info:
     name:
       - redis
       - quay.io/bitnami/wildfly
 """
 
-RETURN = """
+RETURN = r"""
 images:
     description: info from all or specified images
     returned: always
@@ -205,7 +207,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             executable=dict(type='str', default='podman'),
-            name=dict(type='list')
+            name=dict(type='list', elements='str')
         ),
         supports_check_mode=True,
     )

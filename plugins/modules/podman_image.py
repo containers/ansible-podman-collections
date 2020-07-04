@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
   module: podman_image
   author:
       - Sam Doran (@samdoran)
@@ -19,34 +19,42 @@ DOCUMENTATION = '''
       description:
         - Name of the image to pull, push, or delete. It may contain a tag using the format C(image:tag).
       required: True
+      type: str
     executable:
       description:
-        - Path to C(podman) executable if it is not in the C($PATH) on the machine running C(podman)
+        - Path to C(podman) executable if it is not in the C($PATH) on the machine running C(podman).
       default: 'podman'
       type: str
     ca_cert_dir:
       description:
-        - Path to directory containing TLS certificates and keys to use
+        - Path to directory containing TLS certificates and keys to use.
       type: 'path'
     tag:
       description:
         - Tag of the image to pull, push, or delete.
       default: "latest"
+      type: str
     pull:
       description: Whether or not to pull the image.
       default: True
+      type: bool
     push:
       description: Whether or not to push an image.
       default: False
+      type: bool
     path:
       description: Path to directory containing the build file.
+      type: str
     force:
       description:
-        - Whether or not to force push or pull an image. When building, force the build even if the image already exists.
+        - Whether or not to force push or pull an image.
+        - When building, force the build even if the image already exists.
+      type: bool
     state:
       description:
         - Whether an image should be present, absent, or built.
       default: "present"
+      type: str
       choices:
         - present
         - absent
@@ -55,6 +63,7 @@ DOCUMENTATION = '''
       description:
         - Require HTTPS and validate certificates when pulling or pushing. Also used during build if a pull or push is necessary.
       default: True
+      type: bool
       aliases:
         - tlsverify
         - tls_verify
@@ -68,19 +77,26 @@ DOCUMENTATION = '''
       type: str
     auth_file:
       description:
-        - Path to file containing authorization credentials to the remote registry
+        - Path to file containing authorization credentials to the remote registry.
       aliases:
         - authfile
+      type: path
     build:
       description: Arguments that control image build.
+      type: dict
       aliases:
         - build_args
         - buildargs
       suboptions:
+        volume:
+          description:
+            - Specify multiple volume / mount options to mount one or more mounts to a container.
+          type: list
+          elements: str
         annotation:
           description:
             - Dictionary of key=value pairs to add to the image. Only works with OCI images. Ignored for Docker containers.
-          type: str
+          type: dict
         force_rm:
           description:
             - Always remove intermediate containers after a build, even if the build is unsuccessful.
@@ -89,6 +105,7 @@ DOCUMENTATION = '''
         format:
           description:
             - Format of the built image.
+          type: str
           choices:
             - docker
             - oci
@@ -104,6 +121,7 @@ DOCUMENTATION = '''
           default: True
     push_args:
       description: Arguments that control pushing images.
+      type: dict
       suboptions:
         compress:
           description:
@@ -111,7 +129,8 @@ DOCUMENTATION = '''
           type: bool
         format:
           description:
-            - Manifest type to use when pushing an image using the 'dir' transport (default is manifest type of source)
+            - Manifest type to use when pushing an image using the 'dir' transport (default is manifest type of source).
+          type: str
           choices:
             - oci
             - v2s1
@@ -122,11 +141,16 @@ DOCUMENTATION = '''
         sign_by:
           description:
             - Path to a key file to use to sign the image.
+          type: str
         dest:
           description: Path or URL where image will be pushed.
+          type: str
+          aliases:
+            - destination
         transport:
           description:
             - Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry.
+          type: str
           choices:
             - dir
             - docker-archive
@@ -135,28 +159,28 @@ DOCUMENTATION = '''
             - ostree
 '''
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Pull an image
-  podman_image:
+  container.podman.podman_image:
     name: quay.io/bitnami/wildfly
 
 - name: Remove an image
-  podman_image:
+  container.podman.podman_image:
     name: quay.io/bitnami/wildfly
     state: absent
 
 - name: Pull a specific version of an image
-  podman_image:
+  container.podman.podman_image:
     name: redis
     tag: 4
 
 - name: Build a basic OCI image
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
 
 - name: Build a basic OCI image with advanced parameters
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     build:
@@ -169,14 +193,14 @@ EXAMPLES = """
         info: Load balancer for my cool app
 
 - name: Build a Docker formatted image
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     build:
       format: docker
 
 - name: Build and push an image using existing credentials
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     push: yes
@@ -184,7 +208,7 @@ EXAMPLES = """
       dest: quay.io/acme
 
 - name: Build and push an image using an auth file
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     push: yes
     auth_file: /etc/containers/auth.json
@@ -192,7 +216,7 @@ EXAMPLES = """
       dest: quay.io/acme
 
 - name: Build and push an image using username and password
-  podman_image:
+  container.podman.podman_image:
     name: nginx
     push: yes
     username: bugs
@@ -201,7 +225,7 @@ EXAMPLES = """
       dest: quay.io/acme
 
 - name: Build and push an image to multiple registries
-  podman_image:
+  container.podman.podman_image:
     name: "{{ item }}"
     path: /path/to/build/dir
     push: yes
@@ -211,7 +235,7 @@ EXAMPLES = """
     - docker.io/acme/nginx
 
 - name: Build and push an image to multiple registries with separate parameters
-  podman_image:
+  container.podman.podman_image:
     name: "{{ item.name }}"
     tag: "{{ item.tag }}"
     path: /path/to/build/dir
@@ -229,7 +253,7 @@ EXAMPLES = """
       dest: docker.io/acme
 """
 
-RETURN = """
+RETURN = r"""
   image:
     description:
       - Image inspection results for the image that was pulled, pushed, or built.
@@ -689,7 +713,7 @@ def main():
                     ),
                     cache=dict(type='bool', default=True),
                     rm=dict(type='bool', default=True),
-                    volume=dict(type='list'),
+                    volume=dict(type='list', elements='str'),
                 ),
             ),
             push_args=dict(

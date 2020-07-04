@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: podman_volume_info
 author:
   - "Sagi Shnaidman (@sshnaidm)"
@@ -28,7 +28,8 @@ options:
     default: 'podman'
     type: str
 '''
-EXAMPLES = """
+
+EXAMPLES = r"""
 - name: Gather info about all present volumes
   podman_volume_info:
 
@@ -36,7 +37,8 @@ EXAMPLES = """
   podman_volume_info:
     name: specific_volume
 """
-RETURN = """
+
+RETURN = r"""
 volumes:
     description: Facts from all or specified volumes
     returned: always
