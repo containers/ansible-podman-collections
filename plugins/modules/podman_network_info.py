@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 module: podman_network_info
 author:
   - "Sagi Shnaidman (@sshnaidm)"
@@ -29,15 +29,17 @@ options:
     default: 'podman'
     type: str
 """
-EXAMPLES = """
+
+EXAMPLES = r"""
 - name: Gather info about all present networks
-  podman_network_info:
+  containers.podman.podman_network_info:
 
 - name: Gather info about specific network
-  podman_network_info:
+  containers.podman.podman_network_info:
     name: podman
 """
-RETURN = """
+
+RETURN = r"""
 networks:
     description: Facts from all or specified networks
     returned: always

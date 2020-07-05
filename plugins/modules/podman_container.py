@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 module: podman_container
 author:
   - "Sagi Shnaidman (@sshnaidm)"
@@ -127,7 +127,7 @@ options:
     type: path
   cmd_args:
     description:
-      - Any additionl command options you want to pass to podman command,
+      - Any additional command options you want to pass to podman command,
         cmd_args - ['--other-param', 'value']
         Be aware module doesn't support idempotency if this is set.
     type: list
@@ -464,7 +464,7 @@ options:
     type: str
   pids_limit:
     description:
-      - Tune the container's pids limit. Set -1 to have unlimited pids for the
+      - Tune the container's PIDs limit. Set -1 to have unlimited PIDs for the
         container.
     type: str
   pod:
@@ -529,8 +529,9 @@ options:
   rootfs:
     description:
       - If true, the first argument refers to an exploded container on the file
-        system. The dafault is false.
+        system. The default is false.
     type: bool
+    default: False
   security_opt:
     description:
       - Security Options. For example security_opt "seccomp=unconfined"
@@ -630,22 +631,22 @@ options:
     type: str
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Run container
-  podman_container:
+  containers.podman.podman_container:
     name: container
     image: quay.io/bitnami/wildfly
     state: started
 
 - name: Create a data container
-  podman_container:
+  containers.podman.podman_container:
     name: mydata
     image: busybox
     volume:
       - /tmp/data
 
 - name: Re-create a redis container
-  podman_container:
+  containers.podman.podman_container:
     name: myredis
     image: redis
     command: redis-server --appendonly yes
@@ -657,7 +658,7 @@ EXAMPLES = """
       - mydata
 
 - name: Restart a container
-  podman_container:
+  containers.podman.podman_container:
     name: myapplication
     image: redis
     state: started
@@ -674,19 +675,19 @@ EXAMPLES = """
         BOOLEAN_KEY: "yes"
 
 - name: Container present
-  podman_container:
+  containers.podman.podman_container:
     name: mycontainer
     state: present
     image: ubuntu:14.04
     command: "sleep 1d"
 
 - name: Stop a container
-  podman_container:
+  containers.podman.podman_container:
     name: mycontainer
     state: stopped
 
 - name: Start 4 load-balanced containers
-  podman_container:
+  containers.podman.podman_container:
     name: "container{{ item }}"
     recreate: yes
     image: someuser/anotherappimage
@@ -694,19 +695,19 @@ EXAMPLES = """
   with_sequence: count=4
 
 - name: remove container
-  podman_container:
+  containers.podman.podman_container:
     name: ohno
     state: absent
 
 - name: Writing output
-  podman_container:
+  containers.podman.podman_container:
     name: myservice
     image: busybox
     log_options: path=/var/log/container/mycontainer.json
     log_driver: k8s-file
 """
 
-RETURN = """
+RETURN = r"""
 container:
     description:
       - Facts representing the current state of the container. Matches the
@@ -826,6 +827,7 @@ container:
     }'
 """
 # noqa: F402
+
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
 import yaml  # noqa: F402
@@ -2091,10 +2093,10 @@ def main():
         argument_spec=yaml.safe_load(DOCUMENTATION)['options'],
         mutually_exclusive=(
             ['no_hosts', 'etc_hosts'],
-
         ),
         supports_check_mode=True,
     )
+
     # work on input vars
     if module.params['state'] in ['started', 'present'] and \
             not module.params['image']:
