@@ -141,9 +141,9 @@ class Connection(ConnectionBase):
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._podman("mount")
         if rc != 0:
-            display.v("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
+            display.vvvv("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
         elif not os.listdir(self._mount_point.strip()):
-            display.v("Failed to mount container with CGroups2: empty dir %s" % self._mount_point.strip())
+            display.vvvv("Failed to mount container with CGroups2: empty dir %s" % self._mount_point.strip())
             self._mount_point = None
         else:
             self._mount_point = self._mount_point.strip()
