@@ -95,7 +95,7 @@ class Connection(ConnectionBase):
         """
         run podman executable
 
-        :param cmd: podman's command to execute (str)
+        :param cmd: podman's command to execute (str or list)
         :param cmd_args: list of arguments to pass to the command (list of str/bytes)
         :param in_data: data passed to podman's stdin
         :return: return code, stdout, stderr
