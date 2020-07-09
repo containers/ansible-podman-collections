@@ -60,7 +60,7 @@
     name: idempotency
     state: present
     volumes:
-      - /opt:/somedir
+      - /opt/://somedir
     command: 1h
   register: test5
 
@@ -142,8 +142,8 @@
     state: present
     command: 1h
     volumes:
-      - "/opt:/anotherdir"
-      - "local_volume1:/data"
+      - "/opt//:/anotherdir"
+      - "local_volume1:/data/"
   register: test11
 
 - name: check test11
