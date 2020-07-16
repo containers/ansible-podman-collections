@@ -12,6 +12,19 @@
     state: present
     command: 1h
 
+- name: Run container as is again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+  register: info_a
+
+- name: Check that it is not recreated
+  assert:
+    that:
+      - info_a is not changed
+
 - name: Run containers with ulimits
   containers.podman.podman_container:
     image: "{{ idem_image }}"

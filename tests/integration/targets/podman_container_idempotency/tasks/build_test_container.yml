@@ -19,6 +19,7 @@
     path: /tmp/usr_img
     build:
       format: docker
+      extra_args: --cgroup-manager=cgroupfs
 
 - name: Build test docker image for root user
   containers.podman.podman_image:

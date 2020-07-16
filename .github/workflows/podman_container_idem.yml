@@ -25,8 +25,8 @@ on:
 jobs:
 
   test_podman_container_idem:
-    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os.vm || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
+    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     defaults:
       run:
         shell: bash
@@ -35,11 +35,15 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          # - git+https://github.com/ansible/ansible.git@devel
+          # - git+https://github.com/ansible/ansible.git@stable-2.10
         os:
-          - vm: ubuntu-latest
+          - ubuntu-latest
         python-version:
           - 3.7
+        include:
+          - os: ubuntu-20.04
+            "ansible-version": git+https://github.com/ansible/ansible.git@devel
+            "python-version": 3.7
     steps:
 
       - name: Check out repository
@@ -66,18 +70,21 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Ansible ${{ matrix.ansible-version }}
-        run: python -m pip install --user '${{ matrix.ansible-version }}'
+        run: python3 -m pip install --user --force-reinstall --upgrade '${{ matrix.ansible-version }}'
 
       - name: Build and install the collection tarball
         run: |
           rm -rf /tmp/just_new_collection
           ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
           ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
-          sudo ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
 
       - name: Run idempotency tests for podman container
         run: |
           export PATH=~/.local/bin:$PATH
+
+          echo "Run ansible version"
+          command -v ansible
+          ansible --version
 
           if [[ '${{ matrix.ansible-version }}'  == 'git+https://github.com/ansible/ansible.git@devel' ]]; then
             export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg

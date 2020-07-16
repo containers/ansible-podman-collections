@@ -15,7 +15,8 @@ exit_code=0
 CMD="ANSIBLE_ROLES_PATH=${CURWD}/../tests/integration/targets \
     ${ANSIBLECMD:-ansible-playbook} \
     -i localhost, -c local --diff \
-    ci/playbooks/containers/${TEST2RUN}.yml"
+    ci/playbooks/containers/${TEST2RUN}.yml \
+    -e ansible_python_interpreter=$(command -v python)"
 
 bash -c "$CMD -vv" || exit_code=$?
 if [[ "$exit_code" != 0 ]]; then

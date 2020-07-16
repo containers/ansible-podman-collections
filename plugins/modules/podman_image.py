@@ -119,6 +119,10 @@ DOCUMENTATION = r'''
           description: Remove intermediate containers after a successful build
           type: bool
           default: True
+        extra_args:
+          description:
+            - Extra args to pass to build, if executed. Does not idempotently check for new build args.
+          type: str
     push_args:
       description: Arguments that control pushing images.
       type: dict
@@ -376,6 +380,7 @@ RETURN = r"""
 
 import json
 import re
+import shlex
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
@@ -574,6 +579,10 @@ class PodmanImageManager(object):
             cred_string = '{user}:{password}'.format(user=self.username, password=self.password)
             args.extend(['--creds', cred_string])
 
+        extra_args = self.build.get('extra_args')
+        if extra_args:
+            args.extend([arg for arg in shlex.split(extra_args)])
+
         args.append(self.path)
 
         rc, out, err = self._run(args, ignore_errors=True)
@@ -714,6 +723,7 @@ def main():
                     cache=dict(type='bool', default=True),
                     rm=dict(type='bool', default=True),
                     volume=dict(type='list', elements='str'),
+                    extra_args=dict(type='str'),
                 ),
             ),
             push_args=dict(

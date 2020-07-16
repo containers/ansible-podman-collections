@@ -65,10 +65,10 @@ jobs:
           path: .cache/collection-tarballs
 
   test-podman-connection:
-    name: Podman connection VM ${{ matrix.os.vm || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
+    name: Podman connection VM ${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
     needs:
       - build-collection-artifact-connection-tests
-    runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     defaults:
       run:
         shell: bash
@@ -77,17 +77,22 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@devel
+          - git+https://github.com/ansible/ansible.git@stable-2.10
         os:
-          - vm: ubuntu-latest
-          #- vm: ubuntu-16.04
-          #- vm: macos-latest
+          - ubuntu-latest
+          #- ubuntu-20.04
+          #- ubuntu-16.04
+          #- macos-latest
         python-version:
           #- 3.8
           - 3.7
           #- 3.6
           #- 3.5
           #- 2.7
+        include:
+          - os: ubuntu-20.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.7
     steps:
 
       - name: Check out repository
@@ -153,10 +158,10 @@ jobs:
         shell: bash
 
   test-buildah-connection:
-    name: Buildah connection VM ${{ matrix.os.vm || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
+    name: Buildah connection VM ${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.ansible-version }}
     needs:
       - build-collection-artifact-connection-tests
-    runs-on: ${{ matrix.os.vm || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     defaults:
       run:
         shell: bash
@@ -165,17 +170,22 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@devel
+          - git+https://github.com/ansible/ansible.git@stable-2.10
         os:
-          - vm: ubuntu-latest
-          #- vm: ubuntu-16.04
-          #- vm: macos-latest
+          - ubuntu-latest
+          #- ubuntu-20.04
+          #- ubuntu-16.04
+          #- macos-latest
         python-version:
           #- 3.8
           - 3.7
           #- 3.6
           #- 3.5
           #- 2.7
+        include:
+          - os: ubuntu-20.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.7
     steps:
 
       - name: Check out repository

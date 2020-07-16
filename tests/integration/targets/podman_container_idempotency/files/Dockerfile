@@ -8,6 +8,8 @@ ARG build_arg
 ENV password root
 ENV username root
 
+WORKDIR /work
+
 RUN adduser -D user && \
 	adduser -D user2
 
@@ -17,10 +19,8 @@ RUN chmod a+rwx /start
 
 EXPOSE 80
 EXPOSE 8080/tcp
-
 VOLUME ["/data", "/data2"]
 USER user
-WORKDIR /work
 STOPSIGNAL 9
 
 # problem with OS w/o systemd
