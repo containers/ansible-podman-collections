@@ -531,7 +531,6 @@ options:
       - If true, the first argument refers to an exploded container on the file
         system. The default is false.
     type: bool
-    default: False
   security_opt:
     description:
       - Security Options. For example security_opt "seccomp=unconfined"
@@ -1274,7 +1273,6 @@ class PodmanDefaults:
             # "memory_swappiness": -1,
             "no_hosts": False,
             # libpod issue with networks in inspection
-            "network": ["default"],
             "oom_score_adj": 0,
             "pid": "",
             "privileged": False,
@@ -1597,14 +1595,26 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('memory_reservation', before, after)
 
     def diffparam_network(self):
-        before = [self.info['hostconfig']['networkmode']]
-        # TODO(sshnaidm): special case for rootful container > v2.
-        # Discover later what is running user and set default accordingly
-        if not self.module.params['network'] and (
-                before == ['bridge'] or self.params['pod']):
+        net_mode_before = self.info['hostconfig']['networkmode']
+        net_mode_after = ''
+        before = list(self.info['networksettings'].get('networks', {}))
+        after = self.params['network'] or []
+        # If container is in pod and no networks are provided
+        if not self.module.params['network'] and self.params['pod']:
             after = before
-        else:
-            after = self.params['network']
+            return self._diff_update_and_compare('network', before, after)
+        # Check special network modes
+        if after in [['bridge'], ['host'], ['slirp4netns'], ['none']]:
+            net_mode_after = after[0]
+        # If changes are only for network mode and container has no networks
+        if net_mode_after and not before:
+            # Remove differences between v1 and v2
+            net_mode_after = net_mode_after.replace('bridge', 'default')
+            net_mode_after = net_mode_after.replace('slirp4netns', 'default')
+            net_mode_before = net_mode_before.replace('bridge', 'default')
+            net_mode_before = net_mode_before.replace('slirp4netns', 'default')
+            return self._diff_update_and_compare('network', net_mode_before, net_mode_after)
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('network', before, after)
 
     def diffparam_no_hosts(self):
@@ -1799,8 +1809,7 @@ class PodmanContainerDiff:
             if dff_func():
                 if fail_fast:
                     return True
-                else:
-                    different = True
+                different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
             if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:

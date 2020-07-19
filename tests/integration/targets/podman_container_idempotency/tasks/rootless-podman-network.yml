@@ -1,0 +1,103 @@
+- name: Test podman rootful container with networks
+  block:
+
+    - name: Remove container rootlessnet
+      containers.podman.podman_container:
+        name: rootlessnet
+        state: absent
+
+    - name: Run container with no specified networks
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+
+    - name: Run container again with no specified networks
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+      register: info
+
+    - name: Check info for no specified networks
+      assert:
+        that:
+          - info is not changed
+
+    - name: Run container with network mode host
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network: host
+      register: info1
+
+    - name: Check info with network mode host
+      assert:
+        that:
+          - info1 is changed
+
+    - name: Run container with network mode host again
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network: host
+      register: info2
+
+    - name: Check info with network mode host again
+      assert:
+        that:
+          - info2 is not changed
+
+    - name: Run container without network at all
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network: none
+      register: info3
+
+    - name: Check info without network at all
+      assert:
+        that:
+          - info3 is changed
+
+    - name: Run container without network at all again
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network: none
+      register: info4
+
+    - name: Check info without network at all again
+      assert:
+        that:
+          - info4 is not changed
+
+    - name: Run container with default network mode
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+      register: info5
+
+    - name: Check info with default network mode
+      assert:
+        that:
+          - info5 is changed
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_container:
+        name: rootlessnet
+        state: absent
