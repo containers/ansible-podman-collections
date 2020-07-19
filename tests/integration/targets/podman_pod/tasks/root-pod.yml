@@ -1,0 +1,120 @@
+- name: Test podman rootful pod
+  block:
+
+    - name: Discover cgroups version
+      shell: podman info | grep cgroupVersion | awk {'print $2'}
+      register: cgroups
+
+    - name: Set cgroups version
+      set_fact:
+        cgroups_version: "{{ cgroups.stdout }}"
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: absent
+
+    - name: Create and start pod
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+
+    - name: Create and start pod
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+      register: pod1_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod1_info is not changed
+
+    - name: Add DNS to pod
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+        dns:
+          - 1.1.1.1
+      register: pod2_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod2_info is changed
+
+    - name: Remove DNS from pod
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+      register: pod3_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod3_info is changed
+
+    - name: Create network newnet
+      command: podman network create newnet --subnet 10.90.90.0/24
+
+    - name: Create network net2
+      command: podman network create net2 --subnet 10.70.70.0/24
+
+    - name: Start pod with networks
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+        network: net2,newnet
+      register: pod4_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod4_info is changed
+
+    - name: Start pod with networks again
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+        network: newnet,net2
+      register: pod5_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod5_info is not changed
+
+    - name: Start pod with one network
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+        network: net2
+      register: pod6_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod6_info is changed
+
+    - name: Start pod without networks
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: started
+      register: pod7_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod7_info is changed
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "rootpod"
+        state: absent
+
+    - name: Delete all existing pods
+      shell: |
+        podman pod rm -fa;
+      ignore_errors: true

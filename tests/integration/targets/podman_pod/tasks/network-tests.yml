@@ -1,0 +1,39 @@
+---
+- name: Remove pod nettest
+  become: true
+  containers.podman.podman_pod:
+    name: nettest
+    state: absent
+
+- name: Run pod with {{ item.first_net }}
+  become: true
+  containers.podman.podman_pod:
+    name: nettest
+    state: started
+    network: "{{ item.first_net }}"
+
+- name: Run pod again with {{ item.first_net }}
+  become: true
+  containers.podman.podman_pod:
+    name: nettest
+    state: started
+    network: "{{ item.first_net }}"
+  register: info
+
+- name: Check info that not changed
+  assert:
+    that:
+      - info is not changed
+
+- name: Run pod changed from {{ item.first_net }} to {{ item.next_net }}
+  become: true
+  containers.podman.podman_pod:
+    name: nettest
+    state: started
+    network: "{{ item.next_net }}"
+  register: info1
+
+- name: Check info
+  assert:
+    that:
+      - info1 is changed

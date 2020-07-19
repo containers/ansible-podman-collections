@@ -1,0 +1,48 @@
+- name: Test podman rootful pod
+  block:
+
+    - name: Remove pods
+      containers.podman.podman_pod:
+        name: "rootnetpod"
+        state: absent
+
+    - name: Create network testnet
+      command: podman network create testnet --subnet 10.91.91.0/24
+
+    - name: Create network anothernet
+      command: podman network create anothernet --subnet 10.71.71.0/24
+
+    - name: List current networks
+      command: podman network ls
+
+    - name: Set test data
+      set_fact:
+        testdata:
+          - first_net: host
+            next_net: bridge
+          - first_net: bridge
+            next_net: host
+          - first_net: anothernet
+            next_net: testnet
+          - first_net: testnet
+            next_net: testnet,anothernet
+          - first_net: testnet,anothernet
+            next_net: anothernet
+          - first_net: testnet,anothernet
+            next_net: bridge
+          - first_net: testnet,anothernet
+            next_net: host
+          - first_net: host
+            next_net: anothernet
+          - first_net: bridge
+            next_net: anothernet,testnet
+
+    - include_tasks: network-tests.yml
+      loop: "{{ testdata }}"
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "rootnetpod"
+        state: absent
