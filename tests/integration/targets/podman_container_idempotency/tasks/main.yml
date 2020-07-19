@@ -25,3 +25,12 @@
   args:
     apply:
       become: true
+
+- name: Test idempotency for root network containers
+  include_tasks: root-podman-network.yml
+  args:
+    apply:
+      become: true
+
+- name: Test idempotency for root network containers
+  include_tasks: rootless-podman-network.yml

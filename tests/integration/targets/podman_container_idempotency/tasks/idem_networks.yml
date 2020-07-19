@@ -1,0 +1,40 @@
+- name: Remove container netcontainer
+  containers.podman.podman_container:
+    name: netcontainer
+    state: absent
+
+- name: Run container with {{ item.first_net }}
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: present
+    network: "{{ item.first_net }}"
+
+- name: Run container again with {{ item.first_net }}
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: present
+    network: "{{ item.first_net }}"
+  register: info
+
+- name: Check info for 2 runs of {{ item.first_net }}
+  assert:
+    that:
+      - info is not changed
+
+- name: Run changed container with {{ item.next_net }}
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: present
+    network: "{{ item.next_net }}"
+  register: info1
+
+- name: Check info
+  assert:
+    that:
+      - info1 is changed
