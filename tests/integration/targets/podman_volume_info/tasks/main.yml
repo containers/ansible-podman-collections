@@ -9,8 +9,9 @@
         volume_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
 
     - name: Make sure volume doesn't exist
-      command: podman volume rm {{ volume_name }}
-      ignore_errors: true
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
@@ -25,7 +26,9 @@
           - nonexist is failed
 
     - name: Make sure volume exists
-      command: podman volume create {{ volume_name }}
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
@@ -44,7 +47,9 @@
         podman_inspect_result: "{{ podman_inspect.stdout | from_json }}"
 
     - name: Cleanup
-      command: podman volume rm {{ volume_name }}
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
 
     - name: Make checks
       assert:
@@ -55,5 +60,6 @@
   always:
 
     - name: Cleanup
-      command: podman volume rm {{ volume_name }}
-      ignore_errors: true
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
