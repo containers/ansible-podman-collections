@@ -1,11 +1,26 @@
-name: Collection release and publish
+name: Collection release and publish DRY RUN
 on:
   push:
-    tags:
-      - '[0-9]+\.[0-9]+\.[0-9]+'
+    paths:
+      - '.github/workflows/collection-publish.yml'
+      - '.github/workflows/collection-publish-dry-run.yml'
+      - 'contrib/build.py'
+      - 'contrib/publish-requirements.txt'
+      - 'contrib/publish.sh'
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '.github/workflows/collection-publish.yml'
+      - '.github/workflows/collection-publish-dry-run.yml'
+      - 'contrib/build.py'
+      - 'contrib/publish-requirements.txt'
+      - 'contrib/publish.sh'
+  schedule:
+    - cron: 3 0 * * *  # Run daily at 0:03 UTC
 
 jobs:
-  publish-collection-artifact:
+  publish-collection-artifact-dry-run:
     name: Publish
     runs-on: ${{ matrix.runner-os }}
     strategy:
@@ -37,7 +52,7 @@ jobs:
         run: >-
           ./contrib/publish.sh ${GITHUB_REF##*/}
         env:
-          API_GALAXY_TOKEN: ${{ secrets.API_GALAXY_TOKEN }}
+          API_GALAXY_TOKEN: noreallykeyhere
           GALAXY_PATH: /tmp/new-ansible/bin/ansible-galaxy
           PYTHON_PATH: /tmp/new-ansible/bin/python
-          DRYRUN: 0
+          DRYRUN: 1
