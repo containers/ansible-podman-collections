@@ -1,0 +1,115 @@
+- name: Test podman_volume
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Generate random value for volume name
+      set_fact:
+        volume_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
+
+    - name: Get missing volume info
+      containers.podman.podman_volume_info:
+        name: "{{ volume_name }}"
+      register: info
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info is failed
+
+    - name: Create volume
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+      register: vol
+
+    - name: Get existing volume info
+      containers.podman.podman_volume_info:
+        name: "{{ volume_name }}"
+      register: info1
+
+    - name: Check info
+      assert:
+        that:
+          - info1 | length > 1
+          - info1.volumes.0.Name == volume_name
+          - vol is changed
+
+    - name: Create volume again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info2
+
+    - name: Check info
+      assert:
+        that:
+          - info2 is not changed
+
+    - name: Create volume with labels
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        label:
+          key: val
+          nokey: noval
+      register: info3
+
+    - name: Check info
+      assert:
+        that:
+          - info3 is changed
+
+    - name: Create volume with labels again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        label:
+          key: val
+          nokey: noval
+      register: info4
+
+    - name: Check info
+      assert:
+        that:
+          - info4 is not changed
+
+    - name: Create volume w/o labels
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info5
+
+    - name: Check info
+      assert:
+        that:
+          - info5 is changed
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
+
+    - name: Get existing volume info
+      containers.podman.podman_volume_info:
+        name: "{{ volume_name }}"
+      register: info10
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info10 is failed
+
+  always:
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: absent
