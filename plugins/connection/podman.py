@@ -183,6 +183,14 @@ class Connection(ConnectionBase):
                         "Failed to copy file from %s to %s in container %s\n%s" % (
                             in_path, out_path, self._container_id, stderr)
                     )
+            if self.user:
+                rc, stdout, stderr = self._podman(
+                    "exec", ["chown", self.user, out_path])
+            if rc != 0:
+                raise AnsibleError(
+                    "Failed to chown file %s for user %s in container %s\n%s" % (
+                        out_path, self.user, self._container_id, stderr)
+                )
         else:
             real_out_path = self._mount_point + to_bytes(out_path, errors='surrogate_or_strict')
             shutil.copyfile(
