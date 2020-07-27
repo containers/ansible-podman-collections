@@ -1,0 +1,69 @@
+# Other settings
+- name: Remove leftovers from other tests
+  containers.podman.podman_container:
+    name: idempotency
+    state: absent
+
+- name: Run container
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+
+- name: Run container again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test1
+
+- name: Check info when running container again
+  assert:
+    that: test1 is not changed
+
+- name: Run container with environment vars
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test2
+
+- name: Check info with environment vars
+  assert:
+    that: test2 is changed
+
+- name: Run container with environment vars again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test3
+
+- name: Check info with environment vars again
+  assert:
+    that: test3 is not changed
+
+- name: Run container with changed environment vars
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value1"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test4
+
+- name: Check info with changed environment vars
+  assert:
+    that: test4 is changed
