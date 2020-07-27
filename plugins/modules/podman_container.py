@@ -1490,7 +1490,7 @@ class PodmanContainerDiff:
     # Limited idempotency, it can't guess default values
     def diffparam_env(self):
         env_before = self.info['config']['env'] or {}
-        before = {i.split("=")[0]: i.split("=")[1] for i in env_before}
+        before = {i.split("=")[0]: "=".join(i.split("=")[1:]) for i in env_before}
         after = before.copy()
         if self.params['env']:
             after.update({

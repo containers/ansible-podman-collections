@@ -255,7 +255,7 @@
           - "9001:8000"
         workdir: "/bin"
         env:
-          FOO: bar
+          FOO: bar=1
           BAR: foo
           TEST: 1
           BOOL: false
@@ -296,7 +296,7 @@
             (test.container['HostConfig']['DNSSearch'] is defined and
             test.container['HostConfig']['DNSSearch'] == ['example.com'])
           # test environment variables
-          - "'FOO=bar' in test.container['Config']['Env']"
+          - "'FOO=bar=1' in test.container['Config']['Env']"
           - "'BAR=foo' in test.container['Config']['Env']"
           - "'TEST=1' in test.container['Config']['Env']"
           - "'BOOL=False' in test.container['Config']['Env']"
