@@ -1546,7 +1546,7 @@ class PodmanContainerDiff:
     def diffparam_ipc(self):
         before = self.info['hostconfig']['ipcmode']
         after = self.params['ipc']
-        if self.params['pod'] and not after:
+        if self.params['pod'] and not self.module.params['ipc']:
             after = before
         return self._diff_update_and_compare('ipc', before, after)
 
@@ -1755,7 +1755,7 @@ class PodmanContainerDiff:
     def diffparam_uts(self):
         before = self.info['hostconfig']['utsmode']
         after = self.params['uts']
-        if self.params['pod'] and not after:
+        if self.params['pod'] and not self.module.params['uts']:
             after = before
         return self._diff_update_and_compare('uts', before, after)
 

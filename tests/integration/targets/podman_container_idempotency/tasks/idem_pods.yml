@@ -1,0 +1,75 @@
+- name: Remove testing pod
+  containers.podman.podman_pod:
+    name: testpod
+    state: absent
+
+- name: Remove test container
+  containers.podman.podman_container:
+    name: testpod_container1
+    state: absent
+
+- name: Create pod
+  containers.podman.podman_pod:
+    name: testpod
+    publish:
+      - "11111:11111"
+
+- name: Start test container
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: testpod_container1
+    pod: testpod
+    state: started
+    label:
+      key: value
+    env:
+      test: test2
+    volumes:
+          - /tmp:/data
+
+- name: Start test container again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: testpod_container1
+    pod: testpod
+    state: started
+    label:
+      key: value
+    env:
+      test: test2
+    volumes:
+          - /tmp:/data
+  register: info
+
+- name: Check starting container
+  assert:
+    that: info is not changed
+
+- name: Start test container changed
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: testpod_container1
+    pod: testpod
+    state: started
+  register: info1
+
+- name: Check starting container changed
+  assert:
+    that: info1 is changed
+
+- name: Start test container again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: testpod_container1
+    pod: testpod
+    state: started
+  register: info2
+
+- name: Check starting container again
+  assert:
+    that: info2 is not changed
+
+- name: Remove testing pod
+  containers.podman.podman_pod:
+    name: testpod
+    state: absent
