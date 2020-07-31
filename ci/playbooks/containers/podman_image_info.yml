@@ -4,3 +4,5 @@
   tasks:
     - include_role:
         name: podman_image_info
+      vars:
+        ansible_python_interpreter: "{{ _ansible_python_interpreter }}"
