@@ -1,0 +1,620 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2020 Red Hat
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+__metaclass__ = type
+
+
+class ModuleDocFragment(object):
+
+    # Standard openstack documentation fragment
+    DOCUMENTATION = r'''
+options:
+  name:
+    description:
+      - Name of the container
+    required: True
+    type: str
+  executable:
+    description:
+      - Path to C(podman) executable if it is not in the C($PATH) on the
+        machine running C(podman)
+    default: 'podman'
+    type: str
+  state:
+    description:
+      - I(absent) - A container matching the specified name will be stopped and
+        removed.
+      - I(present) - Asserts the existence of a container matching the name and
+        any provided configuration parameters. If no container matches the
+        name, a container will be created. If a container matches the name but
+        the provided configuration does not match, the container will be
+        updated, if it can be. If it cannot be updated, it will be removed and
+        re-created with the requested config. Image version will be taken into
+        account when comparing configuration. Use the recreate option to force
+        the re-creation of the matching container.
+      - I(started) - Asserts there is a running container matching the name and
+        any provided configuration. If no container matches the name, a
+        container will be created and started. Use recreate to always re-create
+        a matching container, even if it is running. Use force_restart to force
+        a matching container to be stopped and restarted.
+      - I(stopped) - Asserts that the container is first I(present), and then
+        if the container is running moves it to a stopped state.
+    type: str
+    default: started
+    choices:
+      - absent
+      - present
+      - stopped
+      - started
+  image:
+    description:
+      - Repository path (or image name) and tag used to create the container.
+        If an image is not found, the image will be pulled from the registry.
+        If no tag is included, C(latest) will be used.
+      - Can also be an image ID. If this is the case, the image is assumed to
+        be available locally.
+    type: str
+  annotation:
+    description:
+      - Add an annotation to the container. The format is key value, multiple
+        times.
+    type: dict
+  authfile:
+    description:
+      - Path of the authentication file. Default is
+        ``${XDG_RUNTIME_DIR}/containers/auth.json``
+        (Not available for remote commands) You can also override the default
+        path of the authentication file by setting the ``REGISTRY_AUTH_FILE``
+        environment variable. ``export REGISTRY_AUTH_FILE=path``
+    type: path
+  blkio_weight:
+    description:
+      - Block IO weight (relative weight) accepts a weight value between 10 and
+        1000
+    type: int
+  blkio_weight_device:
+    description:
+      - Block IO weight (relative device weight, format DEVICE_NAME[:]WEIGHT).
+    type: dict
+  cap_add:
+    description:
+      - List of capabilities to add to the container.
+    type: list
+    elements: str
+  cap_drop:
+    description:
+      - List of capabilities to drop from the container.
+    type: list
+    elements: str
+  cgroup_parent:
+    description:
+      - Path to cgroups under which the cgroup for the container will be
+        created.
+        If the path is not absolute, the path is considered to be relative to
+        the cgroups path of the init process. Cgroups will be created if they
+        do not already exist.
+    type: path
+  cgroupns:
+    description:
+      - Path to cgroups under which the cgroup for the container will be
+        created.
+    type: str
+  cgroups:
+    description:
+      - Determines whether the container will create CGroups.
+        Valid values are enabled and disabled, which the default being enabled.
+        The disabled option will force the container to not create CGroups,
+        and thus conflicts with CGroup options cgroupns and cgroup-parent.
+    type: str
+    choices:
+      - default
+      - disabled
+  cidfile:
+    description:
+      - Write the container ID to the file
+    type: path
+  cmd_args:
+    description:
+      - Any additional command options you want to pass to podman command,
+        cmd_args - ['--other-param', 'value']
+        Be aware module doesn't support idempotency if this is set.
+    type: list
+    elements: str
+  conmon_pidfile:
+    description:
+      - Write the pid of the conmon process to a file.
+        conmon runs in a separate process than Podman,
+        so this is necessary when using systemd to restart Podman containers.
+    type: path
+  command:
+    description:
+      - Override command of container. Can be a string or a list.
+    type: raw
+  cpu_period:
+    description:
+      - Limit the CPU real-time period in microseconds
+    type: int
+  cpu_rt_period:
+    description:
+      - Limit the CPU real-time period in microseconds.
+        Limit the container's Real Time CPU usage. This flag tell the kernel to
+        restrict the container's Real Time CPU usage to the period you specify.
+    type: int
+  cpu_rt_runtime:
+    description:
+      - Limit the CPU real-time runtime in microseconds.
+        This flag tells the kernel to limit the amount of time in a given CPU
+        period Real Time tasks may consume.
+    type: int
+  cpu_shares:
+    description:
+      - CPU shares (relative weight)
+    type: int
+  cpus:
+    description:
+      - Number of CPUs. The default is 0.0 which means no limit.
+    type: str
+  cpuset_cpus:
+    description:
+      - CPUs in which to allow execution (0-3, 0,1)
+    type: str
+  cpuset_mems:
+    description:
+      - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
+        effective on NUMA systems.
+    type: str
+  detach:
+    description:
+      - Run container in detach mode
+    type: bool
+    default: True
+  debug:
+    description:
+      - Return additional information which can be helpful for investigations.
+    type: bool
+    default: False
+  detach_keys:
+    description:
+      - Override the key sequence for detaching a container. Format is a single
+        character or ctrl-value
+    type: str
+  device:
+    description:
+      - Add a host device to the container.
+        The format is <device-on-host>[:<device-on-container>][:<permissions>]
+        (e.g. device /dev/sdc:/dev/xvdc:rwm)
+    type: list
+    elements: str
+  device_read_bps:
+    description:
+      - Limit read rate (bytes per second) from a device
+        (e.g. device-read-bps /dev/sda:1mb)
+    type: list
+  device_read_iops:
+    description:
+      - Limit read rate (IO per second) from a device
+        (e.g. device-read-iops /dev/sda:1000)
+    type: list
+  device_write_bps:
+    description:
+      - Limit write rate (bytes per second) to a device
+        (e.g. device-write-bps /dev/sda:1mb)
+    type: list
+  device_write_iops:
+    description:
+      - Limit write rate (IO per second) to a device
+        (e.g. device-write-iops /dev/sda:1000)
+    type: list
+  dns:
+    description:
+      - Set custom DNS servers
+    type: list
+    elements: str
+  dns_option:
+    description:
+      - Set custom DNS options
+    type: str
+  dns_search:
+    description:
+      - Set custom DNS search domains (Use dns_search with '' if you don't wish
+        to set the search domain)
+    type: str
+  entrypoint:
+    description:
+      - Overwrite the default ENTRYPOINT of the image
+    type: str
+  env:
+    description:
+      - Set environment variables.
+        This option allows you to specify arbitrary environment variables that
+        are available for the process that will be launched inside of the
+        container.
+    type: dict
+  env_file:
+    description:
+      - Read in a line delimited file of environment variables
+    type: path
+  env_host:
+    description:
+      - Use all current host environment variables in container.
+        Defaults to false.
+    type: bool
+  etc_hosts:
+    description:
+      - Dict of host-to-IP mappings, where each host name is a key in the
+        dictionary. Each host name will be added to the container's
+        ``/etc/hosts`` file.
+    type: dict
+    aliases:
+      - add_hosts
+  expose:
+    description:
+      - Expose a port, or a range of ports (e.g. expose "3300-3310") to set up
+        port redirection on the host system.
+    type: list
+    elements: str
+    aliases:
+      - exposed
+      - exposed_ports
+  force_restart:
+    description:
+      - Force restart of container.
+    type: bool
+    default: False
+    aliases:
+      - restart
+  gidmap:
+    description:
+      - Run the container in a new user namespace using the supplied mapping.
+    type: str
+  group_add:
+    description:
+      - Add additional groups to run as
+    type: list
+  healthcheck:
+    description:
+      - Set or alter a healthcheck command for a container.
+    type: str
+  healthcheck_interval:
+    description:
+      - Set an interval for the healthchecks
+        (a value of disable results in no automatic timer setup)
+        (default "30s")
+    type: str
+  healthcheck_retries:
+    description:
+      - The number of retries allowed before a healthcheck is considered to be
+        unhealthy. The default value is 3.
+    type: int
+  healthcheck_start_period:
+    description:
+      - The initialization time needed for a container to bootstrap.
+        The value can be expressed in time format like 2m3s. The default value
+        is 0s
+    type: str
+  healthcheck_timeout:
+    description:
+      - The maximum time allowed to complete the healthcheck before an interval
+        is considered failed. Like start-period, the value can be expressed in
+        a time format such as 1m22s. The default value is 30s
+    type: str
+  hostname:
+    description:
+      - Container host name. Sets the container host name that is available
+        inside the container.
+    type: str
+  http_proxy:
+    description:
+      - By default proxy environment variables are passed into the container if
+        set for the podman process. This can be disabled by setting the
+        http_proxy option to false. The environment variables passed in
+        include http_proxy, https_proxy, ftp_proxy, no_proxy, and also the
+        upper case versions of those.
+        Defaults to true
+    type: bool
+  image_volume:
+    description:
+      - Tells podman how to handle the builtin image volumes.
+        The options are bind, tmpfs, or ignore (default bind)
+    type: str
+    choices:
+      - 'bind'
+      - 'tmpfs'
+      - 'ignore'
+  image_strict:
+    description:
+      - Whether to compare images in idempotency by taking into account a full
+        name with registry and namespaces.
+    type: bool
+    default: False
+  init:
+    description:
+      - Run an init inside the container that forwards signals and reaps
+        processes.
+    type: str
+  init_path:
+    description:
+      - Path to the container-init binary.
+    type: str
+  interactive:
+    description:
+      - Keep STDIN open even if not attached. The default is false.
+        When set to true, keep stdin open even if not attached.
+        The default is false.
+    type: bool
+  ip:
+    description:
+      - Specify a static IP address for the container, for example
+        '10.88.64.128'.
+        Can only be used if no additional CNI networks to join were specified
+        via 'network:', and if the container is not joining another container's
+        network namespace via 'network container:<name|id>'.
+        The address must be within the default CNI network's pool
+        (default 10.88.0.0/16).
+    type: str
+  ipc:
+    description:
+      - Default is to create a private IPC namespace (POSIX SysV IPC) for the
+        container
+    type: str
+  kernel_memory:
+    description:
+      - Kernel memory limit
+        (format <number>[<unit>], where unit = b, k, m or g)
+        Note - idempotency is supported for integers only.
+    type: str
+  label:
+    description:
+      - Add metadata to a container, pass dictionary of label names and values
+    type: dict
+  label_file:
+    description:
+      - Read in a line delimited file of labels
+    type: str
+  log_driver:
+    description:
+      - Logging driver. Used to set the log driver for the container.
+        For example log_driver "k8s-file".
+    type: str
+    choices:
+      - k8s-file
+      - journald
+      - json-file
+  log_opt:
+    description:
+      - Logging driver specific options. Used to set the path to the container
+        log file. For example log_opt
+        "path=/var/log/container/mycontainer.json"
+    type: str
+    aliases:
+      - log_options
+  memory:
+    description:
+      - Memory limit (format 10k, where unit = b, k, m or g)
+        Note - idempotency is supported for integers only.
+    type: str
+  memory_reservation:
+    description:
+      - Memory soft limit (format 100m, where unit = b, k, m or g)
+        Note - idempotency is supported for integers only.
+    type: str
+  memory_swap:
+    description:
+      - A limit value equal to memory plus swap. Must be used with the -m
+        (--memory) flag.
+        The swap LIMIT should always be larger than -m (--memory) value.
+        By default, the swap LIMIT will be set to double the value of --memory
+        Note - idempotency is supported for integers only.
+    type: str
+  memory_swappiness:
+    description:
+      - Tune a container's memory swappiness behavior. Accepts an integer
+        between 0 and 100.
+    type: int
+  mount:
+    description:
+      - Attach a filesystem mount to the container. bind or tmpfs
+        For example mount
+        "type=bind,source=/path/on/host,destination=/path/in/container"
+    type: str
+  network:
+    description:
+      - Set the Network mode for the container
+        * bridge create a network stack on the default bridge
+        * none no networking
+        * container:<name|id> reuse another container's network stack
+        * host use the podman host network stack.
+        * <network-name>|<network-id> connect to a user-defined network
+        * ns:<path> path to a network namespace to join
+        * slirp4netns use slirp4netns to create a user network stack.
+          This is the default for rootless containers
+    type: list
+    elements: str
+    aliases:
+      - net
+  no_hosts:
+    description:
+      - Do not create /etc/hosts for the container
+        Default is false.
+    type: bool
+  oom_kill_disable:
+    description:
+      - Whether to disable OOM Killer for the container or not.
+        Default is false.
+    type: bool
+  oom_score_adj:
+    description:
+      - Tune the host's OOM preferences for containers (accepts -1000 to 1000)
+    type: int
+  pid:
+    description:
+      - Set the PID mode for the container
+    type: str
+  pids_limit:
+    description:
+      - Tune the container's PIDs limit. Set -1 to have unlimited PIDs for the
+        container.
+    type: str
+  pod:
+    description:
+      - Run container in an existing pod.
+        If you want podman to make the pod for you, preference the pod name
+        with "new:"
+    type: str
+  privileged:
+    description:
+      - Give extended privileges to this container. The default is false.
+    type: bool
+  publish:
+    description:
+      - Publish a container's port, or range of ports, to the host.
+        Format - ip:hostPort:containerPort | ip::containerPort |
+        hostPort:containerPort | containerPort
+    type: list
+    elements: str
+    aliases:
+      - ports
+      - published
+      - published_ports
+  publish_all:
+    description:
+      - Publish all exposed ports to random ports on the host interfaces. The
+        default is false.
+    type: bool
+  read_only:
+    description:
+      - Mount the container's root filesystem as read only. Default is false
+    type: bool
+  read_only_tmpfs:
+    description:
+      - If container is running in --read-only mode, then mount a read-write
+        tmpfs on /run, /tmp, and /var/tmp. The default is true
+    type: bool
+  recreate:
+    description:
+      - Use with present and started states to force the re-creation of an
+        existing container.
+    type: bool
+    default: False
+  restart_policy:
+    description:
+      - Restart policy to follow when containers exit.
+        Restart policy will not take effect if a container is stopped via the
+        podman kill or podman stop commands. Valid values are
+        * no - Do not restart containers on exit
+        * on-failure[:max_retries] - Restart containers when they exit with a
+          non-0 exit code, retrying indefinitely
+          or until the optional max_retries count is hit
+        * always - Restart containers when they exit, regardless of status,
+          retrying indefinitely
+    type: str
+  rm:
+    description:
+      - Automatically remove the container when it exits. The default is false.
+    type: bool
+    aliases:
+      - remove
+  rootfs:
+    description:
+      - If true, the first argument refers to an exploded container on the file
+        system. The default is false.
+    type: bool
+  security_opt:
+    description:
+      - Security Options. For example security_opt "seccomp=unconfined"
+    type: list
+    elements: str
+  shm_size:
+    description:
+      - Size of /dev/shm. The format is <number><unit>. number must be greater
+        than 0.
+        Unit is optional and can be b (bytes), k (kilobytes), m(megabytes), or
+        g (gigabytes).
+        If you omit the unit, the system uses bytes. If you omit the size
+        entirely, the system uses 64m
+    type: str
+  sig_proxy:
+    description:
+      - Proxy signals sent to the podman run command to the container process.
+        SIGCHLD, SIGSTOP, and SIGKILL are not proxied. The default is true.
+    type: bool
+  stop_signal:
+    description:
+      - Signal to stop a container. Default is SIGTERM.
+    type: int
+  stop_timeout:
+    description:
+      - Timeout (in seconds) to stop a container. Default is 10.
+    type: int
+  subgidname:
+    description:
+      - Run the container in a new user namespace using the map with 'name' in
+        the /etc/subgid file.
+    type: str
+  subuidname:
+    description:
+      - Run the container in a new user namespace using the map with 'name' in
+        the /etc/subuid file.
+    type: str
+  sysctl:
+    description:
+      - Configure namespaced kernel parameters at runtime
+    type: dict
+  systemd:
+    description:
+      - Run container in systemd mode. The default is true.
+    type: bool
+  tmpfs:
+    description:
+      - Create a tmpfs mount. For example tmpfs
+        "/tmp" "rw,size=787448k,mode=1777"
+    type: dict
+  tty:
+    description:
+      - Allocate a pseudo-TTY. The default is false.
+    type: bool
+  uidmap:
+    description:
+      - Run the container in a new user namespace using the supplied mapping.
+    type: list
+  ulimit:
+    description:
+      - Ulimit options
+    type: list
+  user:
+    description:
+      - Sets the username or UID used and optionally the groupname or GID for
+        the specified command.
+    type: str
+  userns:
+    description:
+      - Set the user namespace mode for the container.
+        It defaults to the PODMAN_USERNS environment variable.
+        An empty value means user namespaces are disabled.
+    type: str
+  uts:
+    description:
+      - Set the UTS mode for the container
+    type: str
+  volume:
+    description:
+      - Create a bind mount. If you specify, volume /HOST-DIR:/CONTAINER-DIR,
+        podman bind mounts /HOST-DIR in the host to /CONTAINER-DIR in the
+        podman container.
+    type: list
+    elements: str
+    aliases:
+      - volumes
+  volumes_from:
+    description:
+      - Mount volumes from the specified container(s).
+    type: list
+    elements: str
+  workdir:
+    description:
+      - Working directory inside the container.
+        The default working directory for running binaries within a container
+        is the root directory (/).
+    type: str
+'''

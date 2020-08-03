@@ -314,8 +314,8 @@ containers:
         ]
 """
 
-import json
-from ansible.module_utils.basic import AnsibleModule
+import json  # noqa: F402
+from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 
 
 def get_containers_facts(module, executable, name):
