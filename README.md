@@ -52,7 +52,7 @@ and modules name that you want to use:
           - mydata
 ```
 
-Or you can add full namepsace and collecton name in the `collections` element:
+Or you can add full namespace and collection name in the `collections` element:
 
 ```yaml
 ---
