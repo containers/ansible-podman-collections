@@ -598,12 +598,16 @@
 
 - name: Test idempotency for root pods
   include_tasks: root-pod.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
   args:
     apply:
       become: true
 
 - name: Test idempotency for root pods and networks
   include_tasks: net-pod.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
   args:
     apply:
       become: true

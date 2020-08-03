@@ -28,12 +28,16 @@
 
 - name: Test idempotency for root containers
   include_tasks: root-podman.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
   args:
     apply:
       become: true
 
 - name: Test idempotency for root network containers
   include_tasks: root-podman-network.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
   args:
     apply:
       become: true
