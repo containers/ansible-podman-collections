@@ -1,0 +1,123 @@
+releases:
+  1.2.0:
+    release_date: '2020-08-17'
+    changes:
+      release_summary: Add changelog file.
+      minor_changes:
+        - Add changelog file to collection.
+
+  1.1.4:
+    release_date: '2020-08-06'
+    changes:
+      release_summary: Pip install and minor fixes.
+      minor_changes:
+        - Add pip installation for podman collection.
+
+  1.1.3:
+    release_date: '2020-07-29'
+    changes:
+      release_summary: Idempotency fixes for podman containers.
+      bugfixes:
+        - podman_container - Fix idempotency for case with = in env
+        - podman_container - Fix issue with idempotency uts, ipc with pod
+
+  1.1.2:
+    release_date: '2020-07-26'
+    changes:
+      release_summary: Urgent fix for podman connection plugin.
+      bugfixes:
+        - podman_connection - Chown file for users when copy them to container
+
+  1.1.1:
+    release_date: '2020-07-22'
+    changes:
+      release_summary: New modules for volumes management.
+      minor_changes:
+        - Create podman_volume module for volumes management
+      bugfixes:
+        - podman_volume_info - Improve podman volume info tests with new module
+    modules:
+      - name: podman_volume
+        description: Manage Podman volumes
+        namespace: ''
+
+  1.1.0:
+    release_date: '2020-07-19'
+    changes:
+      release_summary: New modules for pods management.
+      minor_changes:
+        - Add podman pod and pod info modules
+      bugfixes:
+        - podman_container - Fix idempotency for networks and add tests
+    modules:
+      - name: podman_pod
+        description: Manage Podman pods
+        namespace: ''
+      - name: podman_pod_info
+        description: Retrieve information about Podman pods
+        namespace: ''
+
+  1.0.5:
+    release_date: '2020-07-09'
+    changes:
+      release_summary: Idempotency and another bugfixes for podman connection plugin.
+      bugfixes:
+        - podman_container - Improve idempotency for volumes with slashesAdd idempotency for ulimits and tests
+        - podman_container - Improve ports idempotency and support UDP
+        - podman_connection - Add check for empty dir for podman connection mount
+        - podman_connection - Increase verbosity for mount failure messages
+
+  1.0.4:
+    release_date: '2020-06-29'
+    changes:
+      release_summary: Idempotency and Podman v2 fixes
+      bugfixes:
+        - podman_container - Add idempotency for ulimits and tests
+        - podman_container - Fix idempotency for podman > 2 versions
+
+  1.0.3:
+    release_date: '2020-06-08'
+    changes:
+      release_summary: Relicense under GPLv3 and clean up modules
+      minor_changes:
+        - Relicense under GPLv3 and clean up modules
+
+  1.0.2:
+    release_date: '2020-06-05'
+    changes:
+      release_summary: Idempotency fixes
+      bugfixes:
+        - podman_container - Add idempotency for existing local volumes
+
+  1.0.1:
+    release_date: '2020-06-01'
+    changes:
+      release_summary: Idempotency and images improvements
+      bugfixes:
+        - podman_container - Add inspect of image and user idempotency
+        - podman_image - Add option for tls_verify=false for images
+
+  1.0.0:
+    release_date: '2020-05-20'
+    changes:
+      release_summary: Initial release of collection with new modules
+      minor_changes:
+        - buildah_connection - added Buildah connection rootless
+        - podman_connection - add user flags before container id in podman exec
+        - buildah_connection - add support of specific user
+      bugfixes:
+        - podman_image - only set changed=true if there is a new image
+        - podman_image - use correct option for remove_signatures flag
+        - podman_connection - Run pause=false w/o message condition
+        - podman_container - Fix idempotency issues with workdir and volumes
+        - podman_container - Improve idempotency of podman_container in uts, ipc, networks, cpu_shares
+        - podman_container - Add idempotency for user and stop signal
+        - podman_container - Fix image, healthcheck and other idempotency
+        - buildah_connection - Fix buildah debug output for py2
+    modules:
+      - name: podman_container
+        description: Manage Podman containers
+        namespace: ''
+      - name: podman_network_info module
+        description: Retrieve information about Podman networks
+        namespace: ''
