@@ -1,4 +1,18 @@
 releases:
+
+  1.3.0:
+    release_date: '2020-09-03'
+    changes:
+      release_summary: New podman_network module and bugfixes
+      minor_changes:
+        - Create podman_network module for podman networks management
+      bugfixes:
+        - podman_volume - Fix return data from podman_volume module
+    modules:
+      - name: podman_network
+        description: Manage Podman networks
+        namespace: ''
+
   1.2.0:
     release_date: '2020-08-17'
     changes:
