@@ -95,6 +95,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+      register: delete
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
@@ -106,6 +107,7 @@
       assert:
         that:
           - info10 is failed
+          - delete.volume == {}
 
   always:
 

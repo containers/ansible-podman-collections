@@ -380,7 +380,7 @@ class PodmanVolumeManager:
         self.volume = PodmanVolume(self.module, self.name)
 
     def update_volume_result(self, changed=True):
-        """Inspect the current container, update results with last info, exit.
+        """Inspect the current volume, update results with last info, exit.
 
         Keyword Arguments:
             changed {bool} -- whether any action was performed
@@ -430,7 +430,7 @@ class PodmanVolumeManager:
             self.volume.delete()
             self.results['actions'].append('deleted %s' % self.volume.name)
             self.results.update({'changed': True})
-        self.results.update({'container': {},
+        self.results.update({'volume': {},
                              'podman_actions': self.volume.actions})
         self.module.exit_json(**self.results)
 
