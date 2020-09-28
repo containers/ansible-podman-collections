@@ -342,8 +342,8 @@ options:
   init:
     description:
       - Run an init inside the container that forwards signals and reaps
-        processes.
-    type: str
+        processes. The default is false.
+    type: bool
   init_path:
     description:
       - Path to the container-init binary.
@@ -1067,7 +1067,9 @@ class PodmanModuleParams:
         return c + ['--image-volume', self.params['image_volume']]
 
     def addparam_init(self, c):
-        return c + ['--init', self.params['init']]
+        if self.params['init']:
+            c += ['--init']
+        return c
 
     def addparam_init_path(self, c):
         return c + ['--init-path', self.params['init_path']]
