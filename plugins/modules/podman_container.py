@@ -343,7 +343,7 @@ options:
     description:
       - Run an init inside the container that forwards signals and reaps
         processes. The default is false.
-    type: boolean
+    type: bool
   init_path:
     description:
       - Path to the container-init binary.
