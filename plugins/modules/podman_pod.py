@@ -223,6 +223,7 @@ import yaml  # noqa: F402
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 
 class PodmanPodModuleParams:
     """Creates list of arguments for podman CLI command.
@@ -390,8 +391,8 @@ class PodmanPodDiff:
         self.module = module
         self.version = podman_version
         self.default_dict = None
-        self.info = yaml.safe_load(json.dumps(info).lower())
-        self.infra_info = yaml.safe_load(json.dumps(infra_info).lower())
+        self.info = lower_keys(info)
+        self.infra_info = lower_keys(infra_info)
         self.params = self.defaultize()
         self.diff = {'before': {}, 'after': {}}
         self.non_idempotent = {}
