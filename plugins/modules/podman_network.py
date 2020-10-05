@@ -151,6 +151,7 @@ from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 
+
 class PodmanNetworkModuleParams:
     """Creates list of arguments for podman CLI command.
 
