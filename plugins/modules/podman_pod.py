@@ -218,7 +218,6 @@ EXAMPLES = '''
 # noqa: F402
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
-import yaml  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
