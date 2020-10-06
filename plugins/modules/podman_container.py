@@ -19,7 +19,8 @@ notes: []
 description:
   - Start, stop, restart and manage Podman containers
 requirements:
-  - "Podman installed on host"
+  - podman
+  - pyyaml
 options:
   name:
     description:
