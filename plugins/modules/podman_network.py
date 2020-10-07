@@ -143,6 +143,7 @@ network:
 # noqa: F402
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
+import os  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -271,8 +272,21 @@ class PodmanNetworkDiff:
         return False
 
     def diffparam_disable_dns(self):
-        before = not bool([k for k in self.info['plugins'] if 'domainname' in k])
+        dns_installed = False
+        for f in [
+            '/usr/libexec/cni/dnsname',
+            '/usr/lib/cni/dnsname',
+            '/opt/cni/bin/dnsname',
+            '/opt/bridge/bin/dnsname'
+        ]:
+            if os.path.exists(f):
+                dns_installed = True
+        before = not bool(
+            [k for k in self.info['plugins'] if 'domainname' in k])
         after = self.params['disable_dns']
+        # If dnsname plugin is not installed, default is disable_dns=True
+        if not dns_installed and self.module.params['disable_dns'] is None:
+            after = True
         return self._diff_update_and_compare('disable_dns', before, after)
 
     def diffparam_driver(self):
