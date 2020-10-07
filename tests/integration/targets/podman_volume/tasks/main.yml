@@ -91,6 +91,45 @@
         that:
           - info5 is changed
 
+    - name: Create volume with options
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "device=/dev/something"
+          - "type=ext4"
+      register: info6
+
+    - name: Check info
+      assert:
+        that:
+          - info6 is changed
+
+    - name: Create volume with options again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "device=/dev/something"
+          - "type=ext4"
+      register: info7
+
+    - name: Check info
+      assert:
+        that:
+          - info7 is not changed
+
+    - name: Create volume w/o options
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info8
+
+    - name: Check info
+      assert:
+        that:
+          - info8 is changed
+
     - name: Make sure volume doesn't exist
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
