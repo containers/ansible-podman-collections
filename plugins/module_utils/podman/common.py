@@ -17,3 +17,12 @@ def run_podman_command(module, executable='podman', args=None, expected_rc=0, ig
             msg='Failed to run {command} {args}: {err}'.format(
                 command=command, args=args, err=err))
     return rc, out, err
+
+
+def lower_keys(x):
+    if isinstance(x, list):
+        return [lower_keys(v) for v in x]
+    elif isinstance(x, dict):
+        return dict((k.lower(), lower_keys(v)) for k, v in x.items())
+    else:
+        return x
