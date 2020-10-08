@@ -483,6 +483,8 @@ options:
       - Publish a container's port, or range of ports, to the host.
         Format - ip:hostPort:containerPort | ip::containerPort |
         hostPort:containerPort | containerPort
+        In case of only containerPort is set, the hostPort will chosen
+        randomly by Podman.
     type: list
     elements: str
     aliases:
