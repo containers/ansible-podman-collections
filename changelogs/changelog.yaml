@@ -1,5 +1,17 @@
 releases:
 
+  1.3.1:
+    release_date: '2020-10-09'
+    changes:
+      release_summary: bugfixes
+      bugfixes:
+        - podman_container - Fix init option it's boolean not string
+        - multiple modules - fix diff calculation for lower/upper cases
+        - podman_network - Check if dnsname plugin installed for CNI
+        - podman_volume - Set options for a volume as list and fix idempotency
+        - podman_container - Add note about containerPort setting
+        - podman_container - Remove pyyaml from requirements
+
   1.3.0:
     release_date: '2020-09-03'
     changes:
