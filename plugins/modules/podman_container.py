@@ -20,7 +20,6 @@ description:
   - Start, stop, restart and manage Podman containers
 requirements:
   - podman
-  - pyyaml
 options:
   name:
     description:
@@ -832,7 +831,6 @@ container:
 
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
-import yaml  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -2110,7 +2108,116 @@ class PodmanManager:
 
 def main():
     module = AnsibleModule(
-        argument_spec=yaml.safe_load(DOCUMENTATION)['options'],
+        argument_spec=dict(
+            name=dict(required=True, type='str'),
+            executable=dict(default='podman', type='str'),
+            state=dict(type='str', default='started', choices=[
+                'absent', 'present', 'stopped', 'started']),
+            image=dict(type='str'),
+            annotation=dict(type='dict'),
+            authfile=dict(type='path'),
+            blkio_weight=dict(type='int'),
+            blkio_weight_device=dict(type='dict'),
+            cap_add=dict(type='list', elements='str'),
+            cap_drop=dict(type='list', elements='str'),
+            cgroup_parent=dict(type='path'),
+            cgroupns=dict(type='str'),
+            cgroups=dict(type='str', choices=['default', 'disabled']),
+            cidfile=dict(type='path'),
+            cmd_args=dict(type='list', elements='str'),
+            conmon_pidfile=dict(type='path'),
+            command=dict(type='raw'),
+            cpu_period=dict(type='int'),
+            cpu_rt_period=dict(type='int'),
+            cpu_rt_runtime=dict(type='int'),
+            cpu_shares=dict(type='int'),
+            cpus=dict(type='str'),
+            cpuset_cpus=dict(type='str'),
+            cpuset_mems=dict(type='str'),
+            detach=dict(type='bool', default=True),
+            debug=dict(type='bool', default=False),
+            detach_keys=dict(type='str'),
+            device=dict(type='list', elements='str'),
+            device_read_bps=dict(type='list'),
+            device_read_iops=dict(type='list'),
+            device_write_bps=dict(type='list'),
+            device_write_iops=dict(type='list'),
+            dns=dict(type='list', elements='str'),
+            dns_option=dict(type='str'),
+            dns_search=dict(type='str'),
+            entrypoint=dict(type='str'),
+            env=dict(type='dict'),
+            env_file=dict(type='path'),
+            env_host=dict(type='bool'),
+            etc_hosts=dict(type='dict', aliases=['add_hosts']),
+            expose=dict(type='list', elements='str', aliases=[
+                'exposed', 'exposed_ports']),
+            force_restart=dict(type='bool', default=False,
+                               aliases=['restart']),
+            gidmap=dict(type='str'),
+            group_add=dict(type='list'),
+            healthcheck=dict(type='str'),
+            healthcheck_interval=dict(type='str'),
+            healthcheck_retries=dict(type='int'),
+            healthcheck_start_period=dict(type='str'),
+            healthcheck_timeout=dict(type='str'),
+            hostname=dict(type='str'),
+            http_proxy=dict(type='bool'),
+            image_volume=dict(type='str', choices=['bind', 'tmpfs', 'ignore']),
+            image_strict=dict(type='bool', default=False),
+            init=dict(type='bool'),
+            init_path=dict(type='str'),
+            interactive=dict(type='bool'),
+            ip=dict(type='str'),
+            ipc=dict(type='str'),
+            kernel_memory=dict(type='str'),
+            label=dict(type='dict'),
+            label_file=dict(type='str'),
+            log_driver=dict(type='str', choices=[
+                            'k8s-file', 'journald', 'json-file']),
+            log_opt=dict(type='str', aliases=['log_options']),
+            memory=dict(type='str'),
+            memory_reservation=dict(type='str'),
+            memory_swap=dict(type='str'),
+            memory_swappiness=dict(type='int'),
+            mount=dict(type='str'),
+            network=dict(type='list', elements='str', aliases=['net']),
+            no_hosts=dict(type='bool'),
+            oom_kill_disable=dict(type='bool'),
+            oom_score_adj=dict(type='int'),
+            pid=dict(type='str'),
+            pids_limit=dict(type='str'),
+            pod=dict(type='str'),
+            privileged=dict(type='bool'),
+            publish=dict(type='list', elements='str', aliases=[
+                'ports', 'published', 'published_ports']),
+            publish_all=dict(type='bool'),
+            read_only=dict(type='bool'),
+            read_only_tmpfs=dict(type='bool'),
+            recreate=dict(type='bool', default=False),
+            restart_policy=dict(type='str'),
+            rm=dict(type='bool', aliases=['remove']),
+            rootfs=dict(type='bool'),
+            security_opt=dict(type='list', elements='str'),
+            shm_size=dict(type='str'),
+            sig_proxy=dict(type='bool'),
+            stop_signal=dict(type='int'),
+            stop_timeout=dict(type='int'),
+            subgidname=dict(type='str'),
+            subuidname=dict(type='str'),
+            sysctl=dict(type='dict'),
+            systemd=dict(type='bool'),
+            tmpfs=dict(type='dict'),
+            tty=dict(type='bool'),
+            uidmap=dict(type='list'),
+            ulimit=dict(type='list'),
+            user=dict(type='str'),
+            userns=dict(type='str'),
+            uts=dict(type='str'),
+            volume=dict(type='list', elements='str', aliases=['volumes']),
+            volumes_from=dict(type='list', elements='str'),
+            workdir=dict(type='str')
+        ),
         mutually_exclusive=(
             ['no_hosts', 'etc_hosts'],
         ),
