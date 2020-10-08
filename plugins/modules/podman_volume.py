@@ -46,8 +46,9 @@ options:
     required: false
   options:
     description:
-      - Set driver specific options.
-    type: str
+      - Set driver specific options. For example 'device=tpmfs', 'type=tmpfs'.
+    type: list
+    elements: str
     required: false
   executable:
     description:
@@ -92,6 +93,9 @@ EXAMPLES = '''
     label:
       key: value
       key2: value2
+    options:
+      - "device=/dev/loop1"
+      - "type=ext4"
 '''
 # noqa: F402
 import json  # noqa: F402
@@ -168,7 +172,9 @@ class PodmanVolumeModuleParams:
         return c + ['--driver', self.params['driver']]
 
     def addparam_options(self, c):
-        return c + ['--opt', self.params['options']]
+        for opt in self.params['options']:
+            c += ['--opt', opt]
+        return c
 
 
 class PodmanVolumeDefaults:
@@ -226,7 +232,9 @@ class PodmanVolumeDiff:
 
     def diffparam_options(self):
         before = self.info['options'] if 'options' in self.info else {}
+        before = ["=".join((k, v)) for k, v in before.items()]
         after = self.params['options']
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('options', before, after)
 
     def is_different(self):
@@ -444,7 +452,7 @@ def main():
             name=dict(type='str', required=True),
             label=dict(type='dict', required=False),
             driver=dict(type='str', required=False),
-            options=dict(type='str', required=False),
+            options=dict(type='list', elements='str', required=False),
             recreate=dict(type='bool', default=False),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
