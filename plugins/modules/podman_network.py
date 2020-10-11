@@ -72,7 +72,7 @@ options:
       - absent
   recreate:
     description:
-      - Recreate volume even if exists.
+      - Recreate network even if exists.
     type: bool
     default: false
 """
