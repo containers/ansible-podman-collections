@@ -60,7 +60,7 @@ jobs:
           - 3.7
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.10
+          - ansible<2.11
           - git+https://github.com/ansible/ansible.git@devel
         python-version:
           - 2.7
@@ -70,10 +70,18 @@ jobs:
             runner-python-version: 3.7
             ansible-version: git+https://github.com/ansible/ansible.git@devel
             python-version: 3.7
+          - runner-os: ubuntu-latest
+            runner-python-version: 3.7
+            ansible-version: ansible<2.11
+            python-version: 3.7
         include:
           - runner-os: ubuntu-20.04
-            runner-python-version: 3.7
+            runner-python-version: 3.8
             ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.8
+          - runner-os: ubuntu-20.04
+            runner-python-version: 3.7
+            ansible-version: ansible<2.11
             python-version: 3.7
 
     steps:
