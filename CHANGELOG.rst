@@ -4,6 +4,20 @@ Ansible Podman modules and plugins Release Notes
 
 .. contents:: Topics
 
+
+v1.3.2
+======
+
+Release Summary
+---------------
+
+bugfixes
+
+Bugfixes
+--------
+
+- podman_container - Fix signals case for podman_container
+
 v1.3.1
 ======
 
