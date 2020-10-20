@@ -1715,10 +1715,10 @@ class PodmanContainerDiff:
         }
         before = str(self.info['config']['stopsignal'])
         if not before.isdigit():
-            before = signals[before]
+            before = signals[before.lower()]
         after = str(self.params['stop_signal'])
         if not after.isdigit():
-            after = signals[after]
+            after = signals[after.lower()]
         return self._diff_update_and_compare('stop_signal', before, after)
 
     def diffparam_tty(self):
