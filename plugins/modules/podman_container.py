@@ -1248,8 +1248,7 @@ class PodmanModuleParams:
 
 
 class PodmanDefaults:
-    def __init__(self, module, image_info, podman_version):
-        self.module = module
+    def __init__(self, image_info, podman_version):
         self.version = podman_version
         self.image_info = image_info
         self.defaults = {
@@ -1305,8 +1304,9 @@ class PodmanDefaults:
 
 
 class PodmanContainerDiff:
-    def __init__(self, module, info, image_info, podman_version):
+    def __init__(self, module, module_params, info, image_info, podman_version):
         self.module = module
+        self.module_params = module_params
         self.version = podman_version
         self.default_dict = None
         self.info = lower_keys(info)
@@ -1321,12 +1321,12 @@ class PodmanContainerDiff:
     def defaultize(self):
         params_with_defaults = {}
         self.default_dict = PodmanDefaults(
-            self.module, self.image_info, self.version).default_dict()
-        for p in self.module.params:
-            if self.module.params[p] is None and p in self.default_dict:
+            self.image_info, self.version).default_dict()
+        for p in self.module_params:
+            if self.module_params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
             else:
-                params_with_defaults[p] = self.module.params[p]
+                params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
     def _diff_update_and_compare(self, param_name, before, after):
@@ -1339,7 +1339,7 @@ class PodmanContainerDiff:
     def diffparam_annotation(self):
         before = self.info['config']['annotations'] or {}
         after = before.copy()
-        if self.module.params['annotation'] is not None:
+        if self.module_params['annotation'] is not None:
             after.update(self.params['annotation'])
         return self._diff_update_and_compare('annotation', before, after)
 
@@ -1356,7 +1356,7 @@ class PodmanContainerDiff:
 
     def diffparam_blkio_weight_device(self):
         before = self.info['hostconfig']['blkioweightdevice']
-        if before == [] and self.module.params['blkio_weight_device'] is None:
+        if before == [] and self.module_params['blkio_weight_device'] is None:
             after = []
         else:
             after = self.params['blkio_weight_device']
@@ -1365,9 +1365,9 @@ class PodmanContainerDiff:
     def diffparam_cap_add(self):
         before = self.info['effectivecaps'] or []
         after = []
-        if self.module.params['cap_add'] is not None:
+        if self.module_params['cap_add'] is not None:
             after += ["cap_" + i.lower()
-                      for i in self.module.params['cap_add']]
+                      for i in self.module_params['cap_add']]
         after += before
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('cap_add', before, after)
@@ -1375,8 +1375,8 @@ class PodmanContainerDiff:
     def diffparam_cap_drop(self):
         before = self.info['effectivecaps'] or []
         after = before[:]
-        if self.module.params['cap_drop'] is not None:
-            for c in ["cap_" + i.lower() for i in self.module.params['cap_drop']]:
+        if self.module_params['cap_drop'] is not None:
+            for c in ["cap_" + i.lower() for i in self.module_params['cap_drop']]:
                 if c in after:
                     after.remove(c)
         before, after = sorted(list(set(before))), sorted(list(set(after)))
@@ -1404,7 +1404,7 @@ class PodmanContainerDiff:
 
     def diffparam_command(self):
         # TODO(sshnaidm): to inspect image to get the default command
-        if self.module.params['command'] is not None:
+        if self.module_params['command'] is not None:
             before = self.info['config']['cmd']
             after = self.params['command']
             if isinstance(after, str):
@@ -1416,7 +1416,7 @@ class PodmanContainerDiff:
 
     def diffparam_conmon_pidfile(self):
         before = self.info['conmonpidfile']
-        if self.module.params['conmon_pidfile'] is None:
+        if self.module_params['conmon_pidfile'] is None:
             after = before
         else:
             after = self.params['conmon_pidfile']
@@ -1551,7 +1551,7 @@ class PodmanContainerDiff:
     def diffparam_ipc(self):
         before = self.info['hostconfig']['ipcmode']
         after = self.params['ipc']
-        if self.params['pod'] and not self.module.params['ipc']:
+        if self.params['pod'] and not self.module_params['ipc']:
             after = before
         return self._diff_update_and_compare('ipc', before, after)
 
@@ -1573,7 +1573,7 @@ class PodmanContainerDiff:
     # Parameter has limited idempotency, unable to guess the default log_path
     def diffparam_log_opt(self):
         before = self.info['logpath']
-        if self.module.params['log_opt'] in [None, '']:
+        if self.module_params['log_opt'] in [None, '']:
             after = before
         else:
             after = self.params['log_opt'].split("=")[1]
@@ -1588,7 +1588,7 @@ class PodmanContainerDiff:
         # By default it's twice memory parameter
         before = str(self.info['hostconfig']['memoryswap'])
         after = self.params['memory_swap']
-        if (self.module.params['memory_swap'] is None
+        if (self.module_params['memory_swap'] is None
                 and self.params['memory'] != 0
                 and self.params['memory'].isdigit()):
             after = str(int(self.params['memory']) * 2)
@@ -1605,7 +1605,7 @@ class PodmanContainerDiff:
         before = list(self.info['networksettings'].get('networks', {}))
         after = self.params['network'] or []
         # If container is in pod and no networks are provided
-        if not self.module.params['network'] and self.params['pod']:
+        if not self.module_params['network'] and self.params['pod']:
             after = before
             return self._diff_update_and_compare('network', before, after)
         # Check special network modes
@@ -1760,7 +1760,7 @@ class PodmanContainerDiff:
     def diffparam_uts(self):
         before = self.info['hostconfig']['utsmode']
         after = self.params['uts']
-        if self.params['pod'] and not self.module.params['uts']:
+        if self.params['pod'] and not self.module_params['uts']:
             after = before
         return self._diff_update_and_compare('uts', before, after)
 
@@ -1817,12 +1817,12 @@ class PodmanContainerDiff:
                 different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:
+            if self.module_params[p] is not None and self.module_params[p] not in [{}, [], '']:
                 different = True
         return different
 
 
-def ensure_image_exists(module, image):
+def ensure_image_exists(module, image, module_params):
     """If image is passed, ensure it exists, if not - pull it or fail.
 
     Arguments:
@@ -1833,7 +1833,7 @@ def ensure_image_exists(module, image):
         list -- list of image actions - if it pulled or nothing was done
     """
     image_actions = []
-    module_exec = module.params['executable']
+    module_exec = module_params['executable']
     if not image:
         return image_actions
     rc, out, err = module.run_command([module_exec, 'image', 'exists', image])
@@ -1853,7 +1853,7 @@ class PodmanContainer:
     Manages podman container, inspects it and checks its current state
     """
 
-    def __init__(self, module, name):
+    def __init__(self, module, name, module_params):
         """Initialize PodmanContainer class.
 
         Arguments:
@@ -1863,6 +1863,7 @@ class PodmanContainer:
 
         super(PodmanContainer, self).__init__()
         self.module = module
+        self.module_params = module_params
         self.name = name
         self.stdout, self.stderr = '', ''
         self.info = self.get_info()
@@ -1880,6 +1881,7 @@ class PodmanContainer:
         """Check if container is different."""
         diffcheck = PodmanContainerDiff(
             self.module,
+            self.module_params,
             self.info,
             self.get_image_info(),
             self.version)
@@ -1908,22 +1910,22 @@ class PodmanContainer:
         """Inspect container and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'container', b'inspect', self.name])
+            [self.module_params['executable'], b'container', b'inspect', self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def get_image_info(self):
         """Inspect container image and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'image', b'inspect', self.module.params['image']])
+            [self.module_params['executable'], b'image', b'inspect', self.module_params['image']])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'--version'])
+            [self.module_params['executable'], b'--version'])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(msg="%s run failed!" % self.module.params['executable'])
+            self.module.fail_json(msg="%s run failed!" % self.module_params['executable'])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -1934,17 +1936,17 @@ class PodmanContainer:
                             delete
         """
         b_command = PodmanModuleParams(action,
-                                       self.module.params,
+                                       self.module_params,
                                        self.version,
                                        self.module,
                                        ).construct_command_from_params()
-        full_cmd = " ".join([self.module.params['executable']]
+        full_cmd = " ".join([self.module_params['executable']]
                             + [to_native(i) for i in b_command])
         self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
             rc, out, err = self.module.run_command(
-                [self.module.params['executable'], b'container'] + b_command,
+                [self.module_params['executable'], b'container'] + b_command,
                 expand_user_and_vars=False)
             self.stdout = out
             self.stderr = err
@@ -1990,7 +1992,7 @@ class PodmanManager:
     Defines according to parameters what actions should be applied to container
     """
 
-    def __init__(self, module):
+    def __init__(self, module, params):
         """Initialize PodmanManager class.
 
         Arguments:
@@ -2005,17 +2007,18 @@ class PodmanManager:
             'actions': [],
             'container': {},
         }
-        self.name = self.module.params['name']
+        self.module_params = params
+        self.name = self.module_params['name']
         self.executable = \
-            self.module.get_bin_path(self.module.params['executable'],
+            self.module.get_bin_path(self.module_params['executable'],
                                      required=True)
-        self.image = self.module.params['image']
-        image_actions = ensure_image_exists(self.module, self.image)
+        self.image = self.module_params['image']
+        image_actions = ensure_image_exists(self.module, self.image, self.module_params)
         self.results['actions'] += image_actions
-        self.state = self.module.params['state']
-        self.restart = self.module.params['force_restart']
-        self.recreate = self.module.params['recreate']
-        self.container = PodmanContainer(self.module, self.name)
+        self.state = self.module_params['state']
+        self.restart = self.module_params['force_restart']
+        self.recreate = self.module_params['recreate']
+        self.container = PodmanContainer(self.module, self.name, self.module_params)
 
     def update_container_result(self, changed=True):
         """Inspect the current container, update results with last info, exit.
@@ -2031,9 +2034,8 @@ class PodmanManager:
                             stdout=out, stderr=err)
         if self.container.diff:
             self.results.update({'diff': self.container.diff})
-        if self.module.params['debug']:
+        if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
-        self.module.exit_json(**self.results)
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
@@ -2090,7 +2092,6 @@ class PodmanManager:
             self.results.update({'changed': True})
         self.results.update({'container': {},
                              'podman_actions': self.container.actions})
-        self.module.exit_json(**self.results)
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
@@ -2102,8 +2103,7 @@ class PodmanManager:
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(msg="Unexpected logic error happened, "
-                                  "please contact maintainers ASAP!")
+        return self.results
 
 
 def main():
@@ -2230,7 +2230,8 @@ def main():
         module.fail_json(msg="State '%s' required image to be configured!" %
                              module.params['state'])
 
-    PodmanManager(module).execute()
+    results = PodmanManager(module, module.params).execute()
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
