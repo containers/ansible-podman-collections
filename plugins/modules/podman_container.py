@@ -392,6 +392,18 @@ options:
       - k8s-file
       - journald
       - json-file
+  log_level:
+    description:
+      - Logging level for Podman. Log messages above specified level
+        ("debug"|"info"|"warn"|"error"|"fatal"|"panic") (default "error")
+    type: str
+    choices:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+      - panic
   log_opt:
     description:
       - Logging driver specific options. Used to set the path to the container
@@ -1104,6 +1116,9 @@ class PodmanModuleParams:
     def addparam_log_opt(self, c):
         return c + ['--log-opt', self.params['log_opt']]
 
+    def addparam_log_level(self, c):
+        return c + ['--log-level', self.params['log_level']]
+
     def addparam_memory(self, c):
         return c + ['--memory', self.params['memory']]
 
@@ -1271,6 +1286,7 @@ class PodmanDefaults:
             "ipc": "",
             "kernelmemory": "0",
             "log_driver": "k8s-file",
+            "log_level": "error",
             "memory": "0",
             "memory_swap": "0",
             "memory_reservation": "0",
@@ -1569,6 +1585,15 @@ class PodmanContainerDiff:
         before = self.info['hostconfig']['logconfig']['type']
         after = self.params['log_driver']
         return self._diff_update_and_compare('log_driver', before, after)
+
+    def diffparam_log_level(self):
+        excom = self.info['exitcommand']
+        if '--log-level' in excom:
+            before = excom[excom.index('--log-level') + 1].lower()
+        else:
+            before = self.params['log_level']
+        after = self.params['log_level']
+        return self._diff_update_and_compare('log_level', before, after)
 
     # Parameter has limited idempotency, unable to guess the default log_path
     def diffparam_log_opt(self):
@@ -1942,12 +1967,18 @@ class PodmanContainer:
                                        ).construct_command_from_params()
         full_cmd = " ".join([self.module_params['executable']]
                             + [to_native(i) for i in b_command])
-        self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
-        if not self.module.check_mode:
+        if self.module.check_mode:
+            self.module.log("PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+        else:
             rc, out, err = self.module.run_command(
                 [self.module_params['executable'], b'container'] + b_command,
                 expand_user_and_vars=False)
+            self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
+            if self.module_params['debug']:
+                self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
+                self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
+                self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
             self.stdout = out
             self.stderr = err
             if rc != 0:
@@ -2175,6 +2206,9 @@ def main():
             label_file=dict(type='str'),
             log_driver=dict(type='str', choices=[
                             'k8s-file', 'journald', 'json-file']),
+            log_level=dict(
+                type='str',
+                choices=["debug", "info", "warn", "error", "fatal", "panic"]),
             log_opt=dict(type='str', aliases=['log_options']),
             memory=dict(type='str'),
             memory_reservation=dict(type='str'),
