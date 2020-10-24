@@ -387,8 +387,9 @@ class PodmanPodDefaults:
 
 
 class PodmanPodDiff:
-    def __init__(self, module, info, infra_info, podman_version):
+    def __init__(self, module, module_params, info, infra_info, podman_version):
         self.module = module
+        self.module_params = module_params
         self.version = podman_version
         self.default_dict = None
         self.info = lower_keys(info)
@@ -401,11 +402,11 @@ class PodmanPodDiff:
         params_with_defaults = {}
         self.default_dict = PodmanPodDefaults(
             self.module, self.version).default_dict()
-        for p in self.module.params:
-            if self.module.params[p] is None and p in self.default_dict:
+        for p in self.module_params:
+            if self.module_params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
             else:
-                params_with_defaults[p] = self.module.params[p]
+                params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
     def _diff_update_and_compare(self, param_name, before, after):
@@ -483,7 +484,7 @@ class PodmanPodDiff:
             return self._diff_update_and_compare('infra_image', '', '')
         before = str(self.infra_info['imagename'])
         after = before
-        if self.module.params['infra_image']:
+        if self.module_params['infra_image']:
             after = self.params['infra_image']
         before = before.replace(":latest", "")
         after = after.replace(":latest", "")
@@ -594,7 +595,7 @@ class PodmanPodDiff:
                 different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:
+            if self.module_params[p] is not None and self.module_params[p] not in [{}, [], '']:
                 different = True
         return different
 
@@ -605,7 +606,7 @@ class PodmanPod:
     Manages podman pod, inspects it and checks its current state
     """
 
-    def __init__(self, module, name):
+    def __init__(self, module, name, module_params):
         """Initialize PodmanPod class.
 
         Arguments:
@@ -615,6 +616,7 @@ class PodmanPod:
 
         super(PodmanPod, self).__init__()
         self.module = module
+        self.module_params = module_params
         self.name = name
         self.stdout, self.stderr = '', ''
         self.info = self.get_info()
@@ -633,6 +635,7 @@ class PodmanPod:
         """Check if pod is different."""
         diffcheck = PodmanPodDiff(
             self.module,
+            self.module_params,
             self.info,
             self.infra_info,
             self.version)
@@ -674,7 +677,7 @@ class PodmanPod:
         """Inspect pod and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'pod', b'inspect', self.name])
+            [self.module_params['executable'], b'pod', b'inspect', self.name])
         return json.loads(out) if rc == 0 else {}
 
     def get_infra_info(self):
@@ -689,15 +692,15 @@ class PodmanPod:
             return {}
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'inspect', infra_container_id])
+            [self.module_params['executable'], b'inspect', infra_container_id])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'--version'])
+            [self.module_params['executable'], b'--version'])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(msg="%s run failed!" % self.module.params['executable'])
+            self.module.fail_json(msg="%s run failed!" % self.module_params['executable'])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -708,17 +711,17 @@ class PodmanPod:
                             unpause, delete, restart, kill
         """
         b_command = PodmanPodModuleParams(action,
-                                          self.module.params,
+                                          self.module_params,
                                           self.version,
                                           self.module,
                                           ).construct_command_from_params()
-        full_cmd = " ".join([self.module.params['executable'], 'pod']
+        full_cmd = " ".join([self.module_params['executable'], 'pod']
                             + [to_native(i) for i in b_command])
         self.module.log("PODMAN-POD-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
             rc, out, err = self.module.run_command(
-                [self.module.params['executable'], b'pod'] + b_command,
+                [self.module_params['executable'], b'pod'] + b_command,
                 expand_user_and_vars=False)
             self.stdout = out
             self.stderr = err
@@ -771,7 +774,7 @@ class PodmanPodManager:
     Defines according to parameters what actions should be applied to pod
     """
 
-    def __init__(self, module):
+    def __init__(self, module, params):
         """Initialize PodmanManager class.
 
         Arguments:
@@ -781,18 +784,19 @@ class PodmanPodManager:
         super(PodmanPodManager, self).__init__()
 
         self.module = module
+        self.module_params = params
         self.results = {
             'changed': False,
             'actions': [],
             'pod': {},
         }
-        self.name = self.module.params['name']
+        self.name = self.module_params['name']
         self.executable = \
-            self.module.get_bin_path(self.module.params['executable'],
+            self.module.get_bin_path(self.module_params['executable'],
                                      required=True)
-        self.state = self.module.params['state']
-        self.recreate = self.module.params['recreate']
-        self.pod = PodmanPod(self.module, self.name)
+        self.state = self.module_params['state']
+        self.recreate = self.module_params['recreate']
+        self.pod = PodmanPod(self.module, self.name, self.module_params)
 
     def update_pod_result(self, changed=True):
         """Inspect the current pod, update results with last info, exit.
@@ -808,9 +812,8 @@ class PodmanPodManager:
                             stdout=out, stderr=err)
         if self.pod.diff:
             self.results.update({'diff': self.pod.diff})
-        if self.module.params['debug']:
+        if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.pod.version})
-        self.module.exit_json(**self.results)
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
@@ -826,8 +829,7 @@ class PodmanPodManager:
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(msg="Unexpected logic error happened, "
-                                  "please contact maintainers ASAP!")
+        return self.results
 
     def _create_or_recreate_pod(self):
         """Ensure pod exists and is exactly as it should be by input params."""
@@ -847,6 +849,7 @@ class PodmanPodManager:
         """Run actions if desired state is 'created'."""
         if self.pod.exists and not self.pod.different:
             self.update_pod_result(changed=False)
+            return
         self._create_or_recreate_pod()
         self.update_pod_result()
 
@@ -862,6 +865,7 @@ class PodmanPodManager:
         changed = self._create_or_recreate_pod()
         if self.pod.paused:
             self.update_pod_result(changed=changed)
+            return
         self.pod.pause()
         self.results['actions'].append('paused %s' % self.pod.name)
         self.update_pod_result()
@@ -871,6 +875,7 @@ class PodmanPodManager:
         changed = self._create_or_recreate_pod()
         if not self.pod.paused:
             self.update_pod_result(changed=changed)
+            return
         self.pod.unpause()
         self.results['actions'].append('unpaused %s' % self.pod.name)
         self.update_pod_result()
@@ -880,6 +885,8 @@ class PodmanPodManager:
         changed = self._create_or_recreate_pod()
         if not changed and self.pod.running:
             self.update_pod_result(changed=changed)
+            return
+
         # self.pod.unpause()  TODO(sshnaidm): to unpause if state == started?
         self.pod.start()
         self.results['actions'].append('started %s' % self.pod.name)
@@ -890,6 +897,7 @@ class PodmanPodManager:
         changed = self._create_or_recreate_pod()
         if changed or self.pod.stopped:
             self.update_pod_result(changed=changed)
+            return
         elif self.pod.running:
             self.pod.stop()
             self.results['actions'].append('stopped %s' % self.pod.name)
@@ -905,7 +913,6 @@ class PodmanPodManager:
             self.results.update({'changed': True})
         self.results.update({'pod': {},
                              'podman_actions': self.pod.actions})
-        self.module.exit_json(**self.results)
 
 
 def main():
@@ -948,29 +955,9 @@ def main():
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
         )
-        # ),
-
-        # # Optional arguments requirements
-
-        # required_if=[
-        #     ['action', 'rebuild', ['image']],  # if need to rebuild image (only), the 'image' is required
-        #     ["state", "present", ["username", "user_roles"]],  # for creating user 'user_roles' is required
-        #     ["state", "absent", ["username"]],  # for state 'absent' only username is required
-        # ],
-        # required_by=dict(  # for weather and population 'city' is required to set
-        #     weather=('city'),
-        #     population=('city'),
-        # ),
-        # mutually_exclusive=[
-        #     ['use_cloud1', 'use_cloud2']  # can't run on both, choose only one to set
-        # ],
-        # required_together=[
-        #     ['remove_image', 'image_name']  # if need to remove image, must to specify which one
-        # ],
-        # required_one_of_args=[["password", "password_hash"]],  # one of these args must be set
-        # supports_check_mode=True,  # good practice is to support check_mode
     )
-    PodmanPodManager(module).execute()
+    results = PodmanPodManager(module, module.params).execute()
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
