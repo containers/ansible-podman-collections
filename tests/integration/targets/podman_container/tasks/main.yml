@@ -338,6 +338,33 @@
         that:
           - not idem.changed
 
+    - name: Check force restart option - run again and force restart
+      containers.podman.podman_container:
+        name: testidem
+        image: alpine:latest
+        state: present
+        command: sleep 20m
+        force_restart: true
+      register: idem_r
+
+    - name: Check that task was changed
+      assert:
+        that:
+          - idem_r is changed
+
+    - name: Check removing force_restart option
+      containers.podman.podman_container:
+        name: testidem
+        image: alpine:latest
+        state: present
+        command: sleep 20m
+      register: idem_r1
+
+    - name: Check that task was not changed
+      assert:
+        that:
+          - idem_r1 is not changed
+
     - name: Run changed container (with tty enabled)
       containers.podman.podman_container:
         name: testidem
@@ -394,12 +421,12 @@
         state: present
         command: sleep 20m
         pod: testidempod
-      register: idem
+      register: idem3
 
     - name: Check that nothing was changed in pod containers
       assert:
         that:
-          - not idem.changed
+          - not idem3.changed
 
     - name: Run changed pod container (with tty enabled)
       containers.podman.podman_container:
@@ -409,12 +436,12 @@
         command: sleep 20m
         tty: true
         pod: testidempod
-      register: idem1
+      register: idem4
 
     - name: Check that container is recreated when changed
       assert:
         that:
-          - idem1 is changed
+          - idem4 is changed
 
     - name: Remove container
       containers.podman.podman_container:

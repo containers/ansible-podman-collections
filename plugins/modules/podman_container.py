@@ -2014,7 +2014,7 @@ class PodmanContainer:
     def restart(self):
         """Restart the container."""
         self.stop()
-        self.run()
+        self.start()
 
 
 class PodmanManager:
@@ -2076,26 +2076,32 @@ class PodmanManager:
             self.results['actions'].append('recreated %s' %
                                            self.container.name)
             self.update_container_result()
+            return
         elif self.container.running and not self.container.different:
             if self.restart:
                 self.container.restart()
                 self.results['actions'].append('restarted %s' %
                                                self.container.name)
                 self.update_container_result()
+                return
             self.update_container_result(changed=False)
+            return
         elif not self.container.exists:
             self.container.run()
             self.results['actions'].append('started %s' % self.container.name)
             self.update_container_result()
+            return
         elif self.container.stopped and self.container.different:
             self.container.recreate()
             self.results['actions'].append('recreated %s' %
                                            self.container.name)
             self.update_container_result()
+            return
         elif self.container.stopped and not self.container.different:
             self.container.start()
             self.results['actions'].append('started %s' % self.container.name)
             self.update_container_result()
+            return
 
     def make_stopped(self):
         """Run actions if desired state is 'stopped'."""
@@ -2106,12 +2112,15 @@ class PodmanManager:
             self.container.create()
             self.results['actions'].append('created %s' % self.container.name)
             self.update_container_result()
+            return
         if self.container.stopped:
             self.update_container_result(changed=False)
+            return
         elif self.container.running:
             self.container.stop()
             self.results['actions'].append('stopped %s' % self.container.name)
             self.update_container_result()
+            return
 
     def make_absent(self):
         """Run actions if desired state is 'absent'."""
