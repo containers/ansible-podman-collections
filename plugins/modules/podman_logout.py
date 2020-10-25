@@ -82,7 +82,7 @@ def logout(module, executable, registry, authfile, all_registries):
         command.append("--all")
     rc, out, err = module.run_command(command)
     if rc != 0:
-        if 'Error: not logged into' not in err:
+        if 'Error: Not logged into' not in err:
             module.fail_json(msg="Unable to gather info for %s: %s" % (registry, err))
     else:
         # If the command is successful, we managed to log out
