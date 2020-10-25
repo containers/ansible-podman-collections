@@ -1,0 +1,110 @@
+name: Podman login info
+
+on:
+  push:
+    paths:
+      - '.github/workflows/podman_login_info.yml'
+      - 'ci/*.yml'
+      - 'ci/run_containers_tests.sh'
+      - 'ci/playbooks/containers/podman_login_info.yml'
+      - 'plugins/modules/podman_login_info.py'
+      - 'tests/integration/targets/podman_login_info/**'
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '.github/workflows/podman_login_info.yml'
+      - 'ci/*.yml'
+      - 'ci/run_containers_tests.sh'
+      - 'ci/playbooks/containers/podman_login_info.yml'
+      - 'plugins/modules/podman_login_info.py'
+      - 'tests/integration/targets/podman_login_info/**'
+  schedule:
+    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+
+jobs:
+
+  test_podman_login_info:
+    name: Podman login info ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - ansible<2.10
+          # - git+https://github.com/ansible/ansible.git@stable-2.10
+        os:
+          - ubuntu-latest
+        python-version:
+          - 3.7
+        include:
+          - os: ubuntu-20.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: 3.7
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip and display Python and PIP versions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python*-wheel python*-yaml
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python3 -m pip install --user --force-reinstall --upgrade '${{ matrix.ansible-version }}'
+
+      - name: Build and install the collection tarball
+        run: |
+          rm -rf /tmp/just_new_collection
+          ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
+          ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Run collection tests for podman login info
+        run: |
+          export PATH=~/.local/bin:$PATH
+
+          echo "Run ansible version"
+          command -v ansible
+          ansible --version
+
+          if [[ '${{ matrix.ansible-version }}'  == 'git+https://github.com/ansible/ansible.git@devel' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+          elif [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
+            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-2.9.cfg
+          fi
+
+          echo $ANSIBLE_CONFIG
+          command -v ansible-playbook
+          pip --version
+          python --version
+          ansible-playbook --version
+
+          ansible-playbook -vv ci/playbooks/pre.yml \
+          -e host=localhost \
+          -i localhost, \
+          -e ansible_connection=local \
+          -e setup_python=false
+
+          TEST2RUN=podman_login_info ./ci/run_containers_tests.sh
+        shell: bash
