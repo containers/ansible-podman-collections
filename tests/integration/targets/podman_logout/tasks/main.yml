@@ -5,7 +5,7 @@
       command: podman version
 
     - name: Log out with invalid executable
-      podman_logout:
+      containers.podman.podman_logout:
         executable: podman_invalid
       register: invalid_executable
       ignore_errors: yes
@@ -16,7 +16,7 @@
           - invalid_executable is failed
 
     - name: Log out of non-existing registry
-      podman_logout:
+      containers.podman.podman_logout:
       register: non_existing_registry
 
     - name: Check results
@@ -26,7 +26,7 @@
           - "non_existing_registry.changed == False"
 
     - name: Log out with invalid authfile
-      podman_logout:
+      containers.podman.podman_logout:
         authfile: authfile_invalid.json
       register: invalid_authfile
       ignore_errors: yes
@@ -37,7 +37,7 @@
           - invalid_authfile is failed
 
     - name: Log out of all registries
-      podman_logout:
+      containers.podman.podman_logout:
         all: yes
       register: all_registries
 
