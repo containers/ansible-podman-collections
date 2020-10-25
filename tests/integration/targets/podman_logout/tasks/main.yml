@@ -16,7 +16,7 @@
           - invalid_executable is failed
 
     - name: Log out of non-existing registry
-      containers.podman.podman_logout:
+      podman_logout:
       register: non_existing_registry
 
     - name: Check results
@@ -37,7 +37,7 @@
           - invalid_authfile is failed
 
     - name: Log out of all registries
-      containers.podman.podman_logout:
+      podman_logout:
         all: yes
       register: all_registries
 
