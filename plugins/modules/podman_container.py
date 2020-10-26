@@ -1552,7 +1552,10 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
-        # TODO(sshnaidm): for strict image compare mode use SHAs
+        before_id = self.info['image']
+        after_id = self.image_info['id']
+        if before_id == after_id:
+            return self._diff_update_and_compare('image', before_id, after_id)
         before = self.info['config']['image']
         after = self.params['image']
         mode = self.params['image_strict']
@@ -1562,6 +1565,8 @@ class PodmanContainerDiff:
             after = after.replace(":latest", "")
             before = before.split("/")[-1]
             after = after.split("/")[-1]
+        else:
+            return self._diff_update_and_compare('image', before_id, after_id)
         return self._diff_update_and_compare('image', before, after)
 
     def diffparam_ipc(self):
