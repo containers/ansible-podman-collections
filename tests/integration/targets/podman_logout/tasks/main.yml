@@ -4,6 +4,10 @@
     - name: Print podman version
       command: podman version
 
+    - name: Logout from docker if it exists
+      command: docker logout
+      ignore_errors: true
+
     - name: Log out with invalid executable
       containers.podman.podman_logout:
         executable: podman_invalid
