@@ -93,6 +93,8 @@ options:
       - List of capabilities to add to the container.
     type: list
     elements: str
+    aliases:
+      - capabilities
   cap_drop:
     description:
       - List of capabilities to drop from the container.
@@ -222,15 +224,21 @@ options:
       - Set custom DNS servers
     type: list
     elements: str
+    aliases:
+      - dns_servers
   dns_option:
     description:
       - Set custom DNS options
     type: str
+    aliases:
+      - dns_opts
   dns_search:
     description:
       - Set custom DNS search domains (Use dns_search with '' if you don't wish
         to set the search domain)
     type: str
+    aliases:
+      - dns_search_domains
   entrypoint:
     description:
       - Overwrite the default ENTRYPOINT of the image
@@ -283,6 +291,8 @@ options:
     description:
       - Add additional groups to run as
     type: list
+    aliases:
+      - groups
   healthcheck:
     description:
       - Set or alter a healthcheck command for a container.
@@ -369,6 +379,8 @@ options:
       - Default is to create a private IPC namespace (POSIX SysV IPC) for the
         container
     type: str
+    aliases:
+      - ipc_mode
   kernel_memory:
     description:
       - Kernel memory limit
@@ -378,6 +390,8 @@ options:
   label:
     description:
       - Add metadata to a container, pass dictionary of label names and values
+    aliases:
+    - labels
     type: dict
   label_file:
     description:
@@ -456,6 +470,7 @@ options:
     elements: str
     aliases:
       - net
+      - network_mode
   no_hosts:
     description:
       - Do not create /etc/hosts for the container
@@ -474,6 +489,8 @@ options:
     description:
       - Set the PID mode for the container
     type: str
+    aliases:
+      - pid_mode
   pids_limit:
     description:
       - Tune the container's PIDs limit. Set -1 to have unlimited PIDs for the
@@ -540,6 +557,7 @@ options:
     type: bool
     aliases:
       - remove
+      - auto_remove
   rootfs:
     description:
       - If true, the first argument refers to an exploded container on the file
@@ -607,6 +625,8 @@ options:
     description:
       - Ulimit options
     type: list
+    aliases:
+      - ulimits
   user:
     description:
       - Sets the username or UID used and optionally the groupname or GID for
@@ -618,6 +638,8 @@ options:
         It defaults to the PODMAN_USERNS environment variable.
         An empty value means user namespaces are disabled.
     type: str
+    aliases:
+      - userns_mode
   uts:
     description:
       - Set the UTS mode for the container
@@ -642,6 +664,8 @@ options:
         The default working directory for running binaries within a container
         is the root directory (/).
     type: str
+    aliases:
+      - working_dir
 """
 
 EXAMPLES = r"""
