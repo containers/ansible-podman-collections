@@ -1,0 +1,642 @@
+- name: Test multiple podman_containers
+  block:
+    - name: Delete all containers leftovers from tests
+      containers.podman.podman_containers:
+        containers:
+          - name: "alpine:3.7"
+            state: absent
+          - name: "container"
+            state: absent
+          - name: "container1"
+            state: absent
+          - name: "container2"
+            state: absent
+          - name: "container3"
+            state: absent
+          - name: "container4"
+            state: absent
+          - name: "testidem"
+            state: absent
+          - name: "testidem1"
+            state: absent
+          - name: "testidem2"
+            state: absent
+          - name: "testidem3"
+            state: absent
+          - name: "testidem-pod"
+            state: absent
+          - name: "testidem-pod2"
+            state: absent
+
+    - name: Test no image with default action
+      containers.podman.podman_containers:
+        containers:
+          - name: "container"
+          - name: "container2"
+          - name: "container3"
+            image: alpine
+      ignore_errors: true
+      register: no_image
+
+    - name: Test no image with state 'started'
+      containers.podman.podman_containers:
+        containers:
+          - name: "container"
+            state: started
+          - name: "container2"
+            state: started
+      ignore_errors: true
+      register: no_image1
+
+    - name: Test no image with state 'present'
+      containers.podman.podman_containers:
+        containers:
+          - name: "container"
+            state: present
+          - name: "container2"
+            state: present
+          - name: "container3"
+            state: present
+            image: alpine
+      ignore_errors: true
+      register: no_image2
+
+    - name: Check no image
+      assert:
+        that:
+          - no_image is failed
+          - no_image1 is failed
+          - no_image2 is failed
+          - no_image.msg is search("State 'started' required image to be configured!")
+          - no_image1.msg is search ("State 'started' required image to be configured!")
+          - no_image2.msg is search("State 'present' required image to be configured!")
+        fail_msg: No-image test failed!
+        success_msg: No-image test passed!
+
+    - name: Ensure image doesn't exist
+      containers.podman.podman_image:
+        name: alpine:3.7
+        state: absent
+
+    - name: Check pulling image
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+          - name: container1
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+      register: image
+
+    - name: Check using already pulled image
+      containers.podman.podman_containers:
+        containers:
+          - name: container1
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+          - name: container3
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+      register: image2
+
+    - name: Check output is correct
+      assert:
+        that:
+          - image is changed
+          - image.containers[0] is defined
+          - image.containers[0]['State']['Running']
+          - image.containers[1] is defined
+          - image.containers[1]['State']['Running']
+          - "'pulled image alpine:3.7' in image.actions"
+          - "'started container' in image.actions"
+          - "'started container1' in image.actions"
+          - image2 is changed
+          - image2.containers is defined
+          - image2.containers[0]['State']['Running']
+          - image2.containers[1]['State']['Running']
+          - "'pulled image alpine:3.7' not in image2.actions"
+          - "'started container3' in image2.actions"
+        fail_msg: Pulling image test failed!
+        success_msg: Pulling image test passed!
+
+    - name: Check failed image pull
+      containers.podman.podman_containers:
+        containers:
+          - name: container1
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+          - name: container
+            image: ineverneverneverexist
+            state: present
+            command: sleep 1d
+      register: imagefail
+      ignore_errors: true
+
+    - name: Check output is correct
+      assert:
+        that:
+          - imagefail is failed
+          - imagefail.msg == "Can't pull image ineverneverneverexist"
+
+    - name: Force containers recreate
+      containers.podman.podman_containers:
+        containers:
+          - name: container1
+            image: alpine:3.7
+            state: present
+            command: sleep 1d
+          - name: container
+            image: alpine
+            state: present
+            command: sleep 1d
+            recreate: true
+      register: recreated
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreated is changed
+          - recreated.containers is defined
+          - recreated.containers[1]['State']['Running']
+          - "'recreated container' in recreated.actions"
+        fail_msg: Force recreate test failed!
+        success_msg: Force recreate test passed!
+
+    - name: Stop containers
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: stopped
+          - name: container1
+            state: stopped
+      register: stopped
+
+    - name: Stop the same containers again (idempotency)
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: stopped
+          - name: container1
+            state: stopped
+      register: stopped_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - stopped is changed
+          - stopped.containers is defined
+          - not stopped.containers[0]['State']['Running']
+          - not stopped.containers[1]['State']['Running']
+          - "'stopped container' in stopped.actions"
+          - stopped_again is not changed
+          - stopped_again.containers is defined
+          - not stopped_again.containers[0]['State']['Running']
+          - not stopped_again.containers[1]['State']['Running']
+          - stopped_again.actions == []
+        fail_msg: Stopping container test failed!
+        success_msg: Stopping container test passed!
+
+    - name: Delete stopped containers
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: absent
+          - name: container1
+            state: absent
+      register: deleted
+
+    - name: Delete again containers (idempotency)
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: absent
+          - name: container1
+            state: absent
+      register: deleted_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - deleted is changed
+          - deleted.containers is defined
+          - deleted.containers == []
+          - "'deleted container' in deleted.actions"
+          - "'deleted container1' in deleted.actions"
+          - deleted_again is not changed
+          - deleted_again.containers is defined
+          - deleted_again.containers == []
+          - deleted_again.actions == []
+        fail_msg: Deleting stopped container test failed!
+        success_msg: Deleting stopped container test passed!
+
+    - name: Create containers, but don't run
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            image: alpine:3.7
+            state: stopped
+            command: sleep 1d
+          - name: container1
+            image: alpine:3.7
+            state: stopped
+            command: sleep 1d
+      register: created
+
+    - name: Create containers, but don't run again
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            image: alpine:3.7
+            state: stopped
+            command: sleep 1d
+          - name: container1
+            image: alpine:3.7
+            state: stopped
+            command: sleep 1d
+      register: created_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - created is changed
+          - created.containers is defined
+          - created.containers != []
+          - not created.containers[0]['State']['Running']
+          - not created.containers[1]['State']['Running']
+          - "'created container' in created.actions"
+        fail_msg: "Creating stopped container test failed!"
+        success_msg: "Creating stopped container test passed!"
+
+    - name: Delete created containers
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: absent
+          - name: container1
+            state: absent
+
+    - name: Start containers that were deleted
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            image: alpine:3.7
+            state: started
+            command: sleep 1d
+          - name: container1
+            image: alpine:3.7
+            state: started
+            command: sleep 1d
+      register: started
+
+    - name: Check output is correct
+      assert:
+        that:
+          - started.containers is defined
+          - started.containers[0]['State']['Running']
+          - started.containers[1]['State']['Running']
+          - "'started container' in started.actions"
+          - "'pulled image alpine:3.7' not in started.actions"
+
+    - name: Delete started container
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: absent
+          - name: container1
+            state: absent
+      register: deleted
+
+    - name: Delete again container (idempotency)
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            state: absent
+          - name: container1
+            state: absent
+      register: deleted_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - deleted is changed
+          - deleted.containers is defined
+          - deleted.containers == []
+          - "'deleted container' in deleted.actions"
+          - "'deleted container1' in deleted.actions"
+          - deleted_again is not changed
+          - deleted_again.containers is defined
+          - deleted_again.containers == []
+          - deleted_again.actions == []
+        fail_msg: Deleting started container test failed!
+        success_msg: Deleting started container test passed!
+
+    - name: Recreate container with parameters
+      containers.podman.podman_containers:
+        containers:
+          - name: container
+            image: docker.io/alpine:3.7
+            state: started
+            command: sleep 1d
+            recreate: true
+            etc_hosts:
+              host1: 127.0.0.1
+              host2: 127.0.0.1
+            annotation:
+              this: "annotation_value"
+            dns_servers:
+              - 1.1.1.1
+              - 8.8.4.4
+            dns_search_domains: example.com
+            capabilities:
+              - SYS_TIME
+              - NET_ADMIN
+            ports:
+              - "9000:80"
+              - "9001:8000"
+            workdir: "/bin"
+            env:
+              FOO: bar=1
+              BAR: foo
+              TEST: 1
+              BOOL: false
+            label:
+              somelabel: labelvalue
+              otheralbe: othervalue
+            volumes:
+              - /tmp:/data
+          - name: container1
+            image: docker.io/alpine:3.7
+            state: started
+            command: sleep 1d
+            recreate: true
+            etc_hosts:
+              host1: 127.0.0.1
+              host2: 127.0.0.1
+            annotation:
+              this: "annotation_value"
+            dns_servers:
+              - 1.1.1.1
+              - 8.8.4.4
+            dns_search_domains: example.com
+            capabilities:
+              - SYS_TIME
+              - NET_ADMIN
+            ports:
+              - "9002:80"
+              - "9003:8000"
+            workdir: "/bin"
+            env:
+              FOO: bar=1
+              BAR: foo
+              TEST: 1
+              BOOL: false
+            label:
+              somelabel: labelvalue
+              otheralbe: othervalue
+            volumes:
+              - /tmp:/data
+      register: test
+
+    - name: Check output is correct
+      assert:
+        that:
+          - test is changed
+          - test.containers is defined
+          - test.containers != []
+          - test.containers[0]['State']['Running']
+          # test capabilities
+          - "'CAP_SYS_TIME' in test.containers[0]['BoundingCaps']"
+          - "'CAP_NET_ADMIN' in test.containers[0]['BoundingCaps']"
+          # test annotations
+          - test.containers[0]['Config']['Annotations']['this'] is defined
+          - test.containers[0]['Config']['Annotations']['this'] == "annotation_value"
+          # test DNS
+          - >-
+            (test.containers[0]['HostConfig']['Dns'] is defined and
+            test.containers[0]['HostConfig']['Dns'] == ['1.1.1.1', '8.8.4.4']) or
+            (test.containers[0]['HostConfig']['DNS'] is defined and
+            test.containers[0]['HostConfig']['DNS'] == ['1.1.1.1', '8.8.4.4'])
+          # test ports
+          - test.containers[0]['NetworkSettings']['Ports']|length == 2
+          # test working dir
+          - test.containers[0]['Config']['WorkingDir'] == "/bin"
+          # test dns search
+          - >-
+            (test.containers[0]['HostConfig']['DnsSearch'] is defined and
+            test.containers[0]['HostConfig']['DnsSearch'] == ['example.com']) or
+            (test.containers[0]['HostConfig']['DNSSearch'] is defined and
+            test.containers[0]['HostConfig']['DNSSearch'] == ['example.com'])
+          # test environment variables
+          - "'FOO=bar=1' in test.containers[0]['Config']['Env']"
+          - "'BAR=foo' in test.containers[0]['Config']['Env']"
+          - "'TEST=1' in test.containers[0]['Config']['Env']"
+          - "'BOOL=False' in test.containers[0]['Config']['Env']"
+          # test labels
+          - test.containers[0]['Config']['Labels'] | length == 2
+          - test.containers[0]['Config']['Labels']['somelabel'] == "labelvalue"
+          - test.containers[0]['Config']['Labels']['otheralbe'] == "othervalue"
+          # test mounts
+          - >-
+            (test.containers[0]['Mounts'][0]['Destination'] is defined and
+            '/data' in test.containers[0]['Mounts'] | map(attribute='Destination') | list) or
+            (test.containers[0]['Mounts'][0]['destination'] is defined and
+            '/data' in test.containers[0]['Mounts'] | map(attribute='destination') | list)
+          - >-
+            (test.containers[0]['Mounts'][0]['Source'] is defined and
+            '/tmp' in test.containers[0]['Mounts'] | map(attribute='Source') | list) or
+            (test.containers[0]['Mounts'][0]['source'] is defined and
+            '/tmp' in test.containers[0]['Mounts'] | map(attribute='source') | list)
+        fail_msg: Parameters container test failed!
+        success_msg: Parameters container test passed!
+
+    - name: Check basic idempotency of running container
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+          - name: testidem2
+            image: docker.io/alpine
+            state: present
+            command: sleep 21m
+          - name: testidem3
+            image: docker.io/alpine
+            state: present
+            command: sleep 22m
+
+    - name: Check basic idempotency of running container - run it again
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+          - name: testidem2
+            image: docker.io/alpine
+            state: present
+            command: sleep 21m
+          - name: testidem3
+            image: docker.io/alpine
+            state: present
+            command: sleep 22m
+      register: idem
+
+    - name: Check that nothing was changed
+      assert:
+        that:
+          - not idem.changed
+
+    - name: Run changed container (with tty enabled)
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+            tty: true
+          - name: testidem2
+            image: docker.io/alpine
+            state: present
+            command: sleep 21m
+          - name: testidem3
+            image: docker.io/alpine
+            state: present
+            command: sleep 22m
+      register: idem1
+
+    - name: Check that container is recreated when changed
+      assert:
+        that:
+          - idem1 is changed
+
+    - name: Run changed container without specifying an option, use defaults
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+          - name: testidem2
+            image: docker.io/alpine
+            state: present
+            command: sleep 21m
+          - name: testidem3
+            image: docker.io/alpine
+            state: present
+            command: sleep 22m
+      register: idem2
+
+    - name: Check that container is recreated when changed to default value
+      assert:
+        that:
+          - idem2 is changed
+
+    - name: Remove container
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem
+            state: absent
+      register: remove
+
+    - name: Check podman_actions
+      assert:
+        that:
+          - "'podman rm -f testidem' in remove.podman_actions"
+
+    - name: Create a pod
+      containers.podman.podman_pod:
+        name: testidempod
+
+    - name: Check basic idempotency of pod container
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem-pod
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+            pod: "testidempod"
+          - name: testidem-pod2
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+            pod: testidempod
+
+    - name: Check basic idempotency of pod container - run it again
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem-pod
+            image: alpine:latest
+            state: present
+            command: sleep 20m
+            pod: testidempod
+          - name: testidem-pod2
+            image: docker.io/alpine
+            state: present
+            command: sleep 20m
+            pod: testidempod
+      register: idem
+
+    - name: Check that nothing was changed in pod containers
+      assert:
+        that:
+          - not idem.changed
+
+    - name: Run changed pod container (with tty enabled)
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem-pod
+            image: alpine
+            state: present
+            command: sleep 20m
+            tty: true
+            pod: testidempod
+          - name: testidem-pod2
+            image: alpine
+            state: present
+            command: sleep 20m
+            pod: testidempod
+      register: idem1
+
+    - name: Check that container is recreated when changed
+      assert:
+        that:
+          - idem1 is changed
+
+    - name: Remove container
+      containers.podman.podman_containers:
+        containers:
+          - name: testidem-pod
+            state: absent
+          - name: testidem-pod2
+            state: absent
+
+  always:
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "alpine:3.7"
+        - "container"
+        - "container1"
+        - "container2"
+        - "container3"
+        - "container4"
+        - "testidem"
+        - "testidem1"
+        - "testidem2"
+        - "testidem3"
+        - "testidem-pod"
+        - "testidem-pod2"
+
+    - name: Remove pod
+      containers.podman.podman_pod:
+        name: testidempod
+        state: absent
