@@ -457,14 +457,15 @@ class PodmanImageManager(object):
                 # Build the image
                 self.results['actions'].append('Built image {image_name} from {path}'.format(image_name=self.image_name, path=self.path))
                 if not self.module.check_mode:
-                    self.results['image'] = self.build_image()
+                    image = self.results['image'] = self.build_image()
             else:
                 # Pull the image
                 self.results['actions'].append('Pulled image {image_name}'.format(image_name=self.image_name))
                 if not self.module.check_mode:
-                    self.results['image'] = self.pull_image()
+                    image = self.results['image'] = self.pull_image()
 
-            image = self.find_image()
+            if not image:
+                image = self.find_image()
             digest_after = image[0].get('Digest', image[0].get('digest'))
             self.results['changed'] = digest_before != digest_after
 
