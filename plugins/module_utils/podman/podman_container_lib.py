@@ -78,6 +78,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
         type='str',
         choices=["debug", "info", "warn", "error", "fatal", "panic"]),
     log_opt=dict(type='str', aliases=['log_options']),
+    mac_address=dict(type='str'),
     memory=dict(type='str'),
     memory_reservation=dict(type='str'),
     memory_swap=dict(type='str'),
@@ -390,6 +391,9 @@ class PodmanModuleParams:
 
     def addparam_log_level(self, c):
         return c + ['--log-level', self.params['log_level']]
+
+    def addparam_mac_address(self, c):
+        return c + ['--mac-address', self.params['mac_address']]
 
     def addparam_memory(self, c):
         return c + ['--memory', self.params['memory']]

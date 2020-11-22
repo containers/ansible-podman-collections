@@ -426,6 +426,12 @@ options:
     type: str
     aliases:
       - log_options
+  mac_address:
+    description:
+      - Specify a MAC address for the container, for example
+        '92:d0:c6:0a:29:33'.
+        Don't forget that it must be unique within one Ethernet network.
+    type: str
   memory:
     description:
       - Memory limit (format 10k, where unit = b, k, m or g)
