@@ -887,6 +887,14 @@ class PodmanContainerDiff:
             after = self.params['log_opt'].split("=")[1]
         return self._diff_update_and_compare('log_opt', before, after)
 
+    def diffparam_mac_address(self):
+        before = str(self.info['networksettings']['macaddress'])
+        if self.module_params['mac_address'] is not None:
+            after = self.params['mac_address']
+        else:
+            after = before
+        return self._diff_update_and_compare('mac_address', before, after)
+
     def diffparam_memory(self):
         before = str(self.info['hostconfig']['memory'])
         after = self.params['memory']

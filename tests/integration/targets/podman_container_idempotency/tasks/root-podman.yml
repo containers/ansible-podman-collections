@@ -88,3 +88,66 @@
   assert:
     that:
       - info3 is not changed
+
+- name: Run default container
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+
+- name: Run containers with MAC address
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    mac_address: 44:55:66:77:88:99
+  register: info4
+
+- name: Check that it is not recreated
+  assert:
+    that:
+      - info4 is changed
+      - info4.container['NetworkSettings']['MacAddress'] == '44:55:66:77:88:99'
+
+- name: Run containers with MAC address again - idempotency
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    mac_address: 44:55:66:77:88:99
+  register: info5
+
+- name: Check that it is not recreated
+  assert:
+    that:
+      - info5 is not changed
+
+- name: Run containers with MAC address changed
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    mac_address: 44:55:66:77:88:33
+  register: info6
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info6 is changed
+
+- name: Run again default container
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+  register: info7
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info7 is not changed
