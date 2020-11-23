@@ -87,7 +87,7 @@ EXAMPLES = r"""
   containers.podman.podman_network:
     name: podman_internal
     internal: true
-    ip_range: 192.168.22.50-192.168.22.150
+    ip_range: 192.168.22.128/25
     subnet: 192.168.22.0/24
     gateway: 192.168.22.1
   become: true
