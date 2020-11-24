@@ -10,18 +10,45 @@
         name: quay.io/coreos/alpine-sh
       register: pull2
 
+    - name: Pull image from docker.io with short url
+      containers.podman.podman_image:
+        name: docker.io/alpine
+      register: pull3
+
+    - name: Pull image from docker.io with short url again
+      containers.podman.podman_image:
+        name: docker.io/alpine
+      register: pull4
+
+    - name: Pull image from docker.io with official/normalised url again
+      containers.podman.podman_image:
+        name: docker.io/library/alpine
+      register: pull5
+
     - name: List images
       command: podman image ls
       register: images
 
-    - name: Ensure image was pulled properly
+    - name: Ensure image were pulled properly
       assert:
         that:
           - pull1 is changed
           - pull2 is not changed
+          - pull3 is changed
+          - pull4 is changed
+          - pull5 is not changed
           - "'alpine-sh' in images.stdout"
+          - "'library/alpine' in images.stdout"
 
-    - name: Remove image
+    - name: add another tag (repository url)
+      command:
+        argv:
+          - podman
+          - tag
+          - quay.io/coreos/alpine-sh
+          - quay.io/coreos/library/alpine-sh
+
+    - name: Remove image (tag)
       containers.podman.podman_image:
         name: quay.io/coreos/alpine-sh
         state: absent
@@ -33,16 +60,38 @@
         state: absent
       register: rmi2
 
+    - name: Remove image using new repository url
+      containers.podman.podman_image:
+        name: quay.io/coreos/library/alpine-sh
+        state: absent
+      register: rmi3
+
+    - name: Try to remove docker.io image using short url
+      containers.podman.podman_image:
+        name: docker.io/alpine
+        state: absent
+      register: rmi4
+
+    - name: Remove docker.io image using normalised url
+      containers.podman.podman_image:
+        name: docker.io/library/alpine
+        state: absent
+      register: rmi5
+
     - name: List images
       command: podman image ls
       register: images
 
-    - name: Ensure image was removed properly
+    - name: Ensure image were removed properly
       assert:
         that:
           - rmi1 is changed
           - rmi2 is not changed
+          - rmi3 is changed
+          - rmi4 is not changed
+          - rmi5 is changed
           - "'alpine-sh' not in images.stdout"
+          - "'library/alpine' not in images.stdout"
 
     - name: Pull a specific version of an image
       containers.podman.podman_image:

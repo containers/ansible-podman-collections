@@ -1,0 +1,215 @@
+- name: Test podman_network
+  become: true
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Check if dnsname plugin is installed
+      block:
+
+        - name: Check if plugin is installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - /usr/libexec/cni/dnsname
+            - /usr/lib/cni/dnsname
+            - /opt/cni/bin/dnsname
+            - /opt/bridge/bin/dnsname
+          register: plugin_results
+
+        - name: Set plugin fact
+          set_fact:
+            dns_plugin: "{{ true in plugin_results.results|map(attribute='stat.exists') }}"
+
+    - name: Generate random value for network name
+      set_fact:
+        network_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Get missing network info
+      containers.podman.podman_network_info:
+        name: "{{ network_name }}"
+      register: info
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info is failed
+
+    - name: Create network
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+      register: net
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        name: "{{ network_name }}"
+      register: info1
+
+    - name: Check info
+      assert:
+        that:
+          - info1 | length > 1
+          - info1.networks.0.name == network_name
+          - net is changed
+
+    - name: Create network again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+      register: info2
+
+    - name: Check info
+      assert:
+        that:
+          - info2 is not changed
+
+    - name: Create network with disable DNS
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        disable_dns: true
+      register: info3
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+            info3 is changed and dns_plugin|bool or
+            info3 is not changed and not dns_plugin|bool
+
+    - name: Create network with disable DNS again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        disable_dns: true
+      register: info4
+
+    - name: Check info
+      assert:
+        that:
+          - info4 is not changed
+
+    - name: Create network w/o disable DNS
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+      register: info5
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+            info5 is changed and dns_plugin|bool or
+            info5 is not changed and not dns_plugin|bool
+
+    - name: Create network with custom gateway
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        gateway: 10.100.100.100
+      register: info6
+
+    - name: Check info
+      assert:
+        that:
+          - info6 is changed
+
+    - name: Create network with custom gateway again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        gateway: 10.100.100.100
+      register: info7
+
+    - name: Check info
+      assert:
+        that:
+          - info7 is not changed
+
+    - name: Create internal network
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        internal: true
+      register: info9
+
+    - name: Check info
+      assert:
+        that:
+          - info9 is changed
+
+    - name: Create internal network again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        internal: true
+      register: info10
+
+    - name: Check info
+      assert:
+        that:
+          - info10 is not changed
+
+    - name: Create a regular external network
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+      register: info11
+
+    - name: Check info
+      assert:
+        that:
+          - info11 is changed
+
+    - name: Create network with subnet
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        subnet: 10.200.200.0/24
+      register: info12
+
+    - name: Check info
+      assert:
+        that:
+          - info12 is changed
+
+    - name: Create network with subnet again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        subnet: 10.200.200.0/24
+      register: info13
+
+    - name: Check info
+      assert:
+        that:
+          - info13 is not changed
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        name: "{{ network_name }}"
+      register: info100
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info100 is failed
+
+  always:
+
+    - name: Cleanup
+      command: podman network rm -f {{ network_name }}
+      ignore_errors: true

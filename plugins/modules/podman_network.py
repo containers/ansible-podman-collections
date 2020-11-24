@@ -2,23 +2,69 @@
 # Copyright (c) 2020 Red Hat
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-# flake8: noqa: E501
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
-module: podman_volume
-short_description: Manage Podman volumes
+
+DOCUMENTATION = r"""
+module: podman_network
 author:
   - "Sagi Shnaidman (@sshnaidm)"
-version_added: '1.1.0'
+version_added: '1.0.0'
+short_description: Manage podman networks
+notes: []
 description:
-  - Manage Podman volumes
+  - Manage podman networks with podman network command.
+requirements:
+  - podman
 options:
+  name:
+    description:
+      - Name of the network
+    type: str
+    required: True
+  executable:
+    description:
+      - Path to C(podman) executable if it is not in the C($PATH) on the
+        machine running C(podman)
+    default: 'podman'
+    type: str
+  disable_dns:
+    description:
+      - disable dns plugin (default "false")
+    type: bool
+  driver:
+    description:
+      - Driver to manage the network (default "bridge")
+    type: str
+  gateway:
+    description:
+      - IPv4 or IPv6 gateway for the subnet
+    type: str
+  internal:
+    description:
+      - Restrict external access from this network (default "false")
+    type: bool
+  ip_range:
+    description:
+      - Allocate container IP from range
+    type: str
+  subnet:
+    description:
+      - Subnet in CIDR format
+    type: str
+  macvlan:
+    description:
+      - Create a Macvlan connection based on this device
+    type: str
+  debug:
+    description:
+      - Return additional information which can be helpful for investigations.
+    type: bool
+    default: False
   state:
     description:
-      - State of volume, default 'present'
+      - State of network, default 'present'
     type: str
     default: present
     choices:
@@ -26,80 +72,78 @@ options:
       - absent
   recreate:
     description:
-      - Recreate volume even if exists.
+      - Recreate network even if exists.
     type: bool
     default: false
-  name:
-    description:
-      - Name of volume.
-    type: str
-    required: true
-  label:
-    description:
-      - Add metadata to a pod volume (e.g., label com.example.key=value).
-    type: dict
-    required: false
-  driver:
-    description:
-      - Specify volume driver name (default local).
-    type: str
-    required: false
-  options:
-    description:
-      - Set driver specific options. For example 'device=tpmfs', 'type=tmpfs'.
+"""
+
+EXAMPLES = r"""
+- name: Create a podman network
+  containers.podman.podman_network:
+    name: podman_network
+  become: true
+
+- name: Create internal podman network
+  containers.podman.podman_network:
+    name: podman_internal
+    internal: true
+    ip_range: 192.168.22.128/25
+    subnet: 192.168.22.0/24
+    gateway: 192.168.22.1
+  become: true
+"""
+
+RETURN = r"""
+network:
+    description: Facts from created or updated networks
+    returned: always
     type: list
-    elements: str
-    required: false
-  executable:
-    description:
-      - Path to C(podman) executable if it is not in the C($PATH) on the
-        machine running C(podman)
-    default: 'podman'
-    type: str
-  debug:
-    description:
-      - Return additional information which can be helpful for investigations.
-    type: bool
-    default: False
+    sample: [
+              {
+                "cniVersion": "0.4.0",
+                "name": "podman",
+                "plugins": [
+                    {
+                        "bridge": "cni-podman0",
+                        "ipMasq": true,
+                        "ipam": {
+                            "ranges": [
+                                [
+                                    {
+                                        "gateway": "10.88.0.1",
+                                        "subnet": "10.88.0.0/16"
+                                    }
+                                ]
+                            ],
+                            "routes": [
+                                {
+                                    "dst": "0.0.0.0/0"
+                                }
+                            ],
+                            "type": "host-local"
+                        },
+                        "isGateway": true,
+                        "type": "bridge"
+                    },
+                    {
+                        "capabilities": {
+                            "portMappings": true
+                        },
+                        "type": "portmap"
+                    },
+                    {
+                        "backend": "iptables",
+                        "type": "firewall"
+                    }
+                ]
+            }
+        ]
+"""
 
-requirements:
-  - "podman"
-
-'''
-
-RETURN = '''
-volume:
-  description: Volume inspection results if exists.
-  returned: always
-  type: dict
-  sample:
-    CreatedAt: '2020-06-05T16:38:55.277628769+03:00'
-    Driver: local
-    Labels:
-      key.com: value
-      key.org: value2
-    Mountpoint: /home/user/.local/share/containers/storage/volumes/test/_data
-    Name: test
-    Options: {}
-    Scope: local
-
-'''
-
-EXAMPLES = '''
-# What modules does for example
-- podman_volume:
-    state: present
-    name: volume1
-    label:
-      key: value
-      key2: value2
-    options:
-      - "device=/dev/loop1"
-      - "type=ext4"
-'''
 # noqa: F402
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
+import os  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -107,7 +151,7 @@ from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 
 
-class PodmanVolumeModuleParams:
+class PodmanNetworkModuleParams:
     """Creates list of arguments for podman CLI command.
 
        Arguments:
@@ -162,29 +206,36 @@ class PodmanVolumeModuleParams:
                                   "version %s only! Current version is %s" % (
                                       param, minv, self.podman_version))
 
-    def addparam_label(self, c):
-        for label in self.params['label'].items():
-            c += ['--label', b'='.join(
-                [to_bytes(l, errors='surrogate_or_strict') for l in label])]
-        return c
+    def addparam_gateway(self, c):
+        return c + ['--gateway', self.params['gateway']]
 
     def addparam_driver(self, c):
         return c + ['--driver', self.params['driver']]
 
-    def addparam_options(self, c):
-        for opt in self.params['options']:
-            c += ['--opt', opt]
-        return c
+    def addparam_subnet(self, c):
+        return c + ['--subnet', self.params['subnet']]
+
+    def addparam_ip_range(self, c):
+        return c + ['--ip-range', self.params['ip_range']]
+
+    def addparam_macvlan(self, c):
+        return c + ['--macvlan', self.params['macvlan']]
+
+    def addparam_internal(self, c):
+        return c + ['--internal=%s' % self.params['internal']]
+
+    def addparam_disable_dns(self, c):
+        return c + ['--disable-dns=%s' % self.params['disable_dns']]
 
 
-class PodmanVolumeDefaults:
+class PodmanNetworkDefaults:
     def __init__(self, module, podman_version):
         self.module = module
         self.version = podman_version
         self.defaults = {
-            'driver': 'local',
-            'label': {},
-            'options': {}
+            'driver': 'bridge',
+            'disable_dns': False,
+            'internal': False,
         }
 
     def default_dict(self):
@@ -192,7 +243,7 @@ class PodmanVolumeDefaults:
         return self.defaults
 
 
-class PodmanVolumeDiff:
+class PodmanNetworkDiff:
     def __init__(self, module, info, podman_version):
         self.module = module
         self.version = podman_version
@@ -204,7 +255,7 @@ class PodmanVolumeDiff:
 
     def defaultize(self):
         params_with_defaults = {}
-        self.default_dict = PodmanVolumeDefaults(
+        self.default_dict = PodmanNetworkDefaults(
             self.module, self.version).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
@@ -220,22 +271,65 @@ class PodmanVolumeDiff:
             return True
         return False
 
-    def diffparam_label(self):
-        before = self.info['labels'] if 'labels' in self.info else {}
-        after = self.params['label']
-        return self._diff_update_and_compare('label', before, after)
+    def diffparam_disable_dns(self):
+        dns_installed = False
+        for f in [
+            '/usr/libexec/cni/dnsname',
+            '/usr/lib/cni/dnsname',
+            '/opt/cni/bin/dnsname',
+            '/opt/bridge/bin/dnsname'
+        ]:
+            if os.path.exists(f):
+                dns_installed = True
+        before = not bool(
+            [k for k in self.info['plugins'] if 'domainname' in k])
+        after = self.params['disable_dns']
+        # If dnsname plugin is not installed, default is disable_dns=True
+        if not dns_installed and self.module.params['disable_dns'] is None:
+            after = True
+        return self._diff_update_and_compare('disable_dns', before, after)
 
     def diffparam_driver(self):
-        before = self.info['driver']
-        after = self.params['driver']
+        # Currently only bridge is supported
+        before = after = 'bridge'
         return self._diff_update_and_compare('driver', before, after)
 
-    def diffparam_options(self):
-        before = self.info['options'] if 'options' in self.info else {}
-        before = ["=".join((k, v)) for k, v in before.items()]
-        after = self.params['options']
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('options', before, after)
+    def diffparam_gateway(self):
+        try:
+            before = self.info['plugins'][0]['ipam']['ranges'][0][0]['gateway']
+        except (IndexError, KeyError):
+            before = ''
+        after = before
+        if self.params['gateway'] is not None:
+            after = self.params['gateway']
+        return self._diff_update_and_compare('gateway', before, after)
+
+    def diffparam_internal(self):
+        try:
+            before = not self.info['plugins'][0]['isgateway']
+        except (IndexError, KeyError):
+            before = False
+        after = self.params['internal']
+        return self._diff_update_and_compare('internal', before, after)
+
+    def diffparam_ip_range(self):
+        # TODO(sshnaidm): implement IP to CIDR convert and vice versa
+        before = after = ''
+        return self._diff_update_and_compare('ip_range', before, after)
+
+    def diffparam_subnet(self):
+        try:
+            before = self.info['plugins'][0]['ipam']['ranges'][0][0]['subnet']
+        except (IndexError, KeyError):
+            before = ''
+        after = before
+        if self.params['subnet'] is not None:
+            after = self.params['subnet']
+        return self._diff_update_and_compare('subnet', before, after)
+
+    def diffparam_macvlan(self):
+        before = after = ''
+        return self._diff_update_and_compare('macvlan', before, after)
 
     def is_different(self):
         diff_func_list = [func for func in dir(self)
@@ -248,8 +342,7 @@ class PodmanVolumeDiff:
             if dff_func():
                 if fail_fast:
                     return True
-                else:
-                    different = True
+                different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
             if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:
@@ -257,21 +350,21 @@ class PodmanVolumeDiff:
         return different
 
 
-class PodmanVolume:
-    """Perform volume tasks.
+class PodmanNetwork:
+    """Perform network tasks.
 
-    Manages podman volume, inspects it and checks its current state
+    Manages podman network, inspects it and checks its current state
     """
 
     def __init__(self, module, name):
-        """Initialize PodmanVolume class.
+        """Initialize PodmanNetwork class.
 
         Arguments:
             module {obj} -- ansible module object
-            name {str} -- name of volume
+            name {str} -- name of network
         """
 
-        super(PodmanVolume, self).__init__()
+        super(PodmanNetwork, self).__init__()
         self.module = module
         self.name = name
         self.stdout, self.stderr = '', ''
@@ -282,13 +375,13 @@ class PodmanVolume:
 
     @property
     def exists(self):
-        """Check if volume exists."""
+        """Check if network exists."""
         return bool(self.info != {})
 
     @property
     def different(self):
-        """Check if volume is different."""
-        diffcheck = PodmanVolumeDiff(
+        """Check if network is different."""
+        diffcheck = PodmanNetworkDiff(
             self.module,
             self.info,
             self.version)
@@ -304,10 +397,10 @@ class PodmanVolume:
         return is_different
 
     def get_info(self):
-        """Inspect volume and gather info about it."""
+        """Inspect network and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'volume', b'inspect', self.name])
+            [self.module.params['executable'], b'network', b'inspect', self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
@@ -320,49 +413,49 @@ class PodmanVolume:
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
-        """Perform action with volume.
+        """Perform action with network.
 
         Arguments:
             action {str} -- action to perform - create, stop, delete
         """
-        b_command = PodmanVolumeModuleParams(action,
-                                             self.module.params,
-                                             self.version,
-                                             self.module,
-                                             ).construct_command_from_params()
-        full_cmd = " ".join([self.module.params['executable'], 'volume']
+        b_command = PodmanNetworkModuleParams(action,
+                                              self.module.params,
+                                              self.version,
+                                              self.module,
+                                              ).construct_command_from_params()
+        full_cmd = " ".join([self.module.params['executable'], 'network']
                             + [to_native(i) for i in b_command])
-        self.module.log("PODMAN-VOLUME-DEBUG: %s" % full_cmd)
+        self.module.log("PODMAN-NETWORK-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
             rc, out, err = self.module.run_command(
-                [self.module.params['executable'], b'volume'] + b_command,
+                [self.module.params['executable'], b'network'] + b_command,
                 expand_user_and_vars=False)
             self.stdout = out
             self.stderr = err
             if rc != 0:
                 self.module.fail_json(
-                    msg="Can't %s volume %s" % (action, self.name),
+                    msg="Can't %s network %s" % (action, self.name),
                     stdout=out, stderr=err)
 
     def delete(self):
-        """Delete the volume."""
+        """Delete the network."""
         self._perform_action('delete')
 
     def create(self):
-        """Create the volume."""
+        """Create the network."""
         self._perform_action('create')
 
     def recreate(self):
-        """Recreate the volume."""
+        """Recreate the network."""
         self.delete()
         self.create()
 
 
-class PodmanVolumeManager:
+class PodmanNetworkManager:
     """Module manager class.
 
-    Defines according to parameters what actions should be applied to volume
+    Defines according to parameters what actions should be applied to network
     """
 
     def __init__(self, module):
@@ -372,13 +465,13 @@ class PodmanVolumeManager:
             module {obj} -- ansible module object
         """
 
-        super(PodmanVolumeManager, self).__init__()
+        super(PodmanNetworkManager, self).__init__()
 
         self.module = module
         self.results = {
             'changed': False,
             'actions': [],
-            'volume': {},
+            'network': {},
         }
         self.name = self.module.params['name']
         self.executable = \
@@ -386,24 +479,24 @@ class PodmanVolumeManager:
                                      required=True)
         self.state = self.module.params['state']
         self.recreate = self.module.params['recreate']
-        self.volume = PodmanVolume(self.module, self.name)
+        self.network = PodmanNetwork(self.module, self.name)
 
-    def update_volume_result(self, changed=True):
-        """Inspect the current volume, update results with last info, exit.
+    def update_network_result(self, changed=True):
+        """Inspect the current network, update results with last info, exit.
 
         Keyword Arguments:
             changed {bool} -- whether any action was performed
                               (default: {True})
         """
-        facts = self.volume.get_info() if changed else self.volume.info
-        out, err = self.volume.stdout, self.volume.stderr
-        self.results.update({'changed': changed, 'volume': facts,
-                             'podman_actions': self.volume.actions},
+        facts = self.network.get_info() if changed else self.network.info
+        out, err = self.network.stdout, self.network.stderr
+        self.results.update({'changed': changed, 'network': facts,
+                             'podman_actions': self.network.actions},
                             stdout=out, stderr=err)
-        if self.volume.diff:
-            self.results.update({'diff': self.volume.diff})
+        if self.network.diff:
+            self.results.update({'diff': self.network.diff})
         if self.module.params['debug']:
-            self.results.update({'podman_version': self.volume.version})
+            self.results.update({'podman_version': self.network.version})
         self.module.exit_json(**self.results)
 
     def execute(self):
@@ -419,28 +512,28 @@ class PodmanVolumeManager:
 
     def make_present(self):
         """Run actions if desired state is 'started'."""
-        if not self.volume.exists:
-            self.volume.create()
-            self.results['actions'].append('created %s' % self.volume.name)
-            self.update_volume_result()
-        elif self.recreate or self.volume.different:
-            self.volume.recreate()
+        if not self.network.exists:
+            self.network.create()
+            self.results['actions'].append('created %s' % self.network.name)
+            self.update_network_result()
+        elif self.recreate or self.network.different:
+            self.network.recreate()
             self.results['actions'].append('recreated %s' %
-                                           self.volume.name)
-            self.update_volume_result()
+                                           self.network.name)
+            self.update_network_result()
         else:
-            self.update_volume_result(changed=False)
+            self.update_network_result(changed=False)
 
     def make_absent(self):
         """Run actions if desired state is 'absent'."""
-        if not self.volume.exists:
+        if not self.network.exists:
             self.results.update({'changed': False})
-        elif self.volume.exists:
-            self.volume.delete()
-            self.results['actions'].append('deleted %s' % self.volume.name)
+        elif self.network.exists:
+            self.network.delete()
+            self.results['actions'].append('deleted %s' % self.network.name)
             self.results.update({'changed': True})
-        self.results.update({'volume': {},
-                             'podman_actions': self.volume.actions})
+        self.results.update({'network': {},
+                             'podman_actions': self.network.actions})
         self.module.exit_json(**self.results)
 
 
@@ -450,15 +543,22 @@ def main():
             state=dict(type='str', default="present",
                        choices=['present', 'absent']),
             name=dict(type='str', required=True),
-            label=dict(type='dict', required=False),
+            disable_dns=dict(type='bool', required=False),
             driver=dict(type='str', required=False),
-            options=dict(type='list', elements='str', required=False),
-            recreate=dict(type='bool', default=False),
+            gateway=dict(type='str', required=False),
+            internal=dict(type='bool', required=False),
+            ip_range=dict(type='str', required=False),
+            subnet=dict(type='str', required=False),
+            macvlan=dict(type='str', required=False),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
+            recreate=dict(type='bool', default=False),
+        ),
+        required_by=dict(  # for IP range to set 'subnet' is required
+            ip_range=('subnet'),
         ))
 
-    PodmanVolumeManager(module).execute()
+    PodmanNetworkManager(module).execute()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,62 @@
+- name: Test podman_login_info
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Get login info with invalid executable
+      containers.podman.podman_login_info:
+        executable: podman_invalid
+        registry: quay.io
+      register: invalid_executable
+      ignore_errors: yes
+
+    - name: Check invalid executable results
+      assert:
+        that:
+          - invalid_executable is failed
+
+    - name: Get login info without specifying registry
+      containers.podman.podman_login_info:
+        executable: podman_invalid
+      register: missing_registry
+      ignore_errors: yes
+
+    - name: Check missing registry results
+      assert:
+        that:
+          - missing_registry is failed
+
+    - name: Get login info for a non-existing registry
+      containers.podman.podman_login_info:
+        registry: non-existing.registry
+      register: non_existing_registry
+
+    - name: Check non-existing registry results
+      assert:
+        that:
+          - "'login' in non_existing_registry"
+          - non_existing_registry.login
+          - "'registry' in non_existing_registry.login"
+          - "'username' in non_existing_registry.login"
+          - "'logged_in' in non_existing_registry.login"
+          - "non_existing_registry.login.registry == 'non-existing.registry'"
+          - "non_existing_registry.login.username == ''"
+          - "non_existing_registry.login.logged_in == False"
+
+    - name: Get login info for a non-existing authfile
+      # This will return not logged in even if logged in via different authfile
+      containers.podman.podman_login_info:
+        registry: quay.io
+        authfile: non-existing.authfile.json
+      register: non_existing_authfile
+
+    - name: Check non-existing authfile results
+      assert:
+        that:
+          - "'login' in non_existing_authfile"
+          - non_existing_authfile.login
+          - "'username' in non_existing_authfile.login"
+          - "'logged_in' in non_existing_authfile.login"
+          - "non_existing_authfile.login.username == ''"
+          - "non_existing_authfile.login.logged_in == False"

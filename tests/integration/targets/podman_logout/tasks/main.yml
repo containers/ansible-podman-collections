@@ -1,0 +1,52 @@
+- name: Test podman_logout
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Logout from docker if it exists
+      command: docker logout
+      ignore_errors: true
+
+    - name: Log out with invalid executable
+      containers.podman.podman_logout:
+        executable: podman_invalid
+      register: invalid_executable
+      ignore_errors: yes
+
+    - name: Check invalid executable results
+      assert:
+        that:
+          - invalid_executable is failed
+
+    - name: Log out of non-existing registry
+      containers.podman.podman_logout:
+      register: non_existing_registry
+
+    - name: Check results
+      assert:
+        that:
+          - "'changed' in non_existing_registry"
+          - "non_existing_registry.changed == False"
+
+    - name: Log out with invalid authfile
+      containers.podman.podman_logout:
+        authfile: authfile_invalid.json
+      register: invalid_authfile
+      ignore_errors: yes
+
+    - name: Check invalid authfile results
+      assert:
+        that:
+          - invalid_authfile is failed
+
+    - name: Log out of all registries
+      containers.podman.podman_logout:
+        all: yes
+      register: all_registries
+
+    - name: Check results
+      assert:
+        that:
+          - "'changed' in all_registries"
+          - "all_registries.changed == True"

@@ -5,6 +5,60 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.3.2
+======
+
+Release Summary
+---------------
+
+bugfixes
+
+Bugfixes
+--------
+
+- podman_container - Fix signals case for podman_container
+
+v1.3.1
+======
+
+Release Summary
+---------------
+
+bugfixes
+
+Bugfixes
+--------
+
+- multiple modules - fix diff calculation for lower/upper cases
+- podman_container - Add note about containerPort setting
+- podman_container - Fix init option it's boolean not string
+- podman_container - Remove pyyaml from requirements
+- podman_network - Check if dnsname plugin installed for CNI
+- podman_volume - Set options for a volume as list and fix idempotency
+
+v1.3.0
+======
+
+Release Summary
+---------------
+
+New podman_network module and bugfixes
+
+Minor Changes
+-------------
+
+- Create podman_network module for podman networks management
+
+Bugfixes
+--------
+
+- podman_volume - Fix return data from podman_volume module
+
+New Modules
+-----------
+
+- containers.podman.podman_network - Manage Podman networks
+
 v1.2.0
 ======
 
