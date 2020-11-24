@@ -655,15 +655,15 @@ options:
       - Create a bind mount. If you specify, volume /HOST-DIR:/CONTAINER-DIR[:OPTIONS],
         podman bind mounts /HOST-DIR in the host to /CONTAINER-DIR in the
         podman container.
-        OPTIONS is a comma delimited list of these: 
-        `rw` read-write (the default) or `ro` read-only 
-        `z` shared content label or `Z` private content label
-        [r]shared|[r]slave|[r]private
-        [r]bind
-        [no]exec
-        [no]dev
-        [no]suid
-        [O]
+        OPTIONS is a comma delimited list of these 
+         * `rw` read-write (the default) or `ro` read-only 
+         * `z` shared content label or `Z` private content label
+         * [r]shared|[r]slave|[r]private
+         * [r]bind
+         * [no]exec
+         * [no]dev
+         * [no]suid
+         * [O]
     type: list
     elements: str
     aliases:
