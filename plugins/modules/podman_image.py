@@ -50,6 +50,7 @@ DOCUMENTATION = r'''
         - Whether or not to force push or pull an image.
         - When building, force the build even if the image already exists.
       type: bool
+      default: False
     state:
       description:
         - Whether an image should be present, absent, or built.
@@ -715,7 +716,7 @@ def main():
                 default={},
                 options=dict(
                     annotation=dict(type='dict'),
-                    force_rm=dict(type='bool'),
+                    force_rm=dict(type='bool', default=False),
                     format=dict(
                         type='str',
                         choices=['oci', 'docker'],
