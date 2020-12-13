@@ -384,4 +384,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Custom
+changelogs/.plugin-cache.yaml
 # End of https://www.gitignore.io/api/git,linux,pydev,python,windows,pycharm+all,jupyternotebook,vim,webstorm,emacs,dotenv
