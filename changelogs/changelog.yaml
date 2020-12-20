@@ -174,3 +174,9 @@ releases:
       name: podman_containers
       namespace: ''
     release_date: '2020-09-03'
+  1.4.1:
+    changes:
+      bugfixes:
+        - podman_container - Convert gidmap to list for podman_container
+        - podman_container - Convert log-opts to dictionary and idempotent
+      release_summary: Bugfixes for podman container
