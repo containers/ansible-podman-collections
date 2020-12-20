@@ -8,6 +8,8 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_containers.yml'
       - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
       - 'plugins/modules/podman_containers.py'
       - 'tests/integration/targets/podman_containers/**'
     branches:
@@ -19,6 +21,8 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_container.yml'
       - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
       - 'plugins/modules/podman_containers.py'
       - 'tests/integration/targets/podman_containers/**'
   schedule:
