@@ -5,6 +5,20 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.4.1
+======
+
+Release Summary
+---------------
+
+Bugfixes for podman container
+
+Bugfixes
+--------
+
+- podman_container - Convert gidmap to list for podman_container
+- podman_container - Convert log-opts to dictionary and idempotent
+
 v1.4.0
 ======
 
