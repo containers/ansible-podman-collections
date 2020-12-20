@@ -286,7 +286,8 @@ options:
   gidmap:
     description:
       - Run the container in a new user namespace using the supplied mapping.
-    type: str
+    type: list
+    elements: str
   group_add:
     description:
       - Add additional groups to run as
@@ -643,6 +644,7 @@ options:
     description:
       - Run the container in a new user namespace using the supplied mapping.
     type: list
+    elements: str
   ulimit:
     description:
       - Ulimit options
