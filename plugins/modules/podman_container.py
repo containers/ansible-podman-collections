@@ -421,11 +421,27 @@ options:
   log_opt:
     description:
       - Logging driver specific options. Used to set the path to the container
-        log file. For example log_opt
-        "path=/var/log/container/mycontainer.json"
-    type: str
+        log file.
+    type: dict
     aliases:
       - log_options
+    suboptions:
+      path:
+        description:
+          - Specify a path to the log file (e.g. /var/log/container/mycontainer.json).
+        type: str
+        required: false
+      max_size:
+        description:
+          - Specify a max size of the log file (e.g 10mb).
+        type: str
+        required: false
+      tag:
+        description:
+          - Specify a custom log tag for the container.
+        type: str
+        required: false
+
   mac_address:
     description:
       - Specify a MAC address for the container, for example

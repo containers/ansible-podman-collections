@@ -77,7 +77,11 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     log_level=dict(
         type='str',
         choices=["debug", "info", "warn", "error", "fatal", "panic"]),
-    log_opt=dict(type='str', aliases=['log_options']),
+    log_opt=dict(type='dict', aliases=['log_options'],
+                 options=dict(
+        max_size=dict(type='str'),
+        path=dict(type='str'),
+        tag=dict(type='str'))),
     mac_address=dict(type='str'),
     memory=dict(type='str'),
     memory_reservation=dict(type='str'),
@@ -387,7 +391,14 @@ class PodmanModuleParams:
         return c + ['--log-driver', self.params['log_driver']]
 
     def addparam_log_opt(self, c):
-        return c + ['--log-opt', self.params['log_opt']]
+        for k, v in self.params['log_opt'].items():
+            if v is not None:
+                c += ['--log-opt',
+                      b"=".join([to_bytes(k.replace('max_size', 'max-size'),
+                                          errors='surrogate_or_strict'),
+                                 to_bytes(v,
+                                          errors='surrogate_or_strict')])]
+        return c
 
     def addparam_log_level(self, c):
         return c + ['--log-level', self.params['log_level']]
@@ -880,11 +891,33 @@ class PodmanContainerDiff:
 
     # Parameter has limited idempotency, unable to guess the default log_path
     def diffparam_log_opt(self):
-        before = self.info['logpath']
-        if self.module_params['log_opt'] in [None, '']:
-            after = before
-        else:
-            after = self.params['log_opt'].split("=")[1]
+        before, after = {}, {}
+        # Log path
+        if 'logpath' in self.info:
+            path_before = self.info['logpath']
+            if (self.module_params['log_opt'] and
+                    'path' in self.module_params['log_opt'] and
+                    self.module_params['log_opt']['path'] is not None):
+                path_after = self.params['log_opt']['path']
+            else:
+                path_after = path_before
+            if path_before != path_after:
+                before.update({'log-path': path_before})
+                after.update({'log-path': path_after})
+
+        # Log tag
+        if 'logtag' in self.info:
+            tag_before = self.info['logtag']
+            if (self.module_params['log_opt'] and
+                    'tag' in self.module_params['log_opt'] and
+                    self.module_params['log_opt']['tag'] is not None):
+                tag_after = self.params['log_opt']['tag']
+            else:
+                tag_after = ''
+            if tag_before != tag_after:
+                before.update({'log-tag': tag_before})
+                after.update({'log-tag': tag_after})
+
         return self._diff_update_and_compare('log_opt', before, after)
 
     def diffparam_mac_address(self):
