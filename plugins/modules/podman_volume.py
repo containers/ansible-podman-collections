@@ -234,6 +234,18 @@ class PodmanVolumeDiff:
         before = self.info['options'] if 'options' in self.info else {}
         before = ["=".join((k, v)) for k, v in before.items()]
         after = self.params['options']
+        # Gor UID, GID
+        ids = []
+        if self.info['uid']:
+            before += ['uid=%s' % str(self.info['uid'])]
+        if self.info['gid']:
+            before += ['gid=%s' % str(self.info['gid'])]
+        if self.params['options']:
+            for opt in self.params['options']:
+                if 'uid=' in opt or 'gid=' in opt:
+                    ids += opt.split("o=")[1].split(",")
+        after = [i for i in after if 'gid' not in i and 'uid' not in i]
+        after += ids
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('options', before, after)
 
