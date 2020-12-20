@@ -49,6 +49,11 @@ options:
     description:
       - Allocate container IP from range
     type: str
+  ipv6:
+    description:
+      - Enable IPv6 (Dual Stack) networking. You must pass a IPv6 subnet.
+        The subnet option must be used with the ipv6 option.
+    type: bool
   subnet:
     description:
       - Subnet in CIDR format
@@ -140,7 +145,6 @@ network:
         ]
 """
 
-# noqa: F402
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
 import os  # noqa: F402
@@ -217,6 +221,9 @@ class PodmanNetworkModuleParams:
 
     def addparam_ip_range(self, c):
         return c + ['--ip-range', self.params['ip_range']]
+
+    def addparam_ipv6(self, c):
+        return c + ['--ipv6']
 
     def addparam_macvlan(self, c):
         return c + ['--macvlan', self.params['macvlan']]
@@ -548,14 +555,16 @@ def main():
             gateway=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
             ip_range=dict(type='str', required=False),
+            ipv6=dict(type='bool', required=False),
             subnet=dict(type='str', required=False),
             macvlan=dict(type='str', required=False),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
             recreate=dict(type='bool', default=False),
         ),
-        required_by=dict(  # for IP range to set 'subnet' is required
+        required_by=dict(  # for IP range and GW to set 'subnet' is required
             ip_range=('subnet'),
+            gateway=('subnet'),
         ))
 
     PodmanNetworkManager(module).execute()
