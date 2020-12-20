@@ -5,6 +5,45 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.4.0
+======
+
+Release Summary
+---------------
+
+New modules and bugfixes, new network options
+
+Minor Changes
+-------------
+
+- podman_container - Add log level for Podman in module
+- podman_container - Add mac_address field to podman_container module
+- podman_container - Add strict image compare with hashes
+- podman_container - Improve compatibility with docker_container by adding aliases
+- podman_container - Move containers logic to module utils
+- podman_image - reuse existing results in present()
+- podman_network - Add IPv6 to network
+- podman_network - Add support of network options like MTU, VLAN
+- podman_pod - Move pod logic to separate library
+
+Bugfixes
+--------
+
+- podman_container - Fix force restart option for containers
+- podman_container - Fix idempotency for volume GID and UID
+- podman_container - Fix no_hosts idempotency for newer version
+- podman_container - Remove 'detach' when creating container
+- podman_image - Fix doc defaults for podman_image
+- podman_logout - Handle podman logout not logging out when logged in via different tool
+- podman_network - Correct IP range example for podman_network
+
+New Modules
+-----------
+
+- containers.podman.podman_containers - Manage multiple Podman containers at once
+- containers.podman.podman_login_info - Get info about Podman logged in registries
+- containers.podman.podman_logout - Log out with Podman from registries
+
 v1.3.2
 ======
 
