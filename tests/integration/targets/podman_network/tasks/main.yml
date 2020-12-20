@@ -114,6 +114,7 @@
         name: "{{ network_name }}"
         state: present
         gateway: 10.100.100.100
+        subnet: 10.100.100.0/24
       register: info6
 
     - name: Check info
@@ -126,6 +127,7 @@
         name: "{{ network_name }}"
         state: present
         gateway: 10.100.100.100
+        subnet: 10.100.100.0/24
       register: info7
 
     - name: Check info
@@ -191,6 +193,13 @@
       assert:
         that:
           - info13 is not changed
+
+    - name: Create network with ipv6 subnet
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        subnet: 2001:cafe::/64
+        ipv6: true
 
     - name: Make sure network doesn't exist
       containers.podman.podman_network:
