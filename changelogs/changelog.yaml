@@ -142,3 +142,35 @@ releases:
       - podman_container - Fix signals case for podman_container
       release_summary: bugfixes
     release_date: '2020-10-20'
+  1.4.0:
+    changes:
+      bugfixes:
+      - podman_container - Fix force restart option for containers
+      - podman_logout - Handle podman logout not logging out when logged in via different tool
+      - podman_network - Correct IP range example for podman_network
+      - podman_image - Fix doc defaults for podman_image
+      - podman_container - Remove 'detach' when creating container
+      - podman_container - Fix no_hosts idempotency for newer version
+      - podman_container - Fix idempotency for volume GID and UID
+      minor_changes:
+      - podman_container - Add log level for Podman in module
+      - podman_container - Add strict image compare with hashes
+      - podman_container - Move containers logic to module utils
+      - podman_pod - Move pod logic to separate library
+      - podman_container - Improve compatibility with docker_container by adding aliases
+      - podman_image - reuse existing results in present()
+      - podman_container - Add mac_address field to podman_container module
+      - podman_network - Add IPv6 to network
+      - podman_network - Add support of network options like MTU, VLAN
+      release_summary: New modules and bugfixes, new network options
+    modules:
+    - description: Log out with Podman from registries
+      name: podman_logout
+      namespace: ''
+    - description: Get info about Podman logged in registries
+      name: podman_login_info
+      namespace: ''
+    - description: Manage multiple Podman containers at once
+      name: podman_containers
+      namespace: ''
+    release_date: '2020-09-03'

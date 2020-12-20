@@ -1,6 +1,6 @@
 namespace: containers
 name: podman
-version: 1.3.2
+version: 1.4.0
 readme: README.md
 authors:
   - Sagi Shnaidman <sshnaidm@redhat.com>
@@ -11,9 +11,11 @@ tags:
   - containers
   - podman
   - libpod
+  - buildah
+  - docker
 dependencies: {}
-repository: https://github.com/containers/ansible-podman-collections.git
-documentation: https://github.com/containers/ansible-podman-collections
+repository: https://github.com/containers/ansible-podman-collections
+documentation: https://docs.ansible.com/ansible/latest/collections/containers/podman/
 homepage: https://github.com/containers/ansible-podman-collections
 issues: https://github.com/containers/ansible-podman-collections/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
