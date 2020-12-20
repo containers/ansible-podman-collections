@@ -62,6 +62,21 @@ options:
     description:
       - Create a Macvlan connection based on this device
     type: str
+  opt:
+    description:
+      - Add network options. Currently 'vlan' and 'mtu' are supported.
+    type: dict
+    suboptions:
+      mtu:
+        description:
+          - MTU size for bridge network interface.
+        type: int
+        required: false
+      vlan:
+        description:
+          - VLAN tag for bridge which enables vlan_filtering.
+        type: int
+        required: false
   debug:
     description:
       - Return additional information which can be helpful for investigations.
@@ -231,6 +246,13 @@ class PodmanNetworkModuleParams:
     def addparam_internal(self, c):
         return c + ['--internal=%s' % self.params['internal']]
 
+    def addparam_opt(self, c):
+        for opt in self.params['opt'].items():
+            c += ['--opt',
+                  b"=".join([to_bytes(k, errors='surrogate_or_strict')
+                             for k in opt])]
+        return c
+
     def addparam_disable_dns(self, c):
         return c + ['--disable-dns=%s' % self.params['disable_dns']]
 
@@ -337,6 +359,20 @@ class PodmanNetworkDiff:
     def diffparam_macvlan(self):
         before = after = ''
         return self._diff_update_and_compare('macvlan', before, after)
+
+    def diffparam_opt(self):
+        vlan_before = self.info['plugins'][0].get('vlan')
+        vlan_after = self.params['opt'].get('vlan') if self.params['opt'] else None
+        if vlan_before or vlan_after:
+            before, after = {'vlan': vlan_before}, {'vlan': vlan_after}
+        else:
+            before, after = {}, {}
+        mtu_before = self.info['plugins'][0].get('mtu')
+        mtu_after = self.params['opt'].get('mtu') if self.params['opt'] else None
+        if mtu_before or mtu_after:
+            before.update({'mtu': mtu_before})
+            after.update({'mtu': mtu_after})
+        return self._diff_update_and_compare('opt', before, after)
 
     def is_different(self):
         diff_func_list = [func for func in dir(self)
@@ -558,6 +594,10 @@ def main():
             ipv6=dict(type='bool', required=False),
             subnet=dict(type='str', required=False),
             macvlan=dict(type='str', required=False),
+            opt=dict(type='dict', required=False,
+                     options=dict(
+                         mtu=dict(type='int', required=False),
+                         vlan=dict(type='int', required=False))),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
             recreate=dict(type='bool', default=False),
