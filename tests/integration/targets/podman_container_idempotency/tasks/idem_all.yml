@@ -77,7 +77,7 @@
     command: 1h
   register: test5
 
-- name: Check info with changed environment vars
+- name: Check info with log level
   assert:
     that: test5 is changed
 
@@ -90,7 +90,7 @@
     command: 1h
   register: test6
 
-- name: Check info with changed environment vars
+- name: Check info with log level again
   assert:
     that: test6 is not changed
 
@@ -103,7 +103,7 @@
     command: 1h
   register: test7
 
-- name: Check info with changed environment vars
+- name: Check info with changed log level
   assert:
     that: test7 is changed
 
@@ -115,6 +115,110 @@
     command: 1h
   register: test8
 
-- name: Check info with changed environment vars
+- name: Check info with default log level
   assert:
     that: test8 is not changed
+
+- name: Run container with log opt tag
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      tag: nonotag
+    log_driver: journald
+    command: 1h
+  register: test9
+
+- name: Check info with log opt tag
+  assert:
+    that: test9 is changed
+
+- name: Run container with log opt tag - again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      tag: nonotag
+    log_driver: journald
+    command: 1h
+  register: test10
+
+- name: Check info with log opt tag - again
+  assert:
+    that: test10 is not changed
+
+- name: Run container with default log opt tag
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+    log_driver: journald
+  register: test11
+
+- name: Check info with default log opt tag
+  assert:
+    that: test11 is changed
+
+- name: Run container with log opt path
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      path: /tmp/container.log
+    log_driver: journald
+    command: 1h
+  register: test12
+
+- name: Check info with log opt path
+  assert:
+    that: test12 is changed
+
+- name: Run container with changed log opt path
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      path: /tmp/container2.log
+    log_driver: journald
+    command: 1h
+  register: test13
+
+- name: Check info with changed log opt path
+  assert:
+    that: test13 is changed
+
+- name: Run container with default log opt path
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_driver: journald
+    command: 1h
+  register: test14
+
+# We can't guess the default log path
+- name: Check info with default log opt path
+  assert:
+    that: test14 is not changed
+
+- name: Run container with all log-opts
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_driver: journald
+    log_opt:
+      path: /tmp/container3.log
+      max_size: 100mb
+      tag: sometag
+    command: 1h
+
+- name: Remove test container
+  containers.podman.podman_container:
+    name: idempotency
+    state: absent
