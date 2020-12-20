@@ -148,6 +148,117 @@
           - info10 is failed
           - delete.volume == {}
 
+    - name: Create volume with UID option
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=uid=1001"
+      register: info11
+
+    - name: Check info
+      assert:
+        that:
+          - info11 is changed
+
+    - name: Create volume with UID option - again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=uid=1001"
+      register: info12
+
+    - name: Check info
+      assert:
+        that:
+          - info12 is not changed
+
+    - name: Create volume with UID option - default
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info13
+
+    - name: Check info
+      assert:
+        that:
+          - info13 is changed
+
+    - name: Create volume with GID option
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=gid=1001"
+      register: info14
+
+    - name: Check info
+      assert:
+        that:
+          - info14 is changed
+
+    - name: Create volume with GID option - again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=gid=1001"
+      register: info15
+
+    - name: Check info
+      assert:
+        that:
+          - info15 is not changed
+
+    - name: Create volume with GID option - default
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info16
+
+    - name: Check info
+      assert:
+        that:
+          - info16 is changed
+
+    - name: Create volume with GID and UID option
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=gid=1002,uid=1002"
+      register: info17
+
+    - name: Check info
+      assert:
+        that:
+          - info17 is changed
+
+    - name: Create volume with GID and UID option - again
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "o=uid=1002"
+          - "o=gid=1002"
+      register: info18
+
+    - name: Check info
+      assert:
+        that:
+          - info18 is not changed
+
+    - name: Create volume with GID and UID option - default
+      containers.podman.podman_volume:
+        name: "{{ volume_name }}"
+        state: present
+      register: info19
+
+    - name: Check info
+      assert:
+        that:
+          - info19 is changed
   always:
 
     - name: Make sure volume doesn't exist
