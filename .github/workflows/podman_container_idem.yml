@@ -8,6 +8,8 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_container_idempotency.yml'
       - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
       - 'tests/integration/targets/podman_container_idempotency/**'
     branches:
       - master
@@ -18,6 +20,8 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_container_idempotency.yml'
       - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
       - 'tests/integration/targets/podman_container_idempotency/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC
