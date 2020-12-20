@@ -53,7 +53,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
                 'exposed', 'exposed_ports']),
     force_restart=dict(type='bool', default=False,
                        aliases=['restart']),
-    gidmap=dict(type='str'),
+    gidmap=dict(type='list', elements='str'),
     group_add=dict(type='list', aliases=['groups']),
     healthcheck=dict(type='str'),
     healthcheck_interval=dict(type='str'),
@@ -116,7 +116,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     systemd=dict(type='bool'),
     tmpfs=dict(type='dict'),
     tty=dict(type='bool'),
-    uidmap=dict(type='list'),
+    uidmap=dict(type='list', elements='str'),
     ulimit=dict(type='list', aliases=['ulimits']),
     user=dict(type='str'),
     userns=dict(type='str', aliases=['userns_mode']),
@@ -323,7 +323,9 @@ class PodmanModuleParams:
         return c
 
     def addparam_gidmap(self, c):
-        return c + ['--gidmap', self.params['gidmap']]
+        for gidmap in self.params['gidmap']:
+            c += ['--gidmap', gidmap]
+        return c
 
     def addparam_group_add(self, c):
         for g in self.params['group_add']:
