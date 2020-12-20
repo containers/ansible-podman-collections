@@ -940,6 +940,9 @@ class PodmanContainerDiff:
 
     def diffparam_no_hosts(self):
         before = not bool(self.info['hostspath'])
+        # For newer verions of Podman
+        if 'resolvconfpath' in self.info:
+            before = not bool(self.info['resolvconfpath'])
         after = self.params['no_hosts']
         if self.params['network'] == ['none']:
             after = True
