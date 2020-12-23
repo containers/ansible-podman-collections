@@ -1122,6 +1122,8 @@ class PodmanContainerDiff:
     def diffparam_volume(self):
         def clean_volume(x):
             '''Remove trailing and double slashes from volumes.'''
+            if not x.rstrip("/"):
+                return "/"
             return x.replace("//", "/").rstrip("/")
 
         before = self.info['mounts']
