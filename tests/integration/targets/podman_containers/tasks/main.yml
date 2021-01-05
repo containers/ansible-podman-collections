@@ -244,7 +244,7 @@
             command: sleep 1d
           - name: container1
             image: alpine:3.7
-            state: stopped
+            state: created
             command: sleep 1d
       register: created
 
@@ -257,7 +257,7 @@
             command: sleep 1d
           - name: container1
             image: alpine:3.7
-            state: stopped
+            state: created
             command: sleep 1d
       register: created_again
 

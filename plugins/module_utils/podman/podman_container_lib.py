@@ -11,7 +11,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     name=dict(required=True, type='str'),
     executable=dict(default='podman', type='str'),
     state=dict(type='str', default='started', choices=[
-        'absent', 'present', 'stopped', 'started']),
+        'absent', 'present', 'stopped', 'started', 'created']),
     image=dict(type='str'),
     annotation=dict(type='dict'),
     authfile=dict(type='path'),
@@ -1344,6 +1344,11 @@ class PodmanContainer:
     def recreate(self):
         """Recreate the container."""
         self.delete()
+        self.create()
+
+    def recreate_run(self):
+        """Recreate and run the container."""
+        self.delete()
         self.run()
 
     def restart(self):
@@ -1407,7 +1412,7 @@ class PodmanManager:
         """Run actions if desired state is 'started'."""
         if self.container.running and \
                 (self.container.different or self.recreate):
-            self.container.recreate()
+            self.container.recreate_run()
             self.results['actions'].append('recreated %s' %
                                            self.container.name)
             self.update_container_result()
@@ -1427,7 +1432,7 @@ class PodmanManager:
             self.update_container_result()
             return
         elif self.container.stopped and self.container.different:
-            self.container.recreate()
+            self.container.recreate_run()
             self.results['actions'].append('recreated %s' %
                                            self.container.name)
             self.update_container_result()
@@ -1436,6 +1441,26 @@ class PodmanManager:
             self.container.start()
             self.results['actions'].append('started %s' % self.container.name)
             self.update_container_result()
+            return
+
+    def make_created(self):
+        """Run actions if desired state is 'created'."""
+        if not self.container.exists and not self.image:
+            self.module.fail_json(msg='Cannot create container when image'
+                                      ' is not specified!')
+        if not self.container.exists:
+            self.container.create()
+            self.results['actions'].append('created %s' % self.container.name)
+            self.update_container_result()
+            return
+        else:
+            if (self.container.different or self.recreate):
+                self.container.recreate()
+                self.results['actions'].append('recreated %s' %
+                                               self.container.name)
+                self.update_container_result()
+                return
+            self.update_container_result(changed=False)
             return
 
     def make_stopped(self):
@@ -1474,7 +1499,8 @@ class PodmanManager:
             'present': self.make_started,
             'started': self.make_started,
             'absent': self.make_absent,
-            'stopped': self.make_stopped
+            'stopped': self.make_stopped,
+            'created': self.make_created,
         }
         process_action = states_map[self.state]
         process_action()
