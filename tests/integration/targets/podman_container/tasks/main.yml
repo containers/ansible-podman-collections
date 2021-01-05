@@ -165,7 +165,7 @@
         fail_msg: Deleting stopped container test failed!
         success_msg: Deleting stopped container test passed!
 
-    - name: Create container, but don't run
+    - name: Create container in 'stopped' state
       containers.podman.podman_container:
         name: container
         image: alpine:3.7
@@ -183,6 +183,48 @@
           - "'created container' in created.actions"
         fail_msg: "Creating stopped container test failed!"
         success_msg: "Creating stopped container test passed!"
+
+    - name: Delete created container
+      containers.podman.podman_container:
+        name: container
+        state: absent
+
+    - name: Create container in 'created' state
+      containers.podman.podman_container:
+        name: container
+        image: alpine:3.7
+        state: created
+        command: sleep 1d
+      register: created
+
+    - name: Check output is correct
+      assert:
+        that:
+          - created is changed
+          - created.container is defined
+          - created.container != {}
+          - not created.container['State']['Running']
+          - "'created container' in created.actions"
+        fail_msg: "Creating stopped container test failed!"
+        success_msg: "Creating stopped container test passed!"
+
+    - name: Force container recreate
+      containers.podman.podman_container:
+        name: container
+        image: alpine
+        state: created
+        command: sleep 1d
+        recreate: true
+      register: recreated
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreated is changed
+          - recreated.container is defined
+          - not recreated.container['State']['Running']
+          - "'recreated container' in recreated.actions"
+        fail_msg: Force recreate test failed!
 
     - name: Delete created container
       containers.podman.podman_container:
