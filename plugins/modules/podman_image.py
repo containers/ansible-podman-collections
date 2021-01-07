@@ -166,26 +166,26 @@ DOCUMENTATION = r'''
 
 EXAMPLES = r"""
 - name: Pull an image
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: quay.io/bitnami/wildfly
 
 - name: Remove an image
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: quay.io/bitnami/wildfly
     state: absent
 
 - name: Pull a specific version of an image
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: redis
     tag: 4
 
 - name: Build a basic OCI image
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
 
 - name: Build a basic OCI image with advanced parameters
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     build:
@@ -198,14 +198,14 @@ EXAMPLES = r"""
         info: Load balancer for my cool app
 
 - name: Build a Docker formatted image
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     build:
       format: docker
 
 - name: Build and push an image using existing credentials
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
     push: yes
@@ -213,7 +213,7 @@ EXAMPLES = r"""
       dest: quay.io/acme
 
 - name: Build and push an image using an auth file
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     push: yes
     auth_file: /etc/containers/auth.json
@@ -221,7 +221,7 @@ EXAMPLES = r"""
       dest: quay.io/acme
 
 - name: Build and push an image using username and password
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: nginx
     push: yes
     username: bugs
@@ -230,7 +230,7 @@ EXAMPLES = r"""
       dest: quay.io/acme
 
 - name: Build and push an image to multiple registries
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: "{{ item }}"
     path: /path/to/build/dir
     push: yes
@@ -240,7 +240,7 @@ EXAMPLES = r"""
     - docker.io/acme/nginx
 
 - name: Build and push an image to multiple registries with separate parameters
-  container.podman.podman_image:
+  containers.podman.podman_image:
     name: "{{ item.name }}"
     tag: "{{ item.tag }}"
     path: /path/to/build/dir
@@ -383,6 +383,7 @@ import json
 import re
 import shlex
 
+from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
 
@@ -425,6 +426,10 @@ class PodmanImageManager(object):
             self.absent()
 
     def _run(self, args, expected_rc=0, ignore_errors=False):
+        cmd = " ".join([self.executable]
+                       + [to_native(i) for i in args])
+        self.module.log("PODMAN-IMAGE-DEBUG: %s" % cmd)
+        self.results['podman_actions'].append(cmd)
         return run_podman_command(
             module=self.module,
             executable=self.executable,
@@ -763,6 +768,7 @@ def main():
     results = dict(
         changed=False,
         actions=[],
+        podman_actions=[],
         image={},
     )
 
