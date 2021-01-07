@@ -33,6 +33,7 @@
       assert:
         that:
           - pull1 is changed
+          - pull1.podman_actions is defined
           - pull2 is not changed
           - pull3 is changed
           - pull4 is changed
