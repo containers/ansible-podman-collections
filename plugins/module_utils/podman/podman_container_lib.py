@@ -1410,6 +1410,17 @@ class PodmanManager:
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
+        if self.container.exists and self.restart:
+            if self.container.running:
+                self.container.restart()
+                self.results['actions'].append('restarted %s' %
+                                               self.container.name)
+            else:
+                self.container.start()
+                self.results['actions'].append('started %s' %
+                                               self.container.name)
+            self.update_container_result()
+            return
         if self.container.running and \
                 (self.container.different or self.recreate):
             self.container.recreate_run()
