@@ -226,6 +226,36 @@
           - "'recreated container' in recreated.actions"
         fail_msg: Force recreate test failed!
 
+    - name: Restart container
+      containers.podman.podman_container:
+        name: container
+        restart: true
+      register: restarted
+
+    - name: Check output is correct
+      assert:
+        that:
+          - restarted is changed
+          - restarted.container is defined
+          - restarted.container['State']['Running']
+          - "'started container' in restarted.actions"
+        fail_msg: Restart container test failed!
+
+    - name: Restart running container
+      containers.podman.podman_container:
+        name: container
+        restart: true
+      register: restarted
+
+    - name: Check output is correct
+      assert:
+        that:
+          - restarted is changed
+          - restarted.container is defined
+          - restarted.container['State']['Running']
+          - "'restarted container' in restarted.actions"
+        fail_msg: Restart running container test failed!
+
     - name: Delete created container
       containers.podman.podman_container:
         name: container
