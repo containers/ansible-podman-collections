@@ -63,7 +63,6 @@ DOCUMENTATION = r'''
     validate_certs:
       description:
         - Require HTTPS and validate certificates when pulling or pushing. Also used during build if a pull or push is necessary.
-      default: True
       type: bool
       aliases:
         - tlsverify
@@ -709,7 +708,7 @@ def main():
             path=dict(type='str'),
             force=dict(type='bool', default=False),
             state=dict(type='str', default='present', choices=['absent', 'present', 'build']),
-            validate_certs=dict(type='bool', default=True, aliases=['tlsverify', 'tls_verify']),
+            validate_certs=dict(type='bool', aliases=['tlsverify', 'tls_verify']),
             executable=dict(type='str', default='podman'),
             auth_file=dict(type='path', aliases=['authfile']),
             username=dict(type='str'),
