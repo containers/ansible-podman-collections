@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function)
 import json  # noqa: F402
+import shlex  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -713,9 +714,7 @@ class PodmanContainerDiff:
             before = self.info['config']['cmd']
             after = self.params['command']
             if isinstance(after, str):
-                after = [i.lower() for i in after.split()]
-            elif isinstance(after, list):
-                after = [i.lower() for i in after]
+                after = shlex.split(after)
             return self._diff_update_and_compare('command', before, after)
         return False
 
