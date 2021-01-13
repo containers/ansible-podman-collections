@@ -1,0 +1,761 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>containers.podman.podman_image – Pull images for use by podman &#8212; Python  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="ansible-collections-containers-podman-podman-image-module"></span><div class="section" id="containers-podman-podman-image-pull-images-for-use-by-podman">
+<h1>containers.podman.podman_image – Pull images for use by podman<a class="headerlink" href="#containers-podman-podman-image-pull-images-for-use-by-podman" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.4.2-dev).</p>
+<p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_image</span></code>.</p>
+</div>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id2">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id3">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id4">Return Values</a></p></li>
+</ul>
+</div>
+<div class="section" id="synopsis">
+<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Build, pull, or push images using Podman.</p></li>
+</ul>
+</div>
+<div class="section" id="parameters">
+<h2><a class="toc-backref" href="#id2">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<table  border=0 cellpadding=0 class="documentation-table">
+    <tr>
+        <th colspan="2">Parameter</th>
+        <th>Choices/<font color="blue">Defaults</font></th>
+                    <th width="100%">Comments</th>
+    </tr>
+                <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-auth_file"></div>
+                <b>auth_file</b>
+                <a class="ansibleOptionLink" href="#parameter-auth_file" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">path</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to file containing authorization credentials to the remote registry.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: authfile</div>
+                                </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-build"></div>
+                <b>build</b>
+                <a class="ansibleOptionLink" href="#parameter-build" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">dictionary</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Arguments that control image build.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: build_args, buildargs</div>
+                                </td>
+        </tr>
+                                    <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/annotation"></div>
+                <b>annotation</b>
+                <a class="ansibleOptionLink" href="#parameter-build/annotation" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">dictionary</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Dictionary of key=value pairs to add to the image. Only works with OCI images. Ignored for Docker containers.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/cache"></div>
+                <b>cache</b>
+                <a class="ansibleOptionLink" href="#parameter-build/cache" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Whether or not to use cached layers when building an image</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/extra_args"></div>
+                <b>extra_args</b>
+                <a class="ansibleOptionLink" href="#parameter-build/extra_args" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Extra args to pass to build, if executed. Does not idempotently check for new build args.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/force_rm"></div>
+                <b>force_rm</b>
+                <a class="ansibleOptionLink" href="#parameter-build/force_rm" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Always remove intermediate containers after a build, even if the build is unsuccessful.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/format"></div>
+                <b>format</b>
+                <a class="ansibleOptionLink" href="#parameter-build/format" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>docker</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>oci</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Format of the built image.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/rm"></div>
+                <b>rm</b>
+                <a class="ansibleOptionLink" href="#parameter-build/rm" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Remove intermediate containers after a successful build</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/volume"></div>
+                <b>volume</b>
+                <a class="ansibleOptionLink" href="#parameter-build/volume" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Specify multiple volume / mount options to mount one or more mounts to a container.</div>
+                                                    </td>
+        </tr>
+
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-ca_cert_dir"></div>
+                <b>ca_cert_dir</b>
+                <a class="ansibleOptionLink" href="#parameter-ca_cert_dir" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">path</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to directory containing TLS certificates and keys to use.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-executable"></div>
+                <b>executable</b>
+                <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"podman"</div>
+                                </td>
+                                                            <td>
+                                        <div>Path to <code>podman</code> executable if it is not in the <code>$PATH</code> on the machine running <code>podman</code>.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-force"></div>
+                <b>force</b>
+                <a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Whether or not to force push or pull an image.</div>
+                                        <div>When building, force the build even if the image already exists.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-name"></div>
+                <b>name</b>
+                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                             / <span style="color: red">required</span>                    </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Name of the image to pull, push, or delete. It may contain a tag using the format <code>image:tag</code>.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-password"></div>
+                <b>password</b>
+                <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Password to use when authenticating to remote registries.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-path"></div>
+                <b>path</b>
+                <a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to directory containing the build file.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-pull"></div>
+                <b>pull</b>
+                <a class="ansibleOptionLink" href="#parameter-pull" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Whether or not to pull the image.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-push"></div>
+                <b>push</b>
+                <a class="ansibleOptionLink" href="#parameter-push" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Whether or not to push an image.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-push_args"></div>
+                <b>push_args</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">dictionary</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Arguments that control pushing images.</div>
+                                                    </td>
+        </tr>
+                                    <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/compress"></div>
+                <b>compress</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/compress" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Compress tarball image layers when pushing to a directory using the &#x27;dir&#x27; transport.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/dest"></div>
+                <b>dest</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/dest" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path or URL where image will be pushed.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: destination</div>
+                                </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/format"></div>
+                <b>format</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/format" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>oci</li>
+                                                                                                                                                                                            <li>v2s1</li>
+                                                                                                                                                                                            <li>v2s2</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Manifest type to use when pushing an image using the &#x27;dir&#x27; transport (default is manifest type of source).</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/remove_signatures"></div>
+                <b>remove_signatures</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/remove_signatures" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Discard any pre-existing signatures in the image</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/sign_by"></div>
+                <b>sign_by</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/sign_by" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to a key file to use to sign the image.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-push_args/transport"></div>
+                <b>transport</b>
+                <a class="ansibleOptionLink" href="#parameter-push_args/transport" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>dir</li>
+                                                                                                                                                                                            <li>docker-archive</li>
+                                                                                                                                                                                            <li>docker-daemon</li>
+                                                                                                                                                                                            <li>oci-archive</li>
+                                                                                                                                                                                            <li>ostree</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry.</div>
+                                                    </td>
+        </tr>
+
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-state"></div>
+                <b>state</b>
+                <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>absent</li>
+                                                                                                                                                                                            <li>build</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Whether an image should be present, absent, or built.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-tag"></div>
+                <b>tag</b>
+                <a class="ansibleOptionLink" href="#parameter-tag" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"latest"</div>
+                                </td>
+                                                            <td>
+                                        <div>Tag of the image to pull, push, or delete.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-username"></div>
+                <b>username</b>
+                <a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>username to use when authenticating to remote registries.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div>
+                <b>validate_certs</b>
+                <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Require HTTPS and validate certificates when pulling or pushing. Also used during build if a pull or push is necessary.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: tlsverify, tls_verify</div>
+                                </td>
+        </tr>
+                    </table>
+<br/></div>
+<div class="section" id="examples">
+<h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Pull an image</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove an image</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">absent</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Pull a specific version of an image</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">redis</span>
+    <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image with advanced parameters</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+    <span class="nt">build</span><span class="p">:</span>
+      <span class="nt">cache</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
+      <span class="nt">force_rm</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+      <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">oci</span>
+      <span class="nt">annotation</span><span class="p">:</span>
+        <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+        <span class="nt">function</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">proxy</span>
+        <span class="nt">info</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Load balancer for my cool app</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a Docker formatted image</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+    <span class="nt">build</span><span class="p">:</span>
+      <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using existing credentials</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">push_args</span><span class="p">:</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using an auth file</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
+    <span class="nt">push_args</span><span class="p">:</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using username and password</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bugs</span>
+    <span class="nt">password</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vault_registry_password</span> <span class="cp">}}</span><span class="s">&quot;</span>
+    <span class="nt">push_args</span><span class="p">:</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
+    <span class="nt">loop</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme/nginx</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries with separate parameters</span>
+  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.name</span> <span class="cp">}}</span><span class="s">&quot;</span>
+    <span class="nt">tag</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.tag</span> <span class="cp">}}</span><span class="s">&quot;</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
+    <span class="nt">push_args</span><span class="p">:</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.dest</span> <span class="cp">}}</span><span class="s">&quot;</span>
+    <span class="nt">loop</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+      <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+
+    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
+      <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="return-values">
+<h2><a class="toc-backref" href="#id4">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
+<table border=0 cellpadding=0 class="documentation-table">
+    <tr>
+        <th colspan="1">Key</th>
+        <th>Returned</th>
+        <th width="100%">Description</th>
+    </tr>
+                <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-image"></div>
+                <b>image</b>
+                <a class="ansibleOptionLink" href="#return-image" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">dictionary</span>
+                                      </div>
+                                </td>
+            <td>success</td>
+            <td>
+                                        <div>Image inspection results for the image that was pulled, pushed, or built.</div>
+                                    <br/>
+                                        <div style="font-size: smaller"><b>Sample:</b></div>
+                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;Annotations&#x27;: {}, &#x27;Architecture&#x27;: &#x27;amd64&#x27;, &#x27;Author&#x27;: &#x27;&#x27;, &#x27;Comment&#x27;: &#x27;from Bitnami with love&#x27;, &#x27;ContainerConfig&#x27;: {&#x27;Cmd&#x27;: [&#x27;/run.sh&#x27;], &#x27;Entrypoint&#x27;: [&#x27;/app-entrypoint.sh&#x27;], &#x27;Env&#x27;: [&#x27;PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#x27;, &#x27;IMAGE_OS=debian-9&#x27;, &#x27;NAMI_VERSION=1.0.0-1&#x27;, &#x27;GPG_KEY_SERVERS_LIST=ha.pool.sks-keyservers.net&#x27;, &#x27;TINI_VERSION=v0.13.2&#x27;, &#x27;TINI_GPG_KEY=595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7&#x27;, &#x27;GOSU_VERSION=1.10&#x27;, &#x27;GOSU_GPG_KEY=B42F6819007F00F88E364FD4036A9C25BF357DD4&#x27;, &#x27;BITNAMI_IMAGE_VERSION=16.0.0-debian-9-r27&#x27;, &#x27;BITNAMI_PKG_CHMOD=-R g+rwX&#x27;, &#x27;BITNAMI_PKG_EXTRA_DIRS=/home/wildfly&#x27;, &#x27;HOME=/&#x27;, &#x27;BITNAMI_APP_NAME=wildfly&#x27;, &#x27;NAMI_PREFIX=/.nami&#x27;, &#x27;WILDFLY_HOME=/home/wildfly&#x27;, &#x27;WILDFLY_JAVA_HOME=&#x27;, &#x27;WILDFLY_JAVA_OPTS=&#x27;, &#x27;WILDFLY_MANAGEMENT_HTTP_PORT_NUMBER=9990&#x27;, &#x27;WILDFLY_PASSWORD=bitnami&#x27;, &#x27;WILDFLY_PUBLIC_CONSOLE=true&#x27;, &#x27;WILDFLY_SERVER_AJP_PORT_NUMBER=8009&#x27;, &#x27;WILDFLY_SERVER_HTTP_PORT_NUMBER=8080&#x27;, &#x27;WILDFLY_SERVER_INTERFACE=0.0.0.0&#x27;, &#x27;WILDFLY_USERNAME=user&#x27;, &#x27;WILDFLY_WILDFLY_HOME=/home/wildfly&#x27;, &#x27;WILDFLY_WILDFLY_OPTS=-Dwildfly.as.deployment.ondemand=false&#x27;], &#x27;ExposedPorts&#x27;: {&#x27;8080/tcp&#x27;: {}, &#x27;9990/tcp&#x27;: {}}, &#x27;Labels&#x27;: {&#x27;maintainer&#x27;: &#x27;Bitnami &lt;containers@bitnami.com&gt;&#x27;}, &#x27;User&#x27;: &#x27;1001&#x27;}, &#x27;Created&#x27;: &#x27;2019-04-10T05:48:03.553887623Z&#x27;, &#x27;Digest&#x27;: &#x27;sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&#x27;, &#x27;GraphDriver&#x27;: {&#x27;Data&#x27;: {&#x27;LowerDir&#x27;: &#x27;/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465ec98c9dca3256638220450efb4214727d0d0680e/diff:/var/lib/containers/s&#x27;, &#x27;MergedDir&#x27;: &#x27;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/merged&#x27;, &#x27;UpperDir&#x27;: &#x27;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/diff&#x27;, &#x27;WorkDir&#x27;: &#x27;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/work&#x27;}, &#x27;Name&#x27;: &#x27;overlay&#x27;}, &#x27;History&#x27;: [{&#x27;comment&#x27;: &#x27;from Bitnami with love&#x27;, &#x27;created&#x27;: &#x27;2019-04-09T22:27:40.659377677Z&#x27;}, {&#x27;created&#x27;: &#x27;2019-04-09T22:38:53.86336555Z&#x27;, &#x27;created_by&#x27;: &#x27;/bin/sh -c #(nop)  LABEL maintainer=Bitnami &lt;containers@bitnami.com&gt;&#x27;, &#x27;empty_layer&#x27;: True}, {&#x27;created&#x27;: &#x27;2019-04-09T22:38:54.022778765Z&#x27;, &#x27;created_by&#x27;: &#x27;/bin/sh -c #(nop)  ENV IMAGE_OS=debian-9&#x27;, &#x27;empty_layer&#x27;: True}], &#x27;Id&#x27;: &#x27;ace34da54e4af2145e1ad277005adb235a214e4dfe1114c2db9ab460b840f785&#x27;, &#x27;Labels&#x27;: {&#x27;maintainer&#x27;: &#x27;Bitnami &lt;containers@bitnami.com&gt;&#x27;}, &#x27;ManifestType&#x27;: &#x27;application/vnd.docker.distribution.manifest.v1+prettyjws&#x27;, &#x27;Os&#x27;: &#x27;linux&#x27;, &#x27;Parent&#x27;: &#x27;&#x27;, &#x27;RepoDigests&#x27;: [&#x27;quay.io/bitnami/wildfly@sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&#x27;], &#x27;RepoTags&#x27;: [&#x27;quay.io/bitnami/wildfly:latest&#x27;], &#x27;RootFS&#x27;: {&#x27;Layers&#x27;: [&#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;], &#x27;Type&#x27;: &#x27;layers&#x27;}, &#x27;Size&#x27;: 466180019, &#x27;User&#x27;: &#x27;1001&#x27;, &#x27;Version&#x27;: &#x27;18.09.3&#x27;, &#x27;VirtualSize&#x27;: 466180019}]</div>
+                                </td>
+        </tr>
+                    </table>
+<br/><br/><div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Sam Doran (&#64;samdoran)</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/podman_image_module.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
