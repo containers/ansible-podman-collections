@@ -6,6 +6,14 @@ This repo hosts the `containers.podman` Ansible Collection.
 
 The collection includes the Podman container plugins to help the build and management of Podman containers.
 
+## Documentation
+
+For collection versions that are parts of Ansible releases, the documentation can be found on
+Ansible docs site: https://docs.ansible.com/ansible/latest/collections/containers/podman
+
+The latest documentation for current collection version in the repository is hosted on github.io docs
+site: https://containers.github.io/ansible-podman-collections.
+
 ## Installation and Usage
 
 ### Installing the Collection from Ansible Galaxy
