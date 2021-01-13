@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>containers.podman.podman_container_info – Gather facts about containers using podman &#8212; Python  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="ansible-collections-containers-podman-podman-container-info-module"></span><div class="section" id="containers-podman-podman-container-info-gather-facts-about-containers-using-podman">
+<h1>containers.podman.podman_container_info – Gather facts about containers using podman<a class="headerlink" href="#containers-podman-podman-container-info-gather-facts-about-containers-using-podman" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.4.2-dev).</p>
+<p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container_info</span></code>.</p>
+</div>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+</ul>
+</div>
+<div class="section" id="synopsis">
+<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Gather facts about containers using <code class="docutils literal notranslate"><span class="pre">podman</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="requirements">
+<h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>Podman installed on host</p></li>
+</ul>
+</div>
+<div class="section" id="parameters">
+<h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<table  border=0 cellpadding=0 class="documentation-table">
+    <tr>
+        <th colspan="1">Parameter</th>
+        <th>Choices/<font color="blue">Defaults</font></th>
+                    <th width="100%">Comments</th>
+    </tr>
+                <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-executable"></div>
+                <b>executable</b>
+                <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"podman"</div>
+                                </td>
+                                                            <td>
+                                        <div>Path to <code>podman</code> executable if it is not in the <code>$PATH</code> on the machine running <code>podman</code></div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-name"></div>
+                <b>name</b>
+                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>List of container names to gather facts about. If no name is given return facts about all containers.</div>
+                                                    </td>
+        </tr>
+                    </table>
+<br/></div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Podman may require elevated privileges in order to run properly.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="examples">
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather facts for all containers</span>
+  <span class="nt">containers.podman.podman_container_info</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather facts on a specific container</span>
+  <span class="nt">containers.podman.podman_container_info</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">web1</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather facts on several containers</span>
+  <span class="nt">containers.podman.podman_container_info</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">redis</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">web1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="return-values">
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
+<table border=0 cellpadding=0 class="documentation-table">
+    <tr>
+        <th colspan="1">Key</th>
+        <th>Returned</th>
+        <th width="100%">Description</th>
+    </tr>
+                <tr>
+                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="return-containers"></div>
+                <b>containers</b>
+                <a class="ansibleOptionLink" href="#return-containers" title="Permalink to this return value"></a>
+                <div style="font-size: small">
+                  <span style="color: purple">list</span>
+                   / <span style="color: purple">elements=dictionary</span>                    </div>
+                                </td>
+            <td>always</td>
+            <td>
+                                        <div>Facts from all or specificed containers</div>
+                                    <br/>
+                                        <div style="font-size: smaller"><b>Sample:</b></div>
+                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;AppArmorProfile&#x27;: &#x27;&#x27;, &#x27;Args&#x27;: [&#x27;--single-child&#x27;, &#x27;--&#x27;, &#x27;kolla_start&#x27;], &#x27;BoundingCaps&#x27;: [&#x27;CAP_CHOWN&#x27;, &#x27;CAP_DAC_OVERRIDE&#x27;, &#x27;CAP_FSETID&#x27;, &#x27;CAP_FOWNER&#x27;, &#x27;CAP_MKNOD&#x27;, &#x27;CAP_NET_RAW&#x27;, &#x27;CAP_SETGID&#x27;, &#x27;CAP_SETUID&#x27;, &#x27;CAP_SETFCAP&#x27;, &#x27;CAP_SETPCAP&#x27;, &#x27;CAP_NET_BIND_SERVICE&#x27;, &#x27;CAP_SYS_CHROOT&#x27;, &#x27;CAP_KILL&#x27;, &#x27;CAP_AUDIT_WRITE&#x27;], &#x27;Config&#x27;: {&#x27;Annotations&#x27;: {&#x27;io.kubernetes.cri-o.ContainerType&#x27;: &#x27;sandbox&#x27;, &#x27;io.kubernetes.cri-o.TTY&#x27;: &#x27;false&#x27;, &#x27;io.podman.annotations.autoremove&#x27;: &#x27;FALSE&#x27;, &#x27;io.podman.annotations.init&#x27;: &#x27;FALSE&#x27;, &#x27;io.podman.annotations.privileged&#x27;: &#x27;FALSE&#x27;, &#x27;io.podman.annotations.publish-all&#x27;: &#x27;FALSE&#x27;}, &#x27;AttachStderr&#x27;: False, &#x27;AttachStdin&#x27;: False, &#x27;AttachStdout&#x27;: False, &#x27;Cmd&#x27;: [&#x27;kolla_start&#x27;], &#x27;Domainname&#x27;: &#x27;&#x27;, &#x27;Entrypoint&#x27;: &#x27;dumb-init --single-child --&#x27;, &#x27;Env&#x27;: [&#x27;PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#x27;, &#x27;TERM=xterm&#x27;, &#x27;HOSTNAME=&#x27;, &#x27;container=oci&#x27;, &#x27;KOLLA_INSTALL_METATYPE=rdo&#x27;, &#x27;KOLLA_BASE_DISTRO=centos&#x27;, &#x27;KOLLA_INSTALL_TYPE=binary&#x27;, &#x27;KOLLA_DISTRO_PYTHON_VERSION=2.7&#x27;, &#x27;KOLLA_BASE_ARCH=x86_64&#x27;], &#x27;Hostname&#x27;: &#x27;c5c39e813703&#x27;, &#x27;Image&#x27;: &#x27;docker.io/tripleomaster/centos-haproxy:latest&#x27;, &#x27;Labels&#x27;: {&#x27;build-date&#x27;: &#x27;20190919&#x27;, &#x27;kolla_version&#x27;: &#x27;8.1.0&#x27;, &#x27;name&#x27;: &#x27;haproxy&#x27;, &#x27;org.label-schema.build-date&#x27;: &#x27;20190801&#x27;, &#x27;org.label-schema.license&#x27;: &#x27;GPLv2&#x27;, &#x27;org.label-schema.name&#x27;: &#x27;CentOS Base Image&#x27;, &#x27;org.label-schema.schema-version&#x27;: &#x27;1.0&#x27;, &#x27;org.label-schema.vendor&#x27;: &#x27;CentOS&#x27;}, &#x27;OnBuild&#x27;: None, &#x27;OpenStdin&#x27;: False, &#x27;StdinOnce&#x27;: False, &#x27;StopSignal&#x27;: 15, &#x27;Tty&#x27;: False, &#x27;User&#x27;: &#x27;&#x27;, &#x27;Volumes&#x27;: None, &#x27;WorkingDir&#x27;: &#x27;/&#x27;}, &#x27;Created&#x27;: &#x27;2019-10-01T12:51:00.233106443Z&#x27;, &#x27;Dependencies&#x27;: [], &#x27;Driver&#x27;: &#x27;overlay&#x27;, &#x27;EffectiveCaps&#x27;: [&#x27;CAP_CHOWN&#x27;, &#x27;CAP_DAC_OVERRIDE&#x27;, &#x27;CAP_FSETID&#x27;, &#x27;CAP_FOWNER&#x27;, &#x27;CAP_MKNOD&#x27;, &#x27;CAP_NET_RAW&#x27;, &#x27;CAP_SETGID&#x27;, &#x27;CAP_SETUID&#x27;, &#x27;CAP_SETFCAP&#x27;, &#x27;CAP_SETPCAP&#x27;, &#x27;CAP_NET_BIND_SERVICE&#x27;, &#x27;CAP_SYS_CHROOT&#x27;, &#x27;CAP_KILL&#x27;, &#x27;CAP_AUDIT_WRITE&#x27;], &#x27;ExecIDs&#x27;: [], &#x27;ExitCommand&#x27;: [&#x27;/usr/bin/podman&#x27;, &#x27;--root&#x27;, &#x27;/var/lib/containers/storage&#x27;, &#x27;--runroot&#x27;, &#x27;/var/run/containers/storage&#x27;, &#x27;--log-level&#x27;, &#x27;error&#x27;, &#x27;--cgroup-manager&#x27;, &#x27;systemd&#x27;, &#x27;--tmpdir&#x27;, &#x27;/var/run/libpod&#x27;, &#x27;--runtime&#x27;, &#x27;runc&#x27;, &#x27;--storage-driver&#x27;, &#x27;overlay&#x27;, &#x27;--events-backend&#x27;, &#x27;journald&#x27;, &#x27;container&#x27;, &#x27;cleanup&#x27;, &#x27;c9e813703f9b80a6ea2ad665aa9946435934e478a0c5322da835f3883872f&#x27;], &#x27;GraphDriver&#x27;: {&#x27;Name&#x27;: &#x27;overlay&#x27;}, &#x27;HostConfig&#x27;: {&#x27;AutoRemove&#x27;: False, &#x27;Binds&#x27;: [], &#x27;BlkioDeviceReadBps&#x27;: None, &#x27;BlkioDeviceReadIOps&#x27;: None, &#x27;BlkioDeviceWriteBps&#x27;: None, &#x27;BlkioDeviceWriteIOps&#x27;: None, &#x27;BlkioWeight&#x27;: 0, &#x27;BlkioWeightDevice&#x27;: None, &#x27;CapAdd&#x27;: [], &#x27;CapDrop&#x27;: [], &#x27;Cgroup&#x27;: &#x27;&#x27;, &#x27;CgroupParent&#x27;: &#x27;&#x27;, &#x27;ConsoleSize&#x27;: [0, 0], &#x27;ContainerIDFile&#x27;: &#x27;&#x27;, &#x27;CpuCount&#x27;: 0, &#x27;CpuPercent&#x27;: 0, &#x27;CpuPeriod&#x27;: 0, &#x27;CpuQuota&#x27;: 0, &#x27;CpuRealtimePeriod&#x27;: 0, &#x27;CpuRealtimeRuntime&#x27;: 0, &#x27;CpuShares&#x27;: 0, &#x27;CpusetCpus&#x27;: &#x27;&#x27;, &#x27;CpusetMems&#x27;: &#x27;&#x27;, &#x27;Devices&#x27;: [], &#x27;DiskQuota&#x27;: 0, &#x27;Dns&#x27;: [], &#x27;DnsOptions&#x27;: [], &#x27;DnsSearch&#x27;: [], &#x27;ExtraHosts&#x27;: [], &#x27;GroupAdd&#x27;: [], &#x27;IOMaximumBandwidth&#x27;: 0, &#x27;IOMaximumIOps&#x27;: 0, &#x27;IpcMode&#x27;: &#x27;&#x27;, &#x27;Isolation&#x27;: &#x27;&#x27;, &#x27;KernelMemory&#x27;: 0, &#x27;Links&#x27;: None, &#x27;LogConfig&#x27;: {&#x27;Config&#x27;: None, &#x27;Type&#x27;: &#x27;k8s-file&#x27;}, &#x27;Memory&#x27;: 0, &#x27;MemoryReservation&#x27;: 0, &#x27;MemorySwap&#x27;: 0, &#x27;MemorySwappiness&#x27;: -1, &#x27;NanoCpus&#x27;: 0, &#x27;NetworkMode&#x27;: &#x27;default&#x27;, &#x27;OomKillDisable&#x27;: False, &#x27;OomScoreAdj&#x27;: 0, &#x27;PidMode&#x27;: &#x27;&#x27;, &#x27;PidsLimit&#x27;: 0, &#x27;PortBindings&#x27;: {}, &#x27;Privileged&#x27;: False, &#x27;PublishAllPorts&#x27;: False, &#x27;ReadonlyRootfs&#x27;: False, &#x27;RestartPolicy&#x27;: {&#x27;MaximumRetryCount&#x27;: 0, &#x27;Name&#x27;: &#x27;&#x27;}, &#x27;Runtime&#x27;: &#x27;oci&#x27;, &#x27;SecurityOpt&#x27;: [], &#x27;ShmSize&#x27;: 65536000, &#x27;Tmpfs&#x27;: {}, &#x27;UTSMode&#x27;: &#x27;&#x27;, &#x27;Ulimits&#x27;: [{&#x27;Hard&#x27;: 1048576, &#x27;Name&#x27;: &#x27;RLIMIT_NOFILE&#x27;, &#x27;Soft&#x27;: 1048576}, {&#x27;Hard&#x27;: 1048576, &#x27;Name&#x27;: &#x27;RLIMIT_NPROC&#x27;, &#x27;Soft&#x27;: 1048576}], &#x27;UsernsMode&#x27;: &#x27;&#x27;, &#x27;VolumeDriver&#x27;: &#x27;&#x27;, &#x27;VolumesFrom&#x27;: None}, &#x27;HostnamePath&#x27;: &#x27;&#x27;, &#x27;HostsPath&#x27;: &#x27;&#x27;, &#x27;Id&#x27;: &#x27;c5c39f9b80a6ea2ad665aa9946435934e478a0c5322da835f3883872f&#x27;, &#x27;Image&#x27;: &#x27;0e267acda67d0ebd643e900d820a91b961d859743039e620191ca1&#x27;, &#x27;ImageName&#x27;: &#x27;docker.io/tripleomaster/centos-haproxy:latest&#x27;, &#x27;IsInfra&#x27;: False, &#x27;MountLabel&#x27;: &#x27;system_u:object_r:svirt_sandbox_file_t:s0:c78,c866&#x27;, &#x27;Mounts&#x27;: [], &#x27;Name&#x27;: &#x27;haproxy&#x27;, &#x27;Namespace&#x27;: &#x27;&#x27;, &#x27;NetworkSettings&#x27;: {&#x27;Bridge&#x27;: &#x27;&#x27;, &#x27;EndpointID&#x27;: &#x27;&#x27;, &#x27;Gateway&#x27;: &#x27;&#x27;, &#x27;GlobalIPv6Address&#x27;: &#x27;&#x27;, &#x27;GlobalIPv6PrefixLen&#x27;: 0, &#x27;HairpinMode&#x27;: False, &#x27;IPAddress&#x27;: &#x27;&#x27;, &#x27;IPPrefixLen&#x27;: 0, &#x27;IPv6Gateway&#x27;: &#x27;&#x27;, &#x27;LinkLocalIPv6Address&#x27;: &#x27;&#x27;, &#x27;LinkLocalIPv6PrefixLen&#x27;: 0, &#x27;MacAddress&#x27;: &#x27;&#x27;, &#x27;Ports&#x27;: [], &#x27;SandboxID&#x27;: &#x27;&#x27;, &#x27;SandboxKey&#x27;: &#x27;&#x27;, &#x27;SecondaryIPAddresses&#x27;: None, &#x27;SecondaryIPv6Addresses&#x27;: None}, &#x27;OCIRuntime&#x27;: &#x27;runc&#x27;, &#x27;Path&#x27;: &#x27;dumb-init&#x27;, &#x27;Pod&#x27;: &#x27;&#x27;, &#x27;ProcessLabel&#x27;: &#x27;system_u:system_r:svirt_lxc_net_t:s0:c785,c866&#x27;, &#x27;ResolvConfPath&#x27;: &#x27;&#x27;, &#x27;RestartCount&#x27;: 0, &#x27;Rootfs&#x27;: &#x27;&#x27;, &#x27;State&#x27;: {&#x27;Dead&#x27;: False, &#x27;Error&#x27;: &#x27;&#x27;, &#x27;ExitCode&#x27;: 0, &#x27;FinishedAt&#x27;: &#x27;0001-01-01T00:00:00Z&#x27;, &#x27;Healthcheck&#x27;: {&#x27;FailingStreak&#x27;: 0, &#x27;Log&#x27;: None, &#x27;Status&#x27;: &#x27;&#x27;}, &#x27;OOMKilled&#x27;: False, &#x27;OciVersion&#x27;: &#x27;1.0.1-dev&#x27;, &#x27;Paused&#x27;: False, &#x27;Pid&#x27;: 0, &#x27;Restarting&#x27;: False, &#x27;Running&#x27;: False, &#x27;StartedAt&#x27;: &#x27;0001-01-01T00:00:00Z&#x27;, &#x27;Status&#x27;: &#x27;configured&#x27;}}]</div>
+                                </td>
+        </tr>
+                    </table>
+<br/><br/><div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
+<li><p>Emilien Macchi (&#64;EmilienM)</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/podman_container_info_module.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
