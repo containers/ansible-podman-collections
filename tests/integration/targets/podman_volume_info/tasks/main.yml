@@ -2,7 +2,7 @@
   block:
 
     - name: Print podman version
-      command: podman version
+      command: "{{ podman_cmd | default('podman') }} version"
 
     - name: Generate random value for volume name
       set_fact:
@@ -12,10 +12,12 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: nonexist
       ignore_errors: true
 
@@ -29,17 +31,19 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: existing_volume
 
     - name: Dump podman volume inspect result
       debug: var=existing_volume
 
     - name: Comparison with 'podman volume inspect'
-      command: podman volume inspect "{{ volume_name }}"
+      command: "{{ podman_cmd | default('podman') }} volume inspect {{ volume_name }}"
       register: podman_inspect
 
     - name: Convert podman inspect output to JSON
@@ -50,6 +54,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Make checks
       assert:
@@ -63,3 +68,4 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+        executable: "{{ podman_cmd | default(omit) }}"

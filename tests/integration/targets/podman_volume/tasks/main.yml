@@ -2,7 +2,7 @@
   block:
 
     - name: Print podman version
-      command: podman version
+      command: "{{ podman_cmd | default('podman') }} version"
 
     - name: Generate random value for volume name
       set_fact:
@@ -12,10 +12,12 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info
       ignore_errors: true
 
@@ -27,11 +29,13 @@
     - name: Create volume
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: vol
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info1
 
     - name: Check info
@@ -45,6 +49,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info2
 
     - name: Check info
@@ -59,6 +64,7 @@
         label:
           key: val
           nokey: noval
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info3
 
     - name: Check info
@@ -73,6 +79,7 @@
         label:
           key: val
           nokey: noval
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info4
 
     - name: Check info
@@ -84,6 +91,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info5
 
     - name: Check info
@@ -98,6 +106,7 @@
         options:
           - "device=/dev/something"
           - "type=ext4"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info6
 
     - name: Check info
@@ -112,6 +121,7 @@
         options:
           - "device=/dev/something"
           - "type=ext4"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info7
 
     - name: Check info
@@ -123,6 +133,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info8
 
     - name: Check info
@@ -139,6 +150,7 @@
     - name: Get existing volume info
       containers.podman.podman_volume_info:
         name: "{{ volume_name }}"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info10
       ignore_errors: true
 
@@ -154,6 +166,7 @@
         state: present
         options:
           - "o=uid=1001"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info11
 
     - name: Check info
@@ -167,6 +180,7 @@
         state: present
         options:
           - "o=uid=1001"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info12
 
     - name: Check info
@@ -178,6 +192,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info13
 
     - name: Check info
@@ -191,6 +206,7 @@
         state: present
         options:
           - "o=gid=1001"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info14
 
     - name: Check info
@@ -204,6 +220,7 @@
         state: present
         options:
           - "o=gid=1001"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info15
 
     - name: Check info
@@ -215,6 +232,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info16
 
     - name: Check info
@@ -228,6 +246,7 @@
         state: present
         options:
           - "o=gid=1002,uid=1002"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info17
 
     - name: Check info
@@ -242,6 +261,7 @@
         options:
           - "o=uid=1002"
           - "o=gid=1002"
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info18
 
     - name: Check info
@@ -253,6 +273,7 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: present
+        executable: "{{ podman_cmd | default(omit) }}"
       register: info19
 
     - name: Check info
@@ -265,3 +286,4 @@
       containers.podman.podman_volume:
         name: "{{ volume_name }}"
         state: absent
+        executable: "{{ podman_cmd | default(omit) }}"
