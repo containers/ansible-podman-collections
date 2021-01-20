@@ -670,21 +670,27 @@ class PodmanContainerDiff:
 
     def diffparam_cap_add(self):
         before = self.info['effectivecaps'] or []
+        before = [i.lower() for i in before]
         after = []
         if self.module_params['cap_add'] is not None:
-            after += ["cap_" + i.lower()
-                      for i in self.module_params['cap_add']]
+            for cap in self.module_params['cap_add']:
+                cap = cap.lower()
+                cap = cap if cap.startswith('cap_') else 'cap_' + cap
+                after.append(cap)
         after += before
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('cap_add', before, after)
 
     def diffparam_cap_drop(self):
         before = self.info['effectivecaps'] or []
+        before = [i.lower() for i in before]
         after = before[:]
         if self.module_params['cap_drop'] is not None:
-            for c in ["cap_" + i.lower() for i in self.module_params['cap_drop']]:
-                if c in after:
-                    after.remove(c)
+            for cap in self.module_params['cap_drop']:
+                cap = cap.lower()
+                cap = cap if cap.startswith('cap_') else 'cap_' + cap
+                if cap in after:
+                    after.remove(cap)
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('cap_drop', before, after)
 
