@@ -882,9 +882,9 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('log_driver', before, after)
 
     def diffparam_log_level(self):
-        excom = self.info['exitcommand']
-        if '--log-level' in excom:
-            before = excom[excom.index('--log-level') + 1].lower()
+        createcom = self.info['config']['createcommand']
+        if '--log-level' in createcom:
+            before = createcom[createcom.index('--log-level') + 1].lower()
         else:
             before = self.params['log_level']
         after = self.params['log_level']
