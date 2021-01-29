@@ -576,7 +576,7 @@ class PodmanDefaults:
             "ipc": "",
             "kernelmemory": "0",
             "log_driver": "k8s-file",
-            "log_level": "error",
+            "log_level": None,
             "memory": "0",
             "memory_swap": "0",
             "memory_reservation": "0",
@@ -886,7 +886,7 @@ class PodmanContainerDiff:
         if '--log-level' in createcom:
             before = createcom[createcom.index('--log-level') + 1].lower()
         else:
-            before = self.params['log_level']
+            before = None
         after = self.params['log_level']
         return self._diff_update_and_compare('log_level', before, after)
 
