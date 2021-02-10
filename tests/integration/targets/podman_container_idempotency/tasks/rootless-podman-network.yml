@@ -95,6 +95,77 @@
         that:
           - info5 is changed
 
+    - name: Run container with slirp4netns options
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network:
+          - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+      register: info6
+
+    - name: Check info with slirp4netns options
+      assert:
+        that:
+          - info6 is changed
+
+    - name: Run container with slirp4netns options - again
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network:
+          - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+      register: info7
+
+    - name: Check info with slirp4netns options - again
+      assert:
+        that:
+          - info7 is not changed
+
+    - name: Run container with different slirp4netns options
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+        network:
+          - slirp4netns:allow_host_loopback=true,cidr=10.0.4.0/24
+      register: info8
+
+    - name: Check info with different slirp4netns options
+      assert:
+        that:
+          - info8 is changed
+
+    - name: Run container without options
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+      register: info9
+
+    - name: Check info without options
+      assert:
+        that:
+          - info9 is changed
+
+    - name: Run container without options - again
+      containers.podman.podman_container:
+        name: rootlessnet
+        image: "{{ idem_image }}"
+        command: 1h
+        state: present
+      register: info10
+
+    - name: Check info without options - again
+      assert:
+        that:
+          - info10 is not changed
+
   always:
 
     - name: Delete all pods leftovers from tests
