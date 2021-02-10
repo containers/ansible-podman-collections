@@ -606,6 +606,8 @@ class PodmanDefaults:
             self.defaults['ipc'] = "private"
             self.defaults['uts'] = "private"
             self.defaults['pid'] = "private"
+        if (LooseVersion(self.version) >= LooseVersion('3.0.0')):
+            self.defaults['log_level'] = "warning"
         return self.defaults
 
 
