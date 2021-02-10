@@ -383,8 +383,8 @@ class PodmanModuleParams:
 
     def addparam_label(self, c):
         for label in self.params['label'].items():
-            c += ['--label', b'='.join([to_bytes(l, errors='surrogate_or_strict')
-                                        for l in label])]
+            c += ['--label', b'='.join([to_bytes(la, errors='surrogate_or_strict')
+                                        for la in label])]
         return c
 
     def addparam_label_file(self, c):
