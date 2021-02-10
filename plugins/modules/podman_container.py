@@ -257,7 +257,9 @@ options:
     type: dict
   env_file:
     description:
-      - Read in a line delimited file of environment variables
+      - Read in a line delimited file of environment variables. Doesn't support
+        idempotency. If users changes the file with environment variables it's
+        on them to recreate the container.
     type: path
   env_host:
     description:
