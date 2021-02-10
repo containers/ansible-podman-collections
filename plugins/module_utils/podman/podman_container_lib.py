@@ -114,7 +114,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     subgidname=dict(type='str'),
     subuidname=dict(type='str'),
     sysctl=dict(type='dict'),
-    systemd=dict(type='bool'),
+    systemd=dict(type='str'),
     tmpfs=dict(type='dict'),
     tty=dict(type='bool'),
     uidmap=dict(type='list', elements='str'),
@@ -504,7 +504,7 @@ class PodmanModuleParams:
         return c
 
     def addparam_systemd(self, c):
-        return c + ['--systemd=%s' % self.params['systemd']]
+        return c + ['--systemd=%s' % str(self.params['systemd']).lower()]
 
     def addparam_tmpfs(self, c):
         for tmpfs in self.params['tmpfs'].items():

@@ -635,7 +635,7 @@ options:
   systemd:
     description:
       - Run container in systemd mode. The default is true.
-    type: bool
+    type: str
   tmpfs:
     description:
       - Create a tmpfs mount. For example tmpfs
