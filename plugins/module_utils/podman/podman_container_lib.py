@@ -961,6 +961,13 @@ class PodmanContainerDiff:
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
         before = list(self.info['networksettings'].get('networks', {}))
+        # Special case for options for slirp4netns rootless networking from v2
+        if net_mode_before == 'slirp4netns' and 'createcommand' in self.info['config']:
+            cr_com = self.info['config']['createcommand']
+            if '--network' in cr_com:
+                cr_net = cr_com[cr_com.index('--network') + 1].lower()
+                if 'slirp4netns:' in cr_net:
+                    before = [cr_net]
         after = self.params['network'] or []
         # If container is in pod and no networks are provided
         if not self.module_params['network'] and self.params['pod']:
