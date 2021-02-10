@@ -621,10 +621,7 @@ class PodmanContainerDiff:
         self.image_info = lower_keys(image_info)
         self.params = self.defaultize()
         self.diff = {'before': {}, 'after': {}}
-        self.non_idempotent = {
-            'env_file',  # We can't get env vars from file to check
-            'env_host',
-        }
+        self.non_idempotent = {}
 
     def defaultize(self):
         params_with_defaults = {}
