@@ -587,7 +587,7 @@ class PodmanImageManager(object):
 
         extra_args = self.build.get('extra_args')
         if extra_args:
-            args.extend([arg for arg in shlex.split(extra_args)])
+            args.extend(shlex.split(extra_args))
 
         args.append(self.path)
 
