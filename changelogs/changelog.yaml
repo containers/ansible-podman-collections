@@ -146,55 +146,65 @@ releases:
     changes:
       bugfixes:
       - podman_container - Fix force restart option for containers
-      - podman_logout - Handle podman logout not logging out when logged in via different tool
-      - podman_network - Correct IP range example for podman_network
-      - podman_image - Fix doc defaults for podman_image
-      - podman_container - Remove 'detach' when creating container
-      - podman_container - Fix no_hosts idempotency for newer version
       - podman_container - Fix idempotency for volume GID and UID
+      - podman_container - Fix no_hosts idempotency for newer version
+      - podman_container - Remove 'detach' when creating container
+      - podman_image - Fix doc defaults for podman_image
+      - podman_logout - Handle podman logout not logging out when logged in via different
+        tool
+      - podman_network - Correct IP range example for podman_network
       minor_changes:
       - podman_container - Add log level for Podman in module
-      - podman_container - Add strict image compare with hashes
-      - podman_container - Move containers logic to module utils
-      - podman_pod - Move pod logic to separate library
-      - podman_container - Improve compatibility with docker_container by adding aliases
-      - podman_image - reuse existing results in present()
       - podman_container - Add mac_address field to podman_container module
+      - podman_container - Add strict image compare with hashes
+      - podman_container - Improve compatibility with docker_container by adding aliases
+      - podman_container - Move containers logic to module utils
+      - podman_image - reuse existing results in present()
       - podman_network - Add IPv6 to network
       - podman_network - Add support of network options like MTU, VLAN
+      - podman_pod - Move pod logic to separate library
       release_summary: New modules and bugfixes, new network options
     modules:
-    - description: Log out with Podman from registries
-      name: podman_logout
+    - description: Manage multiple Podman containers at once
+      name: podman_containers
       namespace: ''
     - description: Get info about Podman logged in registries
       name: podman_login_info
       namespace: ''
-    - description: Manage multiple Podman containers at once
-      name: podman_containers
+    - description: Log out with Podman from registries
+      name: podman_logout
       namespace: ''
     release_date: '2020-09-03'
   1.4.1:
     changes:
       bugfixes:
-        - podman_container - Convert gidmap to list for podman_container
-        - podman_container - Convert log-opts to dictionary and idempotent
+      - podman_container - Convert gidmap to list for podman_container
+      - podman_container - Convert log-opts to dictionary and idempotent
       release_summary: Bugfixes for podman container
+    release_date: '2020-12-21'
   1.4.2:
     changes:
       bugfixes:
-        - podman_container - Handle slash removals for root volumes mount
-        - podman_container - Add 'created' state for podman_container
-        - podman_container - Restart container in a simple manner
-        - podman_image - Add debug log and podman_actions to podman_image
-        - podman_image - Don't set default for validate-certs in podman_image
-        - podman_container - podman_container_lib - fix command idempotency
-        - documentation - Add docs to Github
-        - podman_container - Fix uid/gid checks for podman 1.6.4 volumes
-        - podman_container - Fix 'cap_add' and 'cap_drop' idempotency
-        - podman_container - Change default log level for 3+ versions
-        - podman_container - Convert systemd option to a string
-        - podman_container - Fix slirp4netns options idempotency
-        - podman_container - Don't recreate container if env_file is specified
-        - podman_container - Fix idempotency for multiple ports
+      - documentation - Add docs to Github
+      - podman_container - Add 'created' state for podman_container
+      - podman_container - Change default log level for 3+ versions
+      - podman_container - Convert systemd option to a string
+      - podman_container - Don't recreate container if env_file is specified
+      - podman_container - Fix 'cap_add' and 'cap_drop' idempotency
+      - podman_container - Fix idempotency for multiple ports
+      - podman_container - Fix slirp4netns options idempotency
+      - podman_container - Fix uid/gid checks for podman 1.6.4 volumes
+      - podman_container - Handle slash removals for root volumes mount
+      - podman_container - Restart container in a simple manner
+      - podman_container - podman_container_lib - fix command idempotency
+      - podman_image - Add debug log and podman_actions to podman_image
+      - podman_image - Don't set default for validate-certs in podman_image
       release_summary: Bugfixes for podman container
+    release_date: '2021-02-14'
+  1.4.3:
+    changes:
+      bugfixes:
+      - Add docs generation
+      - Update documentation
+      release_summary: Documentation fixes and updates
+    release_date: '2021-02-14'
