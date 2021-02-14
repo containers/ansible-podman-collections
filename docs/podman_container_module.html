@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_container – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-manage-podman-containers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.4.2-dev).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.4.2).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container</span></code>.</p>
 </div>
@@ -596,7 +596,7 @@
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Read in a line delimited file of environment variables</div>
+                                        <div>Read in a line delimited file of environment variables. Doesn&#x27;t support idempotency. If users changes the file with environment variables it&#x27;s on them to recreate the container.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -1660,15 +1660,11 @@
                 <b>systemd</b>
                 <a class="ansibleOptionLink" href="#parameter-systemd" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">boolean</span>
+                    <span style="color: purple">string</span>
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li>no</li>
-                                                                                                                                                                                            <li>yes</li>
-                                                                                </ul>
-                                                                        </td>
+                                                                                                                                                        </td>
                                                             <td>
                                         <div>Run container in systemd mode. The default is true.</div>
                                                     </td>
