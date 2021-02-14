@@ -5,6 +5,32 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.4.2
+======
+
+Release Summary
+---------------
+
+Bugfixes for podman container
+
+Bugfixes
+--------
+
+- documentation - Add docs to Github
+- podman_container - Add 'created' state for podman_container
+- podman_container - Change default log level for 3+ versions
+- podman_container - Convert systemd option to a string
+- podman_container - Don't recreate container if env_file is specified
+- podman_container - Fix 'cap_add' and 'cap_drop' idempotency
+- podman_container - Fix idempotency for multiple ports
+- podman_container - Fix slirp4netns options idempotency
+- podman_container - Fix uid/gid checks for podman 1.6.4 volumes
+- podman_container - Handle slash removals for root volumes mount
+- podman_container - Restart container in a simple manner
+- podman_container - podman_container_lib - fix command idempotency
+- podman_image - Add debug log and podman_actions to podman_image
+- podman_image - Don't set default for validate-certs in podman_image
+
 v1.4.1
 ======
 
