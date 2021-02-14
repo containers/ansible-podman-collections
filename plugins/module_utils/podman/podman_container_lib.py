@@ -1008,12 +1008,16 @@ class PodmanContainerDiff:
 
     # TODO(sshnaidm) Need to add port ranges support
     def diffparam_publish(self):
+        def compose(p, h):
+            return ":".join(
+                [h['hostip'], str(h["hostport"]), p.replace('/tcp', '')]
+            ).strip(":")
+
         ports = self.info['hostconfig']['portbindings']
-        before = [":".join([
-            j[0]['hostip'],
-            str(j[0]["hostport"]),
-            i.replace('/tcp', '')
-        ]).strip(':') for i, j in ports.items()]
+        before = []
+        for port, hosts in ports.items():
+            for h in hosts:
+                before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
             image_ports = self.image_info['config'].get('exposedports', {})
