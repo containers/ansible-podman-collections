@@ -33,6 +33,8 @@ if [[ "$exit_code" != 0 ]]; then
     $CMD -vvvvv
 fi
 
+${SUDO} podman ps -a
+
 # Clean up
 if [[ "$CON_TYPE" == "podman" ]]; then
     ${SUDO} podman rm -f "${CON_TYPE}-container"
