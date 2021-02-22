@@ -10,7 +10,7 @@ echo "Testing $CON_TYPE connection ${ROOT:+'with root'}"
 
 if [[ "$CON_TYPE" == "podman" ]]; then
     ${SUDO} podman ps | grep -q "${CON_TYPE}-container" || \
-        ${SUDO} podman run -d --rm --name "${CON_TYPE}-container" python:3-alpine sleep 1d
+        ${SUDO} podman run -d --name "${CON_TYPE}-container" python:3-alpine sleep 1d
 elif [[ "$CON_TYPE" == "buildah" ]]; then
     ${SUDO} buildah from --name=buildah-container python:2
 fi
