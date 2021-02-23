@@ -99,7 +99,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
-    log_level: error
+    log_level: fatal
     command: 1h
   register: test7
 
@@ -117,7 +117,7 @@
 
 - name: Check info with default log level
   assert:
-    that: test8 is not changed
+    that: test8 is changed
 
 - name: Run container with log opt tag
   containers.podman.podman_container:
