@@ -341,7 +341,10 @@ class PodmanPodDiff:
             return self._diff_update_and_compare('network', [], [])
         net_mode_before = self.infra_info['hostconfig']['networkmode']
         net_mode_after = ''
-        before = self.infra_info['networksettings'].get('networks', [])
+        before = list(self.infra_info['networksettings'].get('networks', {}))
+        # Remove default 'podman' network in v3 for comparison
+        if before == ['podman']:
+            before = []
         after = self.params['network']
         # Currently supported only 'host' and 'none' network modes idempotency
         if after in ['bridge', 'host', 'slirp4netns']:
