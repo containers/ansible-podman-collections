@@ -75,7 +75,7 @@ Or you can add full namespace and collection name in the `collections` element:
         path: /path/to/build/dir
         push: yes
         push_args:
-        dest: quay.io/acme
+          dest: quay.io/acme
 ```
 
 ## Contributing

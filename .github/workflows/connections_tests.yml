@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         runner-os:
-          - ubuntu-16.04
+          - ubuntu-latest
         ansible-version:
           - git+https://github.com/ansible/ansible.git@devel
         runner-python-version:
