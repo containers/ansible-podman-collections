@@ -895,9 +895,16 @@ class PodmanContainerDiff:
     # Parameter has limited idempotency, unable to guess the default log_path
     def diffparam_log_opt(self):
         before, after = {}, {}
+
         # Log path
+        path_before = None
         if 'logpath' in self.info:
             path_before = self.info['logpath']
+        # For Podman v3
+        if ('logconfig' in self.info['hostconfig'] and
+                'path' in self.info['hostconfig']['logconfig']):
+            path_before = self.info['hostconfig']['logconfig']['path']
+        if path_before is not None:
             if (self.module_params['log_opt'] and
                     'path' in self.module_params['log_opt'] and
                     self.module_params['log_opt']['path'] is not None):
@@ -909,8 +916,14 @@ class PodmanContainerDiff:
                 after.update({'log-path': path_after})
 
         # Log tag
+        tag_before = None
         if 'logtag' in self.info:
             tag_before = self.info['logtag']
+        # For Podman v3
+        if ('logconfig' in self.info['hostconfig'] and
+                'tag' in self.info['hostconfig']['logconfig']):
+            tag_before = self.info['hostconfig']['logconfig']['tag']
+        if tag_before is not None:
             if (self.module_params['log_opt'] and
                     'tag' in self.module_params['log_opt'] and
                     self.module_params['log_opt']['tag'] is not None):
@@ -920,6 +933,24 @@ class PodmanContainerDiff:
             if tag_before != tag_after:
                 before.update({'log-tag': tag_before})
                 after.update({'log-tag': tag_after})
+
+        # Log size
+        # For Podman v3
+        # size_before = '0B'
+        # TODO(sshnaidm): integrate B/KB/MB/GB calculation for sizes
+        # if ('logconfig' in self.info['hostconfig'] and
+        #         'size' in self.info['hostconfig']['logconfig']):
+        #     size_before = self.info['hostconfig']['logconfig']['size']
+        # if size_before != '0B':
+        #     if (self.module_params['log_opt'] and
+        #             'max_size' in self.module_params['log_opt'] and
+        #             self.module_params['log_opt']['max_size'] is not None):
+        #         size_after = self.params['log_opt']['max_size']
+        #     else:
+        #         size_after = ''
+        #     if size_before != size_after:
+        #         before.update({'log-size': size_before})
+        #         after.update({'log-size': size_after})
 
         return self._diff_update_and_compare('log_opt', before, after)
 
@@ -955,6 +986,9 @@ class PodmanContainerDiff:
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
         before = list(self.info['networksettings'].get('networks', {}))
+        # Remove default 'podman' network in v3 for comparison
+        if before == ['podman']:
+            before = []
         # Special case for options for slirp4netns rootless networking from v2
         if net_mode_before == 'slirp4netns' and 'createcommand' in self.info['config']:
             cr_com = self.info['config']['createcommand']

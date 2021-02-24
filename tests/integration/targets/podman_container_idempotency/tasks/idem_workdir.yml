@@ -47,7 +47,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
-    workdir: /app
+    workdir: /var
     command: 1h
   register: test4
 
@@ -59,7 +59,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
-    workdir: /app
+    workdir: /var
     command: 1h
   register: test5
 
@@ -82,7 +82,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
-    workdir: /app
+    workdir: /var
     command: 1h
   register: test7
 
@@ -173,7 +173,7 @@
     image: alpine
     name: idempotency1
     state: present
-    workdir: /app
+    workdir: /var
     command: sleep 1h
   register: test12
 
