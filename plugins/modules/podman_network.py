@@ -301,6 +301,12 @@ class PodmanNetworkDiff:
         return False
 
     def diffparam_disable_dns(self):
+        # Whether network is internal or not
+        try:
+            internal = not self.info['plugins'][0]['isgateway']
+        except (IndexError, KeyError):
+            internal = False
+        # Whether DNS plugin is installed
         dns_installed = False
         for f in [
             '/usr/libexec/cni/dnsname',
@@ -312,9 +318,14 @@ class PodmanNetworkDiff:
                 dns_installed = True
         before = not bool(
             [k for k in self.info['plugins'] if 'domainname' in k])
+        if internal:
+            before = True
         after = self.params['disable_dns']
         # If dnsname plugin is not installed, default is disable_dns=True
         if not dns_installed and self.module.params['disable_dns'] is None:
+            after = True
+        # Internal networks have dns disabled from v3
+        if self.params['internal']:
             after = True
         return self._diff_update_and_compare('disable_dns', before, after)
 
