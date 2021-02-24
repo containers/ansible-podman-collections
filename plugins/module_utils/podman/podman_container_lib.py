@@ -1389,11 +1389,15 @@ class PodmanContainer:
 
     def recreate(self):
         """Recreate the container."""
+        if self.running:
+            self.stop()
         self.delete()
         self.create()
 
     def recreate_run(self):
         """Recreate and run the container."""
+        if self.running:
+            self.stop()
         self.delete()
         self.run()
 
