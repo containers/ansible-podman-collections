@@ -38,6 +38,14 @@ Briefly describe the problem you are having in a few paragraphs.
 **Additional information you deem important (e.g. issue happens only occasionally):**
 
 
+**Version of the `containers.podman` collection:**
+**Either git commit if installed from git: `git show --summary`**
+**Or version from `ansible-galaxy` if installed from galaxy: `ansible-galaxy collection list | grep containers.podman`**
+
+```
+(paste your output here)
+```
+
 **Output of `ansible --version`:**
 
 ```
@@ -68,10 +76,14 @@ Briefly describe the problem you are having in a few paragraphs.
 (paste your output here)
 ```
 
-**Command line and output of ansible run with high verbosity:**
+**Command line and output of ansible run with high verbosity**
+
+**Please NOTE: if you submit a bug about idempotency, run the playbook with `--diff` option, like:**
+
+`ansible-playbook -i inventory --diff -vv playbook.yml`
 
 ```
-(paste your output here)```
-
+(paste your output here)
+```
 
 **Additional environment details (AWS, VirtualBox, physical, etc.):**
