@@ -5,6 +5,23 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.4.4
+======
+
+Release Summary
+---------------
+
+Fixes for newest version 3 of Podman
+
+Bugfixes
+--------
+
+- Attempt graceful stop when recreating container
+- Don't calculate image digest in check mode
+- Fix internal networks and DNS plugin for v3
+- Fix podman_pod* modules for Podman v3
+- Fixes for podman_container for Podman v3
+
 v1.4.3
 ======
 
