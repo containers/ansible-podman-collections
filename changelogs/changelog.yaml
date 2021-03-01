@@ -208,3 +208,13 @@ releases:
       - Update documentation
       release_summary: Documentation fixes and updates
     release_date: '2021-02-14'
+  1.4.4:
+    changes:
+      bugfixes:
+      - Attempt graceful stop when recreating container
+      - Don't calculate image digest in check mode
+      - Fix internal networks and DNS plugin for v3
+      - Fix podman_pod* modules for Podman v3
+      - Fixes for podman_container for Podman v3
+      release_summary: Fixes for newest version 3 of Podman
+    release_date: '2021-03-01'

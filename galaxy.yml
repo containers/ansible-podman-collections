@@ -1,6 +1,6 @@
 namespace: containers
 name: podman
-version: 1.4.4-dev
+version: 1.4.4
 readme: README.md
 authors:
   - Sagi Shnaidman <sshnaidm@redhat.com>
