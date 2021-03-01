@@ -471,8 +471,11 @@ class PodmanImageManager(object):
 
             if not image:
                 image = self.find_image()
-            digest_after = image[0].get('Digest', image[0].get('digest'))
-            self.results['changed'] = digest_before != digest_after
+            if not self.module.check_mode:
+                digest_after = image[0].get('Digest', image[0].get('digest'))
+                self.results['changed'] = digest_before != digest_after
+            else:
+                self.results['changed'] = True
 
         if self.push:
             # Push the image
