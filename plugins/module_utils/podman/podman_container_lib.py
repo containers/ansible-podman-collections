@@ -1111,7 +1111,8 @@ class PodmanContainerDiff:
             "sigwinch": "28",
             "sigio": "29",
             "sigpwr": "30",
-            "sigsys": "31"
+            "sigsys": "31",
+            "sigrtmin+3": "37"
         }
         before = str(self.info['config']['stopsignal'])
         if not before.isdigit():
