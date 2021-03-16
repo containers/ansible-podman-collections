@@ -36,7 +36,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     cpuset_mems=dict(type='str'),
     detach=dict(type='bool', default=True),
     debug=dict(type='bool', default=False),
-    detach_keys=dict(type='str'),
+    detach_keys=dict(type='str', no_log=False),
     device=dict(type='list', elements='str'),
     device_read_bps=dict(type='list'),
     device_read_iops=dict(type='list'),
