@@ -151,3 +151,43 @@
   assert:
     that:
       - info7 is not changed
+
+- name: Run container with publishing ports and ipv6
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ports:
+      - "4444:4444/tcp"
+      - "1212:5555"
+      - "8888:19191/udp"
+      - "127.0.0.1:7671:7676/udp"
+      - "127.0.0.3:43423:8872"
+      - "[::1]:34523:35425"
+  register: info8
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info8 is changed
+
+- name: Run container with publishing ports and ipv6 again
+  containers.podman.podman_container:
+    image: "{{ idem_image }}"
+    name: root-idempotency
+    state: present
+    command: 1h
+    ports:
+      - "4444:4444/tcp"
+      - "1212:5555"
+      - "8888:19191/udp"
+      - "127.0.0.1:7671:7676/udp"
+      - "127.0.0.3:43423:8872"
+      - "[::1]:34523:35425"
+  register: info9
+
+- name: Check that it is recreated
+  assert:
+    that:
+      - info9 is not changed
