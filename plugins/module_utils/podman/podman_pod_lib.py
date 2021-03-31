@@ -380,7 +380,9 @@ class PodmanPodDiff:
             i.replace('/tcp', '')
         ]).strip(':') for i, j in ports.items()]
         after = self.params['publish'] or []
-        after = [i.replace("/tcp", "") for i in after]
+        after = [
+            i.replace("/tcp", "").replace("[", "").replace("]", "").strip(":")
+            for i in after]
         # No support for port ranges yet
         for ports in after:
             if "-" in ports:

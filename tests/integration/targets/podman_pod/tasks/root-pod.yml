@@ -107,6 +107,42 @@
         that:
           - pod7_info is changed
 
+    - name: Start pod with ports for idempotency and ipv6
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "8888:19191/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+          - "[::1]:8743:8745"
+      register: pod8_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod8_info is changed
+
+    - name: Start pod with ports for idempotency and ipv6 again
+      containers.podman.podman_pod:
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "8888:19191/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+          - "[::1]:8743:8745"
+      register: pod9_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod9_info is not changed
+
   always:
 
     - name: Delete all pods leftovers from tests
