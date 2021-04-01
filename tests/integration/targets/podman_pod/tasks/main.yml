@@ -110,6 +110,18 @@
              (pod5_info.pod['State']['status'] is not defined and
              pod5_info.pod['State'] != 'Running')
 
+    - name: Stop non-existing pod
+      containers.podman.podman_pod:
+        name: pod-notexist
+        state: stopped
+      register: pod5a_info
+      ignore_errors: true
+
+    - name: Check info
+      assert:
+        that:
+          - pod5a_info is failed
+
     - name: Kill pod
       containers.podman.podman_pod:
         name: pod1
@@ -177,6 +189,20 @@
       assert:
         that:
           - pod122_info is changed
+
+    - name: Stop pod with additional config
+      containers.podman.podman_pod:
+        name: pod1
+        state: stopped
+        ports:
+          - 9484:9483
+      register: pod123_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod123_info is changed
+          - '"podman pod rm -f pod1" not in pod123_info.podman_actions'
 
     - name: Start pod with ports
       containers.podman.podman_pod:

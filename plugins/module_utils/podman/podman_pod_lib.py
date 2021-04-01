@@ -721,14 +721,14 @@ class PodmanPodManager:
 
     def make_stopped(self):
         """Run actions if desired state is 'stopped'."""
-        changed = self._create_or_recreate_pod()
-        if changed or self.pod.stopped:
-            self.update_pod_result(changed=changed)
-            return
-        elif self.pod.running:
+        if not self.pod.exists:
+            self.module.fail_json("Pod %s doesn't exist!" % self.pod.name)
+        if self.pod.running:
             self.pod.stop()
             self.results['actions'].append('stopped %s' % self.pod.name)
             self.update_pod_result()
+        elif self.pod.stopped:
+            self.update_pod_result(changed=False)
 
     def make_restarted(self):
         """Run actions if desired state is 'restarted'."""
