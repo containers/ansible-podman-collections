@@ -306,6 +306,8 @@ class PodmanNetworkDiff:
             internal = not self.info['plugins'][0]['isgateway']
         except (IndexError, KeyError):
             internal = False
+        # Whether network is rootless
+        rootless = os.geteuid() != 0
         # Whether DNS plugin is installed
         dns_installed = False
         for f in [
@@ -320,10 +322,15 @@ class PodmanNetworkDiff:
             [k for k in self.info['plugins'] if 'domainname' in k])
         if internal:
             before = True
+        if rootless:
+            before = False
         after = self.params['disable_dns']
         # If dnsname plugin is not installed, default is disable_dns=True
         if not dns_installed and self.module.params['disable_dns'] is None:
             after = True
+        # Rootless networks will always have DNS enabled
+        if rootless and self.module.params['disable_dns'] is None:
+            after = False
         # Internal networks have dns disabled from v3
         if self.params['internal']:
             after = True
