@@ -647,6 +647,7 @@ class PodmanPodManager:
             'created': self.make_created,
             'started': self.make_started,
             'stopped': self.make_stopped,
+            'restarted': self.make_restarted,
             'absent': self.make_absent,
             'killed': self.make_killed,
             'paused': self.make_paused,
@@ -728,6 +729,16 @@ class PodmanPodManager:
             self.pod.stop()
             self.results['actions'].append('stopped %s' % self.pod.name)
             self.update_pod_result()
+
+    def make_restarted(self):
+        """Run actions if desired state is 'restarted'."""
+        if self.pod.exists:
+            self.pod.restart()
+            self.results['actions'].append('restarted %s' % self.pod.name)
+            self.results.update({'changed': True})
+            self.update_pod_result()
+        else:
+            self.module.fail_json("Pod %s doesn't exist!" % self.pod.name)
 
     def make_absent(self):
         """Run actions if desired state is 'absent'."""

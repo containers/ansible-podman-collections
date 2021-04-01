@@ -151,6 +151,33 @@
         that:
           - pod8_info is not changed
 
+    - name: Restart pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: restarted
+      register: pod121_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod121_info is changed
+
+    - name: Stop pod before restart
+      containers.podman.podman_pod:
+        name: pod1
+        state: stopped
+
+    - name: Restart stopped pod
+      containers.podman.podman_pod:
+        name: pod1
+        state: restarted
+      register: pod122_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod122_info is changed
+
     - name: Start pod with ports
       containers.podman.podman_pod:
         name: pod1
