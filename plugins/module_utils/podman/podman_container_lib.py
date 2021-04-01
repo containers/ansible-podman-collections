@@ -873,7 +873,7 @@ class PodmanContainerDiff:
         after = self.image_info.get('labels') or {}
         if self.params['label']:
             after.update({
-                str(k).lower(): str(v).lower()
+                str(k).lower(): str(v)
                 for k, v in self.params['label'].items()
             })
         return self._diff_update_and_compare('label', before, after)

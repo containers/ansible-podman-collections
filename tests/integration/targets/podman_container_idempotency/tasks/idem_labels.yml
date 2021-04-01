@@ -51,7 +51,9 @@
     state: present
     label:
       haha: kukuku
-      llala: wiwiwiw
+      LLALA: WIWIWIW
+      OEIWIOP: eufslsa
+      ieui4: KDJSL4D
     command: 1h
   register: test4
 
@@ -65,7 +67,9 @@
     state: present
     label:
       haha: kukuku
-      llala: wiwiwiw
+      LLALA: WIWIWIW
+      OEIWIOP: eufslsa
+      ieui4: KDJSL4D
     command: 1h
   register: test5
 
