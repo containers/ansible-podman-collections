@@ -222,3 +222,40 @@
     - name: Cleanup
       command: podman network rm -f {{ network_name }}
       ignore_errors: true
+
+- name: Test podman_network rootless
+  become: false
+  block:
+
+    - name: Create network
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+      register: net
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        name: "{{ network_name }}"
+      register: info1
+
+    - name: Check info
+      assert:
+        that:
+          - info1 | length > 1
+          - info1.networks.0.name == network_name
+          - net is changed
+
+    - name: Create network again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+      register: info2
+
+    - name: Check info
+      assert:
+        that:
+          - info2 is not changed
+  always:
+
+    - name: Cleanup
+      command: podman network rm -f {{ network_name }}
+      ignore_errors: true
