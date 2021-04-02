@@ -1,5 +1,15 @@
 - name: Test podman_image_info
   block:
+
+    - name: Get info on images when no images
+      containers.podman.podman_image_info:
+      register: info_0
+
+    - name: Check results for no images
+      assert:
+        that:
+          - info_0.images | length == 0
+
     - name: Pull image
       command: podman pull quay.io/coreos/etcd
 
@@ -15,7 +25,7 @@
         name: dnsmasq
       register: named_image_result
 
-    - name:
+    - name: Check results
       assert:
         that:
           - all_image_result.images | length > 0
