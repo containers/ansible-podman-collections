@@ -230,30 +230,51 @@
     - name: Create network
       containers.podman.podman_network:
         name: "{{ network_name }}"
-      register: net
+      register: net1
 
     - name: Get existing network info
       containers.podman.podman_network_info:
         name: "{{ network_name }}"
-      register: info1
+      register: info15
 
     - name: Check info
       assert:
         that:
-          - info1 | length > 1
-          - info1.networks.0.name == network_name
-          - net is changed
+          - info15 | length > 1
+          - info15.networks.0.name == network_name
+          - net1 is changed
 
     - name: Create network again
       containers.podman.podman_network:
         name: "{{ network_name }}"
         state: present
-      register: info2
+      register: info16
 
     - name: Check info
       assert:
         that:
-          - info2 is not changed
+          - info16 is not changed
+
+    - name: Create network with IPv6 'exploded'
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        ipv6: yes
+        subnet: fd4f:552c:830f:0000::/64
+        state: present
+
+    - name: Create network with IPv6 'exploded' again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        ipv6: yes
+        subnet: fd4f:552c:830f:0000::/64
+        state: present
+      register: info17
+
+    - name: Check info
+      assert:
+        that:
+          - info17 is not changed
+
   always:
 
     - name: Cleanup

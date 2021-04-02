@@ -163,6 +163,11 @@ network:
 import json  # noqa: F402
 from distutils.version import LooseVersion  # noqa: F402
 import os  # noqa: F402
+try:
+    import ipaddress
+    HAS_IP_ADDRESS_MODULE = True
+except ImportError:
+    HAS_IP_ADDRESS_MODULE = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -372,6 +377,8 @@ class PodmanNetworkDiff:
         after = before
         if self.params['subnet'] is not None:
             after = self.params['subnet']
+            if HAS_IP_ADDRESS_MODULE:
+                after = ipaddress.ip_network(after).compressed
         return self._diff_update_and_compare('subnet', before, after)
 
     def diffparam_macvlan(self):
