@@ -5,6 +5,27 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.4.5
+======
+
+Release Summary
+---------------
+
+Additional fixes for newest version 3 of Podman
+
+Bugfixes
+--------
+
+- Add IPv6 support for publishing ports
+- Add sigrtmin+3 signal (required for systemd containers)
+- Add support for Podman Pod restart
+- Convert IPv6 to shorten form
+- Fix error with images info where no images
+- Fix idempotency for rootless networks from v3
+- Fix no_log for newer ansible-test
+- Fix uppercase labels idempotency issue
+- Stop pods without recreating them
+
 v1.4.4
 ======
 
