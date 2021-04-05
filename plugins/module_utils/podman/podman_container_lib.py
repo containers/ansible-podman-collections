@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function)
 import json  # noqa: F402
+import os  # noqa: F402
 import shlex  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -1281,6 +1282,12 @@ def ensure_image_exists(module, image, module_params):
     """
     image_actions = []
     module_exec = module_params['executable']
+    is_rootfs = module_params['rootfs']
+
+    if is_rootfs:
+        if not os.path.exists(image) or not os.path.isdir(image):
+            module.fail_json(msg="Image rootfs doesn't exist %s" % image)
+        return image_actions
     if not image:
         return image_actions
     rc, out, err = module.run_command([module_exec, 'image', 'exists', image])
