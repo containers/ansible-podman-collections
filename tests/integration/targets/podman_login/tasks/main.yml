@@ -1,0 +1,33 @@
+- name: Test podman_login
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Logout from docker if it exists
+      command: docker logout
+      ignore_errors: true
+
+    - name: Login with invalid executable
+      containers.podman.podman_login:
+        executable: podman_invalid
+      register: invalid_executable
+      ignore_errors: yes
+
+    - name: Check invalid executable results
+      assert:
+        that:
+          - invalid_executable is failed
+
+    - name: Login to registry.fedoraproject.org
+      containers.podman.podman_login:
+        username: foo
+        password: bar
+        registry: registry.fedoraproject.org 
+      register: login
+      ignore_errors: yes
+
+    - name: Check login
+      assert:
+        that:
+          - login is not failed
