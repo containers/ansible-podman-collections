@@ -11,6 +11,8 @@
     - name: Login with invalid executable
       containers.podman.podman_login:
         executable: podman_invalid
+        username: doesntmatter
+        password: nopassword
       register: invalid_executable
       ignore_errors: yes
 
@@ -19,11 +21,24 @@
         that:
           - invalid_executable is failed
 
+    - name: Wrong login to registry.fedoraproject.org
+      containers.podman.podman_login:
+        username: notexist
+        password: notexistaswell
+        registry: docker.io
+      register: loginf
+      ignore_errors: yes
+
+    - name: Check login
+      assert:
+        that:
+          - loginf is failed
+
     - name: Login to registry.fedoraproject.org
       containers.podman.podman_login:
         username: foo
         password: bar
-        registry: registry.fedoraproject.org 
+        registry: registry.fedoraproject.org
       register: login
       ignore_errors: yes
 
