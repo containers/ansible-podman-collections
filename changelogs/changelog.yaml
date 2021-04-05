@@ -232,3 +232,13 @@ releases:
       - Stop pods without recreating them
       release_summary: Additional fixes for newest version 3 of Podman
     release_date: '2021-04-02'
+  1.5.0:
+    changes:
+      minor_changes:
+      - Podman login module
+      release_summary: New module - Podman login
+    modules:
+    - description: Login to a container registry using podman
+      name: podman_login
+      namespace: ''
+    release_date: '2021-04-05'

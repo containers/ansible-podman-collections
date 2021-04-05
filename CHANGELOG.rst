@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.5.0
+======
+
+Release Summary
+---------------
+
+New module - Podman login
+
+Minor Changes
+-------------
+
+- Podman login module
+
+New Modules
+-----------
+
+- containers.podman.podman_login - Login to a container registry using podman
+
 v1.4.5
 ======
 
