@@ -102,7 +102,7 @@ def login(module, executable, registry, authfile,
         command.append(registry)
     if certdir:
         command.extend(['--cert-dir', certdir])
-    if tlsverify:
+    if tlsverify is not None:
         command.extend(['--tls-verify', tlsverify])
     rc, out, err = module.run_command(command)
     if rc != 0:
