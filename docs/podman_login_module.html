@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>containers.podman.podman_volume – Manage Podman volumes &#8212; Python  documentation</title>
+    <title>containers.podman.podman_login – Login to a container registry using podman &#8212; Python  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
@@ -32,16 +32,13 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="ansible-collections-containers-podman-podman-volume-module"></span><div class="section" id="containers-podman-podman-volume-manage-podman-volumes">
-<h1>containers.podman.podman_volume – Manage Podman volumes<a class="headerlink" href="#containers-podman-podman-volume-manage-podman-volumes" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-login-module"></span><div class="section" id="containers-podman-podman-login-login-to-a-container-registry-using-podman">
+<h1>containers.podman.podman_login – Login to a container registry using podman<a class="headerlink" href="#containers-podman-podman-login-login-to-a-container-registry-using-podman" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.5.1-dev).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_volume</span></code>.</p>
-</div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 1.1.0: </span>of containers.podman</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_login</span></code>.</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -49,20 +46,19 @@
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
 <li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Manage Podman volumes</p></li>
+<li><p>Login to a container registry server using the podman login command If the registry is not specified, the first registry under <cite>[registries.search]</cite> from <cite>registries.conf `will be used. The path of the authentication file can be overridden by the user by setting the `authfile</cite> flag. The default path used is <cite>${XDG_RUNTIME_DIR}/containers/auth.json</cite>.</p></li>
 </ul>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>podman</p></li>
+<li><p>Podman installed on host</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
@@ -75,36 +71,32 @@
     </tr>
                 <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-debug"></div>
-                <b>debug</b>
-                <a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-authfile"></div>
+                <b>authfile</b>
+                <a class="ansibleOptionLink" href="#parameter-authfile" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">boolean</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>yes</li>
-                                                                                </ul>
-                                                                        </td>
-                                                            <td>
-                                        <div>Return additional information which can be helpful for investigations.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-driver"></div>
-                <b>driver</b>
-                <a class="ansibleOptionLink" href="#parameter-driver" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
+                    <span style="color: purple">path</span>
                                                                 </div>
                                                     </td>
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Specify volume driver name (default local).</div>
+                                        <div>Path of the authentication file. Default is ``${XDG_RUNTIME_DIR}/containers/auth.json`` You can also override the default path of the authentication file by setting the ``REGISTRY_AUTH_FILE`` environment variable. ``export REGISTRY_AUTH_FILE=path``</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-certdir"></div>
+                <b>certdir</b>
+                <a class="ansibleOptionLink" href="#parameter-certdir" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">path</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Use certificates at path (*.crt, *.cert, *.key) to connect to the registry.  Default certificates directory is /etc/containers/certs.d.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -125,24 +117,9 @@
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-label"></div>
-                <b>label</b>
-                <a class="ansibleOptionLink" href="#parameter-label" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">dictionary</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Add metadata to a pod volume (e.g., label com.example.key=value).</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-name"></div>
-                <b>name</b>
-                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-password"></div>
+                <b>password</b>
+                <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a>
                 <div style="font-size: small">
                     <span style="color: purple">string</span>
                                              / <span style="color: red">required</span>                    </div>
@@ -150,110 +127,78 @@
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Name of volume.</div>
+                                        <div>Password for the registry server.</div>
                                                     </td>
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-options"></div>
-                <b>options</b>
-                <a class="ansibleOptionLink" href="#parameter-options" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">list</span>
-                     / <span style="color: purple">elements=string</span>                                            </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Set driver specific options. For example &#x27;device=tpmfs&#x27;, &#x27;type=tmpfs&#x27;.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-recreate"></div>
-                <b>recreate</b>
-                <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">boolean</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>yes</li>
-                                                                                </ul>
-                                                                        </td>
-                                                            <td>
-                                        <div>Recreate volume even if exists.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-state"></div>
-                <b>state</b>
-                <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-registry"></div>
+                <b>registry</b>
+                <a class="ansibleOptionLink" href="#parameter-registry" title="Permalink to this option"></a>
                 <div style="font-size: small">
                     <span style="color: purple">string</span>
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>absent</li>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Registry server. If the registry is not specified, the first registry under `[registries.search]` from `registries.conf` will be used.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-tlsverify"></div>
+                <b>tlsverify</b>
+                <a class="ansibleOptionLink" href="#parameter-tlsverify" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>yes</li>
                                                                                 </ul>
                                                                         </td>
                                                             <td>
-                                        <div>State of volume, default &#x27;present&#x27;</div>
+                                        <div>Require HTTPS and verify certificates when contacting registries.  If explicitly set to true, then TLS verification will be used. If set to false, then TLS verification will not be used.  If not specified, TLS verification will be used unless the target registry is listed as an insecure registry in registries.conf.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-username"></div>
+                <b>username</b>
+                <a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                             / <span style="color: red">required</span>                    </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Username for the registry server.</div>
                                                     </td>
         </tr>
                     </table>
 <br/></div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
-<span class="p p-Indicator">-</span> <span class="nt">podman_volume</span><span class="p">:</span>
-    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">present</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">volume1</span>
-    <span class="nt">label</span><span class="p">:</span>
-      <span class="nt">key</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">value</span>
-      <span class="nt">key2</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">value2</span>
-    <span class="nt">options</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;device=/dev/loop1&quot;</span>
-      <span class="p p-Indicator">-</span> <span class="s">&quot;type=ext4&quot;</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json</span>
+  <span class="nt">containers.podman.podman_login</span><span class="p">:</span>
+    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">user</span>
+    <span class="nt">password</span><span class="p">:</span> <span class="s">&#39;p4ssw0rd&#39;</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json</span>
+  <span class="nt">containers.podman.podman_login</span><span class="p">:</span>
+    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">user</span>
+    <span class="nt">password</span><span class="p">:</span> <span class="s">&#39;p4ssw0rd&#39;</span>
+    <span class="nt">registry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
-<table border=0 cellpadding=0 class="documentation-table">
-    <tr>
-        <th colspan="1">Key</th>
-        <th>Returned</th>
-        <th width="100%">Description</th>
-    </tr>
-                <tr>
-                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="return-volume"></div>
-                <b>volume</b>
-                <a class="ansibleOptionLink" href="#return-volume" title="Permalink to this return value"></a>
-                <div style="font-size: small">
-                  <span style="color: purple">dictionary</span>
-                                      </div>
-                                </td>
-            <td>always</td>
-            <td>
-                                        <div>Volume inspection results if exists.</div>
-                                    <br/>
-                                        <div style="font-size: smaller"><b>Sample:</b></div>
-                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;CreatedAt&#x27;: &#x27;2020-06-05T16:38:55.277628769+03:00&#x27;, &#x27;Driver&#x27;: &#x27;local&#x27;, &#x27;Labels&#x27;: {&#x27;key.com&#x27;: &#x27;value&#x27;, &#x27;key.org&#x27;: &#x27;value2&#x27;}, &#x27;Mountpoint&#x27;: &#x27;/home/user/.local/share/containers/storage/volumes/test/_data&#x27;, &#x27;Name&#x27;: &#x27;test&#x27;, &#x27;Options&#x27;: {}, &#x27;Scope&#x27;: &#x27;local&#x27;}</div>
-                                </td>
-        </tr>
-                    </table>
-<br/><br/><div class="section" id="authors">
+<div class="section" id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
+<li><p>Jason Hiatt (&#64;jthiatt)</p></li>
 </ul>
 </div>
 </div>
@@ -314,7 +259,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/podman_volume_module.rst.txt"
+      <a href="_sources/podman_login_module.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
