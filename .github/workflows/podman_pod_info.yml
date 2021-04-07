@@ -39,15 +39,13 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          #- git+https://github.com/ansible/ansible.git@stable-2.10
+          # - git+https://github.com/ansible/ansible.git@stable-2.11
+          - git+https://github.com/ansible/ansible.git@devel
         os:
-          - ubuntu-latest
+          - ubuntu-20.04
         python-version:
           - 3.7
-        include:
-          - os: ubuntu-20.04
-            ansible-version: git+https://github.com/ansible/ansible.git@devel
-            python-version: 3.7
+
     steps:
 
       - name: Check out repository
