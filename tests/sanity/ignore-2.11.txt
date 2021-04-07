@@ -1,5 +1,2 @@
-plugins/modules/podman_image.py validate-modules:mutually_exclusive-unknown
-plugins/modules/podman_container.py validate-modules:parameter-list-no-elements
 tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
 tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086
-plugins/module_utils/podman/common.py shebang!skip

@@ -762,8 +762,8 @@ def main():
             ['username', 'password'],
         ),
         mutually_exclusive=(
-            ['authfile', 'username'],
-            ['authfile', 'password'],
+            ['auth_file', 'username'],
+            ['auth_file', 'password'],
         ),
     )
 

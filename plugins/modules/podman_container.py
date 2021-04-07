@@ -209,21 +209,25 @@ options:
       - Limit read rate (bytes per second) from a device
         (e.g. device-read-bps /dev/sda:1mb)
     type: list
+    elements: str
   device_read_iops:
     description:
       - Limit read rate (IO per second) from a device
         (e.g. device-read-iops /dev/sda:1000)
     type: list
+    elements: str
   device_write_bps:
     description:
       - Limit write rate (bytes per second) to a device
         (e.g. device-write-bps /dev/sda:1mb)
     type: list
+    elements: str
   device_write_iops:
     description:
       - Limit write rate (IO per second) to a device
         (e.g. device-write-iops /dev/sda:1000)
     type: list
+    elements: str
   dns:
     description:
       - Set custom DNS servers
@@ -299,6 +303,7 @@ options:
     description:
       - Add additional groups to run as
     type: list
+    elements: str
     aliases:
       - groups
   healthcheck:
@@ -656,6 +661,7 @@ options:
     description:
       - Ulimit options
     type: list
+    elements: str
     aliases:
       - ulimits
   user:
