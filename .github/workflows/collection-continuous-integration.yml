@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         runner-os:
-          - ubuntu-latest
+          - ubuntu-20.04
         ansible-version:
-          - git+https://github.com/ansible/ansible.git@stable-2.10
+          - git+https://github.com/ansible/ansible.git@stable-2.11
         runner-python-version:
           - 3.8
     steps:
@@ -55,37 +55,20 @@ jobs:
       fail-fast: false
       matrix:
         runner-os:
-          - ubuntu-latest
+          - ubuntu-20.04
         runner-python-version:
           - 3.8
         ansible-version:
           - ansible<2.10
-          - ansible-base<2.11
+          - git+https://github.com/ansible/ansible.git@stable-2.11
           - git+https://github.com/ansible/ansible.git@devel
         python-version:
           - 3.8
-        exclude:
-          - runner-os: ubuntu-latest
-            runner-python-version: 3.8
-            ansible-version: git+https://github.com/ansible/ansible.git@devel
-            python-version: 3.8
-          - runner-os: ubuntu-latest
-            runner-python-version: 3.8
-            ansible-version: ansible-base<2.11
-            python-version: 3.8
         include:
           - runner-os: ubuntu-latest
             runner-python-version: 2.7
             ansible-version: ansible<2.10
             python-version: 2.7
-          - runner-os: ubuntu-20.04
-            runner-python-version: 3.8
-            ansible-version: git+https://github.com/ansible/ansible.git@devel
-            python-version: 3.8
-          - runner-os: ubuntu-20.04
-            runner-python-version: 3.8
-            ansible-version: ansible-base<2.11
-            python-version: 3.8
 
     steps:
       - name: Set up Python ${{ matrix.runner-python-version }}
