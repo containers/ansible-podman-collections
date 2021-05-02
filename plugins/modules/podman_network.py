@@ -243,7 +243,7 @@ class PodmanNetworkModuleParams:
         return c + ['--ip-range', self.params['ip_range']]
 
     def addparam_ipv6(self, c):
-        return c + ['--ipv6']
+        return c + ['--ipv6=%s' % self.params['ipv6']]
 
     def addparam_macvlan(self, c):
         return c + ['--macvlan', self.params['macvlan']]
