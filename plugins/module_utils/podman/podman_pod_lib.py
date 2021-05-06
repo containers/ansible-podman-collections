@@ -223,14 +223,12 @@ class PodmanPodDiff:
         self.non_idempotent = {}
 
     def defaultize(self):
-        params_with_defaults = {}
+        params_with_defaults = self.module_params.copy()
         self.default_dict = PodmanPodDefaults(
             self.module, self.version).default_dict()
-        for p in self.module_params:
-            if self.module_params[p] is None and p in self.default_dict:
+        for p in self.default_dict:
+            if self.module_params.get(p) is None:
                 params_with_defaults[p] = self.default_dict[p]
-            else:
-                params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
     def _diff_update_and_compare(self, param_name, before, after):
@@ -244,7 +242,7 @@ class PodmanPodDiff:
         if not self.infra_info:
             return self._diff_update_and_compare('add_host', '', '')
         before = self.infra_info['hostconfig']['extrahosts'] or []
-        after = self.params['add_host']
+        after = self.params.get('add_host')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('add_host', before, after)
 
@@ -253,14 +251,14 @@ class PodmanPodDiff:
             before = self.info['cgroupparent']
         elif 'config' in self.info and self.info['config'].get('cgroupparent'):
             before = self.info['config']['cgroupparent']
-        after = self.params['cgroup_parent'] or before
+        after = self.params.get('cgroup_parent', before)
         return self._diff_update_and_compare('cgroup_parent', before, after)
 
     def diffparam_dns(self):
         if not self.infra_info:
             return self._diff_update_and_compare('dns', '', '')
         before = self.infra_info['hostconfig']['dns'] or []
-        after = self.params['dns']
+        after = self.params.get('dns')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('dns', before, after)
 
@@ -268,7 +266,7 @@ class PodmanPodDiff:
         if not self.infra_info:
             return self._diff_update_and_compare('dns_opt', '', '')
         before = self.infra_info['hostconfig']['dnsoptions'] or []
-        after = self.params['dns_opt']
+        after = self.params.get('dns_opt')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('dns_opt', before, after)
 
@@ -276,7 +274,7 @@ class PodmanPodDiff:
         if not self.infra_info:
             return self._diff_update_and_compare('dns_search', '', '')
         before = self.infra_info['hostconfig']['dnssearch'] or []
-        after = self.params['dns_search']
+        after = self.params.get('dns_search')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('dns_search', before, after)
 
@@ -284,7 +282,7 @@ class PodmanPodDiff:
         if not self.infra_info:
             return self._diff_update_and_compare('hostname', '', '')
         before = self.infra_info['config']['hostname']
-        after = self.params['hostname'] or before
+        after = self.params.get('hostname', before)
         return self._diff_update_and_compare('hostname', before, after)
 
     # TODO(sshnaidm): https://github.com/containers/podman/issues/6968
@@ -294,7 +292,7 @@ class PodmanPodDiff:
         else:
             # TODO(sshnaidm): https://github.com/containers/podman/issues/6968
             before = 'infracontainerid' in self.info
-        after = self.params['infra']
+        after = self.params.get('infra')
         return self._diff_update_and_compare('infra', before, after)
 
     # TODO(sshnaidm): https://github.com/containers/podman/issues/6969
@@ -308,7 +306,7 @@ class PodmanPodDiff:
             return self._diff_update_and_compare('infra_image', '', '')
         before = str(self.infra_info['imagename'])
         after = before
-        if self.module_params['infra_image']:
+        if self.module_params.get('infra_image'):
             after = self.params['infra_image']
         before = before.replace(":latest", "")
         after = after.replace(":latest", "")
@@ -327,7 +325,7 @@ class PodmanPodDiff:
             before = self.info['config'].get('labels') or {}
         else:
             before = self.info['labels'] if 'labels' in self.info else {}
-        after = self.params['label']
+        after = self.params.get('label')
         return self._diff_update_and_compare('label', before, after)
 
     # TODO(sshnaidm): https://github.com/containers/podman/pull/6956
@@ -341,11 +339,11 @@ class PodmanPodDiff:
             return self._diff_update_and_compare('network', [], [])
         net_mode_before = self.infra_info['hostconfig']['networkmode']
         net_mode_after = ''
-        before = list(self.infra_info['networksettings'].get('networks', {}))
+        before = list(self.infra_info['networksettings'].get('networks'), {}))
         # Remove default 'podman' network in v3 for comparison
         if before == ['podman']:
             before = []
-        after = self.params['network']
+        after = self.params.get('network')
         # Currently supported only 'host' and 'none' network modes idempotency
         if after in ['bridge', 'host', 'slirp4netns']:
             net_mode_after = after
@@ -379,7 +377,7 @@ class PodmanPodDiff:
             str(j[0]["hostport"]),
             i.replace('/tcp', '')
         ]).strip(':') for i, j in ports.items()]
-        after = self.params['publish'] or []
+        after = self.params.get('publish') or []
         after = [
             i.replace("/tcp", "").replace("[", "").replace("]", "").strip(":")
             for i in after]
@@ -403,7 +401,7 @@ class PodmanPodDiff:
             before.remove('cgroup')
         else:
             before = []
-        if self.params['share'] is not None:
+        if self.params.get('share') is not None:
             after = self.params['share'].split(",")
         else:
             after = ['uts', 'ipc', 'net']
@@ -424,7 +422,7 @@ class PodmanPodDiff:
                 different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module_params[p] is not None and self.module_params[p] not in [{}, [], '']:
+            if self.module_params.get(p) is not None and self.module_params.get(p) not in [{}, [], '']:
                 different = True
         return different
 
@@ -638,7 +636,7 @@ class PodmanPodManager:
                             stdout=out, stderr=err)
         if self.pod.diff:
             self.results.update({'diff': self.pod.diff})
-        if self.module.params['debug'] or self.module_params['debug']:
+        if self.module.params.get('debug') or self.module_params.get('debug'):
             self.results.update({'podman_version': self.pod.version})
 
     def execute(self):

@@ -157,7 +157,7 @@ class PodmanModuleParams:
             all_param_methods = [func for func in dir(self)
                                  if callable(getattr(self, func))
                                  and func.startswith("addparam")]
-            params_set = (i for i in self.params if self.params[i] is not None)
+            params_set = (i for i in self.params if self.params.get(i) is not None)
             for param in params_set:
                 func_name = "_".join(["addparam", param])
                 if func_name in all_param_methods:
@@ -624,14 +624,12 @@ class PodmanContainerDiff:
         self.non_idempotent = {}
 
     def defaultize(self):
-        params_with_defaults = {}
+        params_with_defaults = self.module_params.copy()
         self.default_dict = PodmanDefaults(
             self.image_info, self.version).default_dict()
-        for p in self.module_params:
-            if self.module_params[p] is None and p in self.default_dict:
+        for p in self.default_dict:
+            if self.module_params.get(p) is None:
                 params_with_defaults[p] = self.default_dict[p]
-            else:
-                params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
     def _diff_update_and_compare(self, param_name, before, after):
@@ -644,34 +642,34 @@ class PodmanContainerDiff:
     def diffparam_annotation(self):
         before = self.info['config']['annotations'] or {}
         after = before.copy()
-        if self.module_params['annotation'] is not None:
+        if self.module_params.get('annotation') is not None:
             after.update(self.params['annotation'])
         return self._diff_update_and_compare('annotation', before, after)
 
     def diffparam_env_host(self):
         # It's impossible to get from inspest, recreate it if not default
         before = False
-        after = self.params['env_host']
+        after = self.params.get('env_host', False)
         return self._diff_update_and_compare('env_host', before, after)
 
     def diffparam_blkio_weight(self):
         before = self.info['hostconfig']['blkioweight']
-        after = self.params['blkio_weight']
+        after = self.params.get('blkio_weight')
         return self._diff_update_and_compare('blkio_weight', before, after)
 
     def diffparam_blkio_weight_device(self):
         before = self.info['hostconfig']['blkioweightdevice']
-        if before == [] and self.module_params['blkio_weight_device'] is None:
+        if before == [] and self.module_params.get('blkio_weight_device') is None:
             after = []
         else:
-            after = self.params['blkio_weight_device']
+            after = self.params.get('blkio_weight_device')
         return self._diff_update_and_compare('blkio_weight_device', before, after)
 
     def diffparam_cap_add(self):
         before = self.info['effectivecaps'] or []
         before = [i.lower() for i in before]
         after = []
-        if self.module_params['cap_add'] is not None:
+        if self.module_params.get('cap_add') is not None:
             for cap in self.module_params['cap_add']:
                 cap = cap.lower()
                 cap = cap if cap.startswith('cap_') else 'cap_' + cap
@@ -684,7 +682,7 @@ class PodmanContainerDiff:
         before = self.info['effectivecaps'] or []
         before = [i.lower() for i in before]
         after = before[:]
-        if self.module_params['cap_drop'] is not None:
+        if self.module_params.get('cap_drop') is not None:
             for cap in self.module_params['cap_drop']:
                 cap = cap.lower()
                 cap = cap if cap.startswith('cap_') else 'cap_' + cap
@@ -695,7 +693,7 @@ class PodmanContainerDiff:
 
     def diffparam_cgroup_parent(self):
         before = self.info['hostconfig']['cgroupparent']
-        after = self.params['cgroup_parent']
+        after = self.params.get('cgroup_parent')
         if after is None:
             after = before
         return self._diff_update_and_compare('cgroup_parent', before, after)
@@ -704,7 +702,7 @@ class PodmanContainerDiff:
         # Cgroups output is not supported in all versions
         if 'cgroups' in self.info['hostconfig']:
             before = self.info['hostconfig']['cgroups']
-            after = self.params['cgroups']
+            after = self.params.get('cgroups')
             return self._diff_update_and_compare('cgroups', before, after)
         return False
 
@@ -725,7 +723,7 @@ class PodmanContainerDiff:
 
     def diffparam_conmon_pidfile(self):
         before = self.info['conmonpidfile']
-        if self.module_params['conmon_pidfile'] is None:
+        if self.module_params.get('conmon_pidfile') is None:
             after = before
         else:
             after = self.params['conmon_pidfile']
@@ -733,71 +731,71 @@ class PodmanContainerDiff:
 
     def diffparam_cpu_period(self):
         before = self.info['hostconfig']['cpuperiod']
-        after = self.params['cpu_period']
+        after = self.params.get('cpu_period')
         return self._diff_update_and_compare('cpu_period', before, after)
 
     def diffparam_cpu_rt_period(self):
         before = self.info['hostconfig']['cpurealtimeperiod']
-        after = self.params['cpu_rt_period']
+        after = self.params.get('cpu_rt_period')
         return self._diff_update_and_compare('cpu_rt_period', before, after)
 
     def diffparam_cpu_rt_runtime(self):
         before = self.info['hostconfig']['cpurealtimeruntime']
-        after = self.params['cpu_rt_runtime']
+        after = self.params.get('cpu_rt_runtime')
         return self._diff_update_and_compare('cpu_rt_runtime', before, after)
 
     def diffparam_cpu_shares(self):
         before = self.info['hostconfig']['cpushares']
-        after = self.params['cpu_shares']
+        after = self.params.get('cpu_shares')
         return self._diff_update_and_compare('cpu_shares', before, after)
 
     def diffparam_cpus(self):
         before = int(self.info['hostconfig']['nanocpus']) / 1000000000
-        after = self.params['cpus']
+        after = self.params.get('cpus')
         return self._diff_update_and_compare('cpus', before, after)
 
     def diffparam_cpuset_cpus(self):
         before = self.info['hostconfig']['cpusetcpus']
-        after = self.params['cpuset_cpus']
+        after = self.params.get('cpuset_cpus')
         return self._diff_update_and_compare('cpuset_cpus', before, after)
 
     def diffparam_cpuset_mems(self):
         before = self.info['hostconfig']['cpusetmems']
-        after = self.params['cpuset_mems']
+        after = self.params.get('cpuset_mems')
         return self._diff_update_and_compare('cpuset_mems', before, after)
 
     def diffparam_device(self):
         before = [":".join([i['pathonhost'], i['pathincontainer']])
                   for i in self.info['hostconfig']['devices']]
-        after = [":".join(i.split(":")[:2]) for i in self.params['device']]
+        after = [":".join(i.split(":")[:2]) for i in self.params.get('device')]
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('devices', before, after)
 
     def diffparam_device_read_bps(self):
         before = self.info['hostconfig']['blkiodevicereadbps'] or []
         before = ["%s:%s" % (i['path'], i['rate']) for i in before]
-        after = self.params['device_read_bps'] or []
+        after = self.params.get('device_read_bps') or []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('device_read_bps', before, after)
 
     def diffparam_device_read_iops(self):
         before = self.info['hostconfig']['blkiodevicereadiops'] or []
         before = ["%s:%s" % (i['path'], i['rate']) for i in before]
-        after = self.params['device_read_iops'] or []
+        after = self.params.get('device_read_iops') or []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('device_read_iops', before, after)
 
     def diffparam_device_write_bps(self):
         before = self.info['hostconfig']['blkiodevicewritebps'] or []
         before = ["%s:%s" % (i['path'], i['rate']) for i in before]
-        after = self.params['device_write_bps'] or []
+        after = self.params.get('device_write_bps') or []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('device_write_bps', before, after)
 
     def diffparam_device_write_iops(self):
         before = self.info['hostconfig']['blkiodevicewriteiops'] or []
         before = ["%s:%s" % (i['path'], i['rate']) for i in before]
-        after = self.params['device_write_iops'] or []
+        after = self.params.get('device_write_iops') or []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('device_write_iops', before, after)
 
@@ -807,7 +805,7 @@ class PodmanContainerDiff:
         before = {i.split("=")[0]: "=".join(i.split("=")[1:])
                   for i in env_before}
         after = before.copy()
-        if self.params['env']:
+        if self.params.get('env'):
             after.update(self.params['env'])
         return self._diff_update_and_compare('env', before, after)
 
@@ -817,12 +815,12 @@ class PodmanContainerDiff:
                            for i in self.info['hostconfig']['extrahosts']])
         else:
             before = {}
-        after = self.params['etc_hosts']
+        after = self.params.get('etc_hosts')
         return self._diff_update_and_compare('etc_hosts', before, after)
 
     def diffparam_group_add(self):
         before = self.info['hostconfig']['groupadd']
-        after = self.params['group_add']
+        after = self.params.get('group_add')
         return self._diff_update_and_compare('group_add', before, after)
 
     # Healthcheck is only defined in container config if a healthcheck
@@ -834,13 +832,13 @@ class PodmanContainerDiff:
             before = self.info['config']['healthcheck']['test'][1]
         else:
             before = ''
-        after = self.params['healthcheck'] or before
+        after = self.params.get('healthcheck') or before
         return self._diff_update_and_compare('healthcheck', before, after)
 
     # Because of hostname is random generated, this parameter has partial idempotency only.
     def diffparam_hostname(self):
         before = self.info['config']['hostname']
-        after = self.params['hostname'] or before
+        after = self.params.get('hostname') or before
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
@@ -850,7 +848,7 @@ class PodmanContainerDiff:
             return self._diff_update_and_compare('image', before_id, after_id)
         before = self.info['config']['image']
         after = self.params['image']
-        mode = self.params['image_strict']
+        mode = self.params.get('image_strict')
         if mode is None or not mode:
             # In a idempotency 'lite mode' assume all images from different registries are the same
             before = before.replace(":latest", "")
@@ -863,15 +861,15 @@ class PodmanContainerDiff:
 
     def diffparam_ipc(self):
         before = self.info['hostconfig']['ipcmode']
-        after = self.params['ipc']
-        if self.params['pod'] and not self.module_params['ipc']:
+        after = self.params.get('ipc')
+        if self.params.get('pod') and not self.module_params.get('ipc'):
             after = before
         return self._diff_update_and_compare('ipc', before, after)
 
     def diffparam_label(self):
         before = self.info['config']['labels'] or {}
         after = self.image_info.get('labels') or {}
-        if self.params['label']:
+        if self.params.get('label'):
             after.update({
                 str(k).lower(): str(v)
                 for k, v in self.params['label'].items()
@@ -880,7 +878,7 @@ class PodmanContainerDiff:
 
     def diffparam_log_driver(self):
         before = self.info['hostconfig']['logconfig']['type']
-        after = self.params['log_driver']
+        after = self.params.get('log_driver')
         return self._diff_update_and_compare('log_driver', before, after)
 
     def diffparam_log_level(self):
@@ -888,8 +886,8 @@ class PodmanContainerDiff:
         if '--log-level' in excom:
             before = excom[excom.index('--log-level') + 1].lower()
         else:
-            before = self.params['log_level']
-        after = self.params['log_level']
+            before = self.params.get('log_level')
+        after = self.params.get('log_level')
         return self._diff_update_and_compare('log_level', before, after)
 
     # Parameter has limited idempotency, unable to guess the default log_path
@@ -905,9 +903,8 @@ class PodmanContainerDiff:
                 'path' in self.info['hostconfig']['logconfig']):
             path_before = self.info['hostconfig']['logconfig']['path']
         if path_before is not None:
-            if (self.module_params['log_opt'] and
-                    'path' in self.module_params['log_opt'] and
-                    self.module_params['log_opt']['path'] is not None):
+            log_opt = self.module_params.get('log_opt')
+            if (log_opt and log_opt.get('path') is not None):
                 path_after = self.params['log_opt']['path']
             else:
                 path_after = path_before
@@ -924,9 +921,8 @@ class PodmanContainerDiff:
                 'tag' in self.info['hostconfig']['logconfig']):
             tag_before = self.info['hostconfig']['logconfig']['tag']
         if tag_before is not None:
-            if (self.module_params['log_opt'] and
-                    'tag' in self.module_params['log_opt'] and
-                    self.module_params['log_opt']['tag'] is not None):
+            log_opt = self.module_params.get('log_opt')
+            if (log_opt and log_opt.get('path') is not None):
                 tag_after = self.params['log_opt']['tag']
             else:
                 tag_after = ''
@@ -956,7 +952,7 @@ class PodmanContainerDiff:
 
     def diffparam_mac_address(self):
         before = str(self.info['networksettings']['macaddress'])
-        if self.module_params['mac_address'] is not None:
+        if self.module_params.get('mac_address') is not None:
             after = self.params['mac_address']
         else:
             after = before
@@ -964,28 +960,28 @@ class PodmanContainerDiff:
 
     def diffparam_memory(self):
         before = str(self.info['hostconfig']['memory'])
-        after = self.params['memory']
+        after = self.params.get('memory')
         return self._diff_update_and_compare('memory', before, after)
 
     def diffparam_memory_swap(self):
         # By default it's twice memory parameter
         before = str(self.info['hostconfig']['memoryswap'])
-        after = self.params['memory_swap']
-        if (self.module_params['memory_swap'] is None
-                and self.params['memory'] != 0
-                and self.params['memory'].isdigit()):
+        after = self.params.get('memory_swap')
+        if (self.module_params.get('memory_swap') is None
+                and self.params.get('memory') != 0
+                and self.params.get('memory').isdigit()):
             after = str(int(self.params['memory']) * 2)
         return self._diff_update_and_compare('memory_swap', before, after)
 
     def diffparam_memory_reservation(self):
         before = str(self.info['hostconfig']['memoryreservation'])
-        after = self.params['memory_reservation']
+        after = self.params.get('memory_reservation')
         return self._diff_update_and_compare('memory_reservation', before, after)
 
     def diffparam_network(self):
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
-        before = list(self.info['networksettings'].get('networks', {}))
+        before = list(self.info['networksettings'].get('networks'), {}))
         # Remove default 'podman' network in v3 for comparison
         if before == ['podman']:
             before = []
@@ -996,9 +992,9 @@ class PodmanContainerDiff:
                 cr_net = cr_com[cr_com.index('--network') + 1].lower()
                 if 'slirp4netns:' in cr_net:
                     before = [cr_net]
-        after = self.params['network'] or []
+        after = self.params.get('network') or []
         # If container is in pod and no networks are provided
-        if not self.module_params['network'] and self.params['pod']:
+        if not self.module_params.get('network') and self.params.get('pod'):
             after = before
             return self._diff_update_and_compare('network', before, after)
         # Check special network modes
@@ -1020,24 +1016,24 @@ class PodmanContainerDiff:
         # For newer verions of Podman
         if 'resolvconfpath' in self.info:
             before = not bool(self.info['resolvconfpath'])
-        after = self.params['no_hosts']
-        if self.params['network'] == ['none']:
+        after = self.params.get('no_hosts')
+        if self.params.get('network') == ['none']:
             after = True
         return self._diff_update_and_compare('no_hosts', before, after)
 
     def diffparam_oom_score_adj(self):
         before = self.info['hostconfig']['oomscoreadj']
-        after = self.params['oom_score_adj']
+        after = self.params.get('oom_score_adj')
         return self._diff_update_and_compare('oom_score_adj', before, after)
 
     def diffparam_privileged(self):
         before = self.info['hostconfig']['privileged']
-        after = self.params['privileged']
+        after = self.params.get('privileged')
         return self._diff_update_and_compare('privileged', before, after)
 
     def diffparam_pid(self):
         before = self.info['hostconfig']['pidmode']
-        after = self.params['pid']
+        after = self.params.get('pid')
         return self._diff_update_and_compare('pid', before, after)
 
     # TODO(sshnaidm) Need to add port ranges support
@@ -1055,8 +1051,8 @@ class PodmanContainerDiff:
         for port, hosts in ports.items():
             for h in hosts:
                 before.append(compose(port, h))
-        after = self.params['publish'] or []
-        if self.params['publish_all']:
+        after = self.params.get('publish') or []
+        if self.params.get('publish_all'):
             image_ports = self.image_info['config'].get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
@@ -1072,14 +1068,14 @@ class PodmanContainerDiff:
 
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
-        after = self.params['rm']
+        after = self.params.get('rm')
         return self._diff_update_and_compare('rm', before, after)
 
     def diffparam_security_opt(self):
         before = self.info['hostconfig']['securityopt']
         # In rootful containers with apparmor there is a default security opt
         before = [o for o in before if 'apparmor=containers-default' not in o]
-        after = self.params['security_opt']
+        after = self.params.get('security_opt')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('security_opt', before, after)
 
@@ -1122,23 +1118,23 @@ class PodmanContainerDiff:
         before = str(self.info['config']['stopsignal'])
         if not before.isdigit():
             before = signals[before.lower()]
-        after = str(self.params['stop_signal'])
+        after = str(self.params.get('stop_signal'))
         if not after.isdigit():
             after = signals[after.lower()]
         return self._diff_update_and_compare('stop_signal', before, after)
 
     def diffparam_tty(self):
         before = self.info['config']['tty']
-        after = self.params['tty']
+        after = self.params.get('tty')
         return self._diff_update_and_compare('tty', before, after)
 
     def diffparam_user(self):
         before = self.info['config']['user']
-        after = self.params['user']
+        after = self.params.get('user')
         return self._diff_update_and_compare('user', before, after)
 
     def diffparam_ulimit(self):
-        after = self.params['ulimit'] or []
+        after = self.params.get('ulimit') or []
         # In case of latest podman
         if 'createcommand' in self.info['config']:
             ulimits = []
@@ -1153,7 +1149,7 @@ class PodmanContainerDiff:
             before = {
                 u['name'].replace('rlimit_', ''): "%s:%s" % (u['soft'], u['hard']) for u in ulimits}
             after = {i.split('=')[0]: i.split('=')[1]
-                     for i in self.params['ulimit']}
+                     for i in self.params.get('ulimit')}
             new_before = []
             new_after = []
             for u in list(after.keys()):
@@ -1166,8 +1162,8 @@ class PodmanContainerDiff:
 
     def diffparam_uts(self):
         before = self.info['hostconfig']['utsmode']
-        after = self.params['uts']
-        if self.params['pod'] and not self.module_params['uts']:
+        after = self.params.get('uts')
+        if self.params.get('pod') and not self.module_params.get('uts'):
             after = before
         return self._diff_update_and_compare('uts', before, after)
 
@@ -1190,10 +1186,10 @@ class PodmanContainerDiff:
                     local_vols.append([m['name'], m['destination']])
             before = [":".join(v) for v in volumes]
             before_local_vols = [":".join(v) for v in local_vols]
-        if self.params['volume'] is not None:
+        if self.params.get('volume') is not None:
             after = [":".join(
                 [clean_volume(i) for i in v.split(":")[:2]]
-            ) for v in self.params['volume']]
+            ) for v in self.params.get('volume')]
         else:
             after = []
         if before_local_vols:
@@ -1203,13 +1199,13 @@ class PodmanContainerDiff:
 
     def diffparam_volumes_from(self):
         # Possibly volumesfrom is not in config
-        before = self.info['hostconfig'].get('volumesfrom', []) or []
-        after = self.params['volumes_from'] or []
+        before = self.info['hostconfig'].get('volumesfrom') or []
+        after = self.params.get('volumes_from') or []
         return self._diff_update_and_compare('volumes_from', before, after)
 
     def diffparam_workdir(self):
         before = self.info['config']['workingdir']
-        after = self.params['workdir']
+        after = self.params.get('workdir')
         return self._diff_update_and_compare('workdir', before, after)
 
     def is_different(self):
@@ -1226,7 +1222,7 @@ class PodmanContainerDiff:
                 different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module_params[p] is not None and self.module_params[p] not in [{}, [], '']:
+            if self.module_params.get(p) is not None and self.module_params.get(p) not in [{}, [], '']:
                 different = True
         return different
 
@@ -1461,7 +1457,7 @@ class PodmanManager:
                             stdout=out, stderr=err)
         if self.container.diff:
             self.results.update({'diff': self.container.diff})
-        if self.module.params['debug'] or self.module_params['debug']:
+        if self.module.params.get('debug') or self.module_params.get('debug'):
             self.results.update({'podman_version': self.container.version})
 
     def make_started(self):
