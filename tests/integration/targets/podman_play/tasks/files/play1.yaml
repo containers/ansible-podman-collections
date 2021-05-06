@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  labels:
+    app: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: alpinex
+        image: alpine
+        command: ['sleep', '1d']
+        ports:
+        - containerPort: 8080
+      - name: alpiney
+        image: alpine
+        command: ['sleep', '1d']
+        ports:
+        - containerPort: 7777

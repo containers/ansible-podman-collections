@@ -160,7 +160,6 @@ class PodmanKubeManagement:
         for arg, param in {
             '--authfile': 'authfile',
             '--cert-dir': 'cert_dir',
-            '--configmap': 'configmap',
             '--log-driver': 'log_driver',
             '--seccomp-profile-root': 'seccomp_profile_root',
             '--tls-verify': 'tls_verify',

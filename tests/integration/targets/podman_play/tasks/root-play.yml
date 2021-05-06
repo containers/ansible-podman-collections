@@ -1,0 +1,97 @@
+- name: Test podman rootful pod play
+  block:
+
+    - name: Discover cgroups version
+      shell: podman info | grep cgroupVersion | awk {'print $2'}
+      register: cgroups
+
+    - name: Set cgroups version
+      set_fact:
+        cgroups_version: "{{ cgroups.stdout }}"
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - web-deploy-root
+        - web-deploy-root-pod
+        - web-deploy-root-pod-0
+
+    - name: Play kube file
+      containers.podman.podman_play:
+        kube_file: /tmp/play-root1.yaml
+        state: started
+      register: play1
+
+    - name: Play same kube file again
+      containers.podman.podman_play:
+        kube_file: /tmp/play-root1.yaml
+        state: started
+      register: play2
+
+    - name: Check info
+      assert:
+        that:
+          - play1 is changed
+          - play2 is not changed
+
+    - name: Recreate play
+      containers.podman.podman_play:
+        kube_file: /tmp/play-root1.yaml
+        state: started
+        recreate: true
+      register: play3
+
+    - name: Check info
+      assert:
+        that:
+          - play3 is changed
+
+    - name: Check 'created' after 'started'
+      containers.podman.podman_play:
+        kube_file: /tmp/play-root1.yaml
+        state: created
+      register: play4
+
+    - name: Check info
+      assert:
+        that:
+          - play4 is not changed
+
+    - name: Run with configmap
+      containers.podman.podman_play:
+        kube_file: /tmp/play-root3.yaml
+        state: started
+        recreate: true
+        configmap:
+          - /tmp/envdata.yaml
+      register: play5
+
+    - name: Check info
+      assert:
+        that:
+          - play5 is changed
+
+    - name: Check if pod is running well
+      containers.podman.podman_pod_info:
+        name: web-deploy-root-pod-0
+      register: info1
+
+    - name: Check pod info
+      assert:
+        that:
+          - info1['pods'][0]['State'] == 'Running'
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - web-deploy
+        - web-deploy-pod
+        - web-deploy-pod-0
+        - web-deploy-pod-1
+        - web-deploy-pod-2
