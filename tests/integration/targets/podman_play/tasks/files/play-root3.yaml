@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy-root
+  labels:
+    app: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: alpinexroot
+        image: alpine
+        command: ['sleep', '1d']
+        ports:
+        - containerPort: 80
+          hostPort: 80
+      - name: alpineyroot
+        image: alpine
+        command: ['sleep', '1d']
+        envFrom:
+          - configMapRef:
+              name: envdata
+        ports:
+        - containerPort: 7777
+          hostPort: 7878

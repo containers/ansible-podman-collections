@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envdata
+  namespace: default
+data:
+  var1: somevalue1
+  key2: value2
