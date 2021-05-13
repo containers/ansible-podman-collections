@@ -209,7 +209,6 @@ MANIFEST
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
-*.spec
 
 # Installer logs
 pip-log.txt
@@ -387,3 +386,4 @@ $RECYCLE.BIN/
 # Custom
 changelogs/.plugin-cache.yaml
 # End of https://www.gitignore.io/api/git,linux,pydev,python,windows,pycharm+all,jupyternotebook,vim,webstorm,emacs,dotenv
+ansible-collection-containers-podman-build.spec
