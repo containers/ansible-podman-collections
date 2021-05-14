@@ -640,3 +640,11 @@
       containers.podman.podman_pod:
         name: testidempod
         state: absent
+
+- name: Test containers module for root
+  include_tasks: root-multi.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+  args:
+    apply:
+      become: true
