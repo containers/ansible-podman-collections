@@ -808,7 +808,7 @@ class PodmanContainerDiff:
                   for i in env_before}
         after = before.copy()
         if self.params['env']:
-            after.update(self.params['env'])
+            after.update({k: str(v) for k, v in self.params['env'].items()})
         return self._diff_update_and_compare('env', before, after)
 
     def diffparam_etc_hosts(self):
