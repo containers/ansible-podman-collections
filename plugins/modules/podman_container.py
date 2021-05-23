@@ -125,9 +125,6 @@ options:
         The disabled option will force the container to not create CGroups,
         and thus conflicts with CGroup options cgroupns and cgroup-parent.
     type: str
-    choices:
-      - default
-      - disabled
   cidfile:
     description:
       - Write the container ID to the file

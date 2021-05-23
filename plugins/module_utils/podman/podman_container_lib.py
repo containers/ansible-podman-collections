@@ -22,7 +22,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     cap_drop=dict(type='list', elements='str'),
     cgroup_parent=dict(type='path'),
     cgroupns=dict(type='str'),
-    cgroups=dict(type='str', choices=['default', 'disabled']),
+    cgroups=dict(type='str'),
     cidfile=dict(type='path'),
     cmd_args=dict(type='list', elements='str'),
     conmon_pidfile=dict(type='path'),
