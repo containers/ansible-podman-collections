@@ -115,6 +115,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     subuidname=dict(type='str'),
     sysctl=dict(type='dict'),
     systemd=dict(type='str'),
+    timezone=dict(type='str'),
     tmpfs=dict(type='dict'),
     tty=dict(type='bool'),
     uidmap=dict(type='list', elements='str'),
@@ -554,6 +555,9 @@ class PodmanModuleParams:
         for tmpfs in self.params['tmpfs'].items():
             c += ['--tmpfs', ':'.join(tmpfs)]
         return c
+
+    def addparam_timezone(self, c):
+        return c + ['--tz=%s' % self.params['timezone']]
 
     def addparam_tty(self, c):
         return c + ['--tty=%s' % self.params['tty']]
@@ -1170,6 +1174,11 @@ class PodmanContainerDiff:
         if not after.isdigit():
             after = signals[after.lower()]
         return self._diff_update_and_compare('stop_signal', before, after)
+
+    def diffparam_timezone(self):
+        before = self.info['config'].get('timezone')
+        after = self.params['timezone']
+        return self._diff_update_and_compare('timezone', before, after)
 
     def diffparam_tty(self):
         before = self.info['config']['tty']
