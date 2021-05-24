@@ -8,7 +8,7 @@
     name: netcontainer
     image: "{{ idem_image }}"
     command: 1h
-    state: present
+    state: started
     network: "{{ item.first_net }}"
 
 - name: Run container again with {{ item.first_net }}

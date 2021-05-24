@@ -8,7 +8,7 @@
   containers.podman.podman_container:
     image: "{{ idem_image }}"
     name: idempotency
-    state: present
+    state: started
     command: 1h
 
 - name: Run container again

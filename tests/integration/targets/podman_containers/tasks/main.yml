@@ -83,11 +83,11 @@
         containers:
           - name: container
             image: alpine:3.7
-            state: present
+            state: started
             command: sleep 1d
           - name: container1
             image: alpine:3.7
-            state: present
+            state: started
             command: sleep 1d
       register: image
 
@@ -96,11 +96,11 @@
         containers:
           - name: container1
             image: alpine:3.7
-            state: present
+            state: started
             command: sleep 1d
           - name: container3
             image: alpine:3.7
-            state: present
+            state: started
             command: sleep 1d
       register: image2
 
@@ -129,11 +129,11 @@
         containers:
           - name: container1
             image: alpine:3.7
-            state: present
+            state: started
             command: sleep 1d
           - name: container
             image: ineverneverneverexist
-            state: present
+            state: started
             command: sleep 1d
       register: imagefail
       ignore_errors: true
@@ -460,15 +460,15 @@
         containers:
           - name: testidem
             image: docker.io/alpine
-            state: present
+            state: started
             command: sleep 20m
           - name: testidem2
             image: docker.io/alpine
-            state: present
+            state: started
             command: sleep 21m
           - name: testidem3
             image: docker.io/alpine
-            state: present
+            state: started
             command: sleep 22m
 
     - name: Check basic idempotency of running container - run it again
