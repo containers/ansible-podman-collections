@@ -1,0 +1,110 @@
+---
+- name: Test podman rootful pod play
+  block:
+
+    - name: Create networks
+      containers.podman.podman_network:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - testnet1
+        - testnet2
+
+    - name: Create container with parameters
+      register: continfo
+      containers.podman.podman_containers:
+        containers:
+          - name: cont1
+            image: docker.io/alpine:3.7
+            state: started
+            command: sleep 1d
+            debug: true
+            network: testnet1
+            add_hosts:
+              host1: 127.0.0.1
+              host2: 127.0.0.1
+            annotation:
+              this: "annotation_value"
+            dns_servers:
+              - 1.1.1.1
+              - 8.8.4.4
+            dns_search_domains: example.com
+            capabilities:
+              - SYS_TIME
+              - NET_ADMIN
+            ports:
+              - "9000:80"
+              - "9001:8000"
+            workdir: "/bin"
+            env:
+              FOO: bar=1
+              BAR: foo
+              TEST: 1
+              BOOL: false
+            label:
+              somelabel: labelvalue
+              otheralbe: othervalue
+            volumes:
+              - /tmp:/data
+            interactive: true
+          - name: cont2
+            image: docker.io/alpine:3.7
+            state: started
+            command: sleep 1d
+            recreate: true
+            network:
+              - testnet2
+              - testnet1
+            etc_hosts:
+              host1: 127.0.0.1
+              host2: 127.0.0.1
+            annotation:
+              this: "annotation_value"
+            dns_servers:
+              - 1.1.1.1
+              - 8.8.4.4
+            dns_search_domains: example.com
+            capabilities:
+              - SYS_TIME
+              - NET_ADMIN
+            ports:
+              - "9002:80"
+              - "9003:8000"
+            workdir: "/bin"
+            env:
+              FOO: bar=1
+              BAR: foo
+              TEST: 1
+              BOOL: false
+            label:
+              somelabel: labelvalue
+              otheralbe: othervalue
+            volumes:
+              - /tmp:/data
+            interactive: false
+
+    - name: Check multiple root containers
+      assert:
+        that:
+          - continfo.containers[0]['NetworkSettings']['Networks'].keys() | list == ['testnet1']
+          - continfo.containers[1]['NetworkSettings']['Networks'].keys() | list == ['testnet1', 'testnet2'] or
+            continfo.containers[1]['NetworkSettings']['Networks'].keys() | list == ['testnet2', 'testnet1']
+
+  always:
+
+    - name: Delete all containers leftovers from tests
+      containers.podman.podman_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - cont1
+        - cont2
+        - cont3
+
+    - name: Delete all networks leftovers from tests
+      containers.podman.podman_network:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - testnet1
+        - testnet2

@@ -49,33 +49,7 @@ from copy import deepcopy  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_container_lib import PodmanManager  # noqa: F402
-from ..module_utils.podman.podman_container_lib import ARGUMENTS_SPEC_CONTAINER  # noqa: F402
-
-
-def init_options():
-    default = {}
-    opts = ARGUMENTS_SPEC_CONTAINER
-    for k, v in opts.items():
-        if 'default' in v:
-            default[k] = v['default']
-        else:
-            default[k] = None
-    return default
-
-
-def update_options(opts_dict, container):
-    aliases = {}
-    for k, v in ARGUMENTS_SPEC_CONTAINER.items():
-        if 'aliases' in v:
-            for alias in v['aliases']:
-                aliases[alias] = k
-    for k in list(container):
-        if k in aliases:
-            key = aliases[k]
-            opts_dict[key] = container[k]
-            container.pop(k)
-    opts_dict.update(container)
-    return opts_dict
+from ..module_utils.podman.podman_container_lib import set_container_opts  # noqa: F402
 
 
 def combine(results):
@@ -143,10 +117,8 @@ def main():
     # work on input vars
 
     results = []
-    default_options_templ = init_options()
     for container in module.params['containers']:
-        options_dict = deepcopy(default_options_templ)
-        options_dict = update_options(options_dict, container)
+        options_dict = set_container_opts(container)
         options_dict['debug'] = module.params['debug'] or options_dict['debug']
         test_input = check_input_strict(options_dict)
         if test_input:

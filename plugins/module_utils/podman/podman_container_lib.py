@@ -128,6 +128,50 @@ ARGUMENTS_SPEC_CONTAINER = dict(
 )
 
 
+def init_options():
+    default = {}
+    opts = ARGUMENTS_SPEC_CONTAINER
+    for k, v in opts.items():
+        if 'default' in v:
+            default[k] = v['default']
+        else:
+            default[k] = None
+    return default
+
+
+def update_options(opts_dict, container):
+    def to_bool(x):
+        return str(x).lower() not in ['no', 'false']
+
+    aliases = {}
+    for k, v in ARGUMENTS_SPEC_CONTAINER.items():
+        if 'aliases' in v:
+            for alias in v['aliases']:
+                aliases[alias] = k
+    for k in list(container):
+        if k in aliases:
+            key = aliases[k]
+            container[key] = container.pop(k)
+        else:
+            key = k
+        if ARGUMENTS_SPEC_CONTAINER[key]['type'] == 'list' and not isinstance(container[key], list):
+            opts_dict[key] = [container[key]]
+        elif ARGUMENTS_SPEC_CONTAINER[key]['type'] == 'bool' and not isinstance(container[key], bool):
+            opts_dict[key] = to_bool(container[key])
+        elif ARGUMENTS_SPEC_CONTAINER[key]['type'] == 'int' and not isinstance(container[key], int):
+            opts_dict[key] = int(container[key])
+        else:
+            opts_dict[key] = container[key]
+
+    return opts_dict
+
+
+def set_container_opts(input_vars):
+    default_options_templ = init_options()
+    options_dict = update_options(default_options_templ, input_vars)
+    return options_dict
+
+
 class PodmanModuleParams:
     """Creates list of arguments for podman CLI command.
 
