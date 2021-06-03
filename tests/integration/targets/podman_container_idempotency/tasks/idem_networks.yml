@@ -3,6 +3,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: netcontainer
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with {{ item.first_net }}
   containers.podman.podman_container:
@@ -12,6 +13,7 @@
     command: 1h
     state: started
     network: "{{ item.first_net }}"
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container again with {{ item.first_net }}
   containers.podman.podman_container:
@@ -21,6 +23,7 @@
     command: 1h
     state: present
     network: "{{ item.first_net }}"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: info
 
 - name: Check info for 2 runs of {{ item.first_net }}
@@ -36,6 +39,7 @@
     command: 1h
     state: present
     network: "{{ item.next_net }}"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: info1
 
 - name: Check info

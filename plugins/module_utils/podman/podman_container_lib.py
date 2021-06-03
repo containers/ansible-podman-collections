@@ -2,214 +2,250 @@ from __future__ import absolute_import, division, print_function
 import json  # noqa: F402
 import os  # noqa: F402
 import shlex  # noqa: F402
+import time
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    LooseVersion,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    lower_keys,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    generate_systemd,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    delete_systemd,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    diff_generic,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    createcommand,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
-    create_quadlet_state,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
-    ContainerQuadlet,
-)
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import diff_generic
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import createcommand
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import ContainerQuadlet
+from .common import PodmanAPI
 
 
 __metaclass__ = type
 
+USE_API = False
 ARGUMENTS_SPEC_CONTAINER = dict(
-    name=dict(required=True, type="str"),
-    executable=dict(default="podman", type="str"),
-    state=dict(
-        type="str",
-        default="started",
-        choices=["absent", "present", "stopped", "started", "created", "quadlet"],
-    ),
-    image=dict(type="str"),
-    annotation=dict(type="dict"),
-    arch=dict(type="str"),
-    attach=dict(type="list", elements="str", choices=["stdout", "stderr", "stdin"]),
-    authfile=dict(type="path"),
-    blkio_weight=dict(type="int"),
-    blkio_weight_device=dict(type="dict"),
-    cap_add=dict(type="list", elements="str", aliases=["capabilities"]),
-    cap_drop=dict(type="list", elements="str"),
-    cgroup_conf=dict(type="dict"),
-    cgroup_parent=dict(type="path"),
-    cgroupns=dict(type="str"),
-    cgroups=dict(type="str"),
-    chrootdirs=dict(type="str"),
-    cidfile=dict(type="path"),
-    cmd_args=dict(type="list", elements="str"),
-    conmon_pidfile=dict(type="path"),
-    command=dict(type="raw"),
-    cpu_period=dict(type="int"),
-    cpu_quota=dict(type="int"),
-    cpu_rt_period=dict(type="int"),
-    cpu_rt_runtime=dict(type="int"),
-    cpu_shares=dict(type="int"),
-    cpus=dict(type="str"),
-    cpuset_cpus=dict(type="str"),
-    cpuset_mems=dict(type="str"),
-    decryption_key=dict(type="str", no_log=False),
-    delete_depend=dict(type="bool"),
-    delete_time=dict(type="str"),
-    delete_volumes=dict(type="bool"),
-    detach=dict(type="bool", default=True),
-    debug=dict(type="bool", default=False),
-    detach_keys=dict(type="str", no_log=False),
-    device=dict(type="list", elements="str"),
-    device_cgroup_rule=dict(type="str"),
-    device_read_bps=dict(type="list", elements="str"),
-    device_read_iops=dict(type="list", elements="str"),
-    device_write_bps=dict(type="list", elements="str"),
-    device_write_iops=dict(type="list", elements="str"),
-    dns=dict(type="list", elements="str", aliases=["dns_servers"]),
-    dns_option=dict(type="str", aliases=["dns_opts"]),
-    dns_search=dict(type="list", elements="str", aliases=["dns_search_domains"]),
-    entrypoint=dict(type="str"),
-    env=dict(type="dict"),
-    env_file=dict(type="list", elements="path", aliases=["env_files"]),
-    env_host=dict(type="bool"),
-    env_merge=dict(type="dict"),
-    etc_hosts=dict(type="dict", aliases=["add_hosts"]),
-    expose=dict(type="list", elements="str", aliases=["exposed", "exposed_ports"]),
-    force_restart=dict(type="bool", default=False, aliases=["restart"]),
-    force_delete=dict(type="bool", default=True),
-    generate_systemd=dict(type="dict", default={}),
-    gidmap=dict(type="list", elements="str"),
-    gpus=dict(type="str"),
-    group_add=dict(type="list", elements="str", aliases=["groups"]),
-    group_entry=dict(type="str"),
-    healthcheck=dict(type="str", aliases=["health_cmd"]),
-    healthcheck_interval=dict(type="str", aliases=["health_interval"]),
-    healthcheck_retries=dict(type="int", aliases=["health_retries"]),
-    healthcheck_start_period=dict(type="str", aliases=["health_start_period"]),
-    health_startup_cmd=dict(type="str"),
-    health_startup_interval=dict(type="str"),
-    health_startup_retries=dict(type="int"),
-    health_startup_success=dict(type="int"),
-    health_startup_timeout=dict(type="str"),
-    healthcheck_timeout=dict(type="str", aliases=["health_timeout"]),
-    healthcheck_failure_action=dict(
-        type="str",
-        choices=["none", "kill", "restart", "stop"],
-        aliases=["health_on_failure"],
-    ),
-    hooks_dir=dict(type="list", elements="str"),
-    hostname=dict(type="str"),
-    hostuser=dict(type="str"),
-    http_proxy=dict(type="bool"),
-    image_volume=dict(type="str", choices=["bind", "tmpfs", "ignore"]),
-    image_strict=dict(type="bool", default=False),
-    init=dict(type="bool"),
-    init_ctr=dict(type="str", choices=["once", "always"]),
-    init_path=dict(type="str"),
-    interactive=dict(type="bool"),
-    ip=dict(type="str"),
-    ip6=dict(type="str"),
-    ipc=dict(type="str", aliases=["ipc_mode"]),
-    kernel_memory=dict(type="str"),
-    label=dict(type="dict", aliases=["labels"]),
-    label_file=dict(type="str"),
-    log_driver=dict(type="str", choices=["k8s-file", "journald", "json-file"]),
-    log_level=dict(type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]),
-    log_opt=dict(
-        type="dict",
-        aliases=["log_options"],
-        options=dict(max_size=dict(type="str"), path=dict(type="str"), tag=dict(type="str")),
-    ),
-    mac_address=dict(type="str"),
-    memory=dict(type="str"),
-    memory_reservation=dict(type="str"),
-    memory_swap=dict(type="str"),
-    memory_swappiness=dict(type="int"),
-    mount=dict(type="list", elements="str", aliases=["mounts"]),
-    network=dict(type="list", elements="str", aliases=["net", "network_mode"]),
-    network_aliases=dict(type="list", elements="str", aliases=["network_alias"]),
-    no_healthcheck=dict(type="bool"),
-    no_hosts=dict(type="bool"),
-    oom_kill_disable=dict(type="bool"),
-    oom_score_adj=dict(type="int"),
-    os=dict(type="str"),
-    passwd=dict(type="bool", no_log=False),
-    passwd_entry=dict(type="str", no_log=False),
-    personality=dict(type="str"),
-    pid=dict(type="str", aliases=["pid_mode"]),
-    pid_file=dict(type="path"),
-    pids_limit=dict(type="str"),
-    platform=dict(type="str"),
-    pod=dict(type="str"),
-    pod_id_file=dict(type="path"),
-    preserve_fd=dict(type="list", elements="str"),
-    preserve_fds=dict(type="str"),
-    privileged=dict(type="bool"),
-    publish=dict(type="list", elements="str", aliases=["ports", "published", "published_ports"]),
-    publish_all=dict(type="bool"),
-    pull=dict(type="str", choices=["always", "missing", "never", "newer"]),
-    quadlet_dir=dict(type="path"),
-    quadlet_filename=dict(type="str"),
-    quadlet_file_mode=dict(type="raw"),
-    quadlet_options=dict(type="list", elements="str"),
-    rdt_class=dict(type="str"),
-    read_only=dict(type="bool"),
-    read_only_tmpfs=dict(type="bool"),
-    recreate=dict(type="bool", default=False),
-    requires=dict(type="list", elements="str"),
-    restart_policy=dict(type="str"),
-    restart_time=dict(type="str"),
-    retry=dict(type="int"),
-    retry_delay=dict(type="str"),
-    rm=dict(type="bool", aliases=["remove", "auto_remove"]),
-    rmi=dict(type="bool"),
-    rootfs=dict(type="bool"),
-    seccomp_policy=dict(type="str"),
-    secrets=dict(type="list", elements="str", no_log=True),
-    sdnotify=dict(type="str"),
-    security_opt=dict(type="list", elements="str"),
-    shm_size=dict(type="str"),
-    shm_size_systemd=dict(type="str"),
-    sig_proxy=dict(type="bool"),
-    stop_signal=dict(type="int"),
-    stop_timeout=dict(type="int"),
-    stop_time=dict(type="str"),
-    subgidname=dict(type="str"),
-    subuidname=dict(type="str"),
-    sysctl=dict(type="dict"),
-    systemd=dict(type="str"),
-    timeout=dict(type="int"),
-    timezone=dict(type="str"),
-    tls_verify=dict(type="bool"),
-    tmpfs=dict(type="dict"),
-    tty=dict(type="bool"),
-    uidmap=dict(type="list", elements="str"),
-    ulimit=dict(type="list", elements="str", aliases=["ulimits"]),
-    umask=dict(type="str"),
-    unsetenv=dict(type="list", elements="str"),
-    unsetenv_all=dict(type="bool"),
-    user=dict(type="str"),
-    userns=dict(type="str", aliases=["userns_mode"]),
-    uts=dict(type="str"),
-    variant=dict(type="str"),
-    volume=dict(type="list", elements="str", aliases=["volumes"]),
-    volumes_from=dict(type="list", elements="str"),
-    workdir=dict(type="str", aliases=["working_dir"]),
+    name=dict(required=True, type='str'),
+    executable=dict(default='podman', type='str'),
+    podman_socket=dict(type='str'),
+    state=dict(type='str', default='started', choices=[
+        'absent', 'present', 'stopped', 'started', 'created', 'quadlet']),
+    image=dict(type='str'),
+    annotation=dict(type='dict'),
+    arch=dict(type='str'),
+    attach=dict(type='list', elements='str', choices=['stdout', 'stderr', 'stdin']),
+    authfile=dict(type='path'),
+    blkio_weight=dict(type='int'),
+    blkio_weight_device=dict(type='dict'),
+    cap_add=dict(type='list', elements='str', aliases=['capabilities']),
+    cap_drop=dict(type='list', elements='str'),
+    cgroup_conf=dict(type='dict'),
+    cgroup_parent=dict(type='path'),
+    cgroupns=dict(type='str'),
+    cgroups=dict(type='str'),
+    chrootdirs=dict(type='str'),
+    cidfile=dict(type='path'),
+    cmd_args=dict(type='list', elements='str'),
+    conmon_pidfile=dict(type='path'),
+    command=dict(type='raw'),
+    cpu_period=dict(type='int'),
+    cpu_quota=dict(type='int'),
+    cpu_rt_period=dict(type='int'),
+    cpu_rt_runtime=dict(type='int'),
+    cpu_shares=dict(type='int'),
+    cpus=dict(type='str'),
+    cpuset_cpus=dict(type='str'),
+    cpuset_mems=dict(type='str'),
+    decryption_key=dict(type='str', no_log=False),
+    delete_depend=dict(type='bool'),
+    delete_time=dict(type='str'),
+    delete_volumes=dict(type='bool'),
+    detach=dict(type='bool', default=True),
+    debug=dict(type='bool', default=False),
+    detach_keys=dict(type='str', no_log=False),
+    device=dict(type='list', elements='str'),
+    device_cgroup_rule=dict(type='str'),
+    device_read_bps=dict(type='list', elements='str'),
+    device_read_iops=dict(type='list', elements='str'),
+    device_write_bps=dict(type='list', elements='str'),
+    device_write_iops=dict(type='list', elements='str'),
+    dns=dict(type='list', elements='str', aliases=['dns_servers']),
+    dns_option=dict(type='str', aliases=['dns_opts']),
+    dns_search=dict(type='list', elements='str', aliases=['dns_search_domains']),
+    entrypoint=dict(type='str'),
+    env=dict(type='dict'),
+    env_file=dict(type='list', elements='path', aliases=['env_files']),
+    env_host=dict(type='bool'),
+    env_merge=dict(type='dict'),
+    etc_hosts=dict(type='dict', aliases=['add_hosts']),
+    expose=dict(type='list', elements='str', aliases=[
+                'exposed', 'exposed_ports']),
+    force_restart=dict(type='bool', default=False,
+                       aliases=['restart']),
+    force_delete=dict(type='bool', default=True),
+    generate_systemd=dict(type='dict', default={}),
+    gidmap=dict(type='list', elements='str'),
+    gpus=dict(type='str'),
+    group_add=dict(type='list', elements='str', aliases=['groups']),
+    group_entry=dict(type='str'),
+    healthcheck=dict(type='str', aliases=['health_cmd']),
+    healthcheck_interval=dict(type='str', aliases=['health_interval']),
+    healthcheck_retries=dict(type='int', aliases=['health_retries']),
+    healthcheck_start_period=dict(type='str', aliases=['health_start_period']),
+    health_startup_cmd=dict(type='str'),
+    health_startup_interval=dict(type='str'),
+    health_startup_retries=dict(type='int'),
+    health_startup_success=dict(type='int'),
+    health_startup_timeout=dict(type='str'),
+    healthcheck_timeout=dict(type='str', aliases=['health_timeout']),
+    healthcheck_failure_action=dict(type='str', choices=[
+        'none', 'kill', 'restart', 'stop'], aliases=['health_on_failure']),
+    hooks_dir=dict(type='list', elements='str'),
+    hostname=dict(type='str'),
+    hostuser=dict(type='str'),
+    http_proxy=dict(type='bool'),
+    image_volume=dict(type='str', choices=['bind', 'tmpfs', 'ignore']),
+    image_strict=dict(type='bool', default=False),
+    init=dict(type='bool'),
+    init_ctr=dict(type='str', choices=['once', 'always']),
+    init_path=dict(type='str'),
+    interactive=dict(type='bool'),
+    ip=dict(type='str'),
+    ip6=dict(type='str'),
+    ipc=dict(type='str', aliases=['ipc_mode']),
+    kernel_memory=dict(type='str'),
+    label=dict(type='dict', aliases=['labels']),
+    label_file=dict(type='str'),
+    log_driver=dict(type='str', choices=[
+        'k8s-file', 'journald', 'json-file']),
+    log_level=dict(
+        type='str',
+        choices=["debug", "info", "warn", "error", "fatal", "panic"]),
+    log_opt=dict(type='dict', aliases=['log_options'],
+                 options=dict(
+        max_size=dict(type='str'),
+        path=dict(type='str'),
+        tag=dict(type='str'))),
+    mac_address=dict(type='str'),
+    memory=dict(type='str'),
+    memory_reservation=dict(type='str'),
+    memory_swap=dict(type='str'),
+    memory_swappiness=dict(type='int'),
+    mount=dict(type='list', elements='str', aliases=['mounts']),
+    network=dict(type='list', elements='str', aliases=['net', 'network_mode']),
+    network_aliases=dict(type='list', elements='str', aliases=['network_alias']),
+    no_healthcheck=dict(type='bool'),
+    no_hosts=dict(type='bool'),
+    oom_kill_disable=dict(type='bool'),
+    oom_score_adj=dict(type='int'),
+    os=dict(type='str'),
+    passwd=dict(type='bool', no_log=False),
+    passwd_entry=dict(type='str', no_log=False),
+    personality=dict(type='str'),
+    pid=dict(type='str', aliases=['pid_mode']),
+    pid_file=dict(type='path'),
+    pids_limit=dict(type='str'),
+    platform=dict(type='str'),
+    pod=dict(type='str'),
+    pod_id_file=dict(type='path'),
+    preserve_fd=dict(type='list', elements='str'),
+    preserve_fds=dict(type='str'),
+    privileged=dict(type='bool'),
+    publish=dict(type='list', elements='str', aliases=[
+        'ports', 'published', 'published_ports']),
+    publish_all=dict(type='bool'),
+    pull=dict(type='str', choices=['always', 'missing', 'never', 'newer']),
+    quadlet_dir=dict(type='path'),
+    quadlet_filename=dict(type='str'),
+    quadlet_options=dict(type='list', elements='str'),
+    rdt_class=dict(type='str'),
+    read_only=dict(type='bool'),
+    read_only_tmpfs=dict(type='bool'),
+    recreate=dict(type='bool', default=False),
+    requires=dict(type='list', elements='str'),
+    restart_policy=dict(type='str'),
+    restart_time=dict(type='str'),
+    retry=dict(type='int'),
+    retry_delay=dict(type='str'),
+    rm=dict(type='bool', aliases=['remove', 'auto_remove']),
+    rmi=dict(type='bool'),
+    rootfs=dict(type='bool'),
+    seccomp_policy=dict(type='str'),
+    secrets=dict(type='list', elements='str', no_log=True),
+    sdnotify=dict(type='str'),
+    security_opt=dict(type='list', elements='str'),
+    shm_size=dict(type='str'),
+    shm_size_systemd=dict(type='str'),
+    sig_proxy=dict(type='bool'),
+    stop_signal=dict(type='int'),
+    stop_timeout=dict(type='int'),
+    stop_time=dict(type='str'),
+    subgidname=dict(type='str'),
+    subuidname=dict(type='str'),
+    sysctl=dict(type='dict'),
+    systemd=dict(type='str'),
+    timeout=dict(type='int'),
+    timezone=dict(type='str'),
+    tls_verify=dict(type='bool'),
+    tmpfs=dict(type='dict'),
+    tty=dict(type='bool'),
+    uidmap=dict(type='list', elements='str'),
+    ulimit=dict(type='list', elements='str', aliases=['ulimits']),
+    umask=dict(type='str'),
+    unsetenv=dict(type='list', elements='str'),
+    unsetenv_all=dict(type='bool'),
+    user=dict(type='str'),
+    userns=dict(type='str', aliases=['userns_mode']),
+    uts=dict(type='str'),
+    variant=dict(type='str'),
+    volume=dict(type='list', elements='str', aliases=['volumes']),
+    volumes_from=dict(type='list', elements='str'),
+    workdir=dict(type='str', aliases=['working_dir'])
 )
+NON_PODMAN_ARGS = [
+    'state',
+    'podman_socket',
+    'executable', 'debug',
+    'force_restart',
+    'image_strict',
+    'recreate'
+]
+API_TRANSLATION = {
+    'annotation': 'annotations',
+    'conmon_pidfile': 'conmon_pid_file',
+    'etc_hosts': 'hostadd',
+    'add_hosts': 'hostadd',
+    'http_proxy': 'httpproxy',
+    'label': 'labels',
+    'publish_all': 'publish_image_ports',
+    'rm': 'remove',
+    'auto_remove': 'remove',
+    'volume': 'volumes',
+    'mount': 'mounts',
+    'workdir': 'work_dir',
+    'working_dir': 'work_dir',
+    'dns_search_domains': 'dns_search',
+    'dns': 'dns_server',
+    'dns_opts': 'dns_option',
+    'publish': 'portmappings',
+    'published': 'portmappings',
+    'published_ports': 'portmappings',
+    'ports': 'portmappings',
+    'pids_mode': 'pidns',
+    'pid': 'pidns',
+    'ipc_mode': 'ipcns',
+    'ipc': 'ipcns',
+    'uts': 'utsns',
+    'userns_mode': 'userns',
+    'tty': 'terminal',
+    'device': 'devices',
+    'exposed': 'expose',
+    'exposed_ports': 'expose',
+    'group_add': 'groups',
+    'ulimit': 'r_limits',
+    'ulimits': 'r_limits',
+    'read_only': 'read_only_filesystem',
+    'ip': 'static_ip',
+    'mac_address': 'static_mac',
+    'no_hosts': 'use_image_hosts',
+    'log_opt': 'log_configuration',
+    'log_driver': 'log_configuration',
+}
 
 
 def init_options():
@@ -254,6 +290,218 @@ def set_container_opts(input_vars):
     default_options_templ = init_options()
     options_dict = update_options(default_options_templ, input_vars)
     return options_dict
+
+
+class PodmanModuleParamsAPI:
+    """Creates Podman API call.
+
+       Arguments:
+           action {str} -- action type from 'run', 'stop', 'create', 'delete',
+                           'start'
+           params {dict} -- dictionary of module parameters
+
+       """
+    def __init__(self, params, podman_version, module):
+        self.params = params
+        self.podman_version = podman_version
+        self.module = module
+        self.new_params = {}
+
+    def translate(self):
+        self.new_params = {
+            k: v for k, v in self.params.items()
+            if v is not None and k not in NON_PODMAN_ARGS
+        }
+        if self.new_params.get('command') and not isinstance(
+                self.new_params.get('command'), list):
+            self.new_params['command'] = shlex.split(self.new_params['command'])
+        transformed = {}
+        mounts = []
+        for k in self.new_params:
+            key = API_TRANSLATION.get(k, k)
+            transformed[key] = self.new_params[k]
+        if transformed.get('env'):
+            for k, v in transformed['env'].items():
+                transformed['env'][k] = str(v)
+        if transformed.get('labels'):
+            for k, v in transformed['labels'].items():
+                transformed['labels'][k] = str(v)
+        if transformed.get('entrypoint') is not None:
+            transformed['entrypoint'] = shlex.split(transformed['entrypoint'])
+        if transformed.get('hostadd') is not None:
+            hosts = []
+            for k, v in transformed['hostadd'].items():
+                hosts.append(":".join((k, v)))
+            transformed['hostadd'] = hosts
+        if transformed.get('volumes'):
+            volumes = []
+            for v in transformed['volumes']:
+                vols = v.split(":")
+                if len(vols) < 2 or "/" not in vols[0]:
+                    name = vols[0] if len(vols) > 1 else ""
+                    volumes.append(
+                        {
+                            "Name": name,
+                            "Dest": vols[1] if len(vols) > 1 else v,
+                        }
+                    )
+                    continue
+                source = vols[0]
+                dest = vols[1].split(",")[0]  # remove options
+                options = []
+                if len(vols) > 2:
+                    opts = vols[2].split(",")
+                    # work on options
+                    for opt in opts:
+                        if opt.lower() == 'ro':
+                            options.append('ro')
+                        elif opt.lower().lstrip("r") in (
+                                'shared', 'slave', 'private', 'unbindable'):
+                            options.append(opt)
+                mounts.append(
+                    {'destination': dest,
+                     'source': source,
+                     'type': 'bind',
+                     'options': options,
+                     }
+                )
+            transformed['volumes'] = volumes
+        if transformed.get('mounts'):
+            n_mounts = []
+            for m in transformed['mounts']:
+                if not isinstance(m, str):
+                    continue
+                mlist = m.split(",")
+                mdict = {}
+                for m1 in mlist:
+                    if '=' in m1:
+                        mkey, mval = m1.split("=")
+                    else:
+                        continue
+                    if mkey.lower() == 'type':
+                        mdict['Type'] = mval
+                        if mval.lower() == 'devpts':
+                            mdict['Source'] = 'devpts'
+                    elif mkey.lower() in ('source', 'src'):
+                        mdict['Source'] = mval
+                    elif mkey.lower() in ('destination', 'dst', 'target'):
+                        mdict['Destination'] = mval
+                    elif mkey.lower() == 'bind-propagation':
+                        if 'BindOptions' not in mdict:
+                            mdict['BindOptions'] = {}
+                        mdict['BindOptions']['Propagation'] = mval
+                    elif mkey.lower() == 'bind-nonrecursive':
+                        if 'BindOptions' not in mdict:
+                            mdict['BindOptions'] = {}
+                        mdict['BindOptions']['NonRecursive'] = mval
+                    elif mkey.lower() == 'ro':
+                        mdict['ReadOnly'] = mval
+                    elif mkey.lower() == 'tmpfs-mode':
+                        if 'TmpfsOptions' not in mdict:
+                            mdict['TmpfsOptions'] = {}
+                        mdict['TmpfsOptions']['Mode'] = mval
+                    elif mkey.lower() == 'tmpfs-size':
+                        if 'TmpfsOptions' not in mdict:
+                            mdict['TmpfsOptions'] = {}
+                        mdict['TmpfsOptions']['SizeBytes'] = mval
+                n_mounts.append(mdict)
+            transformed['mounts'] = n_mounts + mounts
+        else:
+            transformed['mounts'] = mounts
+        if transformed.get('portmappings') is not None:
+            total_ports = []
+            for p in transformed.get('portmappings'):
+                parts = p.split(":")
+                if len(parts) == 1:
+                    c_port, protocol = (parts[0].split("/") + ["tcp"])[:2]
+                    total_ports.append({
+                        "container_port": int(p),
+                        "protocol": protocol if 'udp' not in p else 'udp',
+                        # "host_port": int(parts[0].split("/")[0])
+                    })
+                elif len(parts) == 2:
+                    c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    total_ports.append(
+                        {
+                            "container_port": int(c_port),
+                            "host_port": int(parts[0].split("/")[0]),
+                            "protocol": protocol if 'udp' not in p else 'udp',
+                        })
+                elif len(parts) == 3:
+                    c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    total_ports.append(
+                        {
+                            "host_port": int(c_port),
+                            "container_port": int(parts[2].split("/")[0]),
+                            "protocol": protocol if 'udp' not in p else 'udp',
+                            "host_ip": parts[0],
+                        })
+            transformed['portmappings'] = total_ports
+        if transformed.get('pod'):
+            # API doesn't support creating Pod
+            transformed['pod'] = transformed['pod'].replace("new:", "")
+        if transformed.get('pidns'):
+            transformed['pidns'] = {"nsmode": transformed['pidns']}
+        if transformed.get('ipcns'):
+            transformed['ipcns'] = {"nsmode": transformed['ipcns']}
+        if transformed.get('utsns'):
+            transformed['utsns'] = {"nsmode": transformed['utsns']}
+        if transformed.get('userns'):
+            transformed['userns'] = {"nsmode": transformed['userns']}
+        if transformed.get('cgroupns'):
+            transformed['cgroupns'] = {"nsmode": transformed['cgroupns']}
+        if transformed.get('network'):
+            if (len(transformed['network']) > 1
+                or len(transformed['network'][0].split(",")) > 1
+                and transformed['network'][0] not in ('none', 'host', 'bridge', 'private')
+                and 'container:' not in transformed['network'][0]
+                and 'ns:' not in transformed['network'][0]
+                    and 'slirp4netns:' not in transformed['network'][0]):
+                if "," in transformed['network'][0]:
+                    transformed['Networks'] = {k: {} for k in transformed['network'][0].split(",")}
+                else:
+                    transformed['Networks'] = {k: {} for k in transformed['network']}
+                transformed['netns'] = {"nsmode": 'bridge'}
+            elif (len(transformed['network']) == 1
+                  and transformed['network'][0] not in ('none', 'host', 'bridge', 'private')
+                  and 'container:' not in transformed['network'][0]
+                  and 'ns:' not in transformed['network'][0]
+                    and 'slirp4netns:' not in transformed['network'][0]):
+                transformed['Networks'] = {k: {} for k in transformed['network']}
+            elif 'slirp4netns:' in transformed['network'][0] or 'bridge:' in transformed['network'][0]:
+                transformed['netns'] = {"nsmode": transformed['network'][0].split(":")[0]}
+                netopts = {k: [v] for k, v in [i.split("=")
+                                               for i in transformed['network'][0].split(":")[1].split(",")]}
+                transformed['network_options'] = netopts
+            else:
+                transformed['netns'] = {"nsmode": transformed['network'][0]}
+        if transformed.get('r_limits'):
+            rlimits = []
+            for rlim in transformed['r_limits']:
+                tmp_rlim = rlim.split("=")
+                typ = tmp_rlim[0]
+                soft = tmp_rlim[1].split(":")[0]
+                if len(tmp_rlim[1].split(":")) > 1:
+                    hard = tmp_rlim[1].split(":")[1]
+                else:
+                    hard = soft
+                rlimits.append(
+                    {"type": typ, "soft": int(soft), "hard": int(hard)})
+            transformed['r_limits'] = rlimits
+        if transformed.get('rootfs'):
+            transformed["rootfs"] = transformed["image"]
+            transformed.pop("image")
+        if transformed.get('log_configuration'):
+            transformed['log_configuration'] = {}
+            if self.params['log_opt'] is not None:
+                transformed['log_configuration']['options'] = self.params['log_opt']
+            if self.params['log_driver'] is not None:
+                transformed['log_configuration']['driver'] = self.params['log_driver']
+        if transformed.get('devices'):
+            transformed['devices'] = [
+                {'path': d.split(":")[0]} for d in transformed['devices']]
+        self.module.log("PODMAN-DEBUG-API: %s" % transformed)
+        return transformed
 
 
 class PodmanModuleParams:
@@ -1549,7 +1797,7 @@ class PodmanContainerDiff:
         return different
 
 
-def ensure_image_exists(module, image, module_params):
+def ensure_image_exists(module, image, module_params, client):
     """If image is passed, ensure it exists, if not - pull it or fail.
 
     Arguments:
@@ -1569,30 +1817,27 @@ def ensure_image_exists(module, image, module_params):
         return image_actions
     if not image:
         return image_actions
-    image_exists_cmd = [module_exec, "image", "exists", image]
-    rc, out, err = module.run_command(image_exists_cmd)
-    if rc == 0:
-        return image_actions
-    image_pull_cmd = [module_exec, "image", "pull", image]
-    if module_params["tls_verify"] is False:
-        image_pull_cmd.append("--tls-verify=false")
-    if module_params["authfile"]:
-        image_pull_cmd.extend(["--authfile", module_params["authfile"]])
-    if module_params["arch"]:
-        image_pull_cmd.append("--arch=%s" % module_params["arch"])
-    if module_params["decryption_key"]:
-        image_pull_cmd.append("--decryption-key=%s" % module_params["decryption_key"])
-    if module_params["platform"]:
-        image_pull_cmd.append("--platform=%s" % module_params["platform"])
-    if module_params["os"]:
-        image_pull_cmd.append("--os=%s" % module_params["os"])
-    if module_params["variant"]:
-        image_pull_cmd.append("--variant=%s" % module_params["variant"])
-    if module_params.get("debug"):
-        module.log("PODMAN-CONTAINER-DEBUG: %s" % " ".join(image_pull_cmd))
-    rc, out, err = module.run_command(image_pull_cmd)
-    if rc != 0:
-        module.fail_json(msg="Can't pull image %s" % image, stdout=out, stderr=err)
+    if USE_API:
+        if client.images.exists(image):
+            return image_actions
+    else:
+        image_exists_cmd = [module_exec, 'image', 'exists', image]
+        rc, out, err = module.run_command(image_exists_cmd)
+        if rc == 0:
+            return image_actions
+    if USE_API:
+        img = client.images.pull(image)
+        if not img.get('id'):
+            module.fail_json(msg="Can't find and pull image %s: %s" % (
+                image, img['text']))
+    else:
+        image_pull_cmd = [module_exec, 'image', 'pull', image]
+        if module_params['tls_verify'] is False:
+            image_pull_cmd.append('--tls-verify=false')
+        rc, out, err = module.run_command(image_pull_cmd)
+        if rc != 0:
+            module.fail_json(msg="Can't pull image %s" % image, stdout=out,
+                             stderr=err)
     image_actions.append("pulled image %s" % image)
     return image_actions
 
@@ -1603,7 +1848,7 @@ class PodmanContainer:
     Manages podman container, inspects it and checks its current state
     """
 
-    def __init__(self, module, name, module_params):
+    def __init__(self, module, name, module_params, client):
         """Initialize PodmanContainer class.
 
         Arguments:
@@ -1612,6 +1857,7 @@ class PodmanContainer:
         """
 
         self.module = module
+        self.client = client
         self.module_params = module_params
         self.name = name
         self.stdout, self.stderr = "", ""
@@ -1655,7 +1901,14 @@ class PodmanContainer:
     def get_info(self):
         """Inspect container and gather info about it."""
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command([self.module_params["executable"], b"container", b"inspect", self.name])
+        if USE_API:
+            try:
+                container = self.client.containers.get(self.name)
+                return container
+            except Exception:
+                return {}
+        rc, out, err = self.module.run_command(
+            [self.module_params['executable'], b'container', b'inspect', self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def get_image_info(self):
@@ -1689,34 +1942,67 @@ class PodmanContainer:
             action {str} -- action to perform - start, create, stop, run,
                             delete, restart
         """
-        b_command = PodmanModuleParams(
-            action,
-            self.module_params,
-            self.version,
-            self.module,
-        ).construct_command_from_params()
-        full_cmd = " ".join([self.module_params["executable"]] + [to_native(i) for i in b_command])
-        self.actions.append(full_cmd)
-        if self.module.check_mode:
-            self.module.log("PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+        if USE_API:
+            new_params = PodmanModuleParamsAPI(self.module_params,
+                                               self.version,
+                                               self.module,
+                                               ).translate()
+
+            if action in ('start', 'stop', 'delete', 'restart'):
+                container = self.client.containers.get(self.name)
+                if not container:
+                    self.module.fail_json(msg="Container %s doesn't exist")
+                if action == 'start':
+                    self.client.containers.start(self.name)
+                elif action == 'stop':
+                    self.client.containers.stop(self.name)
+                elif action == 'restart':
+                    self.client.containers.restart(self.name)
+                elif action == 'delete':
+                    self.client.containers.remove(self.name, force=True)
+            elif action == 'create':
+                new_params.pop('detach')
+                try:
+                    container = self.client.containers.create(
+                        **new_params
+                    )
+                except Exception as e:
+                    self.module.fail_json(msg=str(e))
+            elif action == 'run':
+                try:
+                    container = self.client.containers.run(
+                        **new_params
+                    )
+                except Exception as e:
+                    self.module.fail_json(msg=str(e))
+            self.actions.append({action: new_params})
         else:
-            rc, out, err = self.module.run_command(
-                [self.module_params["executable"], b"container"] + b_command,
-                expand_user_and_vars=False,
-            )
-            self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
-            if self.module_params["debug"]:
-                self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
-                self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
-                self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
-            self.stdout = out
-            self.stderr = err
-            if rc != 0:
-                self.module.fail_json(
-                    msg="Container %s exited with code %s when %sed" % (self.name, rc, action),
-                    stdout=out,
-                    stderr=err,
-                )
+            b_command = PodmanModuleParams(action,
+                                           self.module_params,
+                                           self.version,
+                                           self.module,
+                                           ).construct_command_from_params()
+            full_cmd = " ".join([self.module_params['executable']]
+                                + [to_native(i) for i in b_command])
+            self.actions.append(full_cmd)
+            if self.module.check_mode:
+                self.module.log(
+                    "PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+            else:
+                rc, out, err = self.module.run_command(
+                    [self.module_params['executable'], b'container'] + b_command,
+                    expand_user_and_vars=False)
+                self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
+                if self.module_params['debug']:
+                    self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
+                    self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
+                    self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
+                self.stdout = out
+                self.stderr = err
+                if rc != 0:
+                    self.module.fail_json(
+                        msg="Can't %s container %s" % (action, self.name),
+                        stdout=out, stderr=err)
 
     def run(self):
         """Run the container."""
@@ -1779,23 +2065,46 @@ class PodmanManager:
             "container": {},
         }
         self.module_params = params
-        self.name = self.module_params["name"]
-        self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
-        self.image = self.module_params["image"]
-        self.state = self.module_params["state"]
-        disable_image_pull = self.state in ("quadlet", "absent") or self.module_params["pull"] == "never"
-        image_actions = (
-            ensure_image_exists(self.module, self.image, self.module_params) if not disable_image_pull else []
-        )
-        self.results["actions"] += image_actions
+        self.name = self.module_params['name']
+        self.client = None
+        if self.module_params['podman_socket']:
+            global USE_API
+            USE_API = True
+            api = PodmanAPI(self.module, self.module_params)
+            self.client = api.client
+        else:
+            self.executable = \
+                self.module.get_bin_path(self.module_params['executable'],
+                                         required=True)
+        self.image = self.module_params['image']
+        image_actions = ensure_image_exists(
+            self.module, self.image, self.module_params, self.client)
+        self.results['actions'] += image_actions
+        self.state = self.module_params['state']
+        self.restart = self.module_params['force_restart']
+        self.recreate = self.module_params['recreate']
 
         self.restart = self.module_params["force_restart"]
         self.recreate = self.module_params["recreate"]
 
-        if self.module_params["generate_systemd"].get("new"):
-            self.module_params["rm"] = True
+        self.container = PodmanContainer(
+            self.module, self.name, self.module_params, self.client)
 
-        self.container = PodmanContainer(self.module, self.name, self.module_params)
+    def api_wait(self):
+        """In case of detach=False and API call, wait until container
+           is finished.
+        """
+        if (self.container.module_params.get("detach") is None
+                or self.container.module_params.get("detach")):
+            return
+        status = True
+        time.sleep(2)  # Give time to container to start
+        while status:
+            info = self.container.get_info()
+            if not info:
+                return
+            status = info['State']['Running']
+            time.sleep(2)
 
     def update_container_result(self, changed=True):
         """Inspect the current container, update results with last info, exit.
@@ -1804,6 +2113,8 @@ class PodmanManager:
             changed {bool} -- whether any action was performed
                               (default: {True})
         """
+        if USE_API:
+            self.api_wait()
         facts = self.container.get_info() if changed else self.container.info
         out, err = self.container.stdout, self.container.stderr
         self.results.update(

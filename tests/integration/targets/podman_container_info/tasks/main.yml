@@ -10,11 +10,13 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Get missing container info
       containers.podman.podman_container_info:
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: nonexist
 
     - name: Check results of missing container info
@@ -31,6 +33,7 @@
           - "{{ container_name }}"
           - neverexist
           - whatever
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: nonexist2
       ignore_errors: true
 
@@ -48,6 +51,7 @@
       containers.podman.podman_container_info:
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: existing_container
 
     - name: Get mixed existing and non-existing container info
@@ -56,10 +60,12 @@
         name:
           - "{{ container_name }}"
           - whatever
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: mixed_existing_container
 
     - name: Get all containers info
       containers.podman.podman_container_info:
+        podman_socket: "{{ podman_socket | default(omit) }}"
         executable: "{{ test_executable | default('podman') }}"
       register: all_containers
 
@@ -79,6 +85,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Make checks
       # https://github.com/containers/podman/issues/9490
@@ -99,3 +106,4 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"

@@ -25,6 +25,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       loop:
         - "alpine:3.7"
         - "container"
@@ -37,6 +38,7 @@
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: container
+        podman_socket: "{{ podman_socket | default(omit) }}"
       ignore_errors: true
       register: no_image
 
@@ -45,6 +47,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: created
+        podman_socket: "{{ podman_socket | default(omit) }}"
       ignore_errors: true
       register: no_image1
 
@@ -53,6 +56,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: present
+        podman_socket: "{{ podman_socket | default(omit) }}"
       ignore_errors: true
       register: no_image2
 
@@ -81,6 +85,7 @@
         image: alpine:3.7
         state: started
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: image
 
     - name: Check using already pulled image
@@ -90,6 +95,7 @@
         image: alpine:3.7
         state: started
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: image2
 
     - name: Check output is correct
@@ -162,6 +168,7 @@
         image: ineverneverneverexist
         state: started
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: imagefail
       ignore_errors: true
 
@@ -169,7 +176,9 @@
       assert:
         that:
           - imagefail is failed
-          - imagefail.msg == "Can't pull image ineverneverneverexist"
+          - >-
+            imagefail.msg == "Can't pull image ineverneverneverexist"
+            or "Can't find and pull image ineverneverneverexist" in imagefail.msg
 
     - name: Force container recreate
       containers.podman.podman_container:
@@ -179,6 +188,7 @@
         state: started
         command: sleep 1d
         recreate: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: recreated
 
     - name: Check output is correct
@@ -196,6 +206,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: started
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Present container
       containers.podman.podman_container:
@@ -204,6 +215,7 @@
         image: alpine
         state: present
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: start_present
 
     - name: Check output is correct
@@ -216,6 +228,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: stopped
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: stopped
 
     - name: Stop the same container again (idempotency)
@@ -223,6 +236,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: stopped
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: stopped_again
 
     - name: Check output is correct
@@ -244,6 +258,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: deleted
 
     - name: Delete again container (idempotency)
@@ -251,6 +266,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: deleted_again
 
     - name: Check output is correct
@@ -274,6 +290,7 @@
         image: alpine:3.7
         state: stopped
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: created
 
     - name: Check output is correct
@@ -312,6 +329,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Create container in 'created' state
       containers.podman.podman_container:
@@ -320,6 +338,7 @@
         image: alpine:3.7
         state: created
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: created
 
     - name: Check output is correct
@@ -341,6 +360,7 @@
         state: created
         command: sleep 1d
         recreate: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: recreated
 
     - name: Check output is correct
@@ -357,6 +377,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         restart: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: restarted
 
     - name: Check output is correct
@@ -373,6 +394,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         restart: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: restarted
 
     - name: Check output is correct
@@ -389,6 +411,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Start container that was deleted
       containers.podman.podman_container:
@@ -397,6 +420,7 @@
         image: alpine:3.7
         state: started
         command: sleep 1d
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: started
 
     - name: Check output is correct
@@ -412,6 +436,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: deleted
 
     - name: Delete again container (idempotency)
@@ -419,6 +444,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: deleted_again
 
     - name: Check output is correct
@@ -513,6 +539,7 @@
           - /tmp:/data
         mounts:
           - type=devpts,destination=/dev/pts
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: test
 
     - name: Check output is correct
@@ -579,6 +606,7 @@
         image: docker.io/alpine
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Check basic idempotency of running container - run it again
       containers.podman.podman_container:
@@ -587,6 +615,7 @@
         image: alpine:latest
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem
 
     - name: Check that nothing was changed
@@ -602,6 +631,7 @@
         state: started
         command: sleep 20m
         force_restart: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem_r
 
     - name: Check that task was changed
@@ -616,6 +646,7 @@
         image: alpine:latest
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem_r1
 
     - name: Check that task was not changed
@@ -631,6 +662,7 @@
         state: started
         command: sleep 20m
         tty: true
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem1
 
     - name: Check that container is recreated when changed
@@ -645,6 +677,7 @@
         image: alpine
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem2
 
     - name: Check that container is recreated when changed to default value
@@ -657,15 +690,21 @@
         executable: "{{ test_executable | default('podman') }}"
         name: testidem
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: remove
 
     - name: Check podman_actions
       assert:
         that:
           - "'podman rm --force testidem' in remove.podman_actions"
+      when: podman_socket is not defined
 
-    # - name: Create a pod
-    #   shell: podman pod create --name testidempod
+    - name: Check basic idempotency of pod container
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidempod
+        state: started
+      when: podman_socket is defined
 
     - name: Check basic idempotency of pod container
       containers.podman.podman_container:
@@ -675,6 +714,7 @@
         state: started
         command: sleep 20m
         pod: "new:testidempod"
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Check basic idempotency of pod container - run it again
       containers.podman.podman_container:
@@ -684,6 +724,7 @@
         state: started
         command: sleep 20m
         pod: testidempod
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem3
 
     - name: Check that nothing was changed in pod containers
@@ -700,6 +741,7 @@
         command: sleep 20m
         tty: true
         pod: testidempod
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: idem4
 
     - name: Check that container is recreated when changed
@@ -716,6 +758,7 @@
         image: alpine
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
         generate_systemd:
           path: /tmp/
           restart_policy: always
@@ -737,6 +780,7 @@
         image: alpine
         state: started
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
         generate_systemd:
           path: /tmp/
           time: 120
@@ -808,6 +852,7 @@
         image: alpine
         state: absent
         command: sleep 20m
+        podman_socket: "{{ podman_socket | default(omit) }}"
         generate_systemd:
           path: /tmp/
           restart_policy: always
@@ -861,6 +906,7 @@
           - stdout
           - stderr
         env_file: /tmp/envfile
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: envfile
 
     - name: Check output is correct for env file
@@ -884,6 +930,7 @@
         env_file:
           - /tmp/envfile
           - /tmp/envfile2
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: envfile2
 
     - name: Check output is correct for multiple env files
@@ -896,6 +943,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container1
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Rootfs container tests
       tags:
@@ -1041,6 +1089,7 @@
         image: alpine:3.7
         state: started
         command: ls /nonexists
+        podman_socket: "{{ podman_socket | default(omit) }}"
         attach:
           - stdout
           - stderr
@@ -1058,6 +1107,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container1
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Create container with attaching in created state
       containers.podman.podman_container:
@@ -1069,6 +1119,7 @@
         attach:
           - stdout
           - stderr
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Start container with attaching from created state
       containers.podman.podman_container:
@@ -1078,6 +1129,7 @@
         attach:
           - stdout
           - stderr
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach2
       ignore_errors: true
 
@@ -1092,6 +1144,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container1
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Create container without attaching in created state
       containers.podman.podman_container:
@@ -1100,12 +1153,14 @@
         image: alpine:3.7
         state: created
         command: ls /nonexists
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Start container without attaching from created state
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: container1
         state: started
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach21
 
     - name: Check output is correct for container without attaching from created state
@@ -1118,6 +1173,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container1
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Create container with detach False
       containers.podman.podman_container:
@@ -1127,6 +1183,7 @@
         state: created
         command: ls /nonexists
         detach: false
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Start container with detach False
       containers.podman.podman_container:
@@ -1134,6 +1191,7 @@
         name: container1
         state: started
         detach: false
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach3
       ignore_errors: true
 
@@ -1530,12 +1588,14 @@
         executable: "{{ test_executable | default('podman') }}"
         name: testidem-pod
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
       loop:
         - "alpine:3.7"
         - "container"
