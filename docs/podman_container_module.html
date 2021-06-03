@@ -204,11 +204,7 @@
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li>default</li>
-                                                                                                                                                                                            <li>disabled</li>
-                                                                                </ul>
-                                                                        </td>
+                                                                                                                                                        </td>
                                                             <td>
                                         <div>Determines whether the container will create CGroups. Valid values are enabled and disabled, which the default being enabled. The disabled option will force the container to not create CGroups, and thus conflicts with CGroup options cgroupns and cgroup-parent.</div>
                                                     </td>
@@ -1667,6 +1663,21 @@
                                                                                                                                                         </td>
                                                             <td>
                                         <div>Run container in systemd mode. The default is true.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-timezone"></div>
+                <b>timezone</b>
+                <a class="ansibleOptionLink" href="#parameter-timezone" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set timezone in container. This flag takes area-based timezones, GMT time, as well as local, which sets the timezone in the container to match the host machine. See /usr/share/zoneinfo/ for valid timezones. Remote connections use local containers.conf for defaults.</div>
                                                     </td>
         </tr>
                             <tr>
