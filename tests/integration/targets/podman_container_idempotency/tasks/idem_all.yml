@@ -4,6 +4,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container
   containers.podman.podman_container:
@@ -12,6 +13,7 @@
     name: idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container again
   containers.podman.podman_container:
@@ -20,6 +22,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test1
 
 - name: Check info when running container again
@@ -36,6 +39,7 @@
       mykey: "amazing value"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test2
 
 - name: Check info with environment vars
@@ -52,6 +56,7 @@
       mykey: "amazing value"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test3
 
 - name: Check info with environment vars again
@@ -68,6 +73,7 @@
       mykey: "amazing value1"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test4
 
 - name: Check info with changed environment vars
@@ -84,6 +90,7 @@
       tag: nonotag
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9
 
 - name: Check info with log opt tag
@@ -100,6 +107,7 @@
       tag: nonotag
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test10
 
 - name: Check info with log opt tag - again
@@ -114,6 +122,7 @@
     state: present
     command: 1h
     log_driver: journald
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test11
 
 - name: Check info with default log opt tag
@@ -130,6 +139,7 @@
       path: /tmp/container.log
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test12
 
 - name: Check info with log opt path
@@ -146,6 +156,7 @@
       path: /tmp/container2.log
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test13
 
 - name: Check info with changed log opt path
@@ -160,6 +171,7 @@
     state: present
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test14
 
 # We can't guess the default log path
@@ -179,68 +191,7 @@
       max_size: 100mb
       tag: sometag
     command: 1h
-
-- name: Run container with mounted /dev/fuse
-  containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: started
-    command: 1h
-    device:
-      - /dev/fuse
-  register: test15
-
-- name: Run container with mounted /dev/fuse again
-  containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: started
-    command: 1h
-    device:
-      - /dev/fuse
-  register: test16
-
-- name: Run container with mounted /dev/fuse:/dev/fuse
-  containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: started
-    command: 1h
-    device:
-      - /dev/fuse:/dev/fuse
-  register: test17
-
-- name: Run container with mounted /dev/fuse third time
-  containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: started
-    command: 1h
-    device:
-      - /dev/fuse
-  register: test18
-
-- name: Run container without mounted device
-  containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: started
-    command: 1h
-  register: test19
-
-- name: Check info with mounted devices
-  assert:
-    that:
-      - test15 is changed
-      - test16 is not changed
-      - test17 is not changed
-      - test18 is not changed
-      - test19 is changed
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with etc_hosts
   containers.podman.podman_container:
@@ -394,3 +345,4 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"

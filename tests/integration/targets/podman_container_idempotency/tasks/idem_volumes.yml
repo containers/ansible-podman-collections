@@ -3,6 +3,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -10,6 +11,7 @@
     name: idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -17,6 +19,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test1
 
 - name: check test1
@@ -29,6 +32,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test2
 
 - name: check test2
@@ -41,6 +45,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test3
 
 - name: check test3
@@ -55,6 +60,7 @@
     volumes:
       - /opt:/somedir/
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test4
 
 - name: check test4
@@ -69,6 +75,7 @@
     volumes:
       - /opt/://somedir/
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test5
 
 - name: check test5
@@ -81,6 +88,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test6
 
 - name: check test6
@@ -96,6 +104,7 @@
       - /opt:/somedir
       - /data
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test7
 
 - name: check test7
@@ -110,6 +119,7 @@
     volumes:
       - /data
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test8
 
 - name: check test8
@@ -122,6 +132,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9
 
 - name: check test9
@@ -142,6 +153,7 @@
     volumes:
       - "/opt:/anotherdir"
       - "local_volume1:/data"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test10
 
 - name: check test10
@@ -157,6 +169,7 @@
     volumes:
       - "/opt//:/anotherdir"
       - "local_volume1:/data/"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test11
 
 - name: check test11
@@ -172,6 +185,7 @@
     volumes:
       - "/opt:/anotherdir"
       - "local_volume2:/data"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test12
 
 - name: check test12
@@ -186,6 +200,7 @@
     command: 1h
     volumes:
       - "/opt:/anotherdir"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test13
 
 - name: check test13
@@ -196,6 +211,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency1
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -203,6 +219,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -210,6 +227,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test14
 
 - name: check test14
@@ -224,6 +242,7 @@
     volumes:
       - /opt:/data
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test15
 
 - name: check test15
@@ -236,6 +255,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test16
 
 - name: check test16
@@ -248,6 +268,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test17
 
 - name: check test17

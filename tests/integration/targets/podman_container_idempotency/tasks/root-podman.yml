@@ -5,6 +5,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: root-idempotency
     state: absent
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
 
 - name: Run container as is
   containers.podman.podman_container:
@@ -13,6 +14,7 @@
     name: root-idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
 
 - name: Run container as is again
   containers.podman.podman_container:
@@ -21,6 +23,7 @@
     name: root-idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info_a
 
 - name: Check that it is not recreated
@@ -38,6 +41,7 @@
     ulimit:
       - 'nofile=55535:55535'
       - 'memlock=-1:-1'
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info
 
 - name: Check that it is recreated
@@ -55,6 +59,7 @@
     ulimit:
       - 'nofile=55535:55535'
       - 'memlock=-1:-1'
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info1
 
 - name: Check that it is recreated
@@ -72,6 +77,7 @@
     ulimit:
       - 'nofile=55535:65535'
       - 'memlock=-1:-1'
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info2
 
 - name: Check that it is recreated
@@ -89,6 +95,7 @@
     ulimit:
       - 'nofile=55535:65535'
       - 'memlock=-1:-1'
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info3
 
 - name: Check that it is recreated
@@ -103,6 +110,7 @@
     name: root-idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
 
 - name: Run containers with MAC address
   containers.podman.podman_container:
@@ -112,6 +120,7 @@
     state: started
     command: 1h
     mac_address: 44:55:66:77:88:99
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info4
 
 - name: Check that it is not recreated
@@ -128,6 +137,7 @@
     state: present
     command: 1h
     mac_address: 44:55:66:77:88:99
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info5
 
 - name: Check that it is not recreated
@@ -143,6 +153,7 @@
     state: present
     command: 1h
     mac_address: 44:55:66:77:88:33
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info6
 
 - name: Check that it is recreated
@@ -157,6 +168,7 @@
     name: root-idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info7
 
 - name: Check that it is recreated
@@ -178,6 +190,7 @@
       - "127.0.0.1:7671:7676/udp"
       - "127.0.0.3:43423:8872"
       - "[::1]:34523:35425"
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info8
 
 - name: Check that it is recreated
@@ -199,6 +212,7 @@
       - "127.0.0.1:7671:7676/udp"
       - "127.0.0.3:43423:8872"
       - "[::1]:34523:35425"
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
   register: info9
 
 - name: Check that it is recreated
@@ -206,8 +220,76 @@
     that:
       - info9 is not changed
 
+- name: Run container with mounted /dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
+  register: test15
+
+- name: Run container with mounted /dev/fuse again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
+  register: test16
+
+- name: Run container with mounted /dev/fuse:/dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse:/dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
+  register: test17
+
+- name: Run container with mounted /dev/fuse third time
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
+  register: test18
+
+- name: Run container without mounted device
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
+  register: test19
+
+- name: Check info with mounted devices
+  assert:
+    that:
+      - test15 is changed
+      - test16 is not changed
+      - test17 is not changed
+      - test18 is not changed
+      - test19 is changed
+
 - name: Make sure container doesn't exist
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
     name: root-idempotency
     state: absent
+    podman_socket: "{{ podman_root_socket | default(omit) }}"
