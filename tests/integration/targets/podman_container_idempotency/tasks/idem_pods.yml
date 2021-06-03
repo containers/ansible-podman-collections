@@ -9,6 +9,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: testpod_container1
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Create pod
   containers.podman.podman_pod:
@@ -30,6 +31,7 @@
       test: test2
     volumes:
           - /tmp:/data
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Start test container again
   containers.podman.podman_container:
@@ -44,6 +46,7 @@
       test: test2
     volumes:
           - /tmp:/data
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: info
 
 - name: Check starting container
@@ -57,6 +60,7 @@
     name: testpod_container1
     pod: testpod
     state: started
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: info1
 
 - name: Check starting container changed
@@ -70,6 +74,7 @@
     name: testpod_container1
     pod: testpod
     state: started
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: info2
 
 - name: Check starting container again

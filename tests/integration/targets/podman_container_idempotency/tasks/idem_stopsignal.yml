@@ -3,6 +3,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -10,6 +11,7 @@
     name: idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -17,6 +19,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test1
 
 - name: check test1
@@ -30,6 +33,7 @@
     state: present
     stop_signal: 9
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test2
 
 - name: check test2
@@ -55,6 +59,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test3
 
 - name: check test3
@@ -68,6 +73,7 @@
     state: present
     stop_signal: 10
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test4
 
 - name: check test4
@@ -81,6 +87,7 @@
     state: present
     stop_signal: 10
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test5
 
 - name: check test5
@@ -93,6 +100,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test6
 
 - name: check test6
@@ -106,6 +114,7 @@
     state: present
     stop_signal: 15
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test7
 
 - name: check test7
@@ -119,6 +128,7 @@
     state: present
     stop_signal: 9
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test8
 
 - name: check test8
@@ -131,6 +141,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9
 
 - name: check test9
@@ -144,6 +155,7 @@
     state: present
     stop_signal: 15
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9a
 
 - name: check test9a
@@ -156,6 +168,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9b
 
 - name: check test9b
@@ -166,6 +179,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency1
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -173,6 +187,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -180,6 +195,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test10
 
 - name: check test10
@@ -193,6 +209,7 @@
     state: present
     stop_signal: 15
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test11
 
 - name: check test11
@@ -206,6 +223,7 @@
     state: present
     stop_signal: 10
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test12
 
 - name: check test12
@@ -218,6 +236,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test13
 
 - name: check test13
@@ -230,6 +249,7 @@
     name: idempotency1
     state: present
     command: sleep 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test14
 
 - name: check test14

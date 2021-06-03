@@ -6,12 +6,13 @@
         executable: "{{ test_executable | default('podman') }}"
         name: netcontainer
         state: absent
+        podman_socket: "{{ podman_root_socket | default(omit) }}"
 
     - name: Create network testnet
-      command: podman network create testnet --subnet 10.92.92.0/24
+      shell: podman network exists testnet || podman network create testnet --subnet 10.92.92.0/24
 
     - name: Create network anothernet
-      command: podman network create anothernet --subnet 10.72.72.0/24
+      shell: podman network exists anothernet || podman network create anothernet --subnet 10.72.72.0/24
 
     - name: List current networks
       command: podman network ls
@@ -64,6 +65,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: netcontainer
         state: absent
+        podman_socket: "{{ podman_root_socket | default(omit) }}"
 
     - name: Delete all network leftovers from tests
       shell: |

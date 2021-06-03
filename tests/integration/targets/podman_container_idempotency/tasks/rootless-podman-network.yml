@@ -6,12 +6,14 @@
         executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Remove container rootlessnet
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Run container with no specified networks
       containers.podman.podman_container:
@@ -20,6 +22,7 @@
         image: "{{ idem_image }}"
         command: 1h
         state: started
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Run container again with no specified networks
       containers.podman.podman_container:
@@ -28,6 +31,7 @@
         image: "{{ idem_image }}"
         command: 1h
         state: present
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info
 
     - name: Check info for no specified networks
@@ -43,6 +47,7 @@
         command: 1h
         state: present
         network: host
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info1
 
     - name: Check info with network mode host
@@ -58,6 +63,7 @@
         command: 1h
         state: present
         network: host
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info2
 
     - name: Check info with network mode host again
@@ -73,6 +79,7 @@
         command: 1h
         state: present
         network: none
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info3
 
     - name: Check info without network at all
@@ -88,6 +95,7 @@
         command: 1h
         state: present
         network: none
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info4
 
     - name: Check info without network at all again
@@ -102,6 +110,7 @@
         image: "{{ idem_image }}"
         command: 1h
         state: present
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info5
 
     - name: Check info with default network mode
@@ -121,12 +130,14 @@
             state: present
             network:
               - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info6
 
         - name: Check info with slirp4netns options
           assert:
             that:
               - info6 is changed
+          when: podman_socket is not defined
 
         - name: Run container with slirp4netns options - again
           containers.podman.podman_container:
@@ -137,6 +148,7 @@
             state: present
             network:
               - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info7
 
         - name: Check info with slirp4netns options - again
@@ -153,12 +165,14 @@
             state: present
             network:
               - slirp4netns:allow_host_loopback=true,cidr=10.0.4.0/24
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info8
 
         - name: Check info with different slirp4netns options
           assert:
             that:
               - info8 is changed
+          when: podman_socket is not defined
 
 
     - when: podman_version | int >= 5
@@ -173,6 +187,7 @@
             state: present
             network:
               - "pasta:-4,-t,8007,-u,4443,-T,3000"
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info6
 
         - name: Check info with pasta options
@@ -189,6 +204,7 @@
             state: present
             network:
               - "pasta:-4,-t,8007,-u,4443,-T,3000"
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info7
 
         - name: Check info with pasta options - again
@@ -205,6 +221,7 @@
             state: present
             network:
               - "pasta:-4,-t,8008,-u,4443,-T,3000"
+            podman_socket: "{{ podman_socket | default(omit) }}"
           register: info8
 
         - name: Check info with different pasta options
@@ -219,12 +236,14 @@
         image: "{{ idem_image }}"
         command: 1h
         state: present
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info9
 
     - name: Check info without options
       assert:
         that:
           - info9 is changed
+      when: podman_socket is not defined
 
     - name: Run container without options - again
       containers.podman.podman_container:
@@ -233,6 +252,7 @@
         image: "{{ idem_image }}"
         command: 1h
         state: present
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info10
 
     - name: Check info without options - again
@@ -248,12 +268,15 @@
         command: 1h
         state: started
         network: 'container:rootlessnet'
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info11
+      when: podman_socket is not defined
 
     - name: Check info container network attached to first one
       assert:
         that:
           - info11 is changed
+      when: podman_socket is not defined
 
     - name: Run container network attached to first one - again
       containers.podman.podman_container:
@@ -263,12 +286,16 @@
         command: 1h
         state: started
         network: 'container:rootlessnet'
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: info12
+      when: podman_socket is not defined
 
     - name: Check info container network attached to first one - again
       assert:
         that:
           - info12 is not changed
+      when: podman_socket is not defined
+
   always:
 
     - name: Delete all containers leftovers from tests
@@ -276,9 +303,11 @@
         executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Delete all containers leftovers from tests 2
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
