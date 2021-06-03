@@ -31,6 +31,11 @@ options:
         machine running C(podman)
     default: 'podman'
     type: str
+  podman_socket:
+    description:
+      - Unix socket address for API connection. If API is not available, the
+        module will fail.
+    type: str
 '''
 
 EXAMPLES = r"""
@@ -316,7 +321,11 @@ containers:
 
 import json
 import time
+
+from ..module_utils.podman.common import PodmanAPI
 from ansible.module_utils.basic import AnsibleModule
+
+USE_API = False
 
 
 def get_containers_facts(module, executable, name):
@@ -332,6 +341,24 @@ def get_containers_facts(module, executable, name):
     """
     retry = 0
     retry_limit = 4
+    if module.params['podman_socket']:
+        global USE_API
+        USE_API = True
+        api = PodmanAPI(module, module.params)
+        client = api.client
+        all_names = client.containers.list(all_=True)
+        all_data = []
+        cycle = name or [j['Id'] for j in all_names]
+        for c in cycle:
+            try:
+                container_attrs = client.containers.get(c)
+                if container_attrs:
+                    all_data.append(container_attrs)
+            except Exception:
+                if name:
+                    module.fail_json(msg="Container %s can't be found!" % c)
+                continue
+        return all_data, '', ''
     if not name:
         all_names = [executable, 'container', 'ls', '-q', '-a']
         rc, out, err = module.run_command(all_names)
@@ -394,12 +421,16 @@ def main():
         argument_spec={
             'executable': {'type': 'str', 'default': 'podman'},
             'name': {'type': 'list', 'elements': 'str'},
+            'podman_socket': {'type': 'str'}
         },
         supports_check_mode=True,
     )
 
     name = module.params['name']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    executable = None
+    if not module.params['podman_socket']:
+        executable = module.get_bin_path(
+            module.params['executable'], required=True)
     # pylint: disable=unused-variable
     inspect_results, out, err = get_containers_facts(module, executable, name)
 
