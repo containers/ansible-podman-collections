@@ -1,0 +1,38 @@
+---
+- name: Set podman socket var for rootless
+  set_fact:
+    podman_socket: unix:///tmp/podman.sock
+    podman_root_socket: unix:///tmp/root-podman.sock
+
+- name: Run tasks from podman container
+  include_tasks:  ../../podman_container/tasks/main.yml
+
+- name: Run tasks from podman container info
+  include_tasks:  ../../podman_container_info/tasks/main.yml
+
+- name: Prepare a container
+  include_tasks:  ../../podman_container_idempotency/tasks/build_test_container.yml
+
+- name: Test idempotency of users
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_users.yml
+
+- name: Test idempotency of workdir
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_workdir.yml
+
+- name: Test idempotency of labels
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_labels.yml
+
+- name: Test idempotency of stop signal
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_stopsignal.yml
+
+- name: Test idempotency of ports
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_ports.yml
+
+- name: Test idempotency of volumes
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_volumes.yml
+
+- name: Test idempotency of containers in pods
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_pods.yml
+
+- name: Test idempotency of other settings
+  include_tasks:  ../../podman_container_idempotency/tasks/idem_all.yml
