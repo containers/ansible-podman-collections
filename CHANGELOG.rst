@@ -5,6 +5,36 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.6.0
+======
+
+Release Summary
+---------------
+
+New module podman_play for playing Kubernetes YAML and bugfixes
+
+Minor Changes
+-------------
+
+- Add Ansible 2.11 to all tests and use Ubuntu 20.04
+- Add Ansible 2.11 to testing
+- Add RPM building scripts
+- Add support for timezones in containers
+
+Bugfixes
+--------
+
+- Fix ansible-test issues for CI
+- Fix idempotency for environment
+- Fix ipv6=false issue
+- Fix multi-containers options
+- Fix overlayfs issue in CI for buildah connection
+
+New Modules
+-----------
+
+- containers.podman.podman_play - Play Kubernetes YAML files with Podman
+
 v1.5.0
 ======
 
