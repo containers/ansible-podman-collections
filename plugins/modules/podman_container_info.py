@@ -315,6 +315,7 @@ containers:
 """
 
 import json
+import time
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -329,11 +330,21 @@ def get_containers_facts(module, executable, name):
     Returns:
         list of containers info, stdout, stderr
     """
+    retry = 0
+    retry_limit = 4
     if not name:
         all_names = [executable, 'container', 'ls', '-q', '-a']
         rc, out, err = module.run_command(all_names)
+        # This should not fail in regular circumstances, so retry again
+        # https://github.com/containers/podman/issues/10225
+        while rc != 0 and retry <= retry_limit:
+            module.log(msg="Unable to get list of containers: %s" % err)
+            time.sleep(1)
+            retry += 1
+            rc, out, err = module.run_command(all_names)
         if rc != 0:
-            module.fail_json(msg="Unable to get list of containers: %s" % err)
+            module.fail_json(msg="Unable to get list of containers during"
+                                 " %s retries" % retry_limit)
         name = out.split()
         if not name:
             return [], out, err
