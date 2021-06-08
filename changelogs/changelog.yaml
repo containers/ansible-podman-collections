@@ -261,3 +261,9 @@ releases:
       name: podman_play
       namespace: ''
     release_date: '2021-06-03'
+  1.6.1:
+    changes:
+      bugfixes:
+      - Fix failure when listing containers
+      release_summary: Bugfix for podman_container_info
+    release_date: '2021-06-08'

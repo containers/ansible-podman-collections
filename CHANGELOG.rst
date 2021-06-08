@@ -5,6 +5,19 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.6.1
+======
+
+Release Summary
+---------------
+
+Bugfix for podman_container_info
+
+Bugfixes
+--------
+
+- Fix failure when listing containers
+
 v1.6.0
 ======
 
