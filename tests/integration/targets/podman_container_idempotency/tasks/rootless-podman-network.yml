@@ -11,7 +11,7 @@
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
-        state: present
+        state: started
 
     - name: Run container again with no specified networks
       containers.podman.podman_container:

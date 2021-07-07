@@ -9,7 +9,7 @@
   containers.podman.podman_container:
     image: "{{ idem_image }}"
     name: root-idempotency
-    state: present
+    state: started
     command: 1h
 
 - name: Run container as is again
@@ -93,14 +93,14 @@
   containers.podman.podman_container:
     image: "{{ idem_image }}"
     name: root-idempotency
-    state: present
+    state: started
     command: 1h
 
 - name: Run containers with MAC address
   containers.podman.podman_container:
     image: "{{ idem_image }}"
     name: root-idempotency
-    state: present
+    state: started
     command: 1h
     mac_address: 44:55:66:77:88:99
   register: info4

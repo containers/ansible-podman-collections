@@ -178,7 +178,7 @@ class PodmanModuleParams:
 
        Arguments:
            action {str} -- action type from 'run', 'stop', 'create', 'delete',
-                           'start'
+                           'start', 'restart'
            params {dict} -- dictionary of module parameters
 
        """
@@ -195,7 +195,7 @@ class PodmanModuleParams:
         Returns:
            list -- list of byte strings for Popen command
         """
-        if self.action in ['start', 'stop', 'delete']:
+        if self.action in ['start', 'stop', 'delete', 'restart']:
             return self.start_stop_delete()
         if self.action in ['create', 'run']:
             cmd = [self.action, '--name', self.params['name']]
@@ -217,7 +217,7 @@ class PodmanModuleParams:
 
     def start_stop_delete(self):
 
-        if self.action in ['stop', 'start']:
+        if self.action in ['stop', 'start', 'restart']:
             cmd = [self.action, self.params['name']]
             return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
@@ -1385,7 +1385,7 @@ class PodmanContainer:
 
         Arguments:
             action {str} -- action to perform - start, create, stop, run,
-                            delete
+                            delete, restart
         """
         b_command = PodmanModuleParams(action,
                                        self.module_params,
@@ -1432,6 +1432,10 @@ class PodmanContainer:
         """Start the container."""
         self._perform_action('start')
 
+    def restart(self):
+        """Restart the container."""
+        self._perform_action('restart')
+
     def create(self):
         """Create the container."""
         self._perform_action('create')
@@ -1449,11 +1453,6 @@ class PodmanContainer:
             self.stop()
         self.delete()
         self.run()
-
-    def restart(self):
-        """Restart the container."""
-        self.stop()
-        self.start()
 
 
 class PodmanManager:
@@ -1509,6 +1508,20 @@ class PodmanManager:
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
+        if not self.image:
+            if not self.container.exists:
+                self.module.fail_json(msg='Cannot start container when image'
+                                          ' is not specified!')
+            if self.restart:
+                self.container.restart()
+                self.results['actions'].append('restarted %s' %
+                                               self.container.name)
+            else:
+                self.container.start()
+                self.results['actions'].append('started %s' %
+                                               self.container.name)
+            self.update_container_result()
+            return
         if self.container.exists and self.restart:
             if self.container.running:
                 self.container.restart()
@@ -1568,6 +1581,21 @@ class PodmanManager:
                 self.container.recreate()
                 self.results['actions'].append('recreated %s' %
                                                self.container.name)
+                if self.container.running:
+                    self.container.start()
+                    self.results['actions'].append('started %s' %
+                                                   self.container.name)
+                self.update_container_result()
+                return
+            elif self.restart:
+                if self.container.running:
+                    self.container.restart()
+                    self.results['actions'].append('restarted %s' %
+                                                   self.container.name)
+                else:
+                    self.container.start()
+                    self.results['actions'].append('started %s' %
+                                                   self.container.name)
                 self.update_container_result()
                 return
             self.update_container_result(changed=False)
@@ -1606,7 +1634,7 @@ class PodmanManager:
     def execute(self):
         """Execute the desired action according to map of actions & states."""
         states_map = {
-            'present': self.make_started,
+            'present': self.make_created,
             'started': self.make_started,
             'absent': self.make_absent,
             'stopped': self.make_stopped,

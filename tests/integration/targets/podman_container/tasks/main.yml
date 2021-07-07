@@ -18,7 +18,7 @@
     - name: Test no image with state 'started'
       containers.podman.podman_container:
         name: container
-        state: started
+        state: created
       ignore_errors: true
       register: no_image1
 
@@ -35,8 +35,8 @@
           - no_image is failed
           - no_image1 is failed
           - no_image2 is failed
-          - no_image.msg == "State 'started' required image to be configured!"
-          - no_image1.msg == "State 'started' required image to be configured!"
+          - no_image.msg == "Cannot start container when image is not specified!"
+          - no_image1.msg == "State 'created' required image to be configured!"
           - no_image2.msg == "State 'present' required image to be configured!"
         fail_msg: No image test failed!
         success_msg: No image test passed!
@@ -50,7 +50,7 @@
       containers.podman.podman_container:
         name: container
         image: alpine:3.7
-        state: present
+        state: started
         command: sleep 1d
       register: image
 
@@ -58,7 +58,7 @@
       containers.podman.podman_container:
         name: container2
         image: alpine:3.7
-        state: present
+        state: started
         command: sleep 1d
       register: image2
 
@@ -82,7 +82,7 @@
       containers.podman.podman_container:
         name: container
         image: ineverneverneverexist
-        state: present
+        state: started
         command: sleep 1d
       register: imagefail
       ignore_errors: true
@@ -93,12 +93,11 @@
           - imagefail is failed
           - imagefail.msg == "Can't pull image ineverneverneverexist"
 
-
     - name: Force container recreate
       containers.podman.podman_container:
         name: container
         image: alpine
-        state: present
+        state: started
         command: sleep 1d
         recreate: true
       register: recreated
@@ -108,10 +107,28 @@
         that:
           - recreated is changed
           - recreated.container is defined
-          - recreated.container['State']['Running']
+          - recreated.container['State']['Running']|bool
           - "'recreated container' in recreated.actions"
         fail_msg: Force recreate test failed!
         success_msg: Force recreate test passed!
+
+    - name: Start container
+      containers.podman.podman_container:
+        name: container
+        state: started
+
+    - name: Present container
+      containers.podman.podman_container:
+        name: container
+        image: alpine
+        state: present
+        command: sleep 1d
+      register: start_present
+
+    - name: Check output is correct
+      assert:
+        that:
+          - start_present.container['State']['Running']
 
     - name: Stop container
       containers.podman.podman_container:
@@ -238,7 +255,7 @@
           - restarted is changed
           - restarted.container is defined
           - restarted.container['State']['Running']
-          - "'started container' in restarted.actions"
+          - "'restarted container' in restarted.actions"
         fail_msg: Restart container test failed!
 
     - name: Restart running container
@@ -394,14 +411,14 @@
       containers.podman.podman_container:
         name: testidem
         image: docker.io/alpine
-        state: present
+        state: started
         command: sleep 20m
 
     - name: Check basic idempotency of running container - run it again
       containers.podman.podman_container:
         name: testidem
         image: alpine:latest
-        state: present
+        state: started
         command: sleep 20m
       register: idem
 
@@ -414,7 +431,7 @@
       containers.podman.podman_container:
         name: testidem
         image: alpine:latest
-        state: present
+        state: started
         command: sleep 20m
         force_restart: true
       register: idem_r
@@ -428,7 +445,7 @@
       containers.podman.podman_container:
         name: testidem
         image: alpine:latest
-        state: present
+        state: started
         command: sleep 20m
       register: idem_r1
 
@@ -441,7 +458,7 @@
       containers.podman.podman_container:
         name: testidem
         image: alpine
-        state: present
+        state: started
         command: sleep 20m
         tty: true
       register: idem1
@@ -455,7 +472,7 @@
       containers.podman.podman_container:
         name: testidem
         image: alpine
-        state: present
+        state: started
         command: sleep 20m
       register: idem2
 
@@ -482,7 +499,7 @@
       containers.podman.podman_container:
         name: testidem-pod
         image: docker.io/alpine
-        state: present
+        state: started
         command: sleep 20m
         pod: "new:testidempod"
 
@@ -490,7 +507,7 @@
       containers.podman.podman_container:
         name: testidem-pod
         image: alpine:latest
-        state: present
+        state: started
         command: sleep 20m
         pod: testidempod
       register: idem3
@@ -504,7 +521,7 @@
       containers.podman.podman_container:
         name: testidem-pod
         image: alpine
-        state: present
+        state: started
         command: sleep 20m
         tty: true
         pod: testidempod

@@ -921,7 +921,7 @@ def main():
     )
 
     # work on input vars
-    if (module.params['state'] in ['started', 'present', 'created']
+    if (module.params['state'] in ['present', 'created']
             and not module.params['force_restart']
             and not module.params['image']):
         module.fail_json(msg="State '%s' required image to be configured!" %
