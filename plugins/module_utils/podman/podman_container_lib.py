@@ -1063,16 +1063,6 @@ class PodmanContainerDiff:
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('network', before, after)
 
-    def diffparam_no_hosts(self):
-        before = not bool(self.info['hostspath'])
-        # For newer verions of Podman
-        if 'resolvconfpath' in self.info:
-            before = not bool(self.info['resolvconfpath'])
-        after = self.params['no_hosts']
-        if self.params['network'] == ['none']:
-            after = True
-        return self._diff_update_and_compare('no_hosts', before, after)
-
     def diffparam_oom_score_adj(self):
         before = self.info['hostconfig']['oomscoreadj']
         after = self.params['oom_score_adj']
