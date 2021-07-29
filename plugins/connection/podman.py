@@ -79,7 +79,9 @@ class Connection(ConnectionBase):
 
     # String used to identify this Connection class from other classes
     transport = 'containers.podman.podman'
-    has_pipelining = True
+    # We know that pipelining does not work with podman. Do not enable it, or
+    # users will start containers and fail to connect to them.
+    has_pipelining = False
 
     def __init__(self, play_context, new_stdin, *args, **kwargs):
         super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
