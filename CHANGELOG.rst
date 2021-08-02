@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.6.2
+======
+
+Release Summary
+---------------
+
+Bugfixes for idempotency and pipelining
+
+Bugfixes
+--------
+
+- Add meta/runtime.yml which is required for Galaxy now
+- Avoid exposing pipelining support for podman connections
+- Change present state to be as created state
+- Disable no-hosts idempotency
+- Fix idempotency with systemd podman files
+- Remove idempotency for volume UID/GID
+
 v1.6.1
 ======
 
