@@ -759,6 +759,11 @@ class PodmanContainerDiff:
     def diffparam_cidfile(self):
         before = self.info['hostconfig']['containeridfile']
         after = self.params['cidfile']
+        labels = self.info['config']['labels'] or {}
+        # Ignore cidfile that is coming from systemd files
+        # https://github.com/containers/ansible-podman-collections/issues/276
+        if 'podman_systemd_unit' in labels:
+            after = before
         return self._diff_update_and_compare('cidfile', before, after)
 
     def diffparam_command(self):
@@ -924,6 +929,11 @@ class PodmanContainerDiff:
                 str(k).lower(): str(v)
                 for k, v in self.params['label'].items()
             })
+        # Strip out labels that are coming from systemd files
+        # https://github.com/containers/ansible-podman-collections/issues/276
+        if 'podman_systemd_unit' in before:
+            after.pop('podman_systemd_unit', None)
+            before.pop('podman_systemd_unit', None)
         return self._diff_update_and_compare('label', before, after)
 
     def diffparam_log_driver(self):
