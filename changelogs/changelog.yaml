@@ -267,3 +267,14 @@ releases:
       - Fix failure when listing containers
       release_summary: Bugfix for podman_container_info
     release_date: '2021-06-08'
+  1.6.2:
+    changes:
+      bugfixes:
+      - Add meta/runtime.yml which is required for Galaxy now
+      - Avoid exposing pipelining support for podman connections
+      - Change present state to be as created state
+      - Disable no-hosts idempotency
+      - Fix idempotency with systemd podman files
+      - Remove idempotency for volume UID/GID
+      release_summary: Bugfixes for idempotency and pipelining
+    release_date: '2021-08-02'
