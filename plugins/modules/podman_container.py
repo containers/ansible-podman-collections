@@ -595,6 +595,11 @@ options:
       - If true, the first argument refers to an exploded container on the file
         system. The default is false.
     type: bool
+  secrets:
+    description:
+      - Add the named secrets into the container at /run/secrets.
+    type: list
+    elements: str
   security_opt:
     description:
       - Security Options. For example security_opt "seccomp=unconfined"
