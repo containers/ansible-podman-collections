@@ -95,7 +95,7 @@ def podman_secret_create(module, executable, name, data, force):
 
 def podman_secret_remove(module, executable, name):
     changed = False
-    rc, _, err = module.run_command([executable, 'secret', 'rm', name])
+    rc, out, err = module.run_command([executable, 'secret', 'rm', name])
     if rc == 0:
         changed = True
     elif 'no such secret' in err:
