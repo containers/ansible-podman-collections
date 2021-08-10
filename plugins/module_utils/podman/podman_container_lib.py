@@ -106,6 +106,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     restart_policy=dict(type='str'),
     rm=dict(type='bool', aliases=['remove', 'auto_remove']),
     rootfs=dict(type='bool'),
+    secrets=dict(type='list', elements='str', no_log=True),
     security_opt=dict(type='list', elements='str'),
     shm_size=dict(type='str'),
     sig_proxy=dict(type='bool'),
@@ -517,6 +518,11 @@ class PodmanModuleParams:
 
     def addparam_rootfs(self, c):
         return c + ['--rootfs=%s' % self.params['rootfs']]
+
+    def addparam_secrets(self, c):
+        for secret in self.params['secrets']:
+            c += ['--secret', secret]
+        return c
 
     def addparam_security_opt(self, c):
         for secopt in self.params['security_opt']:

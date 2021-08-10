@@ -1,0 +1,60 @@
+- name: Test podman_secret
+  block:
+
+    - name: Make sure secret doesn't exist
+      containers.podman.podman_secret:
+        state: absent
+        name: mysecret
+
+    - name: Create secret
+      containers.podman.podman_secret:
+        name: mysecret
+        data: secret content
+
+    - name: Recreate secret
+      containers.podman.podman_secret:
+        name: mysecret
+        data: super secret content
+        force: true
+
+    - name: Create container that uses secret
+      containers.podman.podman_container:
+        name: showmysecret
+        image: docker.io/alpine:3.14
+        secrets:
+          - mysecret
+        command: cat /run/secrets/mysecret
+        detach: false
+        rm: true
+      register: container
+
+    - name: Output secret data
+      debug:
+        msg: '{{ container.stdout }}'
+
+    - name: Check secret data
+      assert:
+        that:
+          - container.stdout == "super secret content\n"  # cat adds a newline
+
+    - name: Remove secret
+      containers.podman.podman_secret:
+        state: absent
+        name: mysecret
+      register: removed
+
+    - name: Check removed is changed
+      assert:
+        that:
+          - removed is changed
+
+    - name: Remove secret
+      containers.podman.podman_secret:
+        state: absent
+        name: mysecret
+      register: removed
+
+    - name: Check removed is not changed
+      assert:
+        that:
+          - removed is not changed
