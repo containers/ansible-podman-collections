@@ -78,19 +78,11 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def is_not_exists(err):
-    return 'no such secret' in err
-
-
 def podman_secret_create(module, executable, name, data, force):
     if force:
-        rc, out, err = module.run_command([executable, 'secret', 'rm', name])
-        if rc == 0:
-            pass
-        elif not is_not_exists(err):
-            module.fail_json(msg="Unable to remove secret: %s" % err)
+        module.run_command([executable, 'secret', 'rm', name])
 
-    rc, out, err = module.run_command(
+    rc, _, err = module.run_command(
         [executable, 'secret', 'create', name, '-'], data=data)
 
     if rc != 0:
@@ -98,23 +90,21 @@ def podman_secret_create(module, executable, name, data, force):
 
     return {
         "changed": True,
-        "id": out,
     }
 
 
 def podman_secret_remove(module, executable, name):
     changed = False
-    rc, out, err = module.run_command([executable, 'secret', 'rm', name])
+    rc, _, err = module.run_command([executable, 'secret', 'rm', name])
     if rc == 0:
         changed = True
-    elif is_not_exists(err):
+    elif 'no such secret' in err:
         pass
     else:
         module.fail_json(msg="Unable to remove secret: %s" % err)
 
     return {
         "changed": changed,
-        "id": out,
     }
 
 
