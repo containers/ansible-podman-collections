@@ -82,7 +82,7 @@ def podman_secret_create(module, executable, name, data, force):
     if force:
         module.run_command([executable, 'secret', 'rm', name])
 
-    rc, _, err = module.run_command(
+    rc, out, err = module.run_command(
         [executable, 'secret', 'create', name, '-'], data=data)
 
     if rc != 0:
