@@ -312,8 +312,8 @@ class PodmanPodDiff:
             after = self.params['infra_image']
         before = before.replace(":latest", "")
         after = after.replace(":latest", "")
-        before = before.split("/")[-1]
-        after = after.split("/")[-1]
+        before = before.split("/")[-1]  # pylint: disable=W,C,R
+        after = after.split("/")[-1]  # pylint: disable=W,C,R
         return self._diff_update_and_compare('infra_image', before, after)
 
     # TODO(sshnaidm): https://github.com/containers/podman/pull/6956
