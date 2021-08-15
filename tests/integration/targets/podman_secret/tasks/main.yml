@@ -20,7 +20,7 @@
     - name: Create container that uses secret
       containers.podman.podman_container:
         name: showmysecret
-        image: docker.io/alpine:3.14
+        image: alpine:3.7
         secrets:
           - mysecret
         command: cat /run/secrets/mysecret
@@ -58,3 +58,9 @@
       assert:
         that:
           - removed is not changed
+
+  always:
+    - name: Remove container that uses secret
+      containers.podman.podman_container:
+        name: showmysecret
+        state: absent
