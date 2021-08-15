@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.7.0
+======
+
+Release Summary
+---------------
+
+New module - Podman secret
+
+Minor Changes
+-------------
+
+- Podman secret module
+
+New Modules
+-----------
+
+- containers.podman.podman_secret - Manage podman secrets
+
 v1.6.2
 ======
 

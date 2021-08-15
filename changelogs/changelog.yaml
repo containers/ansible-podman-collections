@@ -278,3 +278,13 @@ releases:
       - Remove idempotency for volume UID/GID
       release_summary: Bugfixes for idempotency and pipelining
     release_date: '2021-08-02'
+  1.7.0:
+    changes:
+      minor_changes:
+      - Podman secret module
+      release_summary: New module - Podman secret
+    modules:
+    - description: Manage podman secrets
+      name: podman_secret
+      namespace: ''
+    release_date: '2021-08-15'
