@@ -53,8 +53,8 @@ from ..module_utils.podman.podman_container_lib import set_container_opts  # noq
 
 
 def combine(results):
-    changed = any([i.get('changed', False) for i in results])
-    failed = any([i.get('failed', False) for i in results])
+    changed = any(i.get('changed', False) for i in results)
+    failed = any(i.get('failed', False) for i in results)
     actions = []
     podman_actions = []
     containers = []
