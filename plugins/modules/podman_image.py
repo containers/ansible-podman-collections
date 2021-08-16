@@ -451,6 +451,7 @@ class PodmanImageManager(object):
 
     def present(self):
         image = self.find_image()
+        self.module.log("PODMAN-IMAGE-DEBUG: Podman image %s:" % str(image))
 
         if image:
             digest_before = image[0].get('Digest', image[0].get('digest'))
@@ -458,12 +459,14 @@ class PodmanImageManager(object):
             digest_before = None
 
         if not image or self.force:
+            self.module.log("PODMAN-IMAGE-DEBUG: Not image of force")
             if self.path:
                 # Build the image
                 self.results['actions'].append('Built image {image_name} from {path}'.format(image_name=self.image_name, path=self.path))
                 if not self.module.check_mode:
                     image = self.results['image'] = self.build_image()
             else:
+                self.module.log("PODMAN-IMAGE-DEBUG: No path provided to build image from, pulling")
                 # Pull the image
                 self.results['actions'].append('Pulled image {image_name}'.format(image_name=self.image_name))
                 if not self.module.check_mode:
@@ -471,6 +474,7 @@ class PodmanImageManager(object):
 
             if not image:
                 image = self.find_image()
+                self.module.log("PODMAN-IMAGE-DEBUG: line 477 Podman image %s:" % str(image))
             if not self.module.check_mode:
                 digest_after = image[0].get('Digest', image[0].get('digest'))
                 self.results['changed'] = digest_before != digest_after
@@ -478,6 +482,7 @@ class PodmanImageManager(object):
                 self.results['changed'] = True
 
         if self.push:
+            self.module.log("PODMAN-IMAGE-DEBUG: Pushing image %s" % self.image_name)
             # Push the image
             if '/' in self.image_name:
                 push_format_string = 'Pushed image {image_name}'
@@ -501,8 +506,10 @@ class PodmanImageManager(object):
     def find_image(self, image_name=None):
         if image_name is None:
             image_name = self.image_name
+        self.module.log("PODMAN-IMAGE-DEBUG: Image name: %s" % image_name)
         args = ['image', 'ls', image_name, '--format', 'json']
         rc, images, err = self._run(args, ignore_errors=True)
+        self.module.log("PODMAN-IMAGE-DEBUG: Images: %s" % str(images))
         if len(images) > 0:
             return json.loads(images)
         else:
