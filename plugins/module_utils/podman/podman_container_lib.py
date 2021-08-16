@@ -1076,6 +1076,11 @@ class PodmanContainerDiff:
             net_mode_before = net_mode_before.replace('bridge', 'default')
             net_mode_before = net_mode_before.replace('slirp4netns', 'default')
             return self._diff_update_and_compare('network', net_mode_before, net_mode_after)
+        # If container is attached to network of a different container
+        if "container" in net_mode_before:
+            for netw in after:
+                if "container" in netw:
+                    before = after = netw
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('network', before, after)
 

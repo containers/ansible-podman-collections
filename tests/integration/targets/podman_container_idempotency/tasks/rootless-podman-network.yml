@@ -1,6 +1,11 @@
 - name: Test podman rootful container with networks
   block:
 
+    - name: Remove container rootlessnet2
+      containers.podman.podman_container:
+        name: rootlessnet2
+        state: absent
+
     - name: Remove container rootlessnet
       containers.podman.podman_container:
         name: rootlessnet
@@ -166,9 +171,41 @@
         that:
           - info10 is not changed
 
+    - name: Run container network attached to first one
+      containers.podman.podman_container:
+        name: rootlessnet2
+        image: "{{ idem_image }}"
+        command: 1h
+        state: started
+        network: 'container:rootlessnet'
+      register: info11
+
+    - name: Check info container network attached to first one
+      assert:
+        that:
+          - info11 is changed
+
+    - name: Run container network attached to first one - again
+      containers.podman.podman_container:
+        name: rootlessnet2
+        image: "{{ idem_image }}"
+        command: 1h
+        state: started
+        network: 'container:rootlessnet'
+      register: info12
+
+    - name: Check info container network attached to first one - again
+      assert:
+        that:
+          - info12 is not changed
   always:
 
-    - name: Delete all pods leftovers from tests
+    - name: Delete all containers leftovers from tests
+      containers.podman.podman_container:
+        name: rootlessnet2
+        state: absent
+
+    - name: Delete all containers leftovers from tests 2
       containers.podman.podman_container:
         name: rootlessnet
         state: absent
