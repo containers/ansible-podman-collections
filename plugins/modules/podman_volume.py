@@ -47,6 +47,7 @@ options:
   options:
     description:
       - Set driver specific options. For example 'device=tpmfs', 'type=tmpfs'.
+        UID and GID idempotency is not supported due to changes in podman.
     type: list
     elements: str
     required: false
@@ -232,6 +233,10 @@ class PodmanVolumeDiff:
 
     def diffparam_options(self):
         before = self.info['options'] if 'options' in self.info else {}
+        # Removing GID and UID from options list
+        before.pop('uid', None)
+        before.pop('gid', None)
+        # Collecting all other options in the list
         before = ["=".join((k, v)) for k, v in before.items()]
         after = self.params['options']
         # # For UID, GID
