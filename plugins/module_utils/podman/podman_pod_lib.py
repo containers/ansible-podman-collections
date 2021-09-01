@@ -33,6 +33,7 @@ ARGUMENTS_SPEC_POD = dict(
     infra_conmon_pidfile=dict(type='str', required=False),
     infra_command=dict(type='str', required=False),
     infra_image=dict(type='str', required=False),
+    infra_name=dict(type='str', required=False),
     ip=dict(type='str', required=False),
     label=dict(type='dict', required=False),
     label_file=dict(type='str', required=False),
@@ -151,6 +152,9 @@ class PodmanPodModuleParams:
 
     def addparam_infra_image(self, c):
         return c + ['--infra-image', self.params['infra_image']]
+
+    def addparam_infra_name(self, c):
+        return c + ['--infra-name', self.params['infra_name']]
 
     def addparam_ip(self, c):
         return c + ['--ip', self.params['ip']]

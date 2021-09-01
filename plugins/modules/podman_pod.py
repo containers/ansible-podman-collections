@@ -100,6 +100,11 @@ options:
     - The image that will be created for the infra container. Default is "k8s.gcr.io/pause:3.1".
     type: str
     required: false
+  infra_name:
+    description:
+    - The name that will be used for the pod's infra container.
+    type: str
+    required: false
   ip:
     description:
     - Set a static IP for the pod's shared network.
