@@ -288,3 +288,11 @@ releases:
       name: podman_secret
       namespace: ''
     release_date: '2021-08-15'
+  1.7.1:
+    changes:
+      bugfixes:
+      - Add support for podman pod create --infra-name
+      - Fix idempotency when containers have a common network
+      - Remove idempotency leftovers of volumes GID,UID
+      release_summary: Bugfixes and new features
+    release_date: '2021-09-01'
