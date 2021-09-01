@@ -5,6 +5,21 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.7.1
+======
+
+Release Summary
+---------------
+
+Bugfixes and new features
+
+Bugfixes
+--------
+
+- Add support for podman pod create --infra-name
+- Fix idempotency when containers have a common network
+- Remove idempotency leftovers of volumes GID,UID
+
 v1.7.0
 ======
 
