@@ -1,0 +1,54 @@
+---
+- name: Pull image
+  containers.podman.podman_image:
+    name: k8s.gcr.io/pause
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/image.tar
+
+- name: Load image
+  containers.podman.podman_load:
+    input: /tmp/image.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/imagedir
+    format: oci-dir
+
+- name: Load image from oci-dir
+  containers.podman.podman_load:
+    input: /tmp/imagedir
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "localhost/tmp/imagedir:latest"
+
+- name: Save image with multi image archive
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/image2.tar
+    multi_image_archive: true
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    input: /tmp/image2.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
