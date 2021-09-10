@@ -603,11 +603,7 @@ class PodmanImageManager(object):
 
     def push_image(self):
         transport = self.push_args.get('transport')
-
-        if transport == 'docker-archive':
-            args = ['save']
-        else:
-            args = ['push']
+        args = ['push']
 
         if self.validate_certs is not None:
             if self.validate_certs:
@@ -664,9 +660,6 @@ class PodmanImageManager(object):
                 self.module.fail_json("'push_args['transport'] requires 'push_args['dest'] but it was not provided.")
             if transport == 'docker':
                 dest_format_string = '{transport}://{dest}'
-            elif transport == 'docker-archive':
-                args.append('--output')
-                dest_format_string = '{dest}'
             elif transport == 'ostree':
                 dest_format_string = '{transport}:{name}@{dest}'
             else:
@@ -675,7 +668,7 @@ class PodmanImageManager(object):
         dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest, image_name=self.image_name,)
 
         # Only append the destination argument if the image name is not a URL
-        if '/' not in self.name or transport == 'docker-archive':
+        if transport or transport == 'docker':
             args.append(dest_string)
 
         rc, out, err = self._run(args, ignore_errors=True)
