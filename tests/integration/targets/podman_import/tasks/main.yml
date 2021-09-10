@@ -1,0 +1,66 @@
+---
+- name: Test podman import
+  block:
+    - name: Start container
+      containers.podman.podman_container:
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+
+    - name: Export container
+      containers.podman.podman_export:
+        container: container
+        dest: /tmp/container
+
+    - name: Check file
+      stat:
+        path: /tmp/container
+      register: img
+
+    - name: Check it's saved
+      assert:
+        that:
+          - img.stat.exists
+
+    - name: Import container
+      containers.podman.podman_import:
+        src: /tmp/container
+      register: test
+
+    - name: Check it's imported
+      assert:
+        that:
+          - test is success
+          - test.image["Id"] != ''
+
+    - name: Import container with commit message
+      containers.podman.podman_import:
+        src: /tmp/container
+        commit_message: 'Test in CI'
+      register: test1
+
+    - name: Check it's imported with commit message
+      assert:
+        that:
+          - test1.image.Comment == "Test in CI"
+
+    - name: Import container with changes
+      containers.podman.podman_import:
+        src: /tmp/container
+        change:
+          - "User": "someuser"
+          - "CMD": "/bin/nonsh"
+      register: test2
+
+    - name: Check it's imported with changes
+      assert:
+        that:
+          - test2.image.User == 'someuser'
+          - test2.image["Config"]["Cmd"][2] == "/bin/nonsh"
+
+  always:
+    - name: Remove container
+      containers.podman.podman_container:
+        name: container
+        state: absent
