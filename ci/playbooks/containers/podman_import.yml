@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - include_role:
+        name: podman_import
+      vars:
+        ansible_python_interpreter: "{{ _ansible_python_interpreter }}"

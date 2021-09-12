@@ -1,0 +1,65 @@
+---
+- name: Test podman export
+  block:
+    - name: Start container
+      containers.podman.podman_container:
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+
+    - name: Export container
+      containers.podman.podman_export:
+        container: container
+        dest: /tmp/container
+
+    - name: Check file
+      stat:
+        path: /tmp/container
+      register: img
+
+    - name: Check it's exported
+      assert:
+        that:
+          - img.stat.exists
+
+    - name: Import container
+      containers.podman.podman_import:
+        src: /tmp/container
+      register: image
+
+    - name: Check it's imported
+      assert:
+        that:
+          - image is success
+
+    - name: Export container without force
+      containers.podman.podman_export:
+        container: container
+        dest: /tmp/container
+        force: false
+      register: image2
+
+    - name: Check it's exported
+      assert:
+        that:
+          - image2 is success
+          - image2 is not changed
+
+    - name: Export container with force
+      containers.podman.podman_export:
+        container: container
+        dest: /tmp/container
+        force: true
+      register: image3
+
+    - name: Check it's not exported
+      assert:
+        that:
+          - image3 is changed
+
+  always:
+    - name: Remove container
+      containers.podman.podman_container:
+        name: container
+        state: absent

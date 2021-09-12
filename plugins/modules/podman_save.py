@@ -51,7 +51,7 @@ options:
     description:
     - Force saving to file even if it exists.
     type: bool
-    default: False
+    default: True
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -74,17 +74,8 @@ EXAMPLES = '''
 '''
 
 import os  # noqa: E402
-import shutil  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
-
-
-def remove_file_or_dir(path):
-    if os.path.isfile(path):
-        os.unlink(path)
-    elif os.path.isdir(path):
-        shutil.rmtree(path)
-    else:
-        raise ValueError("file %s is not a file or dir." % path)
+from ..module_utils.podman.common import remove_file_or_dir  # noqa: E402
 
 
 def save(module, executable):
@@ -110,7 +101,8 @@ def save(module, executable):
                 remove_file_or_dir(dest)
             except Exception as e:
                 module.fail_json(msg="Error deleting %s path: %s" % (dest, e))
-    changed = True
+    else:
+        changed = not os.path.exists(module.params['dest'])
     if module.check_mode:
         return changed, '', ''
     rc, out, err = module.run_command(command)
@@ -127,7 +119,7 @@ def main():
             dest=dict(type='str', required=True),
             format=dict(type='str', choices=['docker-archive', 'oci-archive', 'oci-dir', 'docker-dir']),
             multi_image_archive=dict(type='bool'),
-            force=dict(type='bool', default=False),
+            force=dict(type='bool', default=True),
             executable=dict(type='str', default='podman')
         ),
         supports_check_mode=True,

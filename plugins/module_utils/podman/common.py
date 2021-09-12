@@ -4,6 +4,9 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
+import os
+import shutil
+
 
 def run_podman_command(module, executable='podman', args=None, expected_rc=0, ignore_errors=False):
     if not isinstance(executable, list):
@@ -25,3 +28,12 @@ def lower_keys(x):
         return dict((k.lower(), lower_keys(v)) for k, v in x.items())
     else:
         return x
+
+
+def remove_file_or_dir(path):
+    if os.path.isfile(path):
+        os.unlink(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path)
+    else:
+        raise ValueError("file %s is not a file or dir." % path)
