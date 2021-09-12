@@ -54,6 +54,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
                 'exposed', 'exposed_ports']),
     force_restart=dict(type='bool', default=False,
                        aliases=['restart']),
+    generate_systemd=dict(type='dict', default={}),
     gidmap=dict(type='list', elements='str'),
     group_add=dict(type='list', elements='str', aliases=['groups']),
     healthcheck=dict(type='str'),
@@ -1510,6 +1511,56 @@ class PodmanManager:
         self.container = PodmanContainer(
             self.module, self.name, self.module_params)
 
+    def generate_systemd(self):
+        """Generate systemd unit file."""
+        command = [self.module_params['executable'], 'generate', 'systemd',
+                   self.name, '--format', 'json']
+        sysconf = self.module_params['generate_systemd']
+        empty = {'name': '', 'text': ''}
+        if sysconf.get('restart_policy'):
+            if sysconf.get('restart_policy') not in [
+                "no", "on-success", "on-failure", "on-abnormal", "on-watchdog",
+                    "on-abort", "always"]:
+                self.module.fail_json(
+                    'Restart policy for systemd unit file is "%s" and must be one of: '
+                    '"no", "on-success", "on-failure", "on-abnormal", "on-watchdog", "on-abort", or "always"' %
+                    sysconf.get('restart_policy'))
+            command.extend([
+                '--restart-policy',
+                sysconf['restart_policy']])
+        if sysconf.get('time'):
+            command.extend(['--time', str(sysconf['time'])])
+        if sysconf.get('no_header'):
+            command.extend(['--no-header'])
+        if sysconf.get('names', True):
+            command.extend(['--name'])
+        if sysconf.get('container_prefix'):
+            command.extend(['--container-prefix=%s' % sysconf['container_prefix']])
+        if sysconf.get('pod_prefix'):
+            command.extend(['--pod-prefix=%s' % sysconf['pod_prefix']])
+        if sysconf.get('separator'):
+            command.extend(['--separator=%s' % sysconf['separator']])
+        if self.module.params['debug'] or self.module_params['debug']:
+            self.module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" % " ".join(command))
+        rc, systemd, err = self.module.run_command(command)
+        if rc != 0:
+            self.module.log(
+                "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
+            return empty
+        else:
+            try:
+                systemd_text = list(json.loads(systemd).values())[0]
+                systemd_name = list(json.loads(systemd).keys())[0]
+                if sysconf.get('file'):
+                    with open(sysconf['file'], 'w') as f:
+                        f.write(systemd_text)
+                return {'name': systemd_name,
+                        'text': systemd_text}
+            except Exception as e:
+                self.module.log(
+                    "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
+                return empty
+
     def update_container_result(self, changed=True):
         """Inspect the current container, update results with last info, exit.
 
@@ -1526,6 +1577,8 @@ class PodmanManager:
             self.results.update({'diff': self.container.diff})
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
+        self.results.update(
+            {'podman_systemd': self.generate_systemd()})
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
