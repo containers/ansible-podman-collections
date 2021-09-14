@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
+import json
 import os
 import shutil
 
@@ -19,6 +20,63 @@ def run_podman_command(module, executable='podman', args=None, expected_rc=0, ig
             msg='Failed to run {command} {args}: {err}'.format(
                 command=command, args=args, err=err))
     return rc, out, err
+
+
+def generate_systemd(module, module_params, name):
+    """Generate systemd unit file."""
+    command = [module_params['executable'], 'generate', 'systemd',
+               name, '--format', 'json']
+    sysconf = module_params['generate_systemd']
+    empty = {}
+    if sysconf.get('restart_policy'):
+        if sysconf.get('restart_policy') not in [
+            "no", "on-success", "on-failure", "on-abnormal", "on-watchdog",
+                "on-abort", "always"]:
+            module.fail_json(
+                'Restart policy for systemd unit file is "%s" and must be one of: '
+                '"no", "on-success", "on-failure", "on-abnormal", "on-watchdog", "on-abort", or "always"' %
+                sysconf.get('restart_policy'))
+        command.extend([
+            '--restart-policy',
+            sysconf['restart_policy']])
+    if sysconf.get('time'):
+        command.extend(['--time', str(sysconf['time'])])
+    if sysconf.get('no_header'):
+        command.extend(['--no-header'])
+    if sysconf.get('names', True):
+        command.extend(['--name'])
+    if sysconf.get('container_prefix'):
+        command.extend(['--container-prefix=%s' % sysconf['container_prefix']])
+    if sysconf.get('pod_prefix'):
+        command.extend(['--pod-prefix=%s' % sysconf['pod_prefix']])
+    if sysconf.get('separator'):
+        command.extend(['--separator=%s' % sysconf['separator']])
+    if module.params['debug'] or module_params['debug']:
+        module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
+                   " ".join(command))
+    rc, systemd, err = module.run_command(command)
+    if rc != 0:
+        module.log(
+            "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
+        return empty
+    else:
+        try:
+            data = json.loads(systemd)
+            if sysconf.get('path'):
+                if not os.path.exists(sysconf['path']):
+                    os.makedirs(sysconf['path'])
+                if not os.path.isdir(sysconf['path']):
+                    module.fail_json("Path %s is not a directory! "
+                                     "Can not save systemd unit files there!"
+                                     % sysconf['path'])
+                for k, v in data.items():
+                    with open(os.path.join(sysconf['path'], k), 'w') as f:
+                        f.write(v)
+            return data
+        except Exception as e:
+            module.log(
+                "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
+            return empty
 
 
 def lower_keys(x):

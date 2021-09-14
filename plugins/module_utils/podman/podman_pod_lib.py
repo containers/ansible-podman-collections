@@ -5,6 +5,7 @@ from distutils.version import LooseVersion
 from ansible.module_utils._text import to_bytes, to_native
 
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 
 __metaclass__ = type
 
@@ -28,6 +29,7 @@ ARGUMENTS_SPEC_POD = dict(
     dns=dict(type='list', elements='str', required=False),
     dns_opt=dict(type='list', elements='str', required=False),
     dns_search=dict(type='list', elements='str', required=False),
+    generate_systemd=dict(type='dict', default={}),
     hostname=dict(type='str', required=False),
     infra=dict(type='bool', required=False),
     infra_conmon_pidfile=dict(type='str', required=False),
@@ -162,7 +164,7 @@ class PodmanPodModuleParams:
     def addparam_label(self, c):
         for label in self.params['label'].items():
             c += ['--label', b'='.join(
-                [to_bytes(l, errors='surrogate_or_strict') for l in label])]
+                [to_bytes(i, errors='surrogate_or_strict') for i in label])]
         return c
 
     def addparam_label_file(self, c):
@@ -644,6 +646,8 @@ class PodmanPodManager:
             self.results.update({'diff': self.pod.diff})
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.pod.version})
+        self.results.update(
+            {'podman_systemd': generate_systemd(self.module, self.module_params, self.name)})
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
