@@ -299,7 +299,8 @@ options:
     suboptions:
       file:
         description:
-          - Specify a path to the service file to be generated.
+          - Specify a path to the directory where unit files will be generated.
+            If it doesn't exist, the directory will be created.
         type: str
         required: false
       restart_policy:

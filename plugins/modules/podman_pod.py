@@ -71,6 +71,66 @@ options:
     type: list
     elements: str
     required: false
+  generate_systemd:
+    description:
+      - Generate systemd unit file for container.
+    type: dict
+    default: {}
+    suboptions:
+      file:
+        description:
+          - Specify a path to the directory where unit files will be generated.
+            If it doesn't exist, the directory will be created.
+        type: str
+        required: false
+      restart_policy:
+        description:
+          - Specify a restart policy for the service.  The restart-policy must be one of
+            "no", "on-success", "on-failure", "on-abnormal", "on-watchdog", "on-abort", or "always".
+            The default policy is "on-failure".
+        type: str
+        required: false
+        choices:
+            - 'no'
+            - 'on-success'
+            - 'on-failure'
+            - 'on-abnormal'
+            - 'on-watchdog'
+            - 'on-abort'
+            - 'always'
+      time:
+        description:
+          - Override the default stop timeout for the container with the given value.
+        type: int
+        required: false
+      no_header:
+        description:
+          - Do not generate the header including meta data such as the Podman version and the timestamp.
+            From podman version 3.1.0.
+        type: bool
+        default: false
+      names:
+        description:
+          - Use names of the containers for the start, stop, and description in the unit file.
+            Default is true.
+        type: bool
+        default: true
+      container_prefix:
+        description:
+          - Set the systemd unit name prefix for containers. The default is "container".
+        type: str
+        required: false
+      pod_prefix:
+        description:
+          - Set the systemd unit name prefix for pods. The default is "pod".
+        type: str
+        required: false
+      separator:
+        description:
+          - Set the systemd unit name separator between the name/id of a
+            container/pod and the prefix. The default is "-" (dash).
+        type: str
+        required: false
   hostname:
     description:
     - Set a hostname to the pod
