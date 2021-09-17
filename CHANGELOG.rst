@@ -5,6 +5,28 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.8.0
+======
+
+Release Summary
+---------------
+
+New modules for images and containers
+
+Major Changes
+-------------
+
+- Add systemd generation for pods
+- Generate systemd service files for containers
+
+New Modules
+-----------
+
+- containers.podman.podman_export - Export a podman container to tar file
+- containers.podman.podman_import - Import Podman container from a tar file
+- containers.podman.podman_load - Load image from a tar file
+- containers.podman.podman_save - Saves podman image to tar file
+
 v1.7.1
 ======
 
