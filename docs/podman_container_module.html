@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_container – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-manage-podman-containers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.7.1).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container</span></code>.</p>
 </div>
@@ -682,6 +682,168 @@
                                                             <div style="font-size: small; color: darkgreen"><br/>aliases: restart</div>
                                 </td>
         </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd"></div>
+                <b>generate_systemd</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">dictionary</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">{}</div>
+                                </td>
+                                                            <td>
+                                        <div>Generate systemd unit file for container.</div>
+                                                    </td>
+        </tr>
+                                    <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/container_prefix"></div>
+                <b>container_prefix</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/container_prefix" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name prefix for containers. The default is &quot;container&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/file"></div>
+                <b>file</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/file" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Specify a path to the directory where unit files will be generated. If it doesn&#x27;t exist, the directory will be created.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/names"></div>
+                <b>names</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/names" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Use names of the containers for the start, stop, and description in the unit file. Default is true.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/no_header"></div>
+                <b>no_header</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/no_header" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Do not generate the header including meta data such as the Podman version and the timestamp. From podman version 3.1.0.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/pod_prefix"></div>
+                <b>pod_prefix</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/pod_prefix" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name prefix for pods. The default is &quot;pod&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/restart_policy"></div>
+                <b>restart_policy</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/restart_policy" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>on-success</li>
+                                                                                                                                                                                            <li>on-failure</li>
+                                                                                                                                                                                            <li>on-abnormal</li>
+                                                                                                                                                                                            <li>on-watchdog</li>
+                                                                                                                                                                                            <li>on-abort</li>
+                                                                                                                                                                                            <li>always</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Specify a restart policy for the service.  The restart-policy must be one of &quot;no&quot;, &quot;on-success&quot;, &quot;on-failure&quot;, &quot;on-abnormal&quot;, &quot;on-watchdog&quot;, &quot;on-abort&quot;, or &quot;always&quot;. The default policy is &quot;on-failure&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/separator"></div>
+                <b>separator</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/separator" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name separator between the name/id of a container/pod and the prefix. The default is &quot;-&quot; (dash).</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/time"></div>
+                <b>time</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/time" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">integer</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Override the default stop timeout for the container with the given value.</div>
+                                                    </td>
+        </tr>
+
                             <tr>
                                                             <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-gidmap"></div>

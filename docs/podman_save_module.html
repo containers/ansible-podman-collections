@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>containers.podman.podman_login – Login to a container registry using podman &#8212; Python  documentation</title>
+    <title>containers.podman.podman_save – Saves podman image to tar file &#8212; Python  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
@@ -32,13 +32,13 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="ansible-collections-containers-podman-podman-login-module"></span><div class="section" id="containers-podman-podman-login-login-to-a-container-registry-using-podman">
-<h1>containers.podman.podman_login – Login to a container registry using podman<a class="headerlink" href="#containers-podman-podman-login-login-to-a-container-registry-using-podman" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-save-module"></span><div class="section" id="containers-podman-podman-save-saves-podman-image-to-tar-file">
+<h1>containers.podman.podman_save – Saves podman image to tar file<a class="headerlink" href="#containers-podman-podman-save-saves-podman-image-to-tar-file" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_login</span></code>.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_save</span></code>.</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -51,7 +51,7 @@
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Login to a container registry server using the podman login command If the registry is not specified, the first registry under <cite>[registries.search]</cite> from <cite>registries.conf `will be used. The path of the authentication file can be overridden by the user by setting the `authfile</cite> flag. The default path used is <cite>${XDG_RUNTIME_DIR}/containers/auth.json</cite>.</p></li>
+<li><p>podman save saves an image to either docker-archive, oci-archive, oci-dir (directory with oci manifest type), or docker-dir (directory with v2s2 manifest type) on the local machine, default is docker-archive.</p></li>
 </ul>
 </div>
 <div class="section" id="requirements">
@@ -71,32 +71,36 @@
     </tr>
                 <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-authfile"></div>
-                <b>authfile</b>
-                <a class="ansibleOptionLink" href="#parameter-authfile" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-compress"></div>
+                <b>compress</b>
+                <a class="ansibleOptionLink" href="#parameter-compress" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">path</span>
+                    <span style="color: purple">boolean</span>
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                                                        </td>
+                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
                                                             <td>
-                                        <div>Path of the authentication file. Default is ``${XDG_RUNTIME_DIR}/containers/auth.json`` You can also override the default path of the authentication file by setting the ``REGISTRY_AUTH_FILE`` environment variable. ``export REGISTRY_AUTH_FILE=path``</div>
+                                        <div>Compress tarball image layers when pushing to a directory using the &#x27;dir&#x27; transport. (default is same compression type, compressed or uncompressed, as source)</div>
                                                     </td>
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-certdir"></div>
-                <b>certdir</b>
-                <a class="ansibleOptionLink" href="#parameter-certdir" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-dest"></div>
+                <b>dest</b>
+                <a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">path</span>
-                                                                </div>
+                    <span style="color: purple">string</span>
+                                             / <span style="color: red">required</span>                    </div>
                                                     </td>
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Use certificates at path (*.crt, *.cert, *.key) to connect to the registry.  Default certificates directory is /etc/containers/certs.d.</div>
+                                        <div>Destination file to write image to.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -117,9 +121,49 @@
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-password"></div>
-                <b>password</b>
-                <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-force"></div>
+                <b>force</b>
+                <a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Force saving to file even if it exists.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-format"></div>
+                <b>format</b>
+                <a class="ansibleOptionLink" href="#parameter-format" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>docker-archive</li>
+                                                                                                                                                                                            <li>oci-archive</li>
+                                                                                                                                                                                            <li>oci-dir</li>
+                                                                                                                                                                                            <li>docker-dir</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Save image to docker-archive, oci-archive (see containers-transports(5)), oci-dir (oci transport), or docker-dir (dir transport with v2s2 manifest type).</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-image"></div>
+                <b>image</b>
+                <a class="ansibleOptionLink" href="#parameter-image" title="Permalink to this option"></a>
                 <div style="font-size: small">
                     <span style="color: purple">string</span>
                                              / <span style="color: red">required</span>                    </div>
@@ -127,29 +171,14 @@
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Password for the registry server.</div>
+                                        <div>Image to save.</div>
                                                     </td>
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-registry"></div>
-                <b>registry</b>
-                <a class="ansibleOptionLink" href="#parameter-registry" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Registry server. If the registry is not specified, the first registry under `[registries.search]` from `registries.conf` will be used.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-tlsverify"></div>
-                <b>tlsverify</b>
-                <a class="ansibleOptionLink" href="#parameter-tlsverify" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-multi_image_archive"></div>
+                <b>multi_image_archive</b>
+                <a class="ansibleOptionLink" href="#parameter-multi_image_archive" title="Permalink to this option"></a>
                 <div style="font-size: small">
                     <span style="color: purple">boolean</span>
                                                                 </div>
@@ -161,44 +190,24 @@
                                                                                 </ul>
                                                                         </td>
                                                             <td>
-                                        <div>Require HTTPS and verify certificates when contacting registries.  If explicitly set to true, then TLS verification will be used. If set to false, then TLS verification will not be used.  If not specified, TLS verification will be used unless the target registry is listed as an insecure registry in registries.conf.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-username"></div>
-                <b>username</b>
-                <a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                             / <span style="color: red">required</span>                    </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Username for the registry server.</div>
+                                        <div>Allow for creating archives with more than one image. Additional names will be interpreted as images instead of tags. Only supported for docker-archive.</div>
                                                     </td>
         </tr>
                     </table>
 <br/></div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json</span>
-  <span class="nt">containers.podman.podman_login</span><span class="p">:</span>
-    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">user</span>
-    <span class="nt">password</span><span class="p">:</span> <span class="s">&#39;p4ssw0rd&#39;</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json</span>
-  <span class="nt">containers.podman.podman_login</span><span class="p">:</span>
-    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">user</span>
-    <span class="nt">password</span><span class="p">:</span> <span class="s">&#39;p4ssw0rd&#39;</span>
-    <span class="nt">registry</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
+<span class="p p-Indicator">-</span> <span class="nt">containers.podman.podman_save</span><span class="p">:</span>
+    <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/tar/file</span>
+    <span class="nt">compress</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">oci-dir</span>
 </pre></div>
 </div>
 <div class="section" id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Jason Hiatt (&#64;jthiatt)</p></li>
+<li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
 </ul>
 </div>
 </div>
@@ -259,7 +268,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/podman_login_module.rst.txt"
+      <a href="_sources/podman_save_module.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
