@@ -32,6 +32,8 @@ options:
     - Destination file to write image to.
     type: str
     required: true
+    aliases:
+      - path
   format:
     description:
     - Save image to docker-archive, oci-archive (see containers-transports(5)), oci-dir
@@ -116,7 +118,7 @@ def main():
         argument_spec=dict(
             image=dict(type='str', required=True),
             compress=dict(type='bool'),
-            dest=dict(type='str', required=True),
+            dest=dict(type='str', required=True, aliases=['path']),
             format=dict(type='str', choices=['docker-archive', 'oci-archive', 'oci-dir', 'docker-dir']),
             multi_image_archive=dict(type='bool'),
             force=dict(type='bool', default=True),
