@@ -22,6 +22,8 @@ options:
     - Path to image file to load.
     type: str
     required: true
+    aliases:
+      - path
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -167,7 +169,7 @@ def load(module, executable):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            input=dict(type='str', required=True),
+            input=dict(type='str', required=True, aliases=['path']),
             executable=dict(type='str', default='podman')
         ),
         supports_check_mode=True,
