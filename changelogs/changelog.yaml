@@ -296,3 +296,23 @@ releases:
       - Remove idempotency leftovers of volumes GID,UID
       release_summary: Bugfixes and new features
     release_date: '2021-09-01'
+  1.8.0:
+    changes:
+      major_changes:
+      - Add systemd generation for pods
+      - Generate systemd service files for containers
+      release_summary: New modules for images and containers
+    modules:
+    - description: Export a podman container to tar file
+      name: podman_export
+      namespace: ''
+    - description: Import Podman container from a tar file
+      name: podman_import
+      namespace: ''
+    - description: Load image from a tar file
+      name: podman_load
+      namespace: ''
+    - description: Saves podman image to tar file
+      name: podman_save
+      namespace: ''
+    release_date: '2021-09-17'
