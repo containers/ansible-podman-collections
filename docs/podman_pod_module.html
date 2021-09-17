@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_pod – Manage Podman pods<a class="headerlink" href="#containers-podman-podman-pod-manage-podman-pods" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.7.1).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_pod</span></code>.</p>
 </div>
@@ -69,12 +69,12 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <table  border=0 cellpadding=0 class="documentation-table">
     <tr>
-        <th colspan="1">Parameter</th>
+        <th colspan="2">Parameter</th>
         <th>Choices/<font color="blue">Defaults</font></th>
                     <th width="100%">Comments</th>
     </tr>
                 <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-add_host"></div>
                 <b>add_host</b>
                 <a class="ansibleOptionLink" href="#parameter-add_host" title="Permalink to this option"></a>
@@ -89,7 +89,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-cgroup_parent"></div>
                 <b>cgroup_parent</b>
                 <a class="ansibleOptionLink" href="#parameter-cgroup_parent" title="Permalink to this option"></a>
@@ -104,7 +104,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-debug"></div>
                 <b>debug</b>
                 <a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a>
@@ -123,7 +123,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-dns"></div>
                 <b>dns</b>
                 <a class="ansibleOptionLink" href="#parameter-dns" title="Permalink to this option"></a>
@@ -138,7 +138,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-dns_opt"></div>
                 <b>dns_opt</b>
                 <a class="ansibleOptionLink" href="#parameter-dns_opt" title="Permalink to this option"></a>
@@ -153,7 +153,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-dns_search"></div>
                 <b>dns_search</b>
                 <a class="ansibleOptionLink" href="#parameter-dns_search" title="Permalink to this option"></a>
@@ -168,7 +168,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-executable"></div>
                 <b>executable</b>
                 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
@@ -184,7 +184,169 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd"></div>
+                <b>generate_systemd</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">dictionary</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">{}</div>
+                                </td>
+                                                            <td>
+                                        <div>Generate systemd unit file for container.</div>
+                                                    </td>
+        </tr>
+                                    <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/container_prefix"></div>
+                <b>container_prefix</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/container_prefix" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name prefix for containers. The default is &quot;container&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/file"></div>
+                <b>file</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/file" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Specify a path to the directory where unit files will be generated. If it doesn&#x27;t exist, the directory will be created.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/names"></div>
+                <b>names</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/names" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Use names of the containers for the start, stop, and description in the unit file. Default is true.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/no_header"></div>
+                <b>no_header</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/no_header" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">boolean</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                            <li>yes</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Do not generate the header including meta data such as the Podman version and the timestamp. From podman version 3.1.0.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/pod_prefix"></div>
+                <b>pod_prefix</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/pod_prefix" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name prefix for pods. The default is &quot;pod&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/restart_policy"></div>
+                <b>restart_policy</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/restart_policy" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li>on-success</li>
+                                                                                                                                                                                            <li>on-failure</li>
+                                                                                                                                                                                            <li>on-abnormal</li>
+                                                                                                                                                                                            <li>on-watchdog</li>
+                                                                                                                                                                                            <li>on-abort</li>
+                                                                                                                                                                                            <li>always</li>
+                                                                                </ul>
+                                                                        </td>
+                                                            <td>
+                                        <div>Specify a restart policy for the service.  The restart-policy must be one of &quot;no&quot;, &quot;on-success&quot;, &quot;on-failure&quot;, &quot;on-abnormal&quot;, &quot;on-watchdog&quot;, &quot;on-abort&quot;, or &quot;always&quot;. The default policy is &quot;on-failure&quot;.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/separator"></div>
+                <b>separator</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/separator" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the systemd unit name separator between the name/id of a container/pod and the prefix. The default is &quot;-&quot; (dash).</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/time"></div>
+                <b>time</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/time" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">integer</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Override the default stop timeout for the container with the given value.</div>
+                                                    </td>
+        </tr>
+
+                            <tr>
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-hostname"></div>
                 <b>hostname</b>
                 <a class="ansibleOptionLink" href="#parameter-hostname" title="Permalink to this option"></a>
@@ -199,7 +361,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-infra"></div>
                 <b>infra</b>
                 <a class="ansibleOptionLink" href="#parameter-infra" title="Permalink to this option"></a>
@@ -218,7 +380,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-infra_command"></div>
                 <b>infra_command</b>
                 <a class="ansibleOptionLink" href="#parameter-infra_command" title="Permalink to this option"></a>
@@ -233,7 +395,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-infra_conmon_pidfile"></div>
                 <b>infra_conmon_pidfile</b>
                 <a class="ansibleOptionLink" href="#parameter-infra_conmon_pidfile" title="Permalink to this option"></a>
@@ -248,7 +410,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-infra_image"></div>
                 <b>infra_image</b>
                 <a class="ansibleOptionLink" href="#parameter-infra_image" title="Permalink to this option"></a>
@@ -263,7 +425,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-infra_name"></div>
                 <b>infra_name</b>
                 <a class="ansibleOptionLink" href="#parameter-infra_name" title="Permalink to this option"></a>
@@ -278,7 +440,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-ip"></div>
                 <b>ip</b>
                 <a class="ansibleOptionLink" href="#parameter-ip" title="Permalink to this option"></a>
@@ -293,7 +455,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-label"></div>
                 <b>label</b>
                 <a class="ansibleOptionLink" href="#parameter-label" title="Permalink to this option"></a>
@@ -308,7 +470,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-label_file"></div>
                 <b>label_file</b>
                 <a class="ansibleOptionLink" href="#parameter-label_file" title="Permalink to this option"></a>
@@ -323,7 +485,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-mac_address"></div>
                 <b>mac_address</b>
                 <a class="ansibleOptionLink" href="#parameter-mac_address" title="Permalink to this option"></a>
@@ -338,7 +500,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-name"></div>
                 <b>name</b>
                 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
@@ -353,7 +515,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-network"></div>
                 <b>network</b>
                 <a class="ansibleOptionLink" href="#parameter-network" title="Permalink to this option"></a>
@@ -368,7 +530,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-no_hosts"></div>
                 <b>no_hosts</b>
                 <a class="ansibleOptionLink" href="#parameter-no_hosts" title="Permalink to this option"></a>
@@ -387,7 +549,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-pod_id_file"></div>
                 <b>pod_id_file</b>
                 <a class="ansibleOptionLink" href="#parameter-pod_id_file" title="Permalink to this option"></a>
@@ -402,7 +564,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-publish"></div>
                 <b>publish</b>
                 <a class="ansibleOptionLink" href="#parameter-publish" title="Permalink to this option"></a>
@@ -418,7 +580,7 @@
                                 </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-recreate"></div>
                 <b>recreate</b>
                 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a>
@@ -437,7 +599,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-share"></div>
                 <b>share</b>
                 <a class="ansibleOptionLink" href="#parameter-share" title="Permalink to this option"></a>
@@ -452,7 +614,7 @@
                                                     </td>
         </tr>
                             <tr>
-                                                            <td colspan="1">
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-state"></div>
                 <b>state</b>
                 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>

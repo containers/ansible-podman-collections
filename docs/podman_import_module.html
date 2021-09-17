@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>containers.podman.podman_network_info – Gather info about podman networks &#8212; Python  documentation</title>
+    <title>containers.podman.podman_import – Import Podman container from a tar file. &#8212; Python  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
@@ -32,16 +32,13 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="ansible-collections-containers-podman-podman-network-info-module"></span><div class="section" id="containers-podman-podman-network-info-gather-info-about-podman-networks">
-<h1>containers.podman.podman_network_info – Gather info about podman networks<a class="headerlink" href="#containers-podman-podman-network-info-gather-info-about-podman-networks" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-import-module"></span><div class="section" id="containers-podman-podman-import-import-podman-container-from-a-tar-file">
+<h1>containers.podman.podman_import – Import Podman container from a tar file.<a class="headerlink" href="#containers-podman-podman-import-import-podman-container-from-a-tar-file" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_network_info</span></code>.</p>
-</div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 1.0.0: </span>of containers.podman</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_import</span></code>.</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -55,7 +52,7 @@
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Gather info about podman networks with podman inspect command.</p></li>
+<li><p>podman import imports a tarball (.tar, .tar.gz, .tgz, .bzip, .tar.xz, .txz) and saves it as a filesystem image.</p></li>
 </ul>
 </div>
 <div class="section" id="requirements">
@@ -75,6 +72,36 @@
     </tr>
                 <tr>
                                                             <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-change"></div>
+                <b>change</b>
+                <a class="ansibleOptionLink" href="#parameter-change" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=dictionary</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set changes as list of key-value pairs, see example.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-commit_message"></div>
+                <b>commit_message</b>
+                <a class="ansibleOptionLink" href="#parameter-commit_message" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set commit message for imported image</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
                 <div class="ansibleOptionAnchor" id="parameter-executable"></div>
                 <b>executable</b>
                 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
@@ -91,29 +118,30 @@
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-name"></div>
-                <b>name</b>
-                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-src"></div>
+                <b>src</b>
+                <a class="ansibleOptionLink" href="#parameter-src" title="Permalink to this option"></a>
                 <div style="font-size: small">
                     <span style="color: purple">string</span>
-                                                                </div>
+                                             / <span style="color: red">required</span>                    </div>
                                                     </td>
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Name of the network</div>
+                                        <div>Path to image file to load.</div>
                                                     </td>
         </tr>
                     </table>
 <br/></div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather info about all present networks</span>
-  <span class="nt">containers.podman.podman_network_info</span><span class="p">:</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather info about specific network</span>
-  <span class="nt">containers.podman.podman_network_info</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">podman</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
+<span class="p p-Indicator">-</span> <span class="nt">containers.podman.podman_import</span><span class="p">:</span>
+    <span class="nt">src</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/tar/file</span>
+    <span class="nt">change</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">/bin/bash</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;User&quot;</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">root</span>
+    <span class="nt">commit_message</span><span class="p">:</span> <span class="s">&quot;Importing</span><span class="nv"> </span><span class="s">image&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -128,19 +156,19 @@
     </tr>
                 <tr>
                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="return-networks"></div>
-                <b>networks</b>
-                <a class="ansibleOptionLink" href="#return-networks" title="Permalink to this return value"></a>
+                <div class="ansibleOptionAnchor" id="return-image"></div>
+                <b>image</b>
+                <a class="ansibleOptionLink" href="#return-image" title="Permalink to this return value"></a>
                 <div style="font-size: small">
-                  <span style="color: purple">list</span>
-                   / <span style="color: purple">elements=string</span>                    </div>
+                  <span style="color: purple">dictionary</span>
+                                      </div>
                                 </td>
             <td>always</td>
             <td>
-                                        <div>Facts from all or specified networks</div>
+                                        <div>info from loaded image</div>
                                     <br/>
                                         <div style="font-size: smaller"><b>Sample:</b></div>
-                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;cniVersion&#x27;: &#x27;0.4.0&#x27;, &#x27;name&#x27;: &#x27;podman&#x27;, &#x27;plugins&#x27;: [{&#x27;bridge&#x27;: &#x27;cni-podman0&#x27;, &#x27;ipMasq&#x27;: True, &#x27;ipam&#x27;: {&#x27;ranges&#x27;: [[{&#x27;gateway&#x27;: &#x27;10.88.0.1&#x27;, &#x27;subnet&#x27;: &#x27;10.88.0.0/16&#x27;}]], &#x27;routes&#x27;: [{&#x27;dst&#x27;: &#x27;0.0.0.0/0&#x27;}], &#x27;type&#x27;: &#x27;host-local&#x27;}, &#x27;isGateway&#x27;: True, &#x27;type&#x27;: &#x27;bridge&#x27;}, {&#x27;capabilities&#x27;: {&#x27;portMappings&#x27;: True}, &#x27;type&#x27;: &#x27;portmap&#x27;}, {&#x27;backend&#x27;: &#x27;iptables&#x27;, &#x27;type&#x27;: &#x27;firewall&#x27;}]}]</div>
+                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;Annotations&#x27;: {}, &#x27;Architecture&#x27;: &#x27;amd64&#x27;, &#x27;Author&#x27;: &#x27;&#x27;, &#x27;Comment&#x27;: &#x27;imported from tarball&#x27;, &#x27;Config&#x27;: {}, &#x27;Created&#x27;: &#x27;2021-09-07T04:45:38.749977105+03:00&#x27;, &#x27;Digest&#x27;: &#x27;sha256:8730c75be86a718929a658db4663d487e562d66762....&#x27;, &#x27;GraphDriver&#x27;: {&#x27;Data&#x27;: {&#x27;UpperDir&#x27;: &#x27;/home/...34/diff&#x27;, &#x27;WorkDir&#x27;: &#x27;/home/.../work&#x27;}, &#x27;Name&#x27;: &#x27;overlay&#x27;}, &#x27;History&#x27;: [{&#x27;comment&#x27;: &#x27;imported from tarball&#x27;, &#x27;created&#x27;: &#x27;2021-09-07T04:45:38.749977105+03:00&#x27;, &#x27;created_by&#x27;: &#x27;/bin/sh -c #(nop) ADD file:091... in /&#x27;}], &#x27;Id&#x27;: &#x27;cbc6d73c4d232db6e8441df96af81855f62c74157b5db80a1d5...&#x27;, &#x27;Labels&#x27;: None, &#x27;ManifestType&#x27;: &#x27;application/vnd.oci.image.manifest.v1+json&#x27;, &#x27;NamesHistory&#x27;: None, &#x27;Os&#x27;: &#x27;linux&#x27;, &#x27;Parent&#x27;: &#x27;&#x27;, &#x27;RepoDigests&#x27;: [], &#x27;RepoTags&#x27;: [], &#x27;RootFS&#x27;: {&#x27;Layers&#x27;: [&#x27;sha256:....&#x27;], &#x27;Type&#x27;: &#x27;layers&#x27;}, &#x27;Size&#x27;: 5882449, &#x27;User&#x27;: &#x27;&#x27;, &#x27;Version&#x27;: &#x27;&#x27;, &#x27;VirtualSize&#x27;: 5882449}</div>
                                 </td>
         </tr>
                     </table>
@@ -208,7 +236,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/podman_network_info_module.rst.txt"
+      <a href="_sources/podman_import_module.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

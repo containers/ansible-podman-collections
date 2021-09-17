@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>containers.podman.podman_network_info – Gather info about podman networks &#8212; Python  documentation</title>
+    <title>containers.podman.podman_export – Export a podman container &#8212; Python  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
@@ -32,16 +32,13 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="ansible-collections-containers-podman-podman-network-info-module"></span><div class="section" id="containers-podman-podman-network-info-gather-info-about-podman-networks">
-<h1>containers.podman.podman_network_info – Gather info about podman networks<a class="headerlink" href="#containers-podman-podman-network-info-gather-info-about-podman-networks" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-export-module"></span><div class="section" id="containers-podman-podman-export-export-a-podman-container">
+<h1>containers.podman.podman_export – Export a podman container<a class="headerlink" href="#containers-podman-podman-export-export-a-podman-container" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_network_info</span></code>.</p>
-</div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 1.0.0: </span>of containers.podman</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_export</span></code>.</p>
 </div>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -49,13 +46,12 @@
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
 <li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>Gather info about podman networks with podman inspect command.</p></li>
+<li><p>podman export exports the filesystem of a container and saves it as a tarball on the local machine</p></li>
 </ul>
 </div>
 <div class="section" id="requirements">
@@ -75,6 +71,36 @@
     </tr>
                 <tr>
                                                             <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-container"></div>
+                <b>container</b>
+                <a class="ansibleOptionLink" href="#parameter-container" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                             / <span style="color: red">required</span>                    </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Container to export.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-dest"></div>
+                <b>dest</b>
+                <a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                             / <span style="color: red">required</span>                    </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to export container to.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
                 <div class="ansibleOptionAnchor" id="parameter-executable"></div>
                 <b>executable</b>
                 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
@@ -91,60 +117,34 @@
         </tr>
                             <tr>
                                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-name"></div>
-                <b>name</b>
-                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                <div class="ansibleOptionAnchor" id="parameter-force"></div>
+                <b>force</b>
+                <a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">string</span>
+                    <span style="color: purple">boolean</span>
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                                                        </td>
+                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                            <li>no</li>
+                                                                                                                                                                                            <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                </ul>
+                                                                        </td>
                                                             <td>
-                                        <div>Name of the network</div>
+                                        <div>Force saving to file even if it exists.</div>
                                                     </td>
         </tr>
                     </table>
 <br/></div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather info about all present networks</span>
-  <span class="nt">containers.podman.podman_network_info</span><span class="p">:</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather info about specific network</span>
-  <span class="nt">containers.podman.podman_network_info</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">podman</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
+<span class="p p-Indicator">-</span> <span class="nt">containers.podman.podman_export</span><span class="p">:</span>
+    <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/tar/file</span>
+    <span class="nt">container</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">container-name</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
-<table border=0 cellpadding=0 class="documentation-table">
-    <tr>
-        <th colspan="1">Key</th>
-        <th>Returned</th>
-        <th width="100%">Description</th>
-    </tr>
-                <tr>
-                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="return-networks"></div>
-                <b>networks</b>
-                <a class="ansibleOptionLink" href="#return-networks" title="Permalink to this return value"></a>
-                <div style="font-size: small">
-                  <span style="color: purple">list</span>
-                   / <span style="color: purple">elements=string</span>                    </div>
-                                </td>
-            <td>always</td>
-            <td>
-                                        <div>Facts from all or specified networks</div>
-                                    <br/>
-                                        <div style="font-size: smaller"><b>Sample:</b></div>
-                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;cniVersion&#x27;: &#x27;0.4.0&#x27;, &#x27;name&#x27;: &#x27;podman&#x27;, &#x27;plugins&#x27;: [{&#x27;bridge&#x27;: &#x27;cni-podman0&#x27;, &#x27;ipMasq&#x27;: True, &#x27;ipam&#x27;: {&#x27;ranges&#x27;: [[{&#x27;gateway&#x27;: &#x27;10.88.0.1&#x27;, &#x27;subnet&#x27;: &#x27;10.88.0.0/16&#x27;}]], &#x27;routes&#x27;: [{&#x27;dst&#x27;: &#x27;0.0.0.0/0&#x27;}], &#x27;type&#x27;: &#x27;host-local&#x27;}, &#x27;isGateway&#x27;: True, &#x27;type&#x27;: &#x27;bridge&#x27;}, {&#x27;capabilities&#x27;: {&#x27;portMappings&#x27;: True}, &#x27;type&#x27;: &#x27;portmap&#x27;}, {&#x27;backend&#x27;: &#x27;iptables&#x27;, &#x27;type&#x27;: &#x27;firewall&#x27;}]}]</div>
-                                </td>
-        </tr>
-                    </table>
-<br/><br/><div class="section" id="authors">
+<div class="section" id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
@@ -208,7 +208,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/podman_network_info_module.rst.txt"
+      <a href="_sources/podman_export_module.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
