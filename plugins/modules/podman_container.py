@@ -297,7 +297,7 @@ options:
     type: dict
     default: {}
     suboptions:
-      file:
+      path:
         description:
           - Specify a path to the directory where unit files will be generated.
             If it doesn't exist, the directory will be created.
