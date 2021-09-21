@@ -34,10 +34,9 @@
         path: '/tmp/alpine.tar'
         state: absent
 
-    - name: Archive image to disk using docker-archive transport
+    - name: Push to a tarball in the docker-archive format
       containers.podman.podman_image:
         name: 'docker.io/library/alpine'
-        #tag: '2'
         push: true
         push_args:
           dest: '/tmp/alpine.tar'
@@ -47,7 +46,6 @@
       stat:
         path: '/tmp/alpine.tar'
       register: alpine_docker_archive
-
 
     - name: Remove OCI format tarball (pre-test)
       ansible.builtin.file:

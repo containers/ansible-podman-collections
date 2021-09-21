@@ -1,0 +1,85 @@
+---
+- name: Pull image
+  containers.podman.podman_image:
+    name: k8s.gcr.io/pause
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/image.tar
+
+- name: Check file
+  stat:
+    path: /tmp/image.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/image.tar
+    force: true
+
+- name: Check file
+  stat:
+    path: /tmp/image.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/imagedir
+    format: oci-dir
+
+- name: Check file
+  stat:
+    path: /tmp/imagedir
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/imagedir
+    force: true
+    format: oci-dir
+    compress: true
+
+- name: Check file
+  stat:
+    path: /tmp/imagedir
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    image: k8s.gcr.io/pause
+    dest: /tmp/image2.tar
+    multi_image_archive: true
+
+- name: Check file
+  stat:
+    path: /tmp/image2.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
