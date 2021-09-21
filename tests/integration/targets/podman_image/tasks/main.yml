@@ -29,6 +29,44 @@
       command: podman image ls
       register: images
 
+    - name: Remove existing image archive
+      ansible.builtin.file:
+        path: '/tmp/alpine.tar'
+        state: absent
+
+    - name: Archive image to disk using docker-archive transport
+      containers.podman.podman_image:
+        name: 'docker.io/library/alpine'
+        #tag: '2'
+        push: true
+        push_args:
+          dest: '/tmp/alpine.tar'
+          transport: 'docker-archive'
+
+    - name: Stat the docker-archive tar file
+      stat:
+        path: '/tmp/alpine.tar'
+      register: alpine_docker_archive
+
+
+    - name: Remove OCI format tarball (pre-test)
+      ansible.builtin.file:
+        path: '/tmp/alpine_oci.tar'
+        state: absent
+
+    - name: Push to a tarball in the OCI format
+      containers.podman.podman_image:
+        name: 'docker.io/library/alpine'
+        push: true
+        push_args:
+          dest: '/tmp/alpine_oci.tar'
+          transport: 'oci-archive'
+
+    - name: Stat the oci-archive tar file
+      stat:
+        path: '/tmp/alpine_oci.tar'
+      register: alpine_oci_archive
+
     - name: Ensure image were pulled properly
       assert:
         that:
@@ -40,6 +78,36 @@
           - pull5 is not changed
           - "'alpine-sh' in images.stdout"
           - "'library/alpine' in images.stdout"
+          - alpine_docker_archive.stat.exists
+          - alpine_oci_archive.stat.exist
+
+    - name: Remove OCI format tarball (post-test)
+      ansible.builtin.file:
+        path: '/tmp/alpine_oci.tar'
+        state: absent
+
+    - name: Cleanup docker-archive transport test file
+      ansible.builtin.file:
+        path: '/tmp/alpine.tar'
+        state: absent
+
+    - name: Remove local archive testing directory (pre-test)
+      ansible.builtin.file:
+        path: '/tmp/alpine'
+        state: absent
+
+    - name: Push to a local directory
+      containers.podman.podman_image:
+        name: 'docker.io/library/alpine'
+        push: true
+        push_args:
+          dest: '/tmp/alpine'
+          transport: 'dir'
+
+    - name: Remove local archive testing directory (post-test)
+      ansible.builtin.file:
+        path: '/tmp/alpine'
+        state: absent 
 
     - name: add another tag (repository url)
       command:
