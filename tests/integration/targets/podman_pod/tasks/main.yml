@@ -666,7 +666,7 @@
         name: pod2
         state: started
         generate_systemd:
-          file: /tmp/dir1
+          path: /tmp/dir1
           restart_policy: always
           time: 120
           no_header: true

@@ -789,7 +789,7 @@ EXAMPLES = r"""
     volume:
       - /tmp/data
 
-- name: Re-create a redis container
+- name: Re-create a redis container with systemd service file generated in /tmp/
   containers.podman.podman_container:
     name: myredis
     image: redis
@@ -800,6 +800,12 @@ EXAMPLES = r"""
       - 6379
     volumes_from:
       - mydata
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      names: true
+      container_prefix: ainer
 
 - name: Restart a container
   containers.podman.podman_container:
