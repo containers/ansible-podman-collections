@@ -86,7 +86,7 @@ jobs:
           #- macos-latest
         python-version:
           - 3.8
-          #- 3.7
+          #- 3.9
           #- 3.6
           #- 3.5
           #- 2.7
@@ -177,7 +177,7 @@ jobs:
           #- macos-latest
         python-version:
           - 3.8
-          #- 3.7
+          #- 3.9
           #- 3.6
           #- 3.5
           #- 2.7
