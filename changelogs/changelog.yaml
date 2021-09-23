@@ -316,3 +316,12 @@ releases:
       name: podman_save
       namespace: ''
     release_date: '2021-09-17'
+  1.8.1:
+    changes:
+      bugfixes:
+      - Add .service extension to systemd files
+      - Add aliases for image load/save
+      - Change python version for ansible-core to 3.9
+      - Fix suboption key in podman_container/podman_pod for generate_systemd documentation
+      release_summary: Fixes for systemd units generation
+    release_date: '2021-09-24'

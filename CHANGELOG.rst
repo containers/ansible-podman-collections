@@ -5,6 +5,22 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.8.1
+======
+
+Release Summary
+---------------
+
+Fixes for systemd units generation
+
+Bugfixes
+--------
+
+- Add .service extension to systemd files
+- Add aliases for image load/save
+- Change python version for ansible-core to 3.9
+- Fix suboption key in podman_container/podman_pod for generate_systemd documentation
+
 v1.8.0
 ======
 
