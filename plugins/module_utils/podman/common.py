@@ -69,9 +69,10 @@ def generate_systemd(module, module_params, name):
                     module.fail_json("Path %s is not a directory! "
                                      "Can not save systemd unit files there!"
                                      % sysconf['path'])
-                for k, v in data.items():
-                    with open(os.path.join(sysconf['path'], k), 'w') as f:
-                        f.write(v)
+                for file_name, file_content in data.items():
+                    file_name += ".service"
+                    with open(os.path.join(sysconf['path'], file_name), 'w') as f:
+                        f.write(file_content)
             return data
         except Exception as e:
             module.log(
