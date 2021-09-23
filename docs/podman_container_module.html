@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_container – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-manage-podman-containers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.0).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.1).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container</span></code>.</p>
 </div>
@@ -717,22 +717,6 @@
                             <tr>
                                                 <td class="elbow-placeholder"></td>
                                             <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/file"></div>
-                <b>file</b>
-                <a class="ansibleOptionLink" href="#parameter-generate_systemd/file" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Specify a path to the directory where unit files will be generated. If it doesn&#x27;t exist, the directory will be created.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                <td class="elbow-placeholder"></td>
-                                            <td colspan="1">
                 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/names"></div>
                 <b>names</b>
                 <a class="ansibleOptionLink" href="#parameter-generate_systemd/names" title="Permalink to this option"></a>
@@ -768,6 +752,22 @@
                                                                         </td>
                                                             <td>
                                         <div>Do not generate the header including meta data such as the Podman version and the timestamp. From podman version 3.1.0.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-generate_systemd/path"></div>
+                <b>path</b>
+                <a class="ansibleOptionLink" href="#parameter-generate_systemd/path" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Specify a path to the directory where unit files will be generated. If it doesn&#x27;t exist, the directory will be created.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -2032,7 +2032,7 @@
     <span class="nt">volume</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/data</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Re-create a redis container</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Re-create a redis container with systemd service file generated in /tmp/</span>
   <span class="nt">containers.podman.podman_container</span><span class="p">:</span>
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myredis</span>
     <span class="nt">image</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">redis</span>
@@ -2043,6 +2043,12 @@
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">6379</span>
     <span class="nt">volumes_from</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">mydata</span>
+    <span class="nt">generate_systemd</span><span class="p">:</span>
+      <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/</span>
+      <span class="nt">restart_policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">always</span>
+      <span class="nt">time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">120</span>
+      <span class="nt">names</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+      <span class="nt">container_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ainer</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restart a container</span>
   <span class="nt">containers.podman.podman_container</span><span class="p">:</span>
