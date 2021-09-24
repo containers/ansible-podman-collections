@@ -15,8 +15,10 @@ import os
 import shlex
 import shutil
 import subprocess
+import fcntl
 
 from ansible.errors import AnsibleError
+from ansible.module_utils.compat import selectors
 from ansible.module_utils._text import to_bytes, to_native
 from ansible.plugins.connection import ConnectionBase, ensure_connect
 from ansible.utils.display import Display
@@ -68,6 +70,20 @@ DOCUMENTATION = '''
           - name: ansible_podman_executable
         env:
           - name: ANSIBLE_PODMAN_EXECUTABLE
+      podman_rootless:
+        description: Whether the container should be run as root.
+        type: bool
+        default: true
+        vars:
+          - name: ansible_podman_rootless
+        env:
+          - name: ANSIBLE_PODMAN_ROOTLESS
+      password:
+        description: Authentication password to use podman as root.
+        vars:
+          - name: ansible_password
+          - name: ansible_podman_password
+          - name: ansible_podman_pass
 '''
 
 
@@ -93,6 +109,33 @@ class Connection(ConnectionBase):
         self.user = self._play_context.remote_user
         display.vvvv("Using podman connection from collection")
 
+    def _become(self, p):
+        b_stderr = b''
+
+        for fd in (p.stdout, p.stderr):
+            fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
+
+        selector = selectors.DefaultSelector()
+        selector.register(p.stdout, selectors.EVENT_READ)
+        selector.register(p.stderr, selectors.EVENT_READ)
+
+        try:
+            poll = p.poll()
+            events = selector.select(timeout=2)
+
+            for key, event in events:
+                if key.fileobj == p.stderr:
+                    b_chunk = p.stderr.read()
+                    b_stderr += b_chunk
+
+            if b'sudo' in b_stderr:
+                become_pass = self.get_option('password')
+                p.stdin.write(to_bytes(become_pass, errors='surrogate_or_strict') + b'\n')
+                p.stdin.flush()
+
+        finally:
+            selector.close()
+
     def _podman(self, cmd, cmd_args=None, in_data=None, use_container_id=True):
         """
         run podman executable
@@ -102,11 +145,17 @@ class Connection(ConnectionBase):
         :param in_data: data passed to podman's stdin
         :return: return code, stdout, stderr
         """
+        rootless = self.get_option('podman_rootless')
         podman_exec = self.get_option('podman_executable')
         podman_cmd = distutils.spawn.find_executable(podman_exec)
+        sudo_cmd = distutils.spawn.find_executable('sudo')
         if not podman_cmd:
             raise AnsibleError("%s command not found in PATH" % podman_exec)
-        local_cmd = [podman_cmd]
+        elif not sudo_cmd:
+            raise AnsibleError("sudo command not found in PATH")
+
+        local_cmd = [podman_cmd] if rootless else [sudo_cmd, '-Sk', podman_cmd]
+
         if self.get_option('podman_extra_args'):
             local_cmd += shlex.split(
                 to_native(
@@ -126,6 +175,8 @@ class Connection(ConnectionBase):
         display.vvv("RUN %s" % (local_cmd,), host=self._container_id)
         p = subprocess.Popen(local_cmd, shell=False, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if not rootless:
+            self._become(p)
 
         stdout, stderr = p.communicate(input=in_data)
         display.vvvvv("STDOUT %s" % stdout)
@@ -142,7 +193,9 @@ class Connection(ConnectionBase):
         """
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._podman("mount")
-        if rc != 0:
+        if not self.get_option('podman_rootless'):
+            self._mount_point = None
+        elif rc != 0:
             display.vvvv("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
         elif not os.listdir(self._mount_point.strip()):
             display.vvvv("Failed to mount container with CGroups2: empty dir %s" % self._mount_point.strip())
