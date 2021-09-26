@@ -109,7 +109,7 @@ class Connection(ConnectionBase):
         self.user = self._play_context.remote_user
         display.vvvv("Using podman connection from collection")
 
-    def _become(self, p):
+    def _authenticate(self, p):
         b_stderr = b''
 
         for fd in (p.stdout, p.stderr):
@@ -176,7 +176,7 @@ class Connection(ConnectionBase):
         p = subprocess.Popen(local_cmd, shell=False, stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if not rootless:
-            self._become(p)
+            self._authenticate(p)
 
         stdout, stderr = p.communicate(input=in_data)
         display.vvvvv("STDOUT %s" % stdout)
