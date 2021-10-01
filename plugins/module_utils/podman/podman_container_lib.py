@@ -92,6 +92,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     memory_swappiness=dict(type='int'),
     mount=dict(type='str'),
     network=dict(type='list', elements='str', aliases=['net', 'network_mode']),
+    network_aliases=dict(type='list', elements='str'),
     no_hosts=dict(type='bool'),
     oom_kill_disable=dict(type='bool'),
     oom_score_adj=dict(type='int'),
