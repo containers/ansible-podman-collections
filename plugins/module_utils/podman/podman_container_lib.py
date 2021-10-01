@@ -477,7 +477,7 @@ class PodmanModuleParams:
         return c + ['--network', ",".join(self.params['network'])]
 
     def addparam_network_aliases(self, c):
-        aliases = self.params['network-aliases']
+        aliases = self.params['network_aliases']
         updated_c = c
         for alias in aliases:
             updated_c += ['--network-alias', alias]
