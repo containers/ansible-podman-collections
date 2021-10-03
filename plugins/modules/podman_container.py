@@ -566,7 +566,7 @@ options:
   network_aliases:
     description:
       - Add network-scoped alias for the container.
-        NOTE: A container will only have access to aliases on the first network that it joins.
+        A container will only have access to aliases on the first network that it joins.
         This is a limitation that will be removed in a later release.
     type: list
     elements: str
