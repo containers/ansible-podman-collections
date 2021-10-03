@@ -54,6 +54,8 @@
     - include_tasks: idem_networks.yml
       loop: "{{ testdata }}"
 
+    - include_tasks: idem_network_aliases.yml
+
   always:
 
     - name: Delete all pods leftovers from tests
