@@ -55,7 +55,6 @@
       loop: "{{ testdata }}"
 
     - include_tasks: idem_network_aliases.yml
-      ignore_errors: true
 
   always:
 

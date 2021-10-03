@@ -48,3 +48,4 @@
   assert:
     that:
       - info1 is changed
+  ignore_errors: true
