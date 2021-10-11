@@ -16,6 +16,20 @@
         name: mysecret
         data: super secret content
         force: true
+      register: forced
+
+    - name: Skip secret
+      containers.podman.podman_secret:
+        name: mysecret
+        data: super secret content
+        skip_existing: true
+      register: skipped
+
+    - name: Check assertions
+      assert:
+        that:
+          - forced is changed
+          - skipped is not changed
 
     - name: Create container that uses secret
       containers.podman.podman_container:
