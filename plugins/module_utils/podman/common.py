@@ -45,11 +45,11 @@ def generate_systemd(module, module_params, name):
         command.extend(['--no-header'])
     if sysconf.get('names', True):
         command.extend(['--name'])
-    if sysconf.get('container_prefix'):
+    if sysconf.get('container_prefix') is not None:
         command.extend(['--container-prefix=%s' % sysconf['container_prefix']])
-    if sysconf.get('pod_prefix'):
+    if sysconf.get('pod_prefix') is not None:
         command.extend(['--pod-prefix=%s' % sysconf['pod_prefix']])
-    if sysconf.get('separator'):
+    if sysconf.get('separator') is not None:
         command.extend(['--separator=%s' % sysconf['separator']])
     if module.params['debug'] or module_params['debug']:
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
