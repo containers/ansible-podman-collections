@@ -1120,8 +1120,9 @@ class PodmanContainerDiff:
         ports = self.info['hostconfig']['portbindings']
         before = []
         for port, hosts in ports.items():
-            for h in hosts:
-                before.append(compose(port, h))
+            if hosts:
+                for h in hosts:
+                    before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
             image_ports = self.image_info['config'].get('exposedports', {})
