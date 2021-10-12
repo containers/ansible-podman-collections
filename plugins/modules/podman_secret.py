@@ -33,6 +33,12 @@ options:
       - Use it when C(state) is C(present) to remove and recreate an existing secret.
     type: bool
     default: false
+  skip_existing:
+    description:
+      - Use it when C(state) is C(present) and secret with the same name already exists.
+        If set to C(true), the secret will NOT be recreated and remains as is.
+    type: bool
+    default: false
   name:
     description:
       - The name of the secret.
@@ -78,9 +84,16 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def podman_secret_create(module, executable, name, data, force):
+def podman_secret_create(module, executable, name, data, force, skip):
     if force:
         module.run_command([executable, 'secret', 'rm', name])
+    if skip:
+        rc, out, err = module.run_command(
+            [executable, 'secret', 'ls', "--format", "{{.Name}}"])
+        if name in [i.strip() for i in out.splitlines()]:
+            return {
+                "changed": False,
+            }
 
     rc, out, err = module.run_command(
         [executable, 'secret', 'create', name, '-'], data=data)
@@ -116,6 +129,7 @@ def main():
             name=dict(type='str', required=True),
             data=dict(type='str', no_log=True),
             force=dict(type='bool', default=False),
+            skip_existing=dict(type='bool', default=False),
         ),
     )
 
@@ -128,7 +142,8 @@ def main():
         if data is None:
             raise Exception("'data' is required when 'state' is 'present'")
         force = module.params['force']
-        results = podman_secret_create(module, executable, name, data, force)
+        skip = module.params['skip_existing']
+        results = podman_secret_create(module, executable, name, data, force, skip)
     else:
         results = podman_secret_remove(module, executable, name)
 
