@@ -10,7 +10,7 @@ License:        GPLv3+
 URL:            %{ansible_collection_url}
 Source:         https://github.com/containers/ansible-podman-collections/archive/%{version}.tar.gz
 
-BuildRequires:  ansible >= 2.9.10
+BuildRequires:  (ansible >= 2.9.10 or ansible-core >= 2.11.0)
 
 BuildArch:      noarch
 
