@@ -7,6 +7,7 @@ __metaclass__ = type
 import json
 import os
 import shutil
+import signal
 
 
 def run_podman_command(module, executable='podman', args=None, expected_rc=0, ignore_errors=False):
@@ -96,3 +97,61 @@ def remove_file_or_dir(path):
         shutil.rmtree(path)
     else:
         raise ValueError("file %s is not a file or dir." % path)
+
+# Generated from https://github.com/containers/podman/blob/main/pkg/signal/signal_linux.go
+# and https://github.com/containers/podman/blob/main/pkg/signal/signal_linux_mipsx.go
+_signal_map = {
+    "ABRT": 6,
+    "ALRM": 14,
+    "BUS": 7,
+    "CHLD": 17,
+    "CLD": 17,
+    "CONT": 18,
+    "EMT": 7,
+    "FPE": 8,
+    "HUP": 1,
+    "ILL": 4,
+    "INT": 2,
+    "IO": 29,
+    "IOT": 6,
+    "KILL": 9,
+    "PIPE": 13,
+    "POLL": 29,
+    "PROF": 27,
+    "PWR": 30,
+    "QUIT": 3,
+    "RTMAX": int(signal.SIGRTMAX),
+    "RTMIN": int(signal.SIGRTMIN),
+    "SEGV": 11,
+    "STKFLT": 16,
+    "STOP": 19,
+    "SYS": 31,
+    "TERM": 15,
+    "TRAP": 5,
+    "TSTP": 20,
+    "TTIN": 21,
+    "TTOU": 22,
+    "URG": 23,
+    "USR1": 10,
+    "USR2": 12,
+    "VTALRM": 26,
+    "WINCH": 28,
+    "XCPU": 24,
+    "XFSZ": 25
+}
+
+for i in range(1, _signal_map['RTMAX'] - _signal_map['RTMIN'] + 1):
+    _signal_map['RTMIN+{}'.format(i)] = _signal_map['RTMIN'] + i
+    _signal_map['RTMAX-{}'.format(i)] = _signal_map['RTMAX'] - i
+
+def normalize_signal(signal_name_or_number):
+    signal_name_or_number = str(signal_name_or_number)
+    if signal_name_or_number.isdigit():
+        return signal_name_or_number
+    else:
+        signal_name = signal_name_or_number.upper()
+        if signal_name.startswith('SIG'):
+            signal_name = signal_name[3:]
+        if signal_name not in _signal_map:
+            raise RuntimeError("Unknown signal '{}'".format(signal_name_or_number))
+        return str(_signal_map[signal_name])
