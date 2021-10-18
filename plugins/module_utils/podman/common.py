@@ -141,8 +141,8 @@ _signal_map = {
 }
 
 for i in range(1, _signal_map['RTMAX'] - _signal_map['RTMIN'] + 1):
-    _signal_map['RTMIN+{}'.format(i)] = _signal_map['RTMIN'] + i
-    _signal_map['RTMAX-{}'.format(i)] = _signal_map['RTMAX'] - i
+    _signal_map['RTMIN+{0}'.format(i)] = _signal_map['RTMIN'] + i
+    _signal_map['RTMAX-{0}'.format(i)] = _signal_map['RTMAX'] - i
 
 def normalize_signal(signal_name_or_number):
     signal_name_or_number = str(signal_name_or_number)
@@ -153,5 +153,5 @@ def normalize_signal(signal_name_or_number):
         if signal_name.startswith('SIG'):
             signal_name = signal_name[3:]
         if signal_name not in _signal_map:
-            raise RuntimeError("Unknown signal '{}'".format(signal_name_or_number))
+            raise RuntimeError("Unknown signal '{0}'".format(signal_name_or_number))
         return str(_signal_map[signal_name])
