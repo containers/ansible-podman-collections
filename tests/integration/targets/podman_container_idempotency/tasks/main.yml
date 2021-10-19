@@ -42,5 +42,5 @@
     apply:
       become: true
 
-- name: Test idempotency for root network containers
+- name: Test idempotency for rootless network containers
   include_tasks: rootless-podman-network.yml

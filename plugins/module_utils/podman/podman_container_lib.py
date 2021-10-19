@@ -93,6 +93,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     memory_swappiness=dict(type='int'),
     mount=dict(type='str'),
     network=dict(type='list', elements='str', aliases=['net', 'network_mode']),
+    network_aliases=dict(type='list', elements='str'),
     no_hosts=dict(type='bool'),
     oom_kill_disable=dict(type='bool'),
     oom_score_adj=dict(type='int'),
@@ -475,6 +476,11 @@ class PodmanModuleParams:
 
     def addparam_network(self, c):
         return c + ['--network', ",".join(self.params['network'])]
+
+    def addparam_network_aliases(self, c):
+        for alias in self.params['network_aliases']:
+            c += ['--network-alias', alias]
+        return c
 
     def addparam_no_hosts(self, c):
         return c + ['--no-hosts=%s' % self.params['no_hosts']]
@@ -1115,8 +1121,9 @@ class PodmanContainerDiff:
         ports = self.info['hostconfig']['portbindings']
         before = []
         for port, hosts in ports.items():
-            for h in hosts:
-                before.append(compose(port, h))
+            if hosts:
+                for h in hosts:
+                    before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
             image_ports = self.image_info['config'].get('exposedports', {})

@@ -1,0 +1,51 @@
+- name: Remove container netcontainer
+  containers.podman.podman_container:
+    name: netcontainer
+    state: absent
+
+- name: Run container with testnet and two aliases
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: started
+    network: testnet
+    network_aliases:
+      - netcontainer-alias-a
+      - netcontainer-alias-b
+
+- name: Run container again with testnet and same two aliases
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: present
+    network: testnet
+    network_aliases:
+      - netcontainer-alias-a
+      - netcontainer-alias-b
+  register: info
+
+- name: Check info for 2 runs of testnet
+  assert:
+    that:
+      - info is not changed
+
+- name: Run changed container with testnet and three aliases
+  containers.podman.podman_container:
+    name: netcontainer
+    image: "{{ idem_image }}"
+    command: 1h
+    state: present
+    network: testnet
+    network_aliases:
+      - netcontainer-alias-a
+      - netcontainer-alias-b
+      - netcontainer-alias-c
+  register: info1
+
+- name: Check info
+  assert:
+    that:
+      - info1 is changed
+  ignore_errors: true
