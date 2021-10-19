@@ -6,6 +6,7 @@ from distutils.version import LooseVersion  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 
 __metaclass__ = type
 
@@ -1152,47 +1153,8 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('security_opt', before, after)
 
     def diffparam_stop_signal(self):
-        signals = {
-            "sighup": "1",
-            "sigint": "2",
-            "sigquit": "3",
-            "sigill": "4",
-            "sigtrap": "5",
-            "sigabrt": "6",
-            "sigiot": "6",
-            "sigbus": "7",
-            "sigfpe": "8",
-            "sigkill": "9",
-            "sigusr1": "10",
-            "sigsegv": "11",
-            "sigusr2": "12",
-            "sigpipe": "13",
-            "sigalrm": "14",
-            "sigterm": "15",
-            "sigstkflt": "16",
-            "sigchld": "17",
-            "sigcont": "18",
-            "sigstop": "19",
-            "sigtstp": "20",
-            "sigttin": "21",
-            "sigttou": "22",
-            "sigurg": "23",
-            "sigxcpu": "24",
-            "sigxfsz": "25",
-            "sigvtalrm": "26",
-            "sigprof": "27",
-            "sigwinch": "28",
-            "sigio": "29",
-            "sigpwr": "30",
-            "sigsys": "31",
-            "sigrtmin+3": "37"
-        }
-        before = str(self.info['config']['stopsignal'])
-        if not before.isdigit():
-            before = signals[before.lower()]
-        after = str(self.params['stop_signal'])
-        if not after.isdigit():
-            after = signals[after.lower()]
+        before = normalize_signal(self.info['config']['stopsignal'])
+        after = normalize_signal(self.params['stop_signal'])
         return self._diff_update_and_compare('stop_signal', before, after)
 
     def diffparam_timezone(self):
