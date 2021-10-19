@@ -98,6 +98,7 @@ def remove_file_or_dir(path):
     else:
         raise ValueError("file %s is not a file or dir." % path)
 
+
 # Generated from https://github.com/containers/podman/blob/main/pkg/signal/signal_linux.go
 # and https://github.com/containers/podman/blob/main/pkg/signal/signal_linux_mipsx.go
 _signal_map = {
@@ -143,6 +144,7 @@ _signal_map = {
 for i in range(1, _signal_map['RTMAX'] - _signal_map['RTMIN'] + 1):
     _signal_map['RTMIN+{0}'.format(i)] = _signal_map['RTMIN'] + i
     _signal_map['RTMAX-{0}'.format(i)] = _signal_map['RTMAX'] - i
+
 
 def normalize_signal(signal_name_or_number):
     signal_name_or_number = str(signal_name_or_number)
