@@ -71,7 +71,7 @@ DOCUMENTATION = '''
         env:
           - name: ANSIBLE_PODMAN_EXECUTABLE
       podman_rootless:
-        description: Whether the container should be run as root.
+        description: Whether the container should be run as rootless.
         type: bool
         default: true
         vars:
