@@ -542,7 +542,11 @@ class PodmanImageManager(object):
 
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg='Failed to pull image {image_name}'.format(image_name=image_name))
+            if not self.pull:
+                self.module.fail_json(msg='Failed to find image {image_name} locally, image pull set to {pull_bool}'.format(
+                    pull_bool=self.pull, image_name=image_name))
+            else:
+                self.module.fail_json(msg='Failed to pull image {image_name}'.format(image_name=image_name))
         return self.inspect_image(out.strip())
 
     def build_image(self):

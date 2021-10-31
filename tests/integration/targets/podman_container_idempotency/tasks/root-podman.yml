@@ -191,3 +191,8 @@
   assert:
     that:
       - info9 is not changed
+
+- name: Make sure container doesn't exist
+  containers.podman.podman_container:
+    name: root-idempotency
+    state: absent

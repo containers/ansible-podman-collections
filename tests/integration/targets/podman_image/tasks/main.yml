@@ -179,6 +179,22 @@
           - docker_build2 is not changed
           - "'localhost/dockerimage:latest' in dockerimage_info.images[0]['RepoTags'][0]"
 
+    - name: push image that doesn't exit to nowhere
+      containers.podman.podman_image:
+        name: bad_image
+        pull: false
+        push: yes
+      register: bad_push
+      ignore_errors: true
+
+    - name: Ensure that Image failed correctly.
+      assert:
+        that:
+          - "bad_push is failed"
+          - "bad_push is not changed"
+          - "'Failed to find image bad_image' in bad_push.msg"
+          - "'image pull set to False' in bad_push.msg"
+
   always:
     - name: Cleanup images
       containers.podman.podman_image:

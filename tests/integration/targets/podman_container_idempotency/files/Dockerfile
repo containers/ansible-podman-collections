@@ -21,7 +21,7 @@ EXPOSE 80
 EXPOSE 8080/tcp
 VOLUME ["/data", "/data2"]
 USER user
-STOPSIGNAL SIGKILL
+STOPSIGNAL KILL
 
 # problem with OS w/o systemd
 # HEALTHCHECK --interval=5m --timeout=3s \
