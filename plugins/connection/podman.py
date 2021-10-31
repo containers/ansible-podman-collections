@@ -145,13 +145,13 @@ class Connection(ConnectionBase):
         :param in_data: data passed to podman's stdin
         :return: return code, stdout, stderr
         """
-        rootless = self.get_option('podman_rootless')
+        rootless = self.get_option('podman_rootless') if os.getuid() else False
         podman_exec = self.get_option('podman_executable')
         podman_cmd = distutils.spawn.find_executable(podman_exec)
         sudo_cmd = distutils.spawn.find_executable('sudo')
         if not podman_cmd:
             raise AnsibleError("%s command not found in PATH" % podman_exec)
-        elif not sudo_cmd:
+        elif (not rootless) and (not sudo_cmd):
             raise AnsibleError("sudo command not found in PATH")
 
         local_cmd = [podman_cmd] if rootless else [sudo_cmd, '-Sk', podman_cmd]
