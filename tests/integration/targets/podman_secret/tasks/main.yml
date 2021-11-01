@@ -49,7 +49,7 @@
     - name: Check secret data
       assert:
         that:
-          - container.stdout == "super secret content\n"  # cat adds a newline
+          - container.stdout == "super secret content"
 
     - name: Remove secret
       containers.podman.podman_secret:
