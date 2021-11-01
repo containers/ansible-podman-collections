@@ -96,7 +96,7 @@ def podman_secret_create(module, executable, name, data, force, skip):
             }
 
     rc, out, err = module.run_command(
-        [executable, 'secret', 'create', name, '-'], data=data)
+        [executable, 'secret', 'create', name, '-'], data=data, binary_data=True)
 
     if rc != 0:
         module.fail_json(msg="Unable to create secret: %s" % err)
