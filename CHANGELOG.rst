@@ -5,6 +5,27 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.8.2
+======
+
+Release Summary
+---------------
+
+Fixes for various modules
+
+Bugfixes
+--------
+
+- Add option for ansible-core in RPM spec file
+- Add skip option for podman secret
+- Add support for network-alias flag
+- Allow to actually pass a list of string for "mounts"
+- Don't add newlines to secrets
+- Fix issue with podman and exposed ports
+- Fix signal diff for truncated and RT signal names
+- Support empty stings in prefixes
+- Update error message when pull set to false
+
 v1.8.1
 ======
 

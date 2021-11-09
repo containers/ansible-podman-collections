@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_container – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-manage-podman-containers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.1).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.8.2).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container</span></code>.</p>
 </div>
@@ -1358,14 +1358,15 @@
                 <b>mount</b>
                 <a class="ansibleOptionLink" href="#parameter-mount" title="Permalink to this option"></a>
                 <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
                                                     </td>
                             <td>
                                                                                                                                                         </td>
                                                             <td>
                                         <div>Attach a filesystem mount to the container. bind or tmpfs For example mount &quot;type=bind,source=/path/on/host,destination=/path/in/container&quot;</div>
-                                                    </td>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: mounts</div>
+                                </td>
         </tr>
                             <tr>
                                                             <td colspan="2">
@@ -1397,6 +1398,21 @@
                                         <div>Set the Network mode for the container * bridge create a network stack on the default bridge * none no networking * container:&lt;name|id&gt; reuse another container&#x27;s network stack * host use the podman host network stack. * &lt;network-name&gt;|&lt;network-id&gt; connect to a user-defined network * ns:&lt;path&gt; path to a network namespace to join * slirp4netns use slirp4netns to create a user network stack. This is the default for rootless containers</div>
                                                             <div style="font-size: small; color: darkgreen"><br/>aliases: net, network_mode</div>
                                 </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-network_aliases"></div>
+                <b>network_aliases</b>
+                <a class="ansibleOptionLink" href="#parameter-network_aliases" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Add network-scoped alias for the container. A container will only have access to aliases on the first network that it joins. This is a limitation that will be removed in a later release.</div>
+                                                    </td>
         </tr>
                             <tr>
                                                             <td colspan="2">
