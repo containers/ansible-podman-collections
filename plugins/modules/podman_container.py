@@ -546,7 +546,10 @@ options:
       - Attach a filesystem mount to the container. bind or tmpfs
         For example mount
         "type=bind,source=/path/on/host,destination=/path/in/container"
-    type: str
+    type: list
+    elements: str
+    aliases:
+      - mounts
   network:
     description:
       - Set the Network mode for the container
