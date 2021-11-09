@@ -325,3 +325,17 @@ releases:
       - Fix suboption key in podman_container/podman_pod for generate_systemd documentation
       release_summary: Fixes for systemd units generation
     release_date: '2021-09-24'
+  1.8.2:
+    changes:
+      bugfixes:
+      - Add option for ansible-core in RPM spec file
+      - Add skip option for podman secret
+      - Add support for network-alias flag
+      - Allow to actually pass a list of string for "mounts"
+      - Don't add newlines to secrets
+      - Fix issue with podman and exposed ports
+      - Fix signal diff for truncated and RT signal names
+      - Support empty stings in prefixes
+      - Update error message when pull set to false
+      release_summary: Fixes for various modules
+    release_date: '2021-11-09'
