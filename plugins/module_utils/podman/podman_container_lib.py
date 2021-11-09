@@ -91,7 +91,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     memory_reservation=dict(type='str'),
     memory_swap=dict(type='str'),
     memory_swappiness=dict(type='int'),
-    mount=dict(type='str'),
+    mount=dict(type='list', elements='str', aliases=['mounts']),
     network=dict(type='list', elements='str', aliases=['net', 'network_mode']),
     network_aliases=dict(type='list', elements='str'),
     no_hosts=dict(type='bool'),
@@ -472,7 +472,10 @@ class PodmanModuleParams:
         return c + ['--memory-swappiness', self.params['memory_swappiness']]
 
     def addparam_mount(self, c):
-        return c + ['--mount', self.params['mount']]
+        for mnt in self.params['mount']:
+            if mnt:
+                c += ['--mount', mnt]
+        return c
 
     def addparam_network(self, c):
         return c + ['--network', ",".join(self.params['network'])]
