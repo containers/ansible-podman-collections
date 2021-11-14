@@ -46,6 +46,8 @@ def generate_systemd(module, module_params, name):
         command.extend(['--no-header'])
     if sysconf.get('names', True):
         command.extend(['--name'])
+    if sysconf.get("new"):
+        command.extend(["--new"])
     if sysconf.get('container_prefix') is not None:
         command.extend(['--container-prefix=%s' % sysconf['container_prefix']])
     if sysconf.get('pod_prefix') is not None:
