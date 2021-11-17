@@ -351,6 +351,13 @@ options:
             container/pod and the prefix. The default is "-" (dash).
         type: str
         required: false
+      new:
+        description:
+          - Create containers and pods when the unit is started instead of
+            expecting them to exist. The default is "false".
+            Refer to podman-generate-systemd(1) for more information.
+        type: bool
+        default: false
   gidmap:
     description:
       - Run the container in a new user namespace using the supplied mapping.
