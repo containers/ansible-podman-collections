@@ -300,7 +300,7 @@ options:
       path:
         description:
           - Specify a path to the directory where unit files will be generated.
-            If it doesn't exist, the directory will be created.
+            Required for this option. If it doesn't exist, the directory will be created.
         type: str
         required: false
       restart_policy:

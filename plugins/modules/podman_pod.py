@@ -80,7 +80,7 @@ options:
       path:
         description:
           - Specify a path to the directory where unit files will be generated.
-            If it doesn't exist, the directory will be created.
+            Required for this option. If it doesn't exist, the directory will be created.
         type: str
         required: false
       restart_policy:
@@ -131,6 +131,13 @@ options:
             container/pod and the prefix. The default is "-" (dash).
         type: str
         required: false
+      new:
+        description:
+          - Create containers and pods when the unit is started instead of
+            expecting them to exist. The default is "false".
+            Refer to podman-generate-systemd(1) for more information.
+        type: bool
+        default: false
   hostname:
     description:
     - Set a hostname to the pod
