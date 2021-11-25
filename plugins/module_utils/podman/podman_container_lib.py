@@ -641,7 +641,6 @@ class PodmanDefaults:
             "group_add": [],
             "ipc": "",
             "kernelmemory": "0",
-            "log_driver": "k8s-file",
             "log_level": "error",
             "memory": "0",
             "memory_swap": "0",
@@ -956,7 +955,10 @@ class PodmanContainerDiff:
 
     def diffparam_log_driver(self):
         before = self.info['hostconfig']['logconfig']['type']
-        after = self.params['log_driver']
+        if self.module_params['log_driver'] is not None:
+            after = self.params['log_driver']
+        else:
+            after = before
         return self._diff_update_and_compare('log_driver', before, after)
 
     def diffparam_log_level(self):
