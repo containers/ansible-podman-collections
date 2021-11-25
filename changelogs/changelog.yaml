@@ -339,3 +339,12 @@ releases:
       - Update error message when pull set to false
       release_summary: Fixes for various modules
     release_date: '2021-11-09'
+  1.8.3:
+    changes:
+      bugfixes:
+      - Add documentations for generate_systemd
+      - Hardcode RT signal numbers
+      - Remove default value of log-driver
+      - Support --new in generate_systemd
+      release_summary: Bugfixes
+    release_date: '2021-11-25'

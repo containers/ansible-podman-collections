@@ -5,6 +5,22 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.8.3
+======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Bugfixes
+--------
+
+- Add documentations for generate_systemd
+- Hardcode RT signal numbers
+- Remove default value of log-driver
+- Support --new in generate_systemd
+
 v1.8.2
 ======
 
