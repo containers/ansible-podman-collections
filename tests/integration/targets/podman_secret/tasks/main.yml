@@ -73,6 +73,20 @@
         that:
           - removed is not changed
 
+    - name: Create secret with file driver and custom options
+      containers.podman.podman_secret:
+        name: mysecret
+        data: secret content
+        driver: file
+        driver_opts:
+          a: b
+          c: d
+
+    - name: Remove secret
+      containers.podman.podman_secret:
+        state: absent
+        name: mysecret
+
   always:
     - name: Remove container that uses secret
       containers.podman.podman_container:
