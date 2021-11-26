@@ -22,6 +22,15 @@ options:
     description:
       - The value of the secret. Required when C(state) is C(present).
     type: str
+  driver:
+    description:
+      - Override default secrets driver, currently podman uses C(file)
+        which is unencrypted.
+    type: str
+  driver_opts:
+    description:
+      - Driver-specific key-value options.
+    type: dict
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -84,7 +93,8 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def podman_secret_create(module, executable, name, data, force, skip):
+def podman_secret_create(module, executable, name, data, force, skip,
+                         driver, driver_opts):
     if force:
         module.run_command([executable, 'secret', 'rm', name])
     if skip:
@@ -95,9 +105,17 @@ def podman_secret_create(module, executable, name, data, force, skip):
                 "changed": False,
             }
 
-    rc, out, err = module.run_command(
-        [executable, 'secret', 'create', name, '-'], data=data, binary_data=True)
+    cmd = [executable, 'secret', 'create']
+    if driver:
+        cmd.append('--driver')
+        cmd.append(driver)
+    if driver_opts:
+        cmd.append('--driver-opts')
+        cmd.append(",".join("=".join(i) for i in driver_opts.items()))
+    cmd.append(name)
+    cmd.append('-')
 
+    rc, out, err = module.run_command(cmd, data=data, binary_data=True)
     if rc != 0:
         module.fail_json(msg="Unable to create secret: %s" % err)
 
@@ -130,6 +148,8 @@ def main():
             data=dict(type='str', no_log=True),
             force=dict(type='bool', default=False),
             skip_existing=dict(type='bool', default=False),
+            driver=dict(type='str'),
+            driver_opts=dict(type='dict'),
         ),
     )
 
@@ -143,7 +163,11 @@ def main():
             raise Exception("'data' is required when 'state' is 'present'")
         force = module.params['force']
         skip = module.params['skip_existing']
-        results = podman_secret_create(module, executable, name, data, force, skip)
+        driver = module.params['driver']
+        driver_opts = module.params['driver_opts']
+        results = podman_secret_create(module, executable,
+                                       name, data, force, skip,
+                                       driver, driver_opts)
     else:
         results = podman_secret_remove(module, executable, name)
 
