@@ -662,24 +662,13 @@
 <br/></div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight">
-  <pre>
-    <span></span>
-    <span class="c1"># What modules does for example</span>
-    <span class="p p-Indicator">-</span> <span class="nt">podman_pod</span><span class="p">:</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
+<span class="p p-Indicator">-</span> <span class="nt">podman_pod</span><span class="p">:</span>
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pod1</span>
     <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">started</span>
     <span class="nt">ports</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">4444:5555</span>
-    <span></span>
-    <span class="c1"># Connect random port from localhost to port 80 on pod2</span>
-    <span class="p p-Indicator">- name:</span> <span class="nt">Connect random port from localhost to port 80 on pod2</span>
-    <span class="nt">  containers.podman.podman_pod</span><span class="p">:</span>
-    <span class="nt">    name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pod2</span>
-    <span class="nt">    state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">started</span>
-    <span class="nt">    publish</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">127.0.0.1::80</span>
-  </pre>
-</div>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">4444:5555</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
