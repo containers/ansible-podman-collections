@@ -286,6 +286,13 @@ EXAMPLES = '''
     state: started
     ports:
       - 4444:5555
+
+# Connect random port from localhost to port 80 on pod2
+- name: Connect random port from localhost to port 80 on pod2
+  containers.podman.podman_pod:
+    name: pod2
+    state: started
+    publish: 127.0.0.1::80
 '''
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_pod_lib import PodmanPodManager  # noqa: F402
