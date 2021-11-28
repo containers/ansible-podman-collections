@@ -1,0 +1,36 @@
+---
+- name: Test podman tag
+  block:
+    - name: Pull image
+      containers.podman.podman_image:
+        name: docker.io/library/openjdk:8-jdk-alpine
+
+    - name: Tag image
+      containers.podman.podman_tag:
+        image: docker.io/library/openjdk:8-jdk-alpine
+        target_names:
+          - openjdk8
+          - jdk8
+
+    - name: Get tagged image info
+      containers.podman.podman_image_info:
+        name: docker.io/library/openjdk:8-jdk-alpine
+        register: tagged_image_result
+
+    - name: Check results
+      assert:
+        that:
+          - tagged_image_result.images | length == 1
+          - "'docker.io/library/openjdk:8-jdk-alpine' in tagged_image_result.images[0]['RepoTags'][0]"
+          - "'localhost/openjdk8:latest' in tagged_image_result.images[0]['RepoTags'][1]"
+          - "'localhost/jdk8:latest' in tagged_image_result.images[0]['RepoTags'][2]"
+
+  always:
+    - name: Cleanup image
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - docker.io/library/openjdk:8-jdk-alpine
+        - localhost/openjdk8
+        - localhost/jdk8
