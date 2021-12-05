@@ -5,6 +5,35 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.9.0
+======
+
+Release Summary
+---------------
+
+New podman_tag module and fixes
+
+Major Changes
+-------------
+
+- Add podman_tag module
+- Add secrets driver and driver opts support
+
+Minor Changes
+-------------
+
+- Add a second example to podman_pod_module.html
+
+Bugfixes
+--------
+
+- Don't include shared 'net' if network is host in pods
+
+New Modules
+-----------
+
+- containers.podman.podman_tag - Add an additional name to a local image
+
 v1.8.3
 ======
 

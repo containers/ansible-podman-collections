@@ -348,3 +348,17 @@ releases:
       - Support --new in generate_systemd
       release_summary: Bugfixes
     release_date: '2021-11-25'
+  1.9.0:
+    changes:
+      bugfixes:
+      - Don't include shared 'net' if network is host in pods
+      major_changes:
+      - Add podman_tag module
+      - Add secrets driver and driver opts support
+      minor_changes:
+      - Add a second example to podman_pod_module.html
+      release_summary: New podman_tag module and fixes
+    modules:
+    - description: Add an additional name to a local image
+      name: podman_tag
+      namespace: ''
