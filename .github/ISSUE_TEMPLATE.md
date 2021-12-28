@@ -60,7 +60,7 @@ Briefly describe the problem you are having in a few paragraphs.
 
 **Output of `podman info --debug`:**
 
-```
+``` yaml
 (paste your output here)
 ```
 
@@ -72,7 +72,7 @@ Briefly describe the problem you are having in a few paragraphs.
 
 **Playbok you run with ansible (e.g. content of `playbook.yaml`):**
 
-```
+``` yaml
 (paste your output here)
 ```
 
