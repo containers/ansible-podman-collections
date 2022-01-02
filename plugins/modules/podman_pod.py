@@ -49,6 +49,31 @@ options:
       init process. Cgroups will be created if they do not already exist.
     type: str
     required: false
+  cpus:
+    description:
+    - Set the total number of CPUs delegated to the pod.
+      Default is 0.000 which indicates that there is no limit on computation power.
+    required: false
+    type: str
+  cpuset_cpus:
+    description:
+    - Limit the CPUs to support execution. First CPU is numbered 0.
+      Unlike `cpus` this is of type string and parsed as a list of numbers. Format is 0-3,0,1
+    required: false
+    type: str
+  device:
+    description:
+    - Add a host device to the pod. Optional permissions parameter can be used to specify
+      device permissions. It is a combination of r for read, w for write, and m for mknod(2)
+    elements: str
+    required: false
+    type: list
+  device_read_bps:
+    description:
+    - Limit read rate (bytes per second) from a device (e.g. device-read-bps=/dev/sda:1mb)
+    elements: str
+    required: false
+    type: list
   dns:
     description:
     - Set custom DNS servers in the /etc/resolv.conf file that will be shared between
@@ -138,6 +163,13 @@ options:
             Refer to podman-generate-systemd(1) for more information.
         type: bool
         default: false
+  gidmap:
+    description:
+    - GID map for the user namespace. Using this flag will run the container with
+      user namespace enabled. It conflicts with the `userns` and `subgidname` flags.
+    elements: str
+    required: false
+    type: list
   hostname:
     description:
     - Set a hostname to the pod
@@ -205,11 +237,28 @@ options:
       join.
     type: str
     required: false
+  network_alias:
+    description:
+    - Add a network-scoped alias for the pod, setting the alias for all networks that the pod joins.
+      To set a name only for a specific network, use the alias option as described under the -`network` option.
+      Network aliases work only with the bridge networking mode.
+      This option can be specified multiple times.
+    elements: str
+    required: false
+    type: list
+    aliases:
+      - network_aliases
   no_hosts:
     description:
     - Disable creation of /etc/hosts for the pod.
     type: bool
     required: false
+  pid:
+    description:
+    - Set the PID mode for the pod. The default is to create a private PID namespace
+      for the pod. Requires the PID namespace to be shared via `share` option.
+    required: false
+    type: str
   pod_id_file:
     description:
     - Write the pod ID to the file.
@@ -230,15 +279,52 @@ options:
       user, uts.
     type: str
     required: false
+  subgidname:
+    description:
+    - Name for GID map from the /etc/subgid file. Using this flag will run the container
+      with user namespace enabled. This flag conflicts with `userns` and `gidmap`.
+    required: false
+    type: str
+  subuidname:
+    description:
+    - Name for UID map from the /etc/subuid file.
+      Using this flag will run the container with user namespace enabled.
+      This flag conflicts with `userns` and `uidmap`.
+    required: false
+    type: str
+  uidmap:
+    description:
+    - Run the container in a new user namespace using the supplied mapping.
+      This option conflicts with the `userns` and `subuidname` options.
+      This option provides a way to map host UIDs to container UIDs.
+      It can be passed several times to map different ranges.
+    elements: str
+    required: false
+    type: list
+  userns:
+    description:
+    - Set the user namespace mode for all the containers in a pod.
+      It defaults to the PODMAN_USERNS environment variable.
+      An empty value ("") means user namespaces are disabled.
+    required: false
+    type: str
+  volume:
+    description:
+    - Create a bind mount.
+    aliases:
+    - volumes
+    elements: str
+    required: false
+    type: list
   executable:
     description:
-      - Path to C(podman) executable if it is not in the C($PATH) on the
-        machine running C(podman)
+    - Path to C(podman) executable if it is not in the C($PATH) on the
+      machine running C(podman)
     default: 'podman'
     type: str
   debug:
     description:
-      - Return additional information which can be helpful for investigations.
+    - Return additional information which can be helpful for investigations.
     type: bool
     default: False
 

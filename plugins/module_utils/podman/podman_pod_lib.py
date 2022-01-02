@@ -26,10 +26,15 @@ ARGUMENTS_SPEC_POD = dict(
     recreate=dict(type='bool', default=False),
     add_host=dict(type='list', required=False, elements='str'),
     cgroup_parent=dict(type='str', required=False),
+    cpus=dict(type='str', required=False),
+    cpuset_cpus=dict(type='str', required=False),
+    device=dict(type='list', elements='str', required=False),
+    device_read_bps=dict(type='list', elements='str', required=False),
     dns=dict(type='list', elements='str', required=False),
     dns_opt=dict(type='list', elements='str', required=False),
     dns_search=dict(type='list', elements='str', required=False),
     generate_systemd=dict(type='dict', default={}),
+    gidmap=dict(type='list', elements='str', required=False),
     hostname=dict(type='str', required=False),
     infra=dict(type='bool', required=False),
     infra_conmon_pidfile=dict(type='str', required=False),
@@ -42,11 +47,20 @@ ARGUMENTS_SPEC_POD = dict(
     mac_address=dict(type='str', required=False),
     name=dict(type='str', required=True),
     network=dict(type='str', required=False),
+    network_alias=dict(type='list', elements='str', required=False,
+                       aliases=['network_aliases']),
     no_hosts=dict(type='bool', required=False),
+    pid=dict(type='str', required=False),
     pod_id_file=dict(type='str', required=False),
     publish=dict(type='list', required=False,
                  elements='str', aliases=['ports']),
     share=dict(type='str', required=False),
+    subgidname=dict(type='str', required=False),
+    subuidname=dict(type='str', required=False),
+    uidmap=dict(type='list', elements='str', required=False),
+    userns=dict(type='str', required=False),
+    volume=dict(type='list', elements='str', aliases=['volumes'],
+                required=False),
     executable=dict(type='str', required=False, default='podman'),
     debug=dict(type='bool', default=False),
 )
@@ -123,6 +137,22 @@ class PodmanPodModuleParams:
     def addparam_cgroup_parent(self, c):
         return c + ['--cgroup-parent', self.params['cgroup_parent']]
 
+    def addparam_cpus(self, c):
+        return c + ['--cpus', self.params['cpus']]
+
+    def addparam_cpuset_cpus(self, c):
+        return c + ['--cpuset-cpus', self.params['cpuset_cpus']]
+
+    def addparam_device(self, c):
+        for dev in self.params['device']:
+            c += ['--device', dev]
+        return c
+
+    def addparam_device_read_bps(self, c):
+        for dev in self.params['device_read_bps']:
+            c += ['--device-read-bps', dev]
+        return c
+
     def addparam_dns(self, c):
         for g in self.params['dns']:
             c += ['--dns', g]
@@ -136,6 +166,11 @@ class PodmanPodModuleParams:
     def addparam_dns_search(self, c):
         for g in self.params['dns_search']:
             c += ['--dns-search', g]
+        return c
+
+    def addparam_gidmap(self, c):
+        for gidmap in self.params['gidmap']:
+            c += ['--gidmap', gidmap]
         return c
 
     def addparam_hostname(self, c):
@@ -179,8 +214,16 @@ class PodmanPodModuleParams:
     def addparam_network(self, c):
         return c + ['--network', self.params['network']]
 
+    def addparam_network_aliases(self, c):
+        for alias in self.params['network_aliases']:
+            c += ['--network-alias', alias]
+        return c
+
     def addparam_no_hosts(self, c):
         return c + ["=".join('--no-hosts', self.params['no_hosts'])]
+
+    def addparam_pid(self, c):
+        return c + ['--pid', self.params['pid']]
 
     def addparam_pod_id_file(self, c):
         return c + ['--pod-id-file', self.params['pod_id_file']]
@@ -192,6 +235,26 @@ class PodmanPodModuleParams:
 
     def addparam_share(self, c):
         return c + ['--share', self.params['share']]
+
+    def addparam_subgidname(self, c):
+        return c + ['--subgidname', self.params['subgidname']]
+
+    def addparam_subuidname(self, c):
+        return c + ['--subuidname', self.params['subuidname']]
+
+    def addparam_uidmap(self, c):
+        for uidmap in self.params['uidmap']:
+            c += ['--uidmap', uidmap]
+        return c
+
+    def addparam_userns(self, c):
+        return c + ['--userns', self.params['userns']]
+
+    def addparam_volume(self, c):
+        for vol in self.params['volume']:
+            if vol:
+                c += ['--volume', vol]
+        return c
 
 
 class PodmanPodDefaults:
