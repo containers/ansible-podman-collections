@@ -396,7 +396,7 @@ class PodmanPodDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         after = [
-            i.replace("/tcp", "").replace("[", "").replace("]", "").strip(":")
+            i.replace("/tcp", "").replace("[", "").replace("]", "")
             for i in after]
         # No support for port ranges yet
         for ports in after:
