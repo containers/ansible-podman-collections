@@ -377,17 +377,26 @@ class PodmanPodDiff:
 
     # TODO(sshnaidm) Need to add port ranges support
     def diffparam_publish(self):
+        def compose(p, h):
+            s = ":".join(
+                [str(h["hostport"]), p.replace('/tcp', '')]
+            ).strip(":")
+            if h['hostip']:
+                return ":".join([h['hostip'], s])
+            return s
+
         if not self.infra_info:
             return self._diff_update_and_compare('publish', '', '')
+
         ports = self.infra_info['hostconfig']['portbindings']
-        before = [":".join([
-            j[0]['hostip'],
-            str(j[0]["hostport"]),
-            i.replace('/tcp', '')
-        ]).strip(':') for i, j in ports.items()]
+        before = []
+        for port, hosts in ports.items():
+            if hosts:
+                for h in hosts:
+                    before.append(compose(port, h))
         after = self.params['publish'] or []
         after = [
-            i.replace("/tcp", "").replace("[", "").replace("]", "").strip(":")
+            i.replace("/tcp", "").replace("[", "").replace("]", "")
             for i in after]
         # No support for port ranges yet
         for ports in after:
