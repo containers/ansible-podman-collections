@@ -674,7 +674,8 @@ options:
     type: bool
   secrets:
     description:
-      - Add the named secrets into the container at /run/secrets.
+      - Add the named secrets into the container.
+        The format is C(secret[,opt=opt...]), see L(documentation,https://docs.podman.io/en/latest/markdown/podman-run.1.html#secret-secret-opt-opt) for details.
     type: list
     elements: str
   security_opt:
