@@ -675,7 +675,8 @@ options:
   secrets:
     description:
       - Add the named secrets into the container.
-        The format is C(secret[,opt=opt...]), see L(documentation,https://docs.podman.io/en/latest/markdown/podman-run.1.html#secret-secret-opt-opt) for details.
+        The format is C(secret[,opt=opt...]), see
+        L(documentation,https://docs.podman.io/en/latest/markdown/podman-run.1.html#secret-secret-opt-opt) for more details.
     type: list
     elements: str
   security_opt:
