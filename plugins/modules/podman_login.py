@@ -103,7 +103,10 @@ def login(module, executable, registry, authfile,
     if certdir:
         command.extend(['--cert-dir', certdir])
     if tlsverify is not None:
-        command.extend(['--tls-verify', tlsverify])
+        if tlsverify:
+            command.append('--tls-verify')
+        else:
+            command.append('--tls-verify=False')
     rc, out, err = module.run_command(command)
     if rc != 0:
         if 'Error: Not logged into' not in err:

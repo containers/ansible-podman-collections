@@ -42,14 +42,26 @@
         rm: true
       register: container
 
-    - name: Output secret data
-      debug:
-        msg: '{{ container.stdout }}'
-
     - name: Check secret data
       assert:
         that:
           - container.stdout == "super secret content"
+
+    - name: Create container that uses secret with options
+      containers.podman.podman_container:
+        name: showmysecret
+        image: alpine:3.7
+        secrets:
+          - mysecret,type=env,target=SECRET
+        command: ['/bin/sh', '-c', 'echo $SECRET']
+        detach: false
+        rm: true
+      register: container
+
+    - name: Check secret data
+      assert:
+        that:
+          - container.stdout == "super secret content\n"
 
     - name: Remove secret
       containers.podman.podman_secret:
