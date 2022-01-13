@@ -362,3 +362,15 @@ releases:
     - description: Add an additional name to a local image
       name: podman_tag
       namespace: ''
+    release_date: '2021-12-05'
+  1.9.1:
+    changes:
+      bugfixes:
+      - Fix podman_pod_lib behavior for ports published to multiple IPs
+      - Handle tlsverify correctly in podman_login
+      - Update secrets description and add test with secret opts
+      minor_changes:
+      - Add new options for pod module
+      - Use yaml syntax highlighting where appropriate
+      release_summary: Bugfixes and new options for Pods
+    release_date: '2022-01-13'

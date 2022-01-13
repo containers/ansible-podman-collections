@@ -5,6 +5,27 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.9.1
+======
+
+Release Summary
+---------------
+
+Bugfixes and new options for Pods
+
+Minor Changes
+-------------
+
+- Add new options for pod module
+- Use yaml syntax highlighting where appropriate
+
+Bugfixes
+--------
+
+- Fix podman_pod_lib behavior for ports published to multiple IPs
+- Handle tlsverify correctly in podman_login
+- Update secrets description and add test with secret opts
+
 v1.9.0
 ======
 
