@@ -415,6 +415,13 @@ class PodmanPodDiff:
         if before == ['podman']:
             before = []
         after = self.params['network']
+        # Special case for options for slirp4netns rootless networking from v2
+        if net_mode_before == 'slirp4netns' and 'createcommand' in self.info:
+            cr_com = self.info['createcommand']
+            if '--network' in cr_com:
+                cr_net = cr_com[cr_com.index('--network') + 1].lower()
+                if 'slirp4netns:' in cr_net:
+                    before = [cr_net]
         # Currently supported only 'host' and 'none' network modes idempotency
         if after in ['bridge', 'host', 'slirp4netns']:
             net_mode_after = after
