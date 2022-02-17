@@ -648,6 +648,13 @@ options:
         existing container.
     type: bool
     default: False
+  requires:
+    description:
+      - Specify one or more requirements. A requirement is a dependency
+        container that will be started before this container.
+        Containers can be specified by name or ID.
+    type: list
+    elements: str
   restart_policy:
     description:
       - Restart policy to follow when containers exit.
