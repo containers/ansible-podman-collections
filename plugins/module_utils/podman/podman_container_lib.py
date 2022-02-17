@@ -107,6 +107,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     read_only=dict(type='bool'),
     read_only_tmpfs=dict(type='bool'),
     recreate=dict(type='bool', default=False),
+    requires=dict(type='list', elements='str'),
     restart_policy=dict(type='str'),
     rm=dict(type='bool', aliases=['remove', 'auto_remove']),
     rootfs=dict(type='bool'),
@@ -519,6 +520,9 @@ class PodmanModuleParams:
 
     def addparam_read_only_tmpfs(self, c):
         return c + ['--read-only-tmpfs=%s' % self.params['read_only_tmpfs']]
+
+    def addparam_requires(self, c):
+        return c + ['--requires', ",".join(self.params['requires'])]
 
     def addparam_restart_policy(self, c):
         return c + ['--restart=%s' % self.params['restart_policy']]
