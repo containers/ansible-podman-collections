@@ -1038,6 +1038,16 @@ class PodmanContainerDiff:
 
     def diffparam_mac_address(self):
         before = str(self.info['networksettings']['macaddress'])
+        if not before and self.info['networksettings'].get('networks'):
+            nets = self.info['networksettings']['networks']
+            macs = [
+                nets[i]["macaddress"] for i in nets if nets[i]["macaddress"]]
+            if macs:
+                before = macs[0]
+        if not before and 'createcommand' in self.info['config']:
+            cr_com = self.info['config']['createcommand']
+            if '--mac-address' in cr_com:
+                before = cr_com[cr_com.index('--mac-address') + 1].lower()
         if self.module_params['mac_address'] is not None:
             after = self.params['mac_address']
         else:
