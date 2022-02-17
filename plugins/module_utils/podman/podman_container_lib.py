@@ -1225,9 +1225,14 @@ class PodmanContainerDiff:
             local_vols = []
             for m in before:
                 if m['type'] != 'volume':
-                    volumes.append([m['source'], m['destination']])
+                    volumes.append(
+                        [
+                            clean_volume(m['source']),
+                            clean_volume(m['destination'])
+                        ])
                 elif m['type'] == 'volume':
-                    local_vols.append([m['name'], m['destination']])
+                    local_vols.append(
+                        [m['name'], clean_volume(m['destination'])])
             before = [":".join(v) for v in volumes]
             before_local_vols = [":".join(v) for v in local_vols]
         if self.params['volume'] is not None:
