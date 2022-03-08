@@ -399,19 +399,20 @@
           - test.container['Config']['Labels']['otheralbe'] == "othervalue"
           # test mounts
           - test.container['Mounts'][0]['Type'] is defined and test.container['Mounts'][0]['Type'] == 'bind'
-          - test.container['Mounts'][0]['Source'] is defined and test.container['Mounts'][0]['Source'] == 'devpts'
-          - test.container['Mounts'][0]['Destination'] is defined and test.container['Mounts'][0]['Destination'] == '/dev/pts'
+          - >-
+            test.container['Mounts'][0]['Source'] is defined and test.container['Mounts'][0]['Source'] == 'devpts' or
+            test.container['Mounts'][1]['Source'] is defined and test.container['Mounts'][1]['Source'] == 'devpts'
+          - >-
+            test.container['Mounts'][0]['Destination'] is defined and test.container['Mounts'][0]['Destination'] == '/dev/pts' or
+            test.container['Mounts'][1]['Destination'] is defined and test.container['Mounts'][1]['Destination'] == '/dev/pts'
+          # test volumes
           # test volumes
           - >-
-            (test.container['Mounts'][1]['Destination'] is defined and
-            '/data' in test.container['Mounts'] | map(attribute='Destination') | list) or
-            (test.container['Mounts'][1]['destination'] is defined and
-            '/data' in test.container['Mounts'] | map(attribute='destination') | list)
+            (test.container['Mounts'][0]['Destination'] is defined and
+            '/data' in test.container['Mounts'] | map(attribute='Destination') | list)
           - >-
             (test.container['Mounts'][1]['Source'] is defined and
-            '/tmp' in test.container['Mounts'] | map(attribute='Source') | list) or
-            (test.container['Mounts'][1]['source'] is defined and
-            '/tmp' in test.container['Mounts'] | map(attribute='source') | list)
+            '/tmp' in test.container['Mounts'] | map(attribute='Source') | list)
         fail_msg: Parameters container test failed!
         success_msg: Parameters container test passed!
 
