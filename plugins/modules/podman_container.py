@@ -637,6 +637,7 @@ options:
     description:
       - Mount the container's root filesystem as read only. Default is false
     type: bool
+    default: False
   read_only_tmpfs:
     description:
       - If container is running in --read-only mode, then mount a read-write

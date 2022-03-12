@@ -104,7 +104,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     publish=dict(type='list', elements='str', aliases=[
         'ports', 'published', 'published_ports']),
     publish_all=dict(type='bool'),
-    read_only=dict(type='bool'),
+    read_only=dict(type='bool', default=False),
     read_only_tmpfs=dict(type='bool'),
     recreate=dict(type='bool', default=False),
     requires=dict(type='list', elements='str'),
@@ -1157,6 +1157,11 @@ class PodmanContainerDiff:
                 return self._diff_update_and_compare('publish', '', '')
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('publish', before, after)
+
+    def diffparam_read_only(self):
+        before = self.info['hostconfig']['readonlyrootfs']
+        after = self.params['read_only']
+        return self._diff_update_and_compare('read_only', before, after)
 
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
