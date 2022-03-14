@@ -324,7 +324,7 @@ class PodmanNetworkDiff:
             if os.path.exists(f):
                 dns_installed = True
         before = not bool(
-            [k for k in self.info['plugins'] if 'domainname' in k])
+            [k for k in self.info.get('plugins', []) if 'domainname' in k])
         if internal:
             before = True
         if rootless:
@@ -386,13 +386,19 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare('macvlan', before, after)
 
     def diffparam_opt(self):
-        vlan_before = self.info['plugins'][0].get('vlan')
+        try:
+            vlan_before = self.info['plugins'][0].get('vlan')
+        except (IndexError, KeyError):
+            vlan_before = None
         vlan_after = self.params['opt'].get('vlan') if self.params['opt'] else None
         if vlan_before or vlan_after:
             before, after = {'vlan': vlan_before}, {'vlan': vlan_after}
         else:
             before, after = {}, {}
-        mtu_before = self.info['plugins'][0].get('mtu')
+        try:
+            mtu_before = self.info['plugins'][0].get('mtu')
+        except (IndexError, KeyError):
+            mtu_before = None
         mtu_after = self.params['opt'].get('mtu') if self.params['opt'] else None
         if mtu_before or mtu_after:
             before.update({'mtu': mtu_before})
