@@ -374,3 +374,18 @@ releases:
       - Use yaml syntax highlighting where appropriate
       release_summary: Bugfixes and new options for Pods
     release_date: '2022-01-13'
+  1.9.2:
+    changes:
+      bugfixes:
+      - Add slirp4netns idempotency for pods
+      - Fix MAC address detection in created container
+      - Fix check for read-only change of root image in podman_container module
+      - Fix error with exitcommand for Podman v4
+      - Fix issue when missing plugins entry in podman_network module
+      - Fix new requirements for plugins documentation
+      - Fix tests for podman_container module
+      - Strip slashes from volumes
+      minor_changes:
+      - Add requires option to podman_container module
+      release_summary: Bugfixes and new requires option for podman_container
+    release_date: '2022-03-17'
