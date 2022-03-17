@@ -92,7 +92,6 @@
           - rmi4 is not changed
           - rmi5 is changed
           - "'alpine-sh' not in images.stdout"
-          - "'library/alpine' not in images.stdout"
 
     - name: Pull a specific version of an image
       containers.podman.podman_image:

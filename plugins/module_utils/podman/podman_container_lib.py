@@ -104,7 +104,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     publish=dict(type='list', elements='str', aliases=[
         'ports', 'published', 'published_ports']),
     publish_all=dict(type='bool'),
-    read_only=dict(type='bool', default=False),
+    read_only=dict(type='bool'),
     read_only_tmpfs=dict(type='bool'),
     recreate=dict(type='bool', default=False),
     requires=dict(type='list', elements='str'),
@@ -655,6 +655,7 @@ class PodmanDefaults:
             "oom_score_adj": 0,
             "pid": "",
             "privileged": False,
+            "read_only": False,
             "rm": False,
             "security_opt": [],
             "stop_signal": self.image_info['config'].get('stopsignal', "15"),
@@ -966,11 +967,19 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('log_driver', before, after)
 
     def diffparam_log_level(self):
-        excom = self.info.get('exitcommand', [])
+        if 'exitcommand' in self.info:
+            excom = self.info.get('exitcommand', [])
+        elif 'createcommand' in self.info['config']:
+            excom = self.info['config'].get('createcommand', [])
+        else:
+            self._diff_update_and_compare('log_level', '', '')
         if '--log-level' in excom:
             before = excom[excom.index('--log-level') + 1].lower()
         else:
-            before = self.params['log_level']
+            if self.module.params['log_level'] is not None:
+                before = ''
+            else:
+                before = self.params['log_level']
         after = self.params['log_level']
         return self._diff_update_and_compare('log_level', before, after)
 
