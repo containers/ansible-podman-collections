@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_pod – Manage Podman pods<a class="headerlink" href="#containers-podman-podman-pod-manage-podman-pods" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.0).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.2).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_pod</span></code>.</p>
 </div>
@@ -105,6 +105,36 @@
         </tr>
                             <tr>
                                                             <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-cpus"></div>
+                <b>cpus</b>
+                <a class="ansibleOptionLink" href="#parameter-cpus" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the total number of CPUs delegated to the pod. Default is 0.000 which indicates that there is no limit on computation power.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-cpuset_cpus"></div>
+                <b>cpuset_cpus</b>
+                <a class="ansibleOptionLink" href="#parameter-cpuset_cpus" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Limit the CPUs to support execution. First CPU is numbered 0. Unlike `cpus` this is of type string and parsed as a list of numbers. Format is 0-3,0,1</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-debug"></div>
                 <b>debug</b>
                 <a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a>
@@ -120,6 +150,36 @@
                                                                         </td>
                                                             <td>
                                         <div>Return additional information which can be helpful for investigations.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-device"></div>
+                <b>device</b>
+                <a class="ansibleOptionLink" href="#parameter-device" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Add a host device to the pod. Optional permissions parameter can be used to specify device permissions. It is a combination of r for read, w for write, and m for mknod(2)</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-device_read_bps"></div>
+                <b>device_read_bps</b>
+                <a class="ansibleOptionLink" href="#parameter-device_read_bps" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Limit read rate (bytes per second) from a device (e.g. device-read-bps=/dev/sda:1mb)</div>
                                                     </td>
         </tr>
                             <tr>
@@ -367,6 +427,21 @@
 
                             <tr>
                                                             <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-gidmap"></div>
+                <b>gidmap</b>
+                <a class="ansibleOptionLink" href="#parameter-gidmap" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>GID map for the user namespace. Using this flag will run the container with user namespace enabled. It conflicts with the `userns` and `subgidname` flags.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-hostname"></div>
                 <b>hostname</b>
                 <a class="ansibleOptionLink" href="#parameter-hostname" title="Permalink to this option"></a>
@@ -551,6 +626,22 @@
         </tr>
                             <tr>
                                                             <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-network_alias"></div>
+                <b>network_alias</b>
+                <a class="ansibleOptionLink" href="#parameter-network_alias" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Add a network-scoped alias for the pod, setting the alias for all networks that the pod joins. To set a name only for a specific network, use the alias option as described under the -`network` option. Network aliases work only with the bridge networking mode. This option can be specified multiple times.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: network_aliases</div>
+                                </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-no_hosts"></div>
                 <b>no_hosts</b>
                 <a class="ansibleOptionLink" href="#parameter-no_hosts" title="Permalink to this option"></a>
@@ -566,6 +657,21 @@
                                                                         </td>
                                                             <td>
                                         <div>Disable creation of /etc/hosts for the pod.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-pid"></div>
+                <b>pid</b>
+                <a class="ansibleOptionLink" href="#parameter-pid" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the PID mode for the pod. The default is to create a private PID namespace for the pod. Requires the PID namespace to be shared via `share` option.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -657,6 +763,82 @@
                                                             <td>
                                         <div>This variable is set for state</div>
                                                     </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-subgidname"></div>
+                <b>subgidname</b>
+                <a class="ansibleOptionLink" href="#parameter-subgidname" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Name for GID map from the /etc/subgid file. Using this flag will run the container with user namespace enabled. This flag conflicts with `userns` and `gidmap`.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-subuidname"></div>
+                <b>subuidname</b>
+                <a class="ansibleOptionLink" href="#parameter-subuidname" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Name for UID map from the /etc/subuid file. Using this flag will run the container with user namespace enabled. This flag conflicts with `userns` and `uidmap`.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-uidmap"></div>
+                <b>uidmap</b>
+                <a class="ansibleOptionLink" href="#parameter-uidmap" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Run the container in a new user namespace using the supplied mapping. This option conflicts with the `userns` and `subuidname` options. This option provides a way to map host UIDs to container UIDs. It can be passed several times to map different ranges.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-userns"></div>
+                <b>userns</b>
+                <a class="ansibleOptionLink" href="#parameter-userns" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Set the user namespace mode for all the containers in a pod. It defaults to the PODMAN_USERNS environment variable. An empty value (&quot;&quot;) means user namespaces are disabled.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-volume"></div>
+                <b>volume</b>
+                <a class="ansibleOptionLink" href="#parameter-volume" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Create a bind mount.</div>
+                                                            <div style="font-size: small; color: darkgreen"><br/>aliases: volumes</div>
+                                </td>
         </tr>
                     </table>
 <br/></div>

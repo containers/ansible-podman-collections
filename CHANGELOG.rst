@@ -5,6 +5,32 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.9.2
+======
+
+Release Summary
+---------------
+
+Bugfixes and new requires option for podman_container
+
+Minor Changes
+-------------
+
+- Add requires option to podman_container module
+
+Bugfixes
+--------
+
+- Add slirp4netns idempotency for pods
+- Fix MAC address detection in created container
+- Fix check for read-only change of root image in podman_container module
+- Fix error with exitcommand for Podman v4
+- Fix issue when missing plugins entry in podman_network module
+- Fix new requirements for plugins documentation
+- Fix podman collection for Podman version 4
+- Fix tests for podman_container module
+- Strip slashes from volumes
+
 v1.9.1
 ======
 

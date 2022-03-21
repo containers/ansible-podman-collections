@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_container – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-manage-podman-containers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.0).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.2).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_container</span></code>.</p>
 </div>
@@ -1646,6 +1646,21 @@
         </tr>
                             <tr>
                                                             <td colspan="2">
+                <div class="ansibleOptionAnchor" id="parameter-requires"></div>
+                <b>requires</b>
+                <a class="ansibleOptionLink" href="#parameter-requires" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">list</span>
+                     / <span style="color: purple">elements=string</span>                                            </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Specify one or more requirements. A requirement is a dependency container that will be started before this container. Containers can be specified by name or ID.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="2">
                 <div class="ansibleOptionAnchor" id="parameter-restart_policy"></div>
                 <b>restart_policy</b>
                 <a class="ansibleOptionLink" href="#parameter-restart_policy" title="Permalink to this option"></a>
@@ -1710,7 +1725,7 @@
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Add the named secrets into the container at /run/secrets.</div>
+                                        <div>Add the named secrets into the container. The format is <code>secret[,opt=opt...]</code>, see <a href='https://docs.podman.io/en/latest/markdown/podman-run.1.html#secret-secret-opt-opt'>documentation</a> for more details.</div>
                                                     </td>
         </tr>
                             <tr>
