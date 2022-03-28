@@ -976,11 +976,17 @@ class PodmanContainerDiff:
         if '--log-level' in excom:
             before = excom[excom.index('--log-level') + 1].lower()
         else:
-            if self.module.params['log_level'] is not None:
+            before = self.module.params.get(
+                "log_level",
+                self.module_params.get(
+                    "log_level"
+                )
+            )
+            if before is not None:
                 before = ''
             else:
-                before = self.params['log_level']
-        after = self.params['log_level']
+                before = self.params.get("log_level")
+        after = self.params.get("log_level")
         return self._diff_update_and_compare('log_level', before, after)
 
     # Parameter has limited idempotency, unable to guess the default log_path
