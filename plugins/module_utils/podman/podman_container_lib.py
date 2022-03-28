@@ -976,7 +976,7 @@ class PodmanContainerDiff:
         if '--log-level' in excom:
             before = excom[excom.index('--log-level') + 1].lower()
         else:
-            if self.module.params['log_level'] is not None:
+            if 'log_level' in self.module_params:
                 before = ''
             else:
                 before = self.params['log_level']
