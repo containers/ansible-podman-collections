@@ -36,7 +36,7 @@
 <h1>containers.podman.podman_pod – Manage Podman pods<a class="headerlink" href="#containers-podman-podman-pod-manage-podman-pods" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.2).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.3).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_pod</span></code>.</p>
 </div>
@@ -849,14 +849,14 @@
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pod1</span>
     <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">started</span>
     <span class="nt">ports</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">4444:5555</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;4444:5555&quot;</span>
 
 <span class="c1"># Connect random port from localhost to port 80 on pod2</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Connect random port from localhost to port 80 on pod2</span>
   <span class="nt">containers.podman.podman_pod</span><span class="p">:</span>
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pod2</span>
     <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">started</span>
-    <span class="nt">publish</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">127.0.0.1::80</span>
+    <span class="nt">publish</span><span class="p">:</span> <span class="s">&quot;127.0.0.1::80&quot;</span>
 </pre></div>
 </div>
 </div>

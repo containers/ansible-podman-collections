@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.9.3
+======
+
+Release Summary
+---------------
+
+Bugfixes and minor changes
+
+Minor Changes
+-------------
+
+- Fix sanity issues with a new Ansible version
+
+Bugfixes
+--------
+
+- Remove idempotency for log level
+
 v1.9.2
 ======
 

@@ -390,3 +390,11 @@ releases:
       - Add requires option to podman_container module
       release_summary: Bugfixes and new requires option for podman_container
     release_date: '2022-03-21'
+  1.9.3:
+    changes:
+      bugfixes:
+      - Remove idempotency for log level
+      minor_changes:
+      - Fix sanity issues with a new Ansible version
+      release_summary: Bugfixes and minor changes
+    release_date: '2022-03-29'
