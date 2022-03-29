@@ -966,23 +966,6 @@ class PodmanContainerDiff:
             after = before
         return self._diff_update_and_compare('log_driver', before, after)
 
-    def diffparam_log_level(self):
-        if 'exitcommand' in self.info:
-            excom = self.info.get('exitcommand', [])
-        elif 'createcommand' in self.info['config']:
-            excom = self.info['config'].get('createcommand', [])
-        else:
-            self._diff_update_and_compare('log_level', '', '')
-        if '--log-level' in excom:
-            before = excom[excom.index('--log-level') + 1].lower()
-        else:
-            if self.module.params['log_level'] is not None:
-                before = ''
-            else:
-                before = self.params['log_level']
-        after = self.params['log_level']
-        return self._diff_update_and_compare('log_level', before, after)
-
     # Parameter has limited idempotency, unable to guess the default log_path
     def diffparam_log_opt(self):
         before, after = {}, {}

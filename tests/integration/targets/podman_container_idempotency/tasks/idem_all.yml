@@ -68,57 +68,6 @@
   assert:
     that: test4 is changed
 
-- name: Run container with log level
-  containers.podman.podman_container:
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    log_level: debug
-    command: 1h
-  register: test5
-
-- name: Check info with log level
-  assert:
-    that: test5 is changed
-
-- name: Run container with log level again
-  containers.podman.podman_container:
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    log_level: debug
-    command: 1h
-  register: test6
-
-- name: Check info with log level again
-  assert:
-    that: test6 is not changed
-
-- name: Run container with changed log level
-  containers.podman.podman_container:
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    log_level: fatal
-    command: 1h
-  register: test7
-
-- name: Check info with changed log level
-  assert:
-    that: test7 is changed
-
-- name: Run container with default log level
-  containers.podman.podman_container:
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    command: 1h
-  register: test8
-
-- name: Check info with default log level
-  assert:
-    that: test8 is changed
-
 - name: Run container with log opt tag
   containers.podman.podman_container:
     image: "{{ idem_image }}"
