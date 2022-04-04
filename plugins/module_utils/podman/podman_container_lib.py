@@ -921,7 +921,7 @@ class PodmanContainerDiff:
     def diffparam_image(self):
         before_id = self.info['image']
         after_id = self.image_info['id']
-        if before_id == after_id:
+        if before_id != after_id:
             return self._diff_update_and_compare('image', before_id, after_id)
         before = self.info['config']['image']
         after = self.params['image']
