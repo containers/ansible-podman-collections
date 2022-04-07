@@ -155,14 +155,15 @@ def load(module, executable):
     if rc != 0:
         module.fail_json(msg="Image loading failed: %s" % (err))
     image_name_line = [i for i in out.splitlines() if 'Loaded image' in i][0]
-    image_name = image_name_line.split(":", maxsplit=1)[1].strip()
-    rc, out2, err2 = module.run_command([executable, 'image', 'inspect', image_name])
-    if rc != 0:
-        module.fail_json(msg="Image %s inspection failed: %s" % (image_name, err2))
-    try:
-        info = json.loads(out2)[0]
-    except Exception as e:
-        module.fail_json(msg="Could not parse JSON from image %s: %s" % (image_name, e))
+    image_name_list = image_name_line.split(":", maxsplit=1)[1].split(',')
+    for image_name in image_name_list:
+        rc, out2, err2 = module.run_command([executable, 'image', 'inspect', image_name.strip()])
+        if rc != 0:
+            module.fail_json(msg="Image %s inspection failed: %s" % (image_name, err2))
+        try:
+            info = json.loads(out2)[0]
+        except Exception as e:
+            module.fail_json(msg="Could not parse JSON from image %s: %s" % (image_name, e))
     return changed, out, err, info
 
 
