@@ -46,7 +46,7 @@ ARGUMENTS_SPEC_POD = dict(
     label_file=dict(type='str', required=False),
     mac_address=dict(type='str', required=False),
     name=dict(type='str', required=True),
-    network=dict(type='str', required=False),
+    network=dict(type='list', elements='str', required=False),
     network_alias=dict(type='list', elements='str', required=False,
                        aliases=['network_aliases']),
     no_hosts=dict(type='bool', required=False),
@@ -212,7 +212,7 @@ class PodmanPodModuleParams:
         return c + ['--name', self.params['name']]
 
     def addparam_network(self, c):
-        return c + ['--network', self.params['network']]
+        return c + ['--network', ",".join(self.params['network'])]
 
     def addparam_network_aliases(self, c):
         for alias in self.params['network_aliases']:
@@ -414,7 +414,7 @@ class PodmanPodDiff:
         # Remove default 'podman' network in v3 for comparison
         if before == ['podman']:
             before = []
-        after = self.params['network']
+        after = self.params['network'] or []
         # Special case for options for slirp4netns rootless networking from v2
         if net_mode_before == 'slirp4netns' and 'createcommand' in self.info:
             cr_com = self.info['createcommand']
@@ -423,12 +423,9 @@ class PodmanPodDiff:
                 if 'slirp4netns:' in cr_net:
                     before = [cr_net]
         # Currently supported only 'host' and 'none' network modes idempotency
-        if after in ['bridge', 'host', 'slirp4netns']:
-            net_mode_after = after
-        elif after:
-            after = after.split(",")
-        else:
-            after = []
+        if after in [['bridge'], ['host'], ['slirp4netns']]:
+            net_mode_after = after[0]
+
         if net_mode_after and not before:
             # Remove differences between v1 and v2
             net_mode_after = net_mode_after.replace('bridge', 'default')
