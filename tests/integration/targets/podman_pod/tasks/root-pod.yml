@@ -64,7 +64,7 @@
       containers.podman.podman_pod:
         name: "rootpod"
         state: started
-        network: 
+        network:
           - net2
           - newnet
       register: pod4_info
@@ -78,7 +78,7 @@
       containers.podman.podman_pod:
         name: "rootpod"
         state: started
-        network: 
+        network:
           - newnet
           - net2
       register: pod5_info
