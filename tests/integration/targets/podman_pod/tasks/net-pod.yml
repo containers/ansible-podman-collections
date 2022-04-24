@@ -25,17 +25,27 @@
           - first_net: anothernet
             next_net: testnet
           - first_net: testnet
-            next_net: testnet,anothernet
-          - first_net: testnet,anothernet
+            next_net:
+              - testnet
+              - anothernet
+          - first_net:
+              - testnet
+              - anothernet
             next_net: anothernet
-          - first_net: testnet,anothernet
+          - first_net:
+              - testnet
+              - anothernet
             next_net: bridge
-          - first_net: testnet,anothernet
+          - first_net:
+              - testnet
+              - anothernet
             next_net: host
           - first_net: host
             next_net: anothernet
           - first_net: bridge
-            next_net: anothernet,testnet
+            next_net:
+              - anothernet
+              - testnet
 
     - include_tasks: network-tests.yml
       loop: "{{ testdata }}"
