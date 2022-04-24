@@ -155,7 +155,7 @@ def load(module, executable):
     if rc != 0:
         module.fail_json(msg="Image loading failed: %s" % (err))
     image_name_line = [i for i in out.splitlines() if 'Loaded image' in i][0]
-    image_name = image_name_line.split(":", maxsplit=1)[1].strip()
+    image_name = image_name_line.split("Loaded image(s): ")[1].split(',')[0].strip()
     rc, out2, err2 = module.run_command([executable, 'image', 'inspect', image_name])
     if rc != 0:
         module.fail_json(msg="Image %s inspection failed: %s" % (image_name, err2))

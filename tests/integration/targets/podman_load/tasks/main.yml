@@ -52,3 +52,31 @@
     that:
       - image.image != {}
       - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+
+- name: Pull images
+  containers.podman.podman_image:
+    name: '{{ item }}'
+  loop:
+    - k8s.gcr.io/coredns:1.7.0
+    - k8s.gcr.io/echoserver:1.10
+
+- name: Clean up multifile
+  ansible.builtin.file:
+    path: /tmp/multi.tar
+    state: absent
+
+- name: Create multi image file
+  shell: >-
+    podman save k8s.gcr.io/coredns:1.7.0 k8s.gcr.io/echoserver:1.10 -o /tmp/multi.tar
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    input: /tmp/multi.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - '"k8s.gcr.io/coredns:1.7.0" in image.image.NamesHistory'
+      - '"k8s.gcr.io/echoserver:1.10" in image.image.NamesHistory'
