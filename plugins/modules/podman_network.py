@@ -325,10 +325,6 @@ class PodmanNetworkDiff:
                 dns_installed = True
         before = not bool(
             [k for k in self.info.get('plugins', []) if 'domainname' in k])
-        if internal:
-            before = True
-        if rootless:
-            before = False
         after = self.params['disable_dns']
         # If dnsname plugin is not installed, default is disable_dns=True
         if not dns_installed and self.module.params['disable_dns'] is None:
