@@ -1046,26 +1046,6 @@ class PodmanContainerDiff:
             after = before
         return self._diff_update_and_compare('mac_address', before, after)
 
-    def diffparam_memory(self):
-        before = str(self.info['hostconfig']['memory'])
-        after = self.params['memory']
-        return self._diff_update_and_compare('memory', before, after)
-
-    def diffparam_memory_swap(self):
-        # By default it's twice memory parameter
-        before = str(self.info['hostconfig']['memoryswap'])
-        after = self.params['memory_swap']
-        if (self.module_params['memory_swap'] is None
-                and self.params['memory'] != 0
-                and self.params['memory'].isdigit()):
-            after = str(int(self.params['memory']) * 2)
-        return self._diff_update_and_compare('memory_swap', before, after)
-
-    def diffparam_memory_reservation(self):
-        before = str(self.info['hostconfig']['memoryreservation'])
-        after = self.params['memory_reservation']
-        return self._diff_update_and_compare('memory_reservation', before, after)
-
     def diffparam_network(self):
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
