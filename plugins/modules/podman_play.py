@@ -193,7 +193,7 @@ class PodmanKubeManagement:
                         "No metadata in Kube file!\n%s" % pod)
             else:
                 with open(self.module.params['kube_file']) as text:
-                    re_pod = NAME.search(text)
+                    re_pod = NAME.search(text.read())
                     if re_pod:
                         pod_name = re_pod.group(1)
         if not pod_name:
