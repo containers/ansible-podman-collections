@@ -608,7 +608,7 @@ options:
   pod:
     description:
       - Run container in an existing pod.
-        If you want podman to make the pod for you, preference the pod name
+        If you want podman to make the pod for you, prefix the pod name
         with "new:"
     type: str
   privileged:
