@@ -56,7 +56,7 @@ DOCUMENTATION = '''
           - name: ANSIBLE_PODMAN_EXECUTABLE
 '''
 
-import distutils.spawn
+import setuptools._distutils.spawn as spawn
 import os
 import shlex
 import shutil
@@ -102,7 +102,7 @@ class Connection(ConnectionBase):
         :return: return code, stdout, stderr
         """
         podman_exec = self.get_option('podman_executable')
-        podman_cmd = distutils.spawn.find_executable(podman_exec)
+        podman_cmd = spawn.find_executable(podman_exec)
         if not podman_cmd:
             raise AnsibleError("%s command not found in PATH" % podman_exec)
         local_cmd = [podman_cmd]

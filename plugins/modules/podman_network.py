@@ -161,7 +161,7 @@ network:
 """
 
 import json  # noqa: F402
-from distutils.version import LooseVersion  # noqa: F402
+from setuptools._distutils.version import LooseVersion  # noqa: F402
 import os  # noqa: F402
 try:
     import ipaddress
