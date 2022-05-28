@@ -65,6 +65,15 @@ def generate_systemd(module, module_params, name):
         command.extend(['--pod-prefix=%s' % sysconf['pod_prefix']])
     if sysconf.get('separator') is not None:
         command.extend(['--separator=%s' % sysconf['separator']])
+    if sysconf.get('after') is not None:
+        for after in sysconf['after']:
+            command.extend(['--after=%s' % after])
+    if sysconf.get('wants') is not None:
+        for want in sysconf['wants']:
+            command.extend(['--wants=%s' % want])
+    if sysconf.get('requires') is not None:
+        for require in sysconf['requires']:
+            command.extend(['--requires=%s' % require])
     if module.params['debug'] or module_params['debug']:
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
                    " ".join(command))
