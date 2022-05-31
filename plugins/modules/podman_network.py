@@ -386,7 +386,7 @@ class PodmanNetworkDiff:
             vlan_before = self.info['plugins'][0].get('vlan')
         except (IndexError, KeyError):
             vlan_before = None
-        vlan_after = self.params['opt'].get('vlan') if self.params['opt'] else None
+        vlan_after = self.params.get('opt', {}).get('vlan', None)
         if vlan_before or vlan_after:
             before, after = {'vlan': vlan_before}, {'vlan': vlan_after}
         else:
@@ -395,7 +395,7 @@ class PodmanNetworkDiff:
             mtu_before = self.info['plugins'][0].get('mtu')
         except (IndexError, KeyError):
             mtu_before = None
-        mtu_after = self.params['opt'].get('mtu') if self.params['opt'] else None
+        mtu_after = self.params.get('opt', {}).get('mtu', None)
         if mtu_before or mtu_after:
             before.update({'mtu': mtu_before})
             after.update({'mtu': mtu_after})
