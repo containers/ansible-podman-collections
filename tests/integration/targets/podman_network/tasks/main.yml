@@ -217,6 +217,48 @@
         that:
           - info100 is failed
 
+    - name: Create network with opts MTU
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+      register: opt1
+
+    - name: Create network with opts VLAN
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          vlan: 5555
+      register: opt2
+
+    - name: Create network with opts MTU and VLAN
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+          vlan: 5555
+      register: opt3
+
+    - name: Create network with opts MTU and VLAN again
+      containers.podman.podman_network:
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+          vlan: 5555
+      register: opt4
+
+    - name: Check results for network opts
+      assert:
+        that:
+          - opt1 is changed
+          - opt2 is changed
+          - opt3 is changed
+          - opt4 is not changed
+
   always:
 
     - name: Cleanup
