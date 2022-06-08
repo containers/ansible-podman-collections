@@ -87,12 +87,12 @@
       register: rmi5
 
     - name: Get image id of the target image
-      containers.podman.podman_info:
+      containers.podman.podman_image_info:
         name: docker.io/library/ubuntu
       register: imageinfo
 
     - name: Remove an image with image id
-      dev.podman.podman_image:
+      containers.podman.podman_image:
         name: "{{ item.Id }}"
         state: absent
       loop: "{{ imageinfo.images }}"
