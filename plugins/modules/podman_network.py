@@ -253,9 +253,10 @@ class PodmanNetworkModuleParams:
 
     def addparam_opt(self, c):
         for opt in self.params['opt'].items():
-            c += ['--opt',
-                  b"=".join([to_bytes(k, errors='surrogate_or_strict')
-                             for k in opt])]
+            if opt[1] is not None:
+                c += ['--opt',
+                      b"=".join([to_bytes(k, errors='surrogate_or_strict')
+                                 for k in opt])]
         return c
 
     def addparam_disable_dns(self, c):
