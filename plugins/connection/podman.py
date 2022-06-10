@@ -99,6 +99,7 @@ class Connection(ConnectionBase):
         :param cmd: podman's command to execute (str or list)
         :param cmd_args: list of arguments to pass to the command (list of str/bytes)
         :param in_data: data passed to podman's stdin
+        :param use_container_id: whether to append the container ID to the command
         :return: return code, stdout, stderr
         """
         podman_exec = self.get_option('podman_executable')
