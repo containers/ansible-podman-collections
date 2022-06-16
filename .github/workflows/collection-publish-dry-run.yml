@@ -28,7 +28,7 @@ jobs:
         runner-os:
           - ubuntu-20.04
         ansible-version:
-          - git+https://github.com/ansible/ansible.git@stable-2.11
+          - git+https://github.com/ansible/ansible.git@stable-2.13
         runner-python-version:
           - 3.9
     steps:
