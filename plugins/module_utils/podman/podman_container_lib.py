@@ -59,11 +59,11 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     generate_systemd=dict(type='dict', default={}),
     gidmap=dict(type='list', elements='str'),
     group_add=dict(type='list', elements='str', aliases=['groups']),
-    healthcheck=dict(type='str'),
-    healthcheck_interval=dict(type='str'),
-    healthcheck_retries=dict(type='int'),
-    healthcheck_start_period=dict(type='str'),
-    healthcheck_timeout=dict(type='str'),
+    healthcheck=dict(type='str', aliases=['health_cmd']),
+    healthcheck_interval=dict(type='str', aliases=['health_interval']),
+    healthcheck_retries=dict(type='int', aliases=['health_retries']),
+    healthcheck_start_period=dict(type='str', aliases=['health_start_period']),
+    healthcheck_timeout=dict(type='str', aliases=['health_timeout']),
     hostname=dict(type='str'),
     http_proxy=dict(type='bool'),
     image_volume=dict(type='str', choices=['bind', 'tmpfs', 'ignore']),
@@ -907,9 +907,13 @@ class PodmanContainerDiff:
             # the "test" key is a list of 2 items where the first one is
             # "CMD-SHELL" and the second one is the actual healthcheck command.
             before = self.info['config']['healthcheck']['test'][1]
+        elif 'health' in self.info['config']:
+            before = self.info['config']['health']['test'][1]
         else:
             before = ''
-        after = self.params['healthcheck'] or before
+        after = self.params.get('health',
+                                self.params.get('healthcheck',
+                                                None)) or before
         return self._diff_update_and_compare('healthcheck', before, after)
 
     # Because of hostname is random generated, this parameter has partial idempotency only.

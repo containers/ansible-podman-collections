@@ -374,29 +374,39 @@ options:
     description:
       - Set or alter a healthcheck command for a container.
     type: str
+    aliases:
+      - health_cmd
   healthcheck_interval:
     description:
       - Set an interval for the healthchecks
         (a value of disable results in no automatic timer setup)
         (default "30s")
     type: str
+    aliases:
+      - health_interval
   healthcheck_retries:
     description:
       - The number of retries allowed before a healthcheck is considered to be
         unhealthy. The default value is 3.
     type: int
+    aliases:
+      - health_retries
   healthcheck_start_period:
     description:
       - The initialization time needed for a container to bootstrap.
         The value can be expressed in time format like 2m3s. The default value
         is 0s
     type: str
+    aliases:
+      - health_start_period
   healthcheck_timeout:
     description:
       - The maximum time allowed to complete the healthcheck before an interval
         is considered failed. Like start-period, the value can be expressed in
         a time format such as 1m22s. The default value is 30s
     type: str
+    aliases:
+      - health_timeout
   hostname:
     description:
       - Container host name. Sets the container host name that is available
