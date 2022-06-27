@@ -45,7 +45,7 @@ jobs:
           - git+https://github.com/ansible/ansible.git@stable-2.13
           - git+https://github.com/ansible/ansible.git@devel
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         python-version:
           - 3.9
 
@@ -128,7 +128,7 @@ jobs:
           - ansible<2.10
           #- git+https://github.com/ansible/ansible.git@stable-2.10
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         python-version:
           - 3.9
 
