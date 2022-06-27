@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         runner-os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.13
         runner-python-version:
@@ -65,10 +65,10 @@ jobs:
           path: .cache/collection-tarballs
 
   test-podman-connection:
-    name: Podman connection VM ${{ matrix.os || 'ubuntu-20.04' }}-${{ matrix.ansible-version }}
+    name: Podman connection VM ${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.ansible-version }}
     needs:
       - build-collection-artifact-connection-tests
-    runs-on: ${{ matrix.os || 'ubuntu-20.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash
@@ -80,8 +80,8 @@ jobs:
           - git+https://github.com/ansible/ansible.git@stable-2.13
           - git+https://github.com/ansible/ansible.git@devel
         os:
-          - ubuntu-20.04
-          #- ubuntu-20.04
+          - ubuntu-22.04
+          #- ubuntu-22.04
           #- ubuntu-16.04
           #- macos-latest
         python-version:
@@ -156,10 +156,10 @@ jobs:
         shell: bash
 
   test-buildah-connection:
-    name: Buildah connection VM ${{ matrix.os || 'ubuntu-20.04' }}-${{ matrix.ansible-version }}
+    name: Buildah connection VM ${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.ansible-version }}
     needs:
       - build-collection-artifact-connection-tests
-    runs-on: ${{ matrix.os || 'ubuntu-20.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash
@@ -171,8 +171,8 @@ jobs:
           - git+https://github.com/ansible/ansible.git@stable-2.13
           - git+https://github.com/ansible/ansible.git@devel
         os:
-          - ubuntu-20.04
-          #- ubuntu-20.04
+          - ubuntu-22.04
+          #- ubuntu-22.04
           #- ubuntu-16.04
           #- macos-latest
         python-version:
