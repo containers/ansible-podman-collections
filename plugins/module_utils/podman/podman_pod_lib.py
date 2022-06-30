@@ -488,8 +488,6 @@ class PodmanPodDiff:
             after = self.params['share'].split(",")
         else:
             after = ['uts', 'ipc', 'net']
-            if 'host' in (self.params['network'] or []):
-                after.remove('net')
 
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('share', before, after)

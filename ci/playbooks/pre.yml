@@ -62,6 +62,24 @@
               - git
               - vim
               - dnsmasq
+              - slirp4netns
+
+        - name: Discover slirp4netns version
+          shell: slirp4netns -v | grep version | awk {'print $3'}
+          register: version
+          when:
+            - ansible_distribution == 'Ubuntu'
+            - ansible_distribution_major_version is version('22', '>=')
+
+        - name: Install newest slirp4netns version
+          shell: >-
+            curl -o /tmp/slirp4netns --fail -L https://github.com/rootless-containers/slirp4netns/releases/download/v1.2.0/slirp4netns-$(uname -m);
+            chmod +x /tmp/slirp4netns;
+            mv /tmp/slirp4netns /usr/bin/slirp4netns
+          when:
+            - ansible_distribution == 'Ubuntu'
+            - ansible_distribution_major_version is version('22', '>=')
+            - version.stdout is version('1.1.0', '<')
 
     - name: Remove virtualenv if need
       file:
