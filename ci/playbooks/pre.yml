@@ -53,9 +53,6 @@
 
         - name: Install repositories if need
           include_tasks: install_repos.yml
-          when:
-            - ansible_distribution == 'Ubuntu'
-            - ansible_distribution_major_version is version('22', '<')
 
         - name: Install podman
           package:
