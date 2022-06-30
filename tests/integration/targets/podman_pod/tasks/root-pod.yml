@@ -160,3 +160,8 @@
       shell: |
         podman pod rm -fa;
       ignore_errors: true
+
+    - name: Delete all created networks
+      shell: |
+        podman network rm -f newnet net2
+      ignore_errors: true

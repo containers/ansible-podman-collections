@@ -6,6 +6,14 @@
         name: "rootnetpod"
         state: absent
 
+    - name: Delete all network leftovers from tests
+      containers.podman.podman_network:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - testnet
+        - anothernet
+
     - name: Create network testnet
       command: podman network create testnet --subnet 10.91.91.0/24
 
@@ -56,3 +64,11 @@
       containers.podman.podman_pod:
         name: "rootnetpod"
         state: absent
+
+    - name: Delete all network leftovers from tests
+      containers.podman.podman_network:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - testnet
+        - anothernet
