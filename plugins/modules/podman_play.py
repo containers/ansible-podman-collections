@@ -241,8 +241,8 @@ class PodmanKubeManagement:
                 changed = True
             else:
                 changed = False
-            err = [
-                i for i in err.splitlines() if 'pod already exists' not in i]
+            err = "\n".join([
+                i for i in err.splitlines() if 'pod already exists' not in i])
         elif rc != 0:
             self.module.fail_json(msg="Output: %s\nError=%s" % (out, err))
         else:
