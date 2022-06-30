@@ -103,7 +103,7 @@ def get_pod_info(module, executable, name):
             module.fail_json(msg="Unable to get list of pods: %s" % err)
         name = out.split()
         if not name:
-            return [], out, err
+            return [], [err], [rc]
         pods = name
     for pod in pods:
         rc, out, err = module.run_command(command + [pod])
