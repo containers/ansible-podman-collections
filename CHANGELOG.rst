@@ -5,6 +5,40 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.9.4
+======
+
+Release Summary
+---------------
+
+Bugfixes and minor changes
+
+Minor Changes
+-------------
+
+- Remove distutils as deprecated
+- Run CI on Ubuntu 22.04
+- Use 2.13 Ansible version in CI jobs instead of 2.11
+
+Bugfixes
+--------
+
+- connection_podman - Add missing docstring for method that executes the podman commands
+- podman_container - Change IpcMode default to shareable
+- podman_container - Disable memory idempotency
+- podman_container - Fix typo in the documentation
+- podman_image - Update `podman_image` to remove image with image id
+- podman_load - Loop over image names when multiple images present in archive
+- podman_login - Fix idempotency for podman_login
+- podman_network - Allow specify podman_network options MTU and VLAN separately
+- podman_network - Fix internal networks idempotency
+- podman_play - Fix play_kube not working when yaml not installed on target
+- podman_play - Pass errors as a string instead of list
+- podman_pod - Change network attribute from str to list in pods
+- podman_pod - Fix pod network idempotency
+- podman_pod - Fix pod tests in CI
+- podman_pod - Fix pods list retrieve
+
 v1.9.3
 ======
 
