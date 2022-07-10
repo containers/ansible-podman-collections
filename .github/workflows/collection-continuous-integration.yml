@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         runner-os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         ansible-version:
-          - git+https://github.com/ansible/ansible.git@stable-2.11
+          - git+https://github.com/ansible/ansible.git@stable-2.13
         runner-python-version:
           - 3.8
     steps:
@@ -55,12 +55,12 @@ jobs:
       fail-fast: false
       matrix:
         runner-os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         runner-python-version:
           - 3.8
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.11
+          - git+https://github.com/ansible/ansible.git@stable-2.13
           - git+https://github.com/ansible/ansible.git@devel
         python-version:
           - 3.8

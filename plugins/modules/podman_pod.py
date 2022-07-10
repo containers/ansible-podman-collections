@@ -233,9 +233,9 @@ options:
     description:
     - Set network mode for the pod. Supported values are bridge (the default), host
       (do not create a network namespace, all containers in the pod will use the host's
-      network), or a comma-separated list of the names of CNI networks the pod should
-      join.
-    type: str
+      network), or a list of names of CNI networks to join.
+    type: list
+    elements: str
     required: false
   network_alias:
     description:

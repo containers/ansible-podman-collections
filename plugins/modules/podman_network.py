@@ -161,7 +161,6 @@ network:
 """
 
 import json  # noqa: F402
-from distutils.version import LooseVersion  # noqa: F402
 import os  # noqa: F402
 try:
     import ipaddress
@@ -171,7 +170,7 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
-
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 
 
@@ -253,9 +252,10 @@ class PodmanNetworkModuleParams:
 
     def addparam_opt(self, c):
         for opt in self.params['opt'].items():
-            c += ['--opt',
-                  b"=".join([to_bytes(k, errors='surrogate_or_strict')
-                             for k in opt])]
+            if opt[1] is not None:
+                c += ['--opt',
+                      b"=".join([to_bytes(k, errors='surrogate_or_strict')
+                                 for k in opt])]
         return c
 
     def addparam_disable_dns(self, c):
@@ -325,10 +325,6 @@ class PodmanNetworkDiff:
                 dns_installed = True
         before = not bool(
             [k for k in self.info.get('plugins', []) if 'domainname' in k])
-        if internal:
-            before = True
-        if rootless:
-            before = False
         after = self.params['disable_dns']
         # If dnsname plugin is not installed, default is disable_dns=True
         if not dns_installed and self.module.params['disable_dns'] is None:
