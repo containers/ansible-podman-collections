@@ -61,39 +61,39 @@
              (pod2_info.pod['State']['status'] is not defined and
              pod2_info.pod['State'] == 'Running')
 
-    - name: Pause pod
-      containers.podman.podman_pod:
-        name: pod1
-        state: paused
-      register: pod3_info
-      when: cgroups_version == 'v2'
+    # - name: Pause pod
+    #   containers.podman.podman_pod:
+    #     name: pod1
+    #     state: paused
+    #   register: pod3_info
+    #   when: cgroups_version == 'v2'
 
-    - name: Check info
-      assert:
-        that:
-          - >-
-             (pod3_info.pod['State']['status'] is defined and
-             pod3_info.pod['State']['status'] == 'Paused') or
-             (pod3_info.pod['State']['status'] is not defined and
-             pod3_info.pod['State'] == 'Paused')
-      when: cgroups_version == 'v2'
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #          (pod3_info.pod['State']['status'] is defined and
+    #          pod3_info.pod['State']['status'] == 'Paused') or
+    #          (pod3_info.pod['State']['status'] is not defined and
+    #          pod3_info.pod['State'] == 'Paused')
+    #   when: cgroups_version == 'v2'
 
-    - name: Unpause pod
-      containers.podman.podman_pod:
-        name: pod1
-        state: unpaused
-      register: pod4_info
-      when: cgroups_version == 'v2'
+    # - name: Unpause pod
+    #   containers.podman.podman_pod:
+    #     name: pod1
+    #     state: unpaused
+    #   register: pod4_info
+    #   when: cgroups_version == 'v2'
 
-    - name: Check info
-      assert:
-        that:
-          - >-
-             (pod4_info.pod['State']['status'] is defined and
-             pod4_info.pod['State']['status'] == 'Running') or
-             (pod4_info.pod['State']['status'] is not defined and
-             pod4_info.pod['State'] == 'Running')
-      when: cgroups_version == 'v2'
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #          (pod4_info.pod['State']['status'] is defined and
+    #          pod4_info.pod['State']['status'] == 'Running') or
+    #          (pod4_info.pod['State']['status'] is not defined and
+    #          pod4_info.pod['State'] == 'Running')
+    #   when: cgroups_version == 'v2'
 
     - name: Stop pod
       containers.podman.podman_pod:
@@ -212,7 +212,7 @@
           - "4444:4444/tcp"
           - "1212:5555"
           - "8888:19191/udp"
-          - "1900:1900/udp"
+          - "1901:1901/udp"
           - "127.0.0.1:7671:7676/udp"
           - "127.0.0.1:12122:8876/udp"
           - "127.0.0.1:13122:8871/tcp"
@@ -232,7 +232,7 @@
           - "4444:4444/tcp"
           - "1212:5555"
           - "8888:19191/udp"
-          - "1900:1900/udp"
+          - "1901:1901/udp"
           - "127.0.0.1:7671:7676/udp"
           - "127.0.0.1:12122:8876/udp"
           - "127.0.0.1:13122:8871/tcp"

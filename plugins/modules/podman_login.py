@@ -8,6 +8,7 @@ DOCUMENTATION = r'''
 module: podman_login
 author:
   - "Jason Hiatt (@jthiatt)"
+  - "Clemens Lange (@clelange)"
 short_description: Login to a container registry using podman
 notes: []
 description:
@@ -83,6 +84,8 @@ EXAMPLES = r"""
 # noqa: F402
 
 import json  # noqa: F402
+import hashlib
+import os
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -98,6 +101,9 @@ def login(module, executable, registry, authfile,
         command.extend(['--password', password])
     if authfile:
         command.extend(['--authfile', authfile])
+        authfile = os.path.expandvars(authfile)
+    else:
+        authfile = os.getenv('XDG_RUNTIME_DIR', '') + '/containers/auth.json'
     if registry:
         command.append(registry)
     if certdir:
@@ -107,6 +113,15 @@ def login(module, executable, registry, authfile,
             command.append('--tls-verify')
         else:
             command.append('--tls-verify=False')
+    # Use a checksum to check if the auth JSON has changed
+    checksum = None
+    docker_authfile = os.path.expandvars('$HOME/.docker/config.json')
+    # podman falls back to ~/.docker/config.json if the default authfile doesn't exist
+    check_file = authfile if os.path.exists(authfile) else docker_authfile
+    if os.path.exists(check_file):
+        content = open(check_file, 'rb').read()
+        if bytes(registry, 'UTF-8') in content:
+            checksum = hashlib.md5(content).hexdigest()
     rc, out, err = module.run_command(command)
     if rc != 0:
         if 'Error: Not logged into' not in err:
@@ -116,6 +131,14 @@ def login(module, executable, registry, authfile,
         changed = True
         if 'Existing credentials are valid' in out:
             changed = False
+        # If we have managed to calculate a checksum before, check if it has changed
+        # due to the login
+        if checksum:
+            content = open(check_file, 'rb').read()
+            if bytes(registry, 'UTF-8') in content:
+                new_checksum = hashlib.md5(content).hexdigest()
+                if new_checksum == checksum:
+                    changed = False
     return changed, out, err
 
 

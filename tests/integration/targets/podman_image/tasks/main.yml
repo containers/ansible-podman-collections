@@ -25,6 +25,11 @@
         name: docker.io/library/alpine
       register: pull5
 
+    - name: Pull image for testing image deletion with image id
+      containers.podman.podman_image:
+        name: docker.io/library/ubuntu
+      register: pull6
+
     - name: List images
       command: podman image ls
       register: images
@@ -38,8 +43,10 @@
           - pull3 is changed
           - pull4 is changed
           - pull5 is not changed
+          - pull6 is changed
           - "'alpine-sh' in images.stdout"
           - "'library/alpine' in images.stdout"
+          - "'library/ubuntu' in images.stdout"
 
     - name: add another tag (repository url)
       command:
@@ -79,6 +86,18 @@
         state: absent
       register: rmi5
 
+    - name: Get image id of the target image
+      containers.podman.podman_image_info:
+        name: docker.io/library/ubuntu
+      register: imageinfo
+
+    - name: Remove an image with image id
+      containers.podman.podman_image:
+        name: "{{ item.Id }}"
+        state: absent
+      loop: "{{ imageinfo.images }}"
+      register: rmi6
+
     - name: List images
       command: podman image ls
       register: images
@@ -91,7 +110,9 @@
           - rmi3 is changed
           - rmi4 is not changed
           - rmi5 is changed
+          - rmi6 is changed
           - "'alpine-sh' not in images.stdout"
+          - "'library/ubuntu' not in images.stdout"
 
     - name: Pull a specific version of an image
       containers.podman.podman_image:

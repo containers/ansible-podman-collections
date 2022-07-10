@@ -173,6 +173,11 @@ EXAMPLES = r"""
     name: quay.io/bitnami/wildfly
     state: absent
 
+- name: Remove an image with image id
+  containers.podman.podman_image:
+    name: 0e901e68141f
+    state: absent
+
 - name: Pull a specific version of an image
   containers.podman.podman_image:
     name: redis
@@ -490,6 +495,7 @@ class PodmanImageManager(object):
 
     def absent(self):
         image = self.find_image()
+        image_id = self.find_image_id()
 
         if image:
             self.results['actions'].append('Removed image {name}'.format(name=self.name))
@@ -497,6 +503,13 @@ class PodmanImageManager(object):
             self.results['image']['state'] = 'Deleted'
             if not self.module.check_mode:
                 self.remove_image()
+        elif image_id:
+            self.results['actions'].append(
+                'Removed image with id {id}'.format(id=self.image_name))
+            self.results['changed'] = True
+            self.results['image']['state'] = 'Deleted'
+            if not self.module.check_mode:
+                self.remove_image_id()
 
     def find_image(self, image_name=None):
         if image_name is None:
@@ -507,6 +520,19 @@ class PodmanImageManager(object):
             return json.loads(images)
         else:
             return None
+
+    def find_image_id(self, image_id=None):
+        if image_id is None:
+            # If image id is set as image_name, remove tag
+            image_id = re.sub(':.*$', '', self.image_name)
+        args = ['image', 'ls', '--quiet', '--no-trunc']
+        rc, candidates, err = self._run(args, ignore_errors=True)
+        candidates = [re.sub('^sha256:', '', c)
+                      for c in str.splitlines(candidates)]
+        for c in candidates:
+            if c.startswith(image_id):
+                return image_id
+        return None
 
     def inspect_image(self, image_name=None):
         if image_name is None:
@@ -692,6 +718,19 @@ class PodmanImageManager(object):
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             self.module.fail_json(msg='Failed to remove image {image_name}. {err}'.format(image_name=image_name, err=err))
+        return out
+
+    def remove_image_id(self, image_id=None):
+        if image_id is None:
+            image_id = re.sub(':.*$', '', self.image_name)
+
+        args = ['rmi', image_id]
+        if self.force:
+            args.append('--force')
+        rc, out, err = self._run(args, ignore_errors=True)
+        if rc != 0:
+            self.module.fail_json(msg='Failed to remove image with id {image_id}. {err}'.format(
+                image_id=image_id, err=err))
         return out
 
 

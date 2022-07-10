@@ -1,9 +1,9 @@
 from __future__ import (absolute_import, division, print_function)
 import json  # noqa: F402
 import shlex  # noqa: F402
-from distutils.version import LooseVersion  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
@@ -678,6 +678,8 @@ class PodmanDefaults:
             self.defaults['pid'] = "private"
         if (LooseVersion(self.version) >= LooseVersion('3.0.0')):
             self.defaults['log_level'] = "warning"
+        if (LooseVersion(self.version) >= LooseVersion('4.1.0')):
+            self.defaults['ipc'] = "shareable"
         return self.defaults
 
 

@@ -56,12 +56,12 @@ DOCUMENTATION = '''
           - name: ANSIBLE_PODMAN_EXECUTABLE
 '''
 
-import distutils.spawn
 import os
 import shlex
 import shutil
 import subprocess
 
+from ansible.module_utils.common.process import get_bin_path
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_bytes, to_native
 from ansible.plugins.connection import ConnectionBase, ensure_connect
@@ -99,10 +99,14 @@ class Connection(ConnectionBase):
         :param cmd: podman's command to execute (str or list)
         :param cmd_args: list of arguments to pass to the command (list of str/bytes)
         :param in_data: data passed to podman's stdin
+        :param use_container_id: whether to append the container ID to the command
         :return: return code, stdout, stderr
         """
         podman_exec = self.get_option('podman_executable')
-        podman_cmd = distutils.spawn.find_executable(podman_exec)
+        try:
+            podman_cmd = get_bin_path(podman_exec)
+        except ValueError:
+            raise AnsibleError("%s command not found in PATH" % podman_exec)
         if not podman_cmd:
             raise AnsibleError("%s command not found in PATH" % podman_exec)
         local_cmd = [podman_cmd]
