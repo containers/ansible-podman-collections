@@ -1066,6 +1066,19 @@ class PodmanContainerDiff:
         after = self.params['memory_reservation']
         return self._diff_update_and_compare('memory_reservation', before, after)
 
+    def diffparam_mount(self):
+        before = []
+        if self.info['config']['createcommand']:
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--mount':
+                    before.append(cr_com[i + 1])
+        after = self.params.get('mount')
+        if not after:
+            after = []
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        return self._diff_update_and_compare('mount', before, after)
+
     def diffparam_network(self):
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
@@ -1178,6 +1191,21 @@ class PodmanContainerDiff:
         after = self.params['timezone']
         return self._diff_update_and_compare('timezone', before, after)
 
+    def diffparam_tmpfs(self):
+        before = []
+        if self.info['config']['createcommand']:
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--tmpfs':
+                    before.append(cr_com[i + 1])
+        after = []
+        tmpfs = self.params.get('tmpfs')
+        if tmpfs:
+            for k, v in tmpfs.items():
+                after.append('{}:{}'.format(k, v))
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        return self._diff_update_and_compare('tmpfs', before, after)
+
     def diffparam_tty(self):
         before = self.info['config']['tty']
         after = self.params['tty']
@@ -1221,34 +1249,6 @@ class PodmanContainerDiff:
         if self.params['pod'] and not self.module_params['uts']:
             after = before
         return self._diff_update_and_compare('uts', before, after)
-
-    def diffparam_tmpfs(self):
-        before = []
-        if self.info['config']['createcommand']:
-            cr_com = self.info['config']['createcommand']
-            for i, v in enumerate(cr_com):
-                if v == '--tmpfs':
-                    before.append(cr_com[i + 1])
-        after = []
-        tmpfs = self.params.get('tmpfs')
-        if tmpfs:
-            for k, v in tmpfs.items():
-                after.append('{}:{}'.format(k, v))
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('tmpfs', before, after)
-
-    def diffparam_mount(self):
-        before = []
-        if self.info['config']['createcommand']:
-            cr_com = self.info['config']['createcommand']
-            for i, v in enumerate(cr_com):
-                if v == '--mount':
-                    before.append(cr_com[i + 1])
-        after = self.params.get('mount')
-        if not after:
-            after = []
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('mount', before, after)
 
     def diffparam_volume(self):
         before = []
