@@ -809,6 +809,28 @@ class PodmanContainerDiff:
             return True
         return False
 
+    def _clean_path(self, x):
+        '''Remove trailing and double slashes from path.'''
+        if not x.rstrip("/"):
+            return "/"
+        return x.replace("//", "/").rstrip("/")
+
+    def _clean_path_in_mount_str(self, mounts):
+        mfin = []
+        for mstr in mounts:
+            for mitem in mstr.split(','):
+                nv = mitem.split('=', maxsplit=1)
+                miname = nv[0]
+                mival = nv[1] if len(nv) > 1 else None
+                if miname in ['src', 'source', 'dst', 'dest', 'destination', 'target']:
+                    if mival:
+                        mival = self._clean_path(mival)
+                if mival is None:
+                    mfin.append(miname)
+                else:
+                    mfin.append("{0}={1}".format(miname, mival))
+        return mfin
+
     def diffparam_annotation(self):
         before = self.info['config']['annotations'] or {}
         after = before.copy()
@@ -1173,10 +1195,12 @@ class PodmanContainerDiff:
             cr_com = self.info['config']['createcommand']
             for i, v in enumerate(cr_com):
                 if v == '--mount':
-                    before.append(cr_com[i + 1])
+                    before = self._clean_path_in_mount_str(cr_com[i + 1])
         after = self.params.get('mount')
         if not after:
             after = []
+        else:
+            after = self._clean_path_in_mount_str(after)
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('mount', before, after)
 
@@ -1331,7 +1355,10 @@ class PodmanContainerDiff:
         tmpfs = self.params.get('tmpfs')
         if tmpfs:
             for k, v in tmpfs.items():
-                after.append('{}:{}'.format(k, v))
+                if v:
+                    after.append('{0}:{1}'.format(self._clean_path(k), self._clean_path(v)))
+                else:
+                    after.append(self._clean_path(k))
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('tmpfs', before, after)
 
@@ -1381,10 +1408,12 @@ class PodmanContainerDiff:
             cr_com = self.info['config']['createcommand']
             for i, v in enumerate(cr_com):
                 if v == '--volume':
-                    before.append(cr_com[i + 1])
+                    before = self._clean_path_in_mount_str(cr_com[i + 1])
         after = self.params.get('volume')
         if not after:
             after = []
+        else:
+            after = self._clean_path_in_mount_str(after)
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
