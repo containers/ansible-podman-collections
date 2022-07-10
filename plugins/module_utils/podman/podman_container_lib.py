@@ -1222,38 +1222,44 @@ class PodmanContainerDiff:
             after = before
         return self._diff_update_and_compare('uts', before, after)
 
-    def diffparam_volume(self):
-        def clean_volume(x):
-            '''Remove trailing and double slashes from volumes.'''
-            if not x.rstrip("/"):
-                return "/"
-            return x.replace("//", "/").rstrip("/")
+    def diffparam_tmpfs(self):
+        before = []
+        if self.info['config']['createcommand']:
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--tmpfs':
+                    before.append(cr_com[i + 1])
+        after = []
+        tmpfs = self.params.get('tmpfs')
+        if tmpfs:
+            for k, v in tmpfs.items():
+                after.append('{}:{}'.format(k, v))
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        return self._diff_update_and_compare('tmpfs', before, after)
 
-        before = self.info['mounts']
-        before_local_vols = []
-        if before:
-            volumes = []
-            local_vols = []
-            for m in before:
-                if m['type'] != 'volume':
-                    volumes.append(
-                        [
-                            clean_volume(m['source']),
-                            clean_volume(m['destination'])
-                        ])
-                elif m['type'] == 'volume':
-                    local_vols.append(
-                        [m['name'], clean_volume(m['destination'])])
-            before = [":".join(v) for v in volumes]
-            before_local_vols = [":".join(v) for v in local_vols]
-        if self.params['volume'] is not None:
-            after = [":".join(
-                [clean_volume(i) for i in v.split(":")[:2]]
-            ) for v in self.params['volume']]
-        else:
+    def diffparam_mount(self):
+        before = []
+        if self.info['config']['createcommand']:
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--mount':
+                    before.append(cr_com[i + 1])
+        after = self.params.get('mount')
+        if not after:
             after = []
-        if before_local_vols:
-            after = list(set(after).difference(before_local_vols))
+        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        return self._diff_update_and_compare('mount', before, after)
+
+    def diffparam_volume(self):
+        before = []
+        if self.info['config']['createcommand']:
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--volume':
+                    before.append(cr_com[i + 1])
+        after = self.params.get('volume')
+        if not after:
+            after = []
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
