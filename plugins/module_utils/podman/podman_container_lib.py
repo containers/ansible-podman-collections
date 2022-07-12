@@ -714,10 +714,16 @@ class PodmanContainerDiff:
         return False
 
     def _clean_path(self, x):
-        '''Remove trailing and double slashes from path.'''
+        '''Remove trailing and multiple consecutive slashes from path.'''
         if not x.rstrip("/"):
             return "/"
-        return x.replace("//", "/").rstrip("/")
+        b = x.rstrip("/")
+        while True:
+            a = b.replace("//", "/")
+            if a == b:
+                break
+            b = a
+        return a
 
     def _clean_path_in_mount_str(self, mounts):
         '''Parse a mount string, using _clean_path() on any known path
@@ -1266,17 +1272,34 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('uts', before, after)
 
     def diffparam_volume(self):
+        def clean_volume_def(vdef):
+            # va = [<srcvol>:|<hostdir>:]<contdir>[:<opts>]
+            va = vdef.split(':', maxsplit=2)
+            if len(va) == 2:
+                if len(va[1]) > 0 and va[1][0] == '/': 
+                    # va = [<srcvol>:|<hostdir>:]<contdir>
+                    return '{0}:{1}'.format(self._clean_path(va[0]), self._clean_path(va[1]))
+                # va = <contdir>[:<opts>]
+                return '{0}:{1}'.format(self._clean_path(va[0]), self._clean_path_in_mount_str(va[1]))
+            elif len(va) == 3:
+                # va = [<srcvol>:|<hostdir>:]<contdir>[:<opts>]
+                return '{0}:{1}:{2}'.format(self._clean_path(va[0]), self._clean_path(va[1]), self._clean_path_in_mount_str(va[2])) 
+            # va = <contdir>
+            return '{0}'.format(self._clean_path(va[0]))
+
         before = []
         if self.info['config'].get('createcommand'):
             cr_com = self.info['config']['createcommand']
             for i, v in enumerate(cr_com):
                 if v == '--volume':
-                    before.append(self._clean_path_in_mount_str(cr_com[i + 1]))
-        after = self.params.get('volume')
-        if not after:
+                    before.append(clean_volume_def(cr_com[i + 1]))
+        after = []
+        params = self.params.get('volume')
+        if not params:
             after = []
         else:
-            after = self._clean_path_in_mount_str(after)
+            for p in params:
+                after.append(clean_volume_def(p))
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('volume', before, after)
 
