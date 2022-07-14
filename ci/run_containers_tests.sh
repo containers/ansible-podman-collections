@@ -2,6 +2,11 @@
 set -o pipefail
 set -ex
 
+# New requirement from ansible-core 2.14
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
 [[ -z "$TEST2RUN" || ! -f "ci/playbooks/containers/${TEST2RUN}.yml" ]] && {
     echo "Please specify test to run, for example TEST2RUN=podman_container";
     exit 1;
