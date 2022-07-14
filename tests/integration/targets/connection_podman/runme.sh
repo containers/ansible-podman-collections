@@ -14,7 +14,7 @@ function run_ansible {
 }
 
 run_ansible "$@"
-LC_ALL=C LANG=C run_ansible "$@"
+LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 run_ansible "$@"
 ANSIBLE_VERBOSITY=4 ANSIBLE_REMOTE_TMP="/tmp" ANSIBLE_REMOTE_USER="1000" run_ansible "$@" | tee check_log
 ${SUDO:-} grep -q "Using podman connection from collection" check_log
 ${SUDO:-} rm -f check_log
