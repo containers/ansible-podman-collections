@@ -1484,7 +1484,7 @@ class PodmanManager:
         self.restart = self.module_params['force_restart']
         self.recreate = self.module_params['recreate']
 
-        if self.module_params['generate_systemd']['new']:
+        if self.module_params['generate_systemd'].get('new'):
             self.module_params['rm'] = True
 
         self.container = PodmanContainer(
