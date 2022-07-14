@@ -28,3 +28,6 @@
     build:
       format: docker
   become: true
+  environment:
+    XDG_RUNTIME_DIR: ""
+    DBUS_SESSION_BUS_ADDRESS: ""
