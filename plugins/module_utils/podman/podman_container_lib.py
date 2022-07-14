@@ -1439,14 +1439,16 @@ class PodmanContainer:
         """Recreate the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.create()
 
     def recreate_run(self):
         """Recreate and run the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.run()
 
 
