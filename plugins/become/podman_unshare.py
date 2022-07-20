@@ -12,7 +12,7 @@ DOCUMENTATION = """
         - This become plugins allows your remote/login user to execute commands in its container user namespace
     author:
     - Janos Gerzson (@grzs)
-    version_added: 1.9.4
+    version_added: 1.9.0
 """
 
 
