@@ -1439,14 +1439,16 @@ class PodmanContainer:
         """Recreate the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.create()
 
     def recreate_run(self):
         """Recreate and run the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.run()
 
 
@@ -1481,6 +1483,10 @@ class PodmanManager:
         self.state = self.module_params['state']
         self.restart = self.module_params['force_restart']
         self.recreate = self.module_params['recreate']
+
+        if self.module_params['generate_systemd'].get('new'):
+            self.module_params['rm'] = True
+
         self.container = PodmanContainer(
             self.module, self.name, self.module_params)
 
