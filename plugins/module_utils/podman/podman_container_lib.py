@@ -926,9 +926,10 @@ class PodmanContainerDiff:
         after_id = self.image_info['id']
         if before_id == after_id:
             return self._diff_update_and_compare('image', before_id, after_id)
+        is_rootfs = self.info['rootfs'] != '' or self.params['rootfs']
         before = self.info['config']['image'] or before_id
         after = self.params['image']
-        mode = self.params['image_strict']
+        mode = self.params['image_strict'] or is_rootfs
         if mode is None or not mode:
             # In a idempotency 'lite mode' assume all images from different registries are the same
             before = before.replace(":latest", "")
