@@ -659,10 +659,10 @@ class PodmanDefaults:
             "read_only": False,
             "rm": False,
             "security_opt": [],
-            "stop_signal": self.image_info['config'].get('stopsignal', "15"),
+            "stop_signal": self.image_info.get('config', {}).get('stopsignal', "15"),
             "tty": False,
             "user": self.image_info.get('user', ''),
-            "workdir": self.image_info['config'].get('workingdir', '/'),
+            "workdir": self.image_info.get('config', {}).get('workingdir', '/'),
             "uts": "",
         }
 
@@ -922,11 +922,11 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
-        before_id = self.info['image']
+        before_id = self.info['image'] or self.info['rootfs']
         after_id = self.image_info['id']
         if before_id == after_id:
             return self._diff_update_and_compare('image', before_id, after_id)
-        before = self.info['config']['image']
+        before = self.info['config']['image'] or before_id
         after = self.params['image']
         mode = self.params['image_strict']
         if mode is None or not mode:
@@ -948,7 +948,7 @@ class PodmanContainerDiff:
 
     def diffparam_label(self):
         before = self.info['config']['labels'] or {}
-        after = self.image_info.get('labels') or {}
+        after = self.image_info.get('labels', {})
         if self.params['label']:
             after.update({
                 str(k).lower(): str(v)
@@ -1120,7 +1120,7 @@ class PodmanContainerDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
-            image_ports = self.image_info['config'].get('exposedports', {})
+            image_ports = self.image_info.get('config', {}).get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
         after = [
@@ -1369,6 +1369,9 @@ class PodmanContainer:
     def get_image_info(self):
         """Inspect container image and gather info about it."""
         # pylint: disable=unused-variable
+        is_rootfs = self.module_params['rootfs']
+        if is_rootfs:
+            return {'Id': self.module_params['image']}
         rc, out, err = self.module.run_command(
             [self.module_params['executable'], b'image', b'inspect', self.module_params['image']])
         return json.loads(out)[0] if rc == 0 else {}
