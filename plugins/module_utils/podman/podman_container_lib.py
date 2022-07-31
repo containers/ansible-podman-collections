@@ -949,7 +949,7 @@ class PodmanContainerDiff:
 
     def diffparam_label(self):
         before = self.info['config']['labels'] or {}
-        after = self.image_info.get('labels', {})
+        after = self.image_info.get('labels') or {}
         if self.params['label']:
             after.update({
                 str(k).lower(): str(v)
