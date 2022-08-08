@@ -119,6 +119,7 @@ EXAMPLES = '''
 - name: Play kube file
   containers.podman.podman_play:
     kube_file: ~/kube.yaml
+    state: started
 
 '''
 import re  # noqa: F402
