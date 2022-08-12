@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function)
 import json  # noqa: F402
+import os  # noqa: F402
 import shlex  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -658,10 +659,10 @@ class PodmanDefaults:
             "read_only": False,
             "rm": False,
             "security_opt": [],
-            "stop_signal": self.image_info['config'].get('stopsignal', "15"),
+            "stop_signal": self.image_info.get('config', {}).get('stopsignal', "15"),
             "tty": False,
             "user": self.image_info.get('user', ''),
-            "workdir": self.image_info['config'].get('workingdir', '/'),
+            "workdir": self.image_info.get('config', {}).get('workingdir', '/'),
             "uts": "",
         }
 
@@ -921,13 +922,14 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
-        before_id = self.info['image']
+        before_id = self.info['image'] or self.info['rootfs']
         after_id = self.image_info['id']
         if before_id == after_id:
             return self._diff_update_and_compare('image', before_id, after_id)
-        before = self.info['config']['image']
+        is_rootfs = self.info['rootfs'] != '' or self.params['rootfs']
+        before = self.info['config']['image'] or before_id
         after = self.params['image']
-        mode = self.params['image_strict']
+        mode = self.params['image_strict'] or is_rootfs
         if mode is None or not mode:
             # In a idempotency 'lite mode' assume all images from different registries are the same
             before = before.replace(":latest", "")
@@ -1119,7 +1121,7 @@ class PodmanContainerDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
-            image_ports = self.image_info['config'].get('exposedports', {})
+            image_ports = self.image_info.get('config', {}).get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
         after = [
@@ -1281,6 +1283,12 @@ def ensure_image_exists(module, image, module_params):
     """
     image_actions = []
     module_exec = module_params['executable']
+    is_rootfs = module_params['rootfs']
+
+    if is_rootfs:
+        if not os.path.exists(image) or not os.path.isdir(image):
+            module.fail_json(msg="Image rootfs doesn't exist %s" % image)
+        return image_actions
     if not image:
         return image_actions
     rc, out, err = module.run_command([module_exec, 'image', 'exists', image])
@@ -1362,6 +1370,9 @@ class PodmanContainer:
     def get_image_info(self):
         """Inspect container image and gather info about it."""
         # pylint: disable=unused-variable
+        is_rootfs = self.module_params['rootfs']
+        if is_rootfs:
+            return {'Id': self.module_params['image']}
         rc, out, err = self.module.run_command(
             [self.module_params['executable'], b'image', b'inspect', self.module_params['image']])
         return json.loads(out)[0] if rc == 0 else {}
