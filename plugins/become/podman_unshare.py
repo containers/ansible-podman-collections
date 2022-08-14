@@ -15,6 +15,61 @@ DOCUMENTATION = """
     version_added: 1.9.0
 """
 
+EXAMPLES = """
+- name: checking uid of file 'foo'
+  ansible.builtin.stat:
+    path: "{{ test_dir }}/foo"
+  register: foo
+- ansible.builtin.debug:
+    var: foo.stat.uid
+# The output shows that it's owned by the login user
+# ok: [test_host] => {
+#     "foo.stat.uid": "1003"
+# }
+
+- name: mounting the file to an unprivileged container and modifying its owner
+  containers.podman.podman_container:
+    name: chmod_foo
+    image: alpine
+    rm: yes
+    volume:
+    - "{{ test_dir }}:/opt/test:z"
+    command: chown 1000 /opt/test/foo
+
+# Now the file 'foo' is owned by the container uid 1000,
+# which is mapped to something completaly different on the host.
+# It creates a situation when the file is unaccessible to the host user (uid 1003)
+# Running stat again, debug output will be like this:
+# ok: [test_host] => {
+#     "foo.stat.uid": "328679"
+# }
+
+- name: running stat in modified user namespace
+  become_method: containers.podman.podman_unshare
+  become: yes
+  ansible.builtin.stat:
+    path: "{{ test_dir }}/foo"
+  register: foo
+# By gathering file stats with podman_ushare
+# we can see the uid set in the container:
+# ok: [test_host] => {
+#     "foo.stat.uid": "1000"
+# }
+
+- name: resetting file ownership with podman unshare
+  become_method: containers.podman.podman_unshare
+  become: yes
+  ansible.builtin.file:
+    state: file
+    path: "{{ test_dir }}/foo"
+    owner: 0  # in a modified user namespace host uid is mapped to 0
+# If we run stat and debug with 'become: no',
+# we can see that the file is ours again:
+# ok: [test_host] => {
+#     "foo.stat.uid": "1003"
+# }
+"""
+
 
 from ansible.plugins.become import BecomeBase
 
