@@ -9,9 +9,9 @@ DOCUMENTATION = """
     name: podman_unshare
     short_description: Run tasks using podman unshare
     description:
-        - This become plugins allows your remote/login user
+        - "This become plugins allows your remote/login user
           to execute commands in its container user namespace.
-          Official documentation: https://docs.podman.io/en/latest/markdown/podman-unshare.1.html
+          Official documentation: https://docs.podman.io/en/latest/markdown/podman-unshare.1.html"
     author:
     - Janos Gerzson (@grzs)
     version_added: 1.9.0
