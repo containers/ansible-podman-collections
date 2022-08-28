@@ -113,6 +113,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     rm=dict(type='bool', aliases=['remove', 'auto_remove']),
     rootfs=dict(type='bool'),
     secrets=dict(type='list', elements='str', no_log=True),
+    sdnotify=dict(type='str'),
     security_opt=dict(type='list', elements='str'),
     shm_size=dict(type='str'),
     sig_proxy=dict(type='bool'),
@@ -535,6 +536,9 @@ class PodmanModuleParams:
 
     def addparam_rootfs(self, c):
         return c + ['--rootfs=%s' % self.params['rootfs']]
+
+    def addparam_sdnotify(self, c):
+        return c + ['--sdnotify=%s' % self.params['sdnotify']]
 
     def addparam_secrets(self, c):
         for secret in self.params['secrets']:
