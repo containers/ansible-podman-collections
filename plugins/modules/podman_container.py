@@ -679,6 +679,11 @@ options:
       - If true, the first argument refers to an exploded container on the file
         system. The default is false.
     type: bool
+  sdnotify:
+    description:
+      - Determines how to use the NOTIFY_SOCKET, as passed with systemd and Type=notify.
+        Can be container, conmon, ignore.
+    type: str
   secrets:
     description:
       - Add the named secrets into the container.
