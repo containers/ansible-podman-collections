@@ -1522,7 +1522,10 @@ class PodmanManager:
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
         self.results.update(
-            {'podman_systemd': generate_systemd(self.module, self.module_params, self.name)})
+            {'podman_systemd': generate_systemd(self.module,
+                                                self.module_params,
+                                                self.name,
+                                                self.container.version)})
 
     def make_started(self):
         """Run actions if desired state is 'started'."""

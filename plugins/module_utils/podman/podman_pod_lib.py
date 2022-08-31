@@ -726,7 +726,10 @@ class PodmanPodManager:
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.pod.version})
         self.results.update(
-            {'podman_systemd': generate_systemd(self.module, self.module_params, self.name)})
+            {'podman_systemd': generate_systemd(self.module,
+                                                self.module_params,
+                                                self.name,
+                                                self.pod.version)})
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
