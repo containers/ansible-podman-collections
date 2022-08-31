@@ -66,13 +66,22 @@ def generate_systemd(module, module_params, name):
     if sysconf.get('separator') is not None:
         command.extend(['--separator=%s' % sysconf['separator']])
     if sysconf.get('after') is not None:
-        for after in sysconf['after']:
+        sys_after = sysconf['after']
+        if isinstance(sys_after, str):
+            sys_after = [sys_after]
+        for after in sys_after:
             command.extend(['--after=%s' % after])
     if sysconf.get('wants') is not None:
-        for want in sysconf['wants']:
+        sys_wants = sysconf['wants']
+        if isinstance(sys_wants, str):
+            sys_wants = [sys_wants]
+        for want in sys_wants:
             command.extend(['--wants=%s' % want])
     if sysconf.get('requires') is not None:
-        for require in sysconf['requires']:
+        sys_req = sysconf['requires']
+        if isinstance(sys_req, str):
+            sys_req = [sys_req]
+        for require in sys_req:
             command.extend(['--requires=%s' % require])
     if module.params['debug'] or module_params['debug']:
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
