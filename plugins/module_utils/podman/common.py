@@ -34,12 +34,13 @@ def run_podman_command(module, executable='podman', args=None, expected_rc=0, ig
     return rc, out, err
 
 
-def generate_systemd(module, module_params, name):
+def generate_systemd(module, module_params, name, version):
     """Generate systemd unit file."""
     command = [module_params['executable'], 'generate', 'systemd',
                name, '--format', 'json']
     sysconf = module_params['generate_systemd']
     empty = {}
+    gt4ver = LooseVersion(version) >= LooseVersion('4.0.0')
     if sysconf.get('restart_policy'):
         if sysconf.get('restart_policy') not in [
             "no", "on-success", "on-failure", "on-abnormal", "on-watchdog",
@@ -65,6 +66,31 @@ def generate_systemd(module, module_params, name):
         command.extend(['--pod-prefix=%s' % sysconf['pod_prefix']])
     if sysconf.get('separator') is not None:
         command.extend(['--separator=%s' % sysconf['separator']])
+    if sysconf.get('after') is not None:
+
+        sys_after = sysconf['after']
+        if isinstance(sys_after, str):
+            sys_after = [sys_after]
+        for after in sys_after:
+            command.extend(['--after=%s' % after])
+    if sysconf.get('wants') is not None:
+        sys_wants = sysconf['wants']
+        if isinstance(sys_wants, str):
+            sys_wants = [sys_wants]
+        for want in sys_wants:
+            command.extend(['--wants=%s' % want])
+    if sysconf.get('requires') is not None:
+        sys_req = sysconf['requires']
+        if isinstance(sys_req, str):
+            sys_req = [sys_req]
+        for require in sys_req:
+            command.extend(['--requires=%s' % require])
+    for param in ['after', 'wants', 'requires']:
+        if sysconf.get(param) is not None and not gt4ver:
+            module.fail_json(msg="Systemd parameter '%s' is supported from "
+                             "podman version 4 only! Current version is %s" % (
+                                 param, version))
+
     if module.params['debug'] or module_params['debug']:
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
                    " ".join(command))
