@@ -270,6 +270,7 @@ class PodmanNetworkDefaults:
             'driver': 'bridge',
             'disable_dns': False,
             'internal': False,
+            'ipv6': False
         }
 
     def default_dict(self):
@@ -306,35 +307,12 @@ class PodmanNetworkDiff:
         return False
 
     def diffparam_disable_dns(self):
-        # Whether network is internal or not
-        try:
-            internal = not self.info['plugins'][0]['isgateway']
-        except (IndexError, KeyError):
-            internal = False
-        # Whether network is rootless
-        rootless = os.geteuid() != 0
-        # Whether DNS plugin is installed
-        dns_installed = False
-        for f in [
-            '/usr/libexec/cni/dnsname',
-            '/usr/lib/cni/dnsname',
-            '/opt/cni/bin/dnsname',
-            '/opt/bridge/bin/dnsname'
-        ]:
-            if os.path.exists(f):
-                dns_installed = True
-        before = not bool(
-            [k for k in self.info.get('plugins', []) if 'domainname' in k])
-        after = self.params['disable_dns']
-        # If dnsname plugin is not installed, default is disable_dns=True
-        if not dns_installed and self.module.params['disable_dns'] is None:
-            after = True
-        # Rootless networks will always have DNS enabled
-        if rootless and self.module.params['disable_dns'] is None:
-            after = False
-        # Internal networks have dns disabled from v3
-        if self.params['internal']:
-            after = True
+        # For v3 it's impossible to find out DNS settings.
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            before = not self.info.get('dns_enabled', True)
+            after = self.params['disable_dns']
+            return self._diff_update_and_compare('disable_dns', before, after)
+        before = after = self.params['disable_dns']
         return self._diff_update_and_compare('disable_dns', before, after)
 
     def diffparam_driver(self):
@@ -342,7 +320,19 @@ class PodmanNetworkDiff:
         before = after = 'bridge'
         return self._diff_update_and_compare('driver', before, after)
 
+    def diffparam_ipv6(self):
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            before = self.info.get('ipv6_enabled', False)
+            after = self.params['ipv6']
+            return self._diff_update_and_compare('ipv6', before, after)
+        before = after = ''
+        return self._diff_update_and_compare('ipv6', before, after)
+
     def diffparam_gateway(self):
+        # Disable idempotency of subnet for v4, subnets are added automatically
+        # TODO(sshnaidm): check if it's still the issue in v5
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            return self._diff_update_and_compare('gateway', '', '')
         try:
             before = self.info['plugins'][0]['ipam']['ranges'][0][0]['gateway']
         except (IndexError, KeyError):
@@ -353,6 +343,10 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare('gateway', before, after)
 
     def diffparam_internal(self):
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            before = self.info.get('internal', False)
+            after = self.params['internal']
+            return self._diff_update_and_compare('internal', before, after)
         try:
             before = not self.info['plugins'][0]['isgateway']
         except (IndexError, KeyError):
@@ -366,6 +360,10 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare('ip_range', before, after)
 
     def diffparam_subnet(self):
+        # Disable idempotency of subnet for v4, subnets are added automatically
+        # TODO(sshnaidm): check if it's still the issue in v5
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            return self._diff_update_and_compare('subnet', '', '')
         try:
             before = self.info['plugins'][0]['ipam']['ranges'][0][0]['subnet']
         except (IndexError, KeyError):
@@ -382,23 +380,29 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare('macvlan', before, after)
 
     def diffparam_opt(self):
-        try:
-            vlan_before = self.info['plugins'][0].get('vlan')
-        except (IndexError, KeyError):
-            vlan_before = None
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            vlan_before = self.info.get('options', {}).get('vlan')
+        else:
+            try:
+                vlan_before = self.info['plugins'][0].get('vlan')
+            except (IndexError, KeyError):
+                vlan_before = None
         vlan_after = self.params['opt'].get('vlan') if self.params['opt'] else None
         if vlan_before or vlan_after:
-            before, after = {'vlan': vlan_before}, {'vlan': vlan_after}
+            before, after = {'vlan': str(vlan_before)}, {'vlan': str(vlan_after)}
         else:
             before, after = {}, {}
-        try:
-            mtu_before = self.info['plugins'][0].get('mtu')
-        except (IndexError, KeyError):
-            mtu_before = None
+        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
+            mtu_before = self.info.get('options', {}).get('mtu')
+        else:
+            try:
+                mtu_before = self.info['plugins'][0].get('mtu')
+            except (IndexError, KeyError):
+                mtu_before = None
         mtu_after = self.params['opt'].get('mtu') if self.params['opt'] else None
         if mtu_before or mtu_after:
-            before.update({'mtu': mtu_before})
-            after.update({'mtu': mtu_after})
+            before.update({'mtu': str(mtu_before)})
+            after.update({'mtu': str(mtu_after)})
         return self._diff_update_and_compare('opt', before, after)
 
     def is_different(self):
