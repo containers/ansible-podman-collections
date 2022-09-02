@@ -70,44 +70,46 @@
         that:
           - info2 is not changed
 
-    - name: Create network with disable DNS
-      containers.podman.podman_network:
-        name: "{{ network_name }}"
-        state: present
-        disable_dns: true
-      register: info3
+    # TODO: Enable it when podman v4 is available in CI
 
-    - name: Check info
-      assert:
-        that:
-          - >-
-            info3 is changed and dns_plugin|bool or
-            info3 is not changed and not dns_plugin|bool
+    # - name: Create network with disable DNS
+    #   containers.podman.podman_network:
+    #     name: "{{ network_name }}"
+    #     state: present
+    #     disable_dns: true
+    #   register: info3
 
-    - name: Create network with disable DNS again
-      containers.podman.podman_network:
-        name: "{{ network_name }}"
-        state: present
-        disable_dns: true
-      register: info4
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #         info3 is changed and dns_plugin|bool or
+    #         info3 is not changed and not dns_plugin|bool
 
-    - name: Check info
-      assert:
-        that:
-          - info4 is not changed
+    # - name: Create network with disable DNS again
+    #   containers.podman.podman_network:
+    #     name: "{{ network_name }}"
+    #     state: present
+    #     disable_dns: true
+    #   register: info4
 
-    - name: Create network w/o disable DNS
-      containers.podman.podman_network:
-        name: "{{ network_name }}"
-        state: present
-      register: info5
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - info4 is not changed
 
-    - name: Check info
-      assert:
-        that:
-          - >-
-            info5 is changed and dns_plugin|bool or
-            info5 is not changed and not dns_plugin|bool
+    # - name: Create network w/o disable DNS
+    #   containers.podman.podman_network:
+    #     name: "{{ network_name }}"
+    #     state: present
+    #   register: info5
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #         info5 is changed and dns_plugin|bool or
+    #         info5 is not changed and not dns_plugin|bool
 
     - name: Create network with custom gateway
       containers.podman.podman_network:
