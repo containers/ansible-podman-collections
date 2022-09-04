@@ -3,6 +3,7 @@
   block:
     - name: Start container
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container
         image: alpine:3.7
         state: started
@@ -61,5 +62,6 @@
   always:
     - name: Remove container
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent

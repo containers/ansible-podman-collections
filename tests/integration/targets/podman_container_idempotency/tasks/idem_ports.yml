@@ -1,15 +1,18 @@
 # Ports
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: started
     command: 1h
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -21,6 +24,7 @@
     that: test1 is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -43,6 +47,7 @@
     that: test2 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -65,6 +70,7 @@
     that: test3 is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -77,6 +83,7 @@
     that: test4 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -89,6 +96,7 @@
     that: test5 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -100,6 +108,7 @@
     that: test6 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -113,6 +122,7 @@
     that: test7 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -126,6 +136,7 @@
     that: test8 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -139,6 +150,7 @@
     that: test9 is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -153,6 +165,7 @@
     that: test9a is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -164,16 +177,19 @@
     that: test9b is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: idempotency1
     state: absent
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
     command: sleep 1h
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
@@ -185,6 +201,7 @@
     that: test10 is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
@@ -197,6 +214,7 @@
     that: test11 is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
@@ -209,6 +227,7 @@
     that: test11a is not changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
@@ -222,6 +241,7 @@
     that: test12 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present
@@ -233,6 +253,7 @@
     that: test13 is changed
 
 - containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: alpine
     name: idempotency1
     state: present

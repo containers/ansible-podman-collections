@@ -1,10 +1,12 @@
 - name: Remove container netcontainer
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: netcontainer
     state: absent
 
 - name: Run container with testnet and two aliases
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: netcontainer
     image: "{{ idem_image }}"
     command: 1h
@@ -16,6 +18,7 @@
 
 - name: Run container again with testnet and same two aliases
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: netcontainer
     image: "{{ idem_image }}"
     command: 1h
@@ -33,6 +36,7 @@
 
 - name: Run changed container with testnet and three aliases
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: netcontainer
     image: "{{ idem_image }}"
     command: 1h
