@@ -5,6 +5,7 @@
 
 - name: Remove test container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: testpod_container1
     state: absent
 
@@ -16,6 +17,7 @@
 
 - name: Start test container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: testpod_container1
     pod: testpod
@@ -29,6 +31,7 @@
 
 - name: Start test container again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: testpod_container1
     pod: testpod
@@ -47,6 +50,7 @@
 
 - name: Start test container changed
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: testpod_container1
     pod: testpod
@@ -59,6 +63,7 @@
 
 - name: Start test container again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: testpod_container1
     pod: testpod

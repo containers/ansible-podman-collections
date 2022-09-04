@@ -647,6 +647,7 @@
 
     - name: Run container1 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -655,6 +656,7 @@
 
     - name: Run container2 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container2
         image: alpine
         command: top
@@ -696,6 +698,7 @@
 
     - name: Run container1 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -711,6 +714,7 @@
 
     - name: Run container1 in pod slirp4netns
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -733,6 +737,7 @@
 
     - name: Run container1 in different pod slirp4netns
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -758,6 +763,7 @@
 
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

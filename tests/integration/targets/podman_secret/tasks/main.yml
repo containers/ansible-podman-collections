@@ -33,6 +33,7 @@
 
     - name: Create container that uses secret
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         image: alpine:3.7
         secrets:
@@ -49,6 +50,7 @@
 
     - name: Create container that uses secret with options
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         image: alpine:3.7
         secrets:
@@ -102,5 +104,6 @@
   always:
     - name: Remove container that uses secret
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         state: absent

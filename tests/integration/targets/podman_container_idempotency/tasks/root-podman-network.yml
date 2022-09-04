@@ -3,6 +3,7 @@
 
     - name: Remove container
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: netcontainer
         state: absent
 
@@ -60,6 +61,7 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: netcontainer
         state: absent
 

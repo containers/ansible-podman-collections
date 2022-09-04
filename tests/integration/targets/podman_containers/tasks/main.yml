@@ -620,6 +620,7 @@
   always:
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
