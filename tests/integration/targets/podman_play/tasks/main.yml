@@ -27,6 +27,7 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
@@ -36,12 +37,14 @@
 
     - name: Play kube file
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: /tmp/play1.yaml
         state: started
       register: play1
 
     - name: Play same kube file again
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: /tmp/play1.yaml
         state: started
       register: play2
@@ -54,6 +57,7 @@
 
     - name: Recreate play
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: /tmp/play1.yaml
         state: started
         recreate: true
@@ -66,6 +70,7 @@
 
     - name: Check 'created' after 'started'
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: /tmp/play1.yaml
         state: created
       register: play4
@@ -77,6 +82,7 @@
 
     - name: Run with configmap
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: /tmp/play3.yaml
         debug: true
         state: started
@@ -92,6 +98,7 @@
 
     - name: Check if pod is running well
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: web-deploy-pod-0
       register: info1
 
@@ -104,6 +111,7 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
