@@ -1,5 +1,6 @@
 - name: Remove testing pod
   containers.podman.podman_pod:
+    executable: "{{ test_executable | default('podman') }}"
     name: testpod
     state: absent
 
@@ -11,6 +12,7 @@
 
 - name: Create pod
   containers.podman.podman_pod:
+    executable: "{{ test_executable | default('podman') }}"
     name: testpod
     publish:
       - "11111:11111"
@@ -76,5 +78,6 @@
 
 - name: Remove testing pod
   containers.podman.podman_pod:
+    executable: "{{ test_executable | default('podman') }}"
     name: testpod
     state: absent

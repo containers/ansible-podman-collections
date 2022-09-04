@@ -16,8 +16,8 @@
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info
       ignore_errors: true
 
@@ -34,8 +34,8 @@
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info1
 
     - name: Check info
@@ -150,8 +150,8 @@
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info10
       ignore_errors: true
 

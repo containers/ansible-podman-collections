@@ -15,6 +15,7 @@
 
 - name: Build test docker image for regular user
   containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
     name: "{{ idem_image }}"
     path: /tmp/usr_img
     build:
@@ -23,6 +24,7 @@
 
 - name: Build test docker image for root user
   containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
     name: "{{ idem_image }}"
     path: /tmp/usr_img
     build:
