@@ -4,6 +4,7 @@
 
     - name: Create networks
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: present
       loop:
@@ -15,6 +16,7 @@
       containers.podman.podman_containers:
         containers:
           - name: cont1
+            executable: "{{ test_executable | default('podman') }}"
             image: docker.io/alpine:3.7
             state: started
             command: sleep 1d
@@ -48,6 +50,7 @@
               - /tmp:/data
             interactive: true
           - name: cont2
+            executable: "{{ test_executable | default('podman') }}"
             image: docker.io/alpine:3.7
             state: started
             command: sleep 1d
@@ -104,6 +107,7 @@
 
     - name: Delete all networks leftovers from tests
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
