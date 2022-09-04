@@ -10,14 +10,14 @@
 
     - name: Make sure volume doesn't exist
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
-        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: nonexist
       ignore_errors: true
 
@@ -29,14 +29,14 @@
 
     - name: Make sure volume exists
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
-        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get existing volume info
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: existing_volume
 
     - name: Dump podman volume inspect result
@@ -52,9 +52,9 @@
 
     - name: Cleanup
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
-        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Make checks
       assert:
@@ -66,6 +66,6 @@
 
     - name: Cleanup
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
-        executable: "{{ podman_cmd | default(omit) }}"

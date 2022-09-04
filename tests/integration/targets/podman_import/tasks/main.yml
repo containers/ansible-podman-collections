@@ -11,6 +11,7 @@
 
     - name: Export container
       containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
         container: container
         dest: /tmp/container
 
@@ -26,6 +27,7 @@
 
     - name: Import container
       containers.podman.podman_import:
+        executable: "{{ test_executable | default('podman') }}"
         src: /tmp/container
       register: test
 
@@ -37,6 +39,7 @@
 
     - name: Import container with commit message
       containers.podman.podman_import:
+        executable: "{{ test_executable | default('podman') }}"
         src: /tmp/container
         commit_message: 'Test in CI'
       register: test1
@@ -48,6 +51,7 @@
 
     - name: Import container with changes
       containers.podman.podman_import:
+        executable: "{{ test_executable | default('podman') }}"
         src: /tmp/container
         change:
           - "User": "someuser"

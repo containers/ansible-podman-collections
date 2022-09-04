@@ -10,9 +10,9 @@
 
     - name: Make sure volume doesn't exist
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
-        executable: "{{ podman_cmd | default(omit) }}"
 
     - name: Get missing volume info
       containers.podman.podman_volume_info:
@@ -28,8 +28,8 @@
 
     - name: Create volume
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: vol
 
     - name: Get existing volume info
@@ -47,9 +47,9 @@
 
     - name: Create volume again
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info2
 
     - name: Check info
@@ -59,12 +59,12 @@
 
     - name: Create volume with labels
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
         label:
           key: val
           nokey: noval
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info3
 
     - name: Check info
@@ -74,12 +74,12 @@
 
     - name: Create volume with labels again
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
         label:
           key: val
           nokey: noval
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info4
 
     - name: Check info
@@ -89,9 +89,9 @@
 
     - name: Create volume w/o labels
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info5
 
     - name: Check info
@@ -101,12 +101,12 @@
 
     - name: Create volume with options
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
         options:
           - "device=/dev/something"
           - "type=ext4"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info6
 
     - name: Check info
@@ -116,12 +116,12 @@
 
     - name: Create volume with options again
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
         options:
           - "device=/dev/something"
           - "type=ext4"
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info7
 
     - name: Check info
@@ -131,9 +131,9 @@
 
     - name: Create volume w/o options
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: present
-        executable: "{{ podman_cmd | default(omit) }}"
       register: info8
 
     - name: Check info
@@ -143,6 +143,7 @@
 
     - name: Make sure volume doesn't exist
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
       register: delete
@@ -164,6 +165,6 @@
 
     - name: Make sure volume doesn't exist
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ volume_name }}"
         state: absent
-        executable: "{{ podman_cmd | default(omit) }}"

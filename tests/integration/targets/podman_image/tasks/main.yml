@@ -2,31 +2,37 @@
   block:
     - name: Pull image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/alpine-sh
       register: pull1
 
     - name: Pull image again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/alpine-sh
       register: pull2
 
     - name: Pull image from docker.io with short url
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/alpine
       register: pull3
 
     - name: Pull image from docker.io with short url again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/alpine
       register: pull4
 
     - name: Pull image from docker.io with official/normalised url again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/alpine
       register: pull5
 
     - name: Pull image for testing image deletion with image id
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/ubuntu
       register: pull6
 
@@ -58,41 +64,48 @@
 
     - name: Remove image (tag)
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/alpine-sh
         state: absent
       register: rmi1
 
     - name: Remove image again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/alpine-sh
         state: absent
       register: rmi2
 
     - name: Remove image using new repository url
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/library/alpine-sh
         state: absent
       register: rmi3
 
     - name: Try to remove docker.io image using short url
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/alpine
         state: absent
       register: rmi4
 
     - name: Remove docker.io image using normalised url
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/alpine
         state: absent
       register: rmi5
 
     - name: Get image id of the target image
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/ubuntu
       register: imageinfo
 
     - name: Remove an image with image id
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item.Id }}"
         state: absent
       loop: "{{ imageinfo.images }}"
@@ -116,12 +129,14 @@
 
     - name: Pull a specific version of an image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/etcd
         tag: v3.3.11
       register: specific_image1
 
     - name: Pull a specific version of an image again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: quay.io/coreos/etcd
         tag: v3.3.11
       register: specific_image2
@@ -149,18 +164,21 @@
 
     - name: Build OCI image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: testimage
         path: /var/tmp/build
       register: oci_build1
 
     - name: Build OCI image again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: testimage
         path: /var/tmp/build
       register: oci_build2
 
     - name: Inspect build image
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: testimage
       register: testimage_info
 
@@ -173,6 +191,7 @@
 
     - name: Build Docker image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: dockerimage
         path: /var/tmp/build
         build:
@@ -181,6 +200,7 @@
 
     - name: Build Docker image again
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: dockerimage
         path: /var/tmp/build
         build:
@@ -189,6 +209,7 @@
 
     - name: Inspect build image
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: dockerimage
       register: dockerimage_info
 
@@ -201,6 +222,7 @@
 
     - name: push image that doesn't exit to nowhere
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: bad_image
         pull: false
         push: yes
@@ -218,6 +240,7 @@
   always:
     - name: Cleanup images
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

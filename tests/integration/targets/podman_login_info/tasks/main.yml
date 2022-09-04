@@ -9,7 +9,7 @@
         executable: podman_invalid
         registry: quay.io
       register: invalid_executable
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Check invalid executable results
       assert:
@@ -20,7 +20,7 @@
       containers.podman.podman_login_info:
         executable: podman_invalid
       register: missing_registry
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Check missing registry results
       assert:
@@ -29,6 +29,7 @@
 
     - name: Get login info for a non-existing registry
       containers.podman.podman_login_info:
+        executable: "{{ test_executable | default('podman') }}"
         registry: non-existing.registry
       register: non_existing_registry
 
@@ -47,6 +48,7 @@
     - name: Get login info for a non-existing authfile
       # This will return not logged in even if logged in via different authfile
       containers.podman.podman_login_info:
+        executable: "{{ test_executable | default('podman') }}"
         registry: quay.io
         authfile: non-existing.authfile.json
       register: non_existing_authfile
