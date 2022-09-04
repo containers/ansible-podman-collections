@@ -11,7 +11,7 @@
       shell: >-
         {% if ansible_venv is defined %}source {{ ansible_venv }}/bin/activate; {% endif %}
 
-        {{ repo_dir }}/ci/run_connection_test.sh
+        {{ repo_dir }}/ci/run_connection_test.sh podman {{ test_executable | default('podman') }}
       args:
         chdir: "{{ repo_dir }}"
         executable: /bin/bash

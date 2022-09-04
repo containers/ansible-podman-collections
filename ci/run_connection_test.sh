@@ -9,13 +9,17 @@ export LANGUAGE=en_US.UTF-8
 
 CON_TYPE="${1:-podman}"
 SUDO=${ROOT:+"sudo -E"}
+PODMAN_EXE="${2:-podman}"
+
+echo "Print current Podman version"
+$PODMAN_EXE version
 
 ANSIBLECMD=${ANSIBLECMD:-$(command -v ansible-playbook)}
 echo "Testing $CON_TYPE connection ${ROOT:+'with root'}"
 
 if [[ "$CON_TYPE" == "podman" ]]; then
-    ${SUDO} podman ps | grep -q "${CON_TYPE}-container" || \
-        ${SUDO} podman run -d --name "${CON_TYPE}-container" python:3-alpine sleep 1d
+    ${SUDO} $PODMAN_EXE ps | grep -q "${CON_TYPE}-container" || \
+        ${SUDO} $PODMAN_EXE run -d --name "${CON_TYPE}-container" python:3-alpine sleep 1d
 elif [[ "$CON_TYPE" == "buildah" ]]; then
     ${SUDO} buildah from --name=buildah-container python:2
 fi
@@ -31,6 +35,7 @@ exit_code=0
 CMD="${SUDO:-} ${ANSIBLECMD:-ansible-playbook} \
         -i tests/integration/targets/connection_${CON_TYPE}/test_connection.inventory \
         -e connection_type=containers.podman.${CON_TYPE} \
+        -e ansible_podman_executable=$PODMAN_EXE \
         ci/playbooks/connections/test.yml"
 $CMD -vv || exit_code=$?
 
