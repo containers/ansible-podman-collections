@@ -11,6 +11,12 @@ export LANGUAGE=en_US.UTF-8
     echo "Please specify test to run, for example TEST2RUN=podman_container";
     exit 1;
 }
+if [[ ${1:-'ubuntu_default'} != 'ubuntu_default' ]]; then
+    PODMAN_EXEC="/usr/local/bin/podman"
+else
+    PODMAN_EXEC="podman"
+fi
+
 ANSIBLECMD=${ANSIBLECMD:-$(command -v ansible-playbook)}
 echo "Testing ${TEST2RUN} module"
 
@@ -21,6 +27,7 @@ CMD="ANSIBLE_ROLES_PATH=${CURWD}/../tests/integration/targets \
     ${ANSIBLECMD:-ansible-playbook} \
     -i localhost, -c local --diff \
     ci/playbooks/containers/${TEST2RUN}.yml \
+    -e test_executable=$PODMAN_EXEC \
     -e _ansible_python_interpreter=$(command -v python)"
 
 bash -c "$CMD -vv" || exit_code=$?

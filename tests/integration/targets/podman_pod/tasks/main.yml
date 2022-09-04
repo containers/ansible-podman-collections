@@ -216,7 +216,7 @@
       assert:
         that:
           - pod123_info is changed
-          - '"podman pod rm -f pod1" not in pod123_info.podman_actions'
+          - '"pod rm -f pod1" not in pod123_info.podman_actions.0'
 
     - name: Start pod with ports
       containers.podman.podman_pod:

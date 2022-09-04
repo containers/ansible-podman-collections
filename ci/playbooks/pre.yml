@@ -68,8 +68,10 @@
           shell: slirp4netns -v | grep version | awk {'print $3'}
           register: version
           when:
+            - test_podman_version | default('ubuntu_default') == 'ubuntu_default'
             - ansible_distribution == 'Ubuntu'
             - ansible_distribution_major_version is version('22', '>=')
+
 
         - name: Install newest slirp4netns version
           shell: >-
@@ -77,9 +79,27 @@
             chmod +x /tmp/slirp4netns;
             mv /tmp/slirp4netns /usr/bin/slirp4netns
           when:
+            - test_podman_version | default('ubuntu_default') == 'ubuntu_default'
             - ansible_distribution == 'Ubuntu'
             - ansible_distribution_major_version is version('22', '>=')
             - version.stdout is version('1.1.0', '<')
+
+        - name: Remove installed podman
+          package:
+            name:
+              - podman
+              - slirp4netns
+            state: absent
+          when:
+            - test_podman_version | default('ubuntu_default') != 'ubuntu_default'
+
+        - name: Install custom podman
+          shell: |
+            curl -fsSL -o podman-linux-amd64.tar.gz https://github.com/mgoltzsche/podman-static/releases/download/v{{ test_podman_version|default('4.2.0') }}/podman-linux-amd64.tar.gz
+            tar -xzf podman-linux-amd64.tar.gz
+            cp -r podman-linux-amd64/usr podman-linux-amd64/etc /
+          when:
+            - test_podman_version | default('ubuntu_default') != 'ubuntu_default'
 
     - name: Remove virtualenv if need
       file:

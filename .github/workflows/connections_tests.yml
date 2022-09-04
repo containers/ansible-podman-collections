@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/connections_tests.yml'
-      - 'ci/*.yml'
+      - 'ci/playbooks/*.yml'
       - 'ci/playbooks/connections/**'
       - 'ci/run_connection_test.sh'
       - 'plugins/connection/**'
@@ -15,7 +15,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/connections_tests.yml'
-      - 'ci/*.yml'
+      - 'ci/playbooks/*.yml'
       - 'ci/playbooks/connections/**'
       - 'ci/run_connection_test.sh'
       - 'plugins/connection/**'
@@ -65,7 +65,7 @@ jobs:
           path: .cache/collection-tarballs
 
   test-podman-connection:
-    name: Podman connection VM ${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.ansible-version }}
+    name: ${{ matrix.podman_version }} py${{ matrix.python-version }} ${{ matrix.os || 'ubuntu-22.04' }}
     needs:
       - build-collection-artifact-connection-tests
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
@@ -90,6 +90,18 @@ jobs:
           #- 3.6
           #- 3.5
           #- 2.7
+        podman_version:
+          - '4.2.0'
+          - 'ubuntu_default'
+        exclude:
+          - os: ubuntu-22.04
+            python-version: 3.9
+            ansible-version: ansible<2.10
+            podman_version: '4.2.0'
+          - os: ubuntu-22.04
+            python-version: 3.9
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            podman_version: '4.2.0'
 
     steps:
 
@@ -148,10 +160,19 @@ jobs:
           -e host=localhost \
           -i localhost, \
           -e ansible_connection=local \
+          -e test_podman_version=${{ matrix.podman_version }} \
           -e setup_python=false
 
-          ROOT= ./ci/run_connection_test.sh podman
-          ROOT=true ./ci/run_connection_test.sh podman
+          if [[ '${{ matrix.podman_version }}' != 'ubuntu_default' ]]; then
+            export PATH=$PATH:/usr/local/bin
+            PODMAN_EXE="/usr/local/bin/podman"
+          else
+            PODMAN_EXE="podman"
+          fi
+
+
+          ROOT= ./ci/run_connection_test.sh podman $PODMAN_EXE
+          ROOT=true ./ci/run_connection_test.sh podman $PODMAN_EXE
         shell: bash
 
   test-buildah-connection:

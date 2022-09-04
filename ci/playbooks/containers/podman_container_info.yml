@@ -1,6 +1,8 @@
 ---
 - hosts: all
   gather_facts: true
+  environment:
+    PATH: /usr/local/bin:{{ ansible_env.PATH }}
   tasks:
     - include_role:
         name: podman_container_info
