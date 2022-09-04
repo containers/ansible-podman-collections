@@ -3,6 +3,7 @@
 
     - name: Get info on images when no images
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: info_0
 
     - name: Check results for no images
@@ -15,6 +16,7 @@
 
     - name: Get info on all images
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: all_image_result
 
     - name: Pull another image
@@ -22,6 +24,7 @@
 
     - name: Get info on specific image
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: dnsmasq
       register: named_image_result
 
@@ -34,11 +37,13 @@
 
     - name: Get info on single image that does not exist
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: nope
       register: single_nonexistant
 
     - name: Get info on multiple images that do not exist
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name:
           - nope
           - reallynope
@@ -46,6 +51,7 @@
 
     - name: Get info with one image that does not exist
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name:
           - dnsmasq
           - nope

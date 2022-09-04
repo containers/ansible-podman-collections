@@ -12,7 +12,7 @@
       containers.podman.podman_logout:
         executable: podman_invalid
       register: invalid_executable
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Check invalid executable results
       assert:
@@ -21,6 +21,7 @@
 
     - name: Log out of non-existing registry
       containers.podman.podman_logout:
+        executable: "{{ test_executable | default('podman') }}"
       register: non_existing_registry
 
     - name: Check results
@@ -31,9 +32,10 @@
 
     - name: Log out with invalid authfile
       containers.podman.podman_logout:
+        executable: "{{ test_executable | default('podman') }}"
         authfile: authfile_invalid.json
       register: invalid_authfile
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Check invalid authfile results
       assert:
@@ -42,7 +44,8 @@
 
     - name: Log out of all registries
       containers.podman.podman_logout:
-        all: yes
+        executable: "{{ test_executable | default('podman') }}"
+        all: true
       register: all_registries
 
     - name: Check results

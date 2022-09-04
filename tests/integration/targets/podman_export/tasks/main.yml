@@ -11,6 +11,7 @@
 
     - name: Export container
       containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
         container: container
         dest: /tmp/container
 
@@ -36,6 +37,7 @@
 
     - name: Export container without force
       containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
         container: container
         dest: /tmp/container
         force: false
@@ -49,6 +51,7 @@
 
     - name: Export container with force
       containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
         container: container
         dest: /tmp/container
         force: true

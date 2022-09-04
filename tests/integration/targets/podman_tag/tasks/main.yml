@@ -3,10 +3,12 @@
   block:
     - name: Pull image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/alpine
 
     - name: Tag image
       containers.podman.podman_tag:
+        executable: "{{ test_executable | default('podman') }}"
         image: docker.io/library/alpine
         target_names:
           - openjdk8
@@ -14,6 +16,7 @@
 
     - name: Get tagged image info
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/alpine
       register: tagged_image_result
 
@@ -28,6 +31,7 @@
   always:
     - name: Cleanup image
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

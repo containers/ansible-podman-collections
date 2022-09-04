@@ -28,11 +28,13 @@
 
     - name: Make sure network doesn't exist
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: absent
 
     - name: Get missing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: info
       ignore_errors: true
@@ -44,11 +46,13 @@
 
     - name: Create network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: net
 
     - name: Get existing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: info1
 
@@ -61,6 +65,7 @@
 
     - name: Create network again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
       register: info2
@@ -74,6 +79,7 @@
 
     # - name: Create network with disable DNS
     #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
     #     name: "{{ network_name }}"
     #     state: present
     #     disable_dns: true
@@ -88,6 +94,7 @@
 
     # - name: Create network with disable DNS again
     #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
     #     name: "{{ network_name }}"
     #     state: present
     #     disable_dns: true
@@ -100,6 +107,7 @@
 
     # - name: Create network w/o disable DNS
     #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
     #     name: "{{ network_name }}"
     #     state: present
     #   register: info5
@@ -113,6 +121,7 @@
 
     - name: Create network with custom gateway
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         gateway: 10.100.100.100
@@ -126,6 +135,7 @@
 
     - name: Create network with custom gateway again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         gateway: 10.100.100.100
@@ -139,6 +149,7 @@
 
     - name: Create internal network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         internal: true
@@ -151,6 +162,7 @@
 
     - name: Create internal network again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         internal: true
@@ -163,6 +175,7 @@
 
     - name: Create a regular external network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
       register: info11
@@ -174,6 +187,7 @@
 
     - name: Create network with subnet
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         subnet: 10.200.200.0/24
@@ -186,6 +200,7 @@
 
     - name: Create network with subnet again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         subnet: 10.200.200.0/24
@@ -198,6 +213,7 @@
 
     - name: Create network with ipv6 subnet
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         subnet: 2001:cafe::/64
@@ -205,11 +221,13 @@
 
     - name: Make sure network doesn't exist
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: absent
 
     - name: Get existing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: info100
       ignore_errors: true
@@ -221,6 +239,7 @@
 
     - name: Create network with opts MTU
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         opt:
@@ -229,6 +248,7 @@
 
     - name: Create network with opts VLAN
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         opt:
@@ -237,6 +257,7 @@
 
     - name: Create network with opts MTU and VLAN
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         opt:
@@ -246,6 +267,7 @@
 
     - name: Create network with opts MTU and VLAN again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
         opt:
@@ -273,11 +295,13 @@
 
     - name: Create network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: net1
 
     - name: Get existing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: info15
 
@@ -290,6 +314,7 @@
 
     - name: Create network again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         state: present
       register: info16
@@ -301,6 +326,7 @@
 
     - name: Create network with IPv6 'exploded'
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         ipv6: yes
         subnet: fd4f:552c:830f:0000::/64
@@ -308,6 +334,7 @@
 
     - name: Create network with IPv6 'exploded' again
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
         ipv6: yes
         subnet: fd4f:552c:830f:0000::/64

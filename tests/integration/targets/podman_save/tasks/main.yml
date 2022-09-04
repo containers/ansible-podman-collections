@@ -1,10 +1,12 @@
 ---
 - name: Pull image
   containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
     name: k8s.gcr.io/pause
 
 - name: Save image
   containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
     dest: /tmp/image.tar
 
@@ -20,6 +22,7 @@
 
 - name: Save image
   containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
     dest: /tmp/image.tar
     force: true
@@ -36,6 +39,7 @@
 
 - name: Save image
   containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
     dest: /tmp/imagedir
     format: oci-dir
@@ -52,6 +56,7 @@
 
 - name: Save image
   containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
     dest: /tmp/imagedir
     force: true
@@ -70,6 +75,7 @@
 
 - name: Save image
   containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
     dest: /tmp/image2.tar
     multi_image_archive: true
