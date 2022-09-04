@@ -50,6 +50,7 @@
 
     - name: Ensure image doesn't exist
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: alpine:3.7
         state: absent
 

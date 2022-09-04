@@ -70,6 +70,7 @@
 
     - name: Delete all network leftovers from tests
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

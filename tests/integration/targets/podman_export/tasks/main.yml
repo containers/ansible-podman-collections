@@ -27,6 +27,7 @@
 
     - name: Import container
       containers.podman.podman_import:
+        executable: "{{ test_executable | default('podman') }}"
         src: /tmp/container
       register: image
 
