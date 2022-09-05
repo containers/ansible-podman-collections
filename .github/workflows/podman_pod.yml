@@ -1,28 +1,28 @@
 name: Podman pod
 
 on:
-  push:
-    paths:
-      - '.github/workflows/podman_pod.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_pod.yml'
-      - 'plugins/module_utils/podman/podman_pod_lib.py'
-      - 'plugins/modules/podman_pod.py'
-      - 'plugins/modules/podman_pod_info.py'
-      - 'tests/integration/targets/podman_pod/**'
-    branches:
-      - master
-  pull_request:
-    paths:
-      - '.github/workflows/podman_pod.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_pod.yml'
-      - 'plugins/module_utils/podman/podman_pod_lib.py'
-      - 'plugins/modules/podman_pod.py'
-      - 'plugins/modules/podman_pod_info.py'
-      - 'tests/integration/targets/podman_pod/**'
+  # push:
+  #   paths:
+
+
+
+  #     - 'ci/playbooks/containers/podman_pod.yml'
+  #     - 'plugins/module_utils/podman/podman_pod_lib.py'
+  #     - 'plugins/modules/podman_pod.py'
+  #     - 'plugins/modules/podman_pod_info.py'
+  #     - 'tests/integration/targets/podman_pod/**'
+  #   branches:
+  #     - master
+  # pull_request:
+  #   paths:
+
+
+
+  #     - 'ci/playbooks/containers/podman_pod.yml'
+  #     - 'plugins/module_utils/podman/podman_pod_lib.py'
+  #     - 'plugins/modules/podman_pod.py'
+  #     - 'plugins/modules/podman_pod_info.py'
+  #     - 'tests/integration/targets/podman_pod/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC
 

@@ -1,26 +1,26 @@
 name: Test connection plugins
 
 on:
-  push:
-    paths:
-      - '.github/workflows/connections_tests.yml'
-      - 'ci/playbooks/*.yml'
-      - 'ci/playbooks/connections/**'
-      - 'ci/run_connection_test.sh'
-      - 'plugins/connection/**'
-      - 'tests/integration/targets/connection/**'
-      - 'tests/integration/targets/connection_*/**'
-    branches:
-      - master
-  pull_request:
-    paths:
-      - '.github/workflows/connections_tests.yml'
-      - 'ci/playbooks/*.yml'
-      - 'ci/playbooks/connections/**'
-      - 'ci/run_connection_test.sh'
-      - 'plugins/connection/**'
-      - 'tests/integration/targets/connection/**'
-      - 'tests/integration/targets/connection_*/**'
+  # push:
+  #   paths:
+
+  #     - 'ci/playbooks/*.yml'
+  #     - 'ci/playbooks/connections/**'
+  #     - 'ci/run_connection_test.sh'
+  #     - 'plugins/connection/**'
+  #     - 'tests/integration/targets/connection/**'
+  #     - 'tests/integration/targets/connection_*/**'
+  #   branches:
+  #     - master
+  # pull_request:
+  #   paths:
+
+  #     - 'ci/playbooks/*.yml'
+  #     - 'ci/playbooks/connections/**'
+  #     - 'ci/run_connection_test.sh'
+  #     - 'plugins/connection/**'
+  #     - 'tests/integration/targets/connection/**'
+  #     - 'tests/integration/targets/connection_*/**'
   schedule:
     - cron: 3 0 * * *  # Run daily at 0:03 UTC
 

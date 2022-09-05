@@ -2,8 +2,8 @@ name: Collection release and publish DRY RUN
 on:
   push:
     paths:
-      - '.github/workflows/collection-publish.yml'
-      - '.github/workflows/collection-publish-dry-run.yml'
+
+
       - 'contrib/build.py'
       - 'contrib/publish-requirements.txt'
       - 'contrib/publish.sh'
@@ -11,8 +11,8 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/collection-publish.yml'
-      - '.github/workflows/collection-publish-dry-run.yml'
+
+
       - 'contrib/build.py'
       - 'contrib/publish-requirements.txt'
       - 'contrib/publish.sh'

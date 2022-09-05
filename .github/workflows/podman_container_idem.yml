@@ -3,9 +3,9 @@ name: Idempotency
 on:
   push:
     paths:
-      - '.github/workflows/podman_container_idem.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_container_idempotency.yml'
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'
@@ -15,9 +15,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_container_idem.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_container_idempotency.yml'
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'

@@ -3,9 +3,9 @@ name: Podman volume
 on:
   push:
     paths:
-      - '.github/workflows/podman_volume.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_volume.yml'
       - 'plugins/modules/podman_volume.py'
       - 'tests/integration/targets/podman_volume/**'
@@ -13,9 +13,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_volume.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_volume.yml'
       - 'plugins/modules/podman_volume.py'
       - 'tests/integration/targets/podman_volume/**'

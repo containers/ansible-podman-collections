@@ -3,9 +3,9 @@ name: Podman image
 on:
   push:
     paths:
-      - '.github/workflows/podman_image.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_image.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
@@ -14,9 +14,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_image.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_image.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'

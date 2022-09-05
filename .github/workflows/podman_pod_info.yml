@@ -3,9 +3,9 @@ name: Podman pod info
 on:
   push:
     paths:
-      - '.github/workflows/podman_pod_info.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_pod_info.yml'
       - 'plugins/module_utils/podman/podman_pod_lib.py'
       - 'plugins/modules/podman_pod.py'
@@ -15,9 +15,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_pod_info.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_pod_info.yml'
       - 'plugins/module_utils/podman/podman_pod_lib.py'
       - 'plugins/modules/podman_pod.py'

@@ -3,9 +3,9 @@ name: Podman logout
 on:
   push:
     paths:
-      - '.github/workflows/podman_logout.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_logout.yml'
       - 'plugins/modules/podman_logout.py'
       - 'tests/integration/targets/podman_logout/**'
@@ -13,9 +13,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_logout.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_logout.yml'
       - 'plugins/modules/podman_logout.py'
       - 'tests/integration/targets/podman_logout/**'

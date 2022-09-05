@@ -3,9 +3,9 @@ name: Podman network
 on:
   push:
     paths:
-      - '.github/workflows/podman_network.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_network.yml'
       - 'plugins/modules/podman_network.py'
       - 'tests/integration/targets/podman_network/**'
@@ -13,9 +13,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_network.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_network.yml'
       - 'plugins/modules/podman_network.py'
       - 'tests/integration/targets/podman_network/**'

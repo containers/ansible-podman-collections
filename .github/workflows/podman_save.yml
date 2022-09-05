@@ -3,9 +3,9 @@ name: Podman save
 on:
   push:
     paths:
-      - '.github/workflows/podman_save.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_save.yml'
       - 'plugins/modules/podman_save.py'
       - 'tests/integration/targets/podman_save/**'
@@ -13,9 +13,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_save.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_save.yml'
       - 'plugins/modules/podman_save.py'
       - 'tests/integration/targets/podman_save/**'

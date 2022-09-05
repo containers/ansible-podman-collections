@@ -3,9 +3,9 @@ name: Podman container info
 on:
   push:
     paths:
-      - '.github/workflows/podman_container_info.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_container_info.yml'
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'
@@ -16,9 +16,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_container_info.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_container_info.yml'
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'
@@ -40,7 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          - ansible<2.10
+          # - ansible<2.10
           # - git+https://github.com/ansible/ansible.git@stable-2.11
           - git+https://github.com/ansible/ansible.git@devel
         os:
@@ -48,13 +48,13 @@ jobs:
         python-version:
           - 3.9
         podman_version:
-          - '4.2.0'
-          - 'ubuntu_default'
-        exclude:
-          - os: ubuntu-22.04
-            python-version: 3.9
-            ansible-version: git+https://github.com/ansible/ansible.git@devel
-            podman_version: '4.2.0'
+          - '4.2.1'
+          # - 'ubuntu_default'
+        # exclude:
+        #   - os: ubuntu-22.04
+        #     python-version: 3.9
+        #     ansible-version: git+https://github.com/ansible/ansible.git@devel
+        #     podman_version: '4.2.0'
 
     steps:
 
@@ -124,3 +124,6 @@ jobs:
 
           TEST2RUN=podman_container_info ./ci/run_containers_tests.sh ${{ matrix.podman_version }}
         shell: bash
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3

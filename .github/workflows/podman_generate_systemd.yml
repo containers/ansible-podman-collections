@@ -1,24 +1,24 @@
 name: Podman generate systemd
 
 on:
-  push:
-    paths:
-      - '.github/workflows/podman_generate_systemd.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_generate_systemd.yml'
-      - 'plugins/modules/podman_generate_systemd.py'
-      - 'tests/integration/targets/podman_generate_systemd/**'
-    branches:
-      - master
-  pull_request:
-    paths:
-      - '.github/workflows/podman_generate_systemd.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_generate_systemd.yml'
-      - 'plugins/modules/podman_generate_systemd.py'
-      - 'tests/integration/targets/podman_generate_systemd/**'
+  # push:
+  #   paths:
+  #     - '.github/workflows/podman_generate_systemd.yml'
+  #     - 'ci/*.yml'
+  #     - 'ci/run_containers_tests.sh'
+  #     - 'ci/playbooks/containers/podman_generate_systemd.yml'
+  #     - 'plugins/modules/podman_generate_systemd.py'
+  #     - 'tests/integration/targets/podman_generate_systemd/**'
+  #   branches:
+  #     - master
+  # pull_request:
+  #   paths:
+  #     - '.github/workflows/podman_generate_systemd.yml'
+  #     - 'ci/*.yml'
+  #     - 'ci/run_containers_tests.sh'
+  #     - 'ci/playbooks/containers/podman_generate_systemd.yml'
+  #     - 'plugins/modules/podman_generate_systemd.py'
+  #     - 'tests/integration/targets/podman_generate_systemd/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC
 

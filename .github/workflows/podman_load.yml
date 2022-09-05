@@ -3,9 +3,9 @@ name: Podman load
 on:
   push:
     paths:
-      - '.github/workflows/podman_load.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_load.yml'
       - 'plugins/modules/podman_load.py'
       - 'tests/integration/targets/podman_load/**'
@@ -13,9 +13,9 @@ on:
       - master
   pull_request:
     paths:
-      - '.github/workflows/podman_load.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
+
+
+
       - 'ci/playbooks/containers/podman_load.yml'
       - 'plugins/modules/podman_load.py'
       - 'tests/integration/targets/podman_load/**'
