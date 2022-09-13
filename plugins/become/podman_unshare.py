@@ -15,6 +15,52 @@ DOCUMENTATION = """
     author:
     - Janos Gerzson (@grzs)
     version_added: 1.9.0
+    options:
+        become_user:
+            description: User you 'become' to execute the task
+            default: root
+            ini:
+              - section: privilege_escalation
+                key: become_user
+              - section: sudo_become_plugin
+                key: user
+            vars:
+              - name: ansible_become_user
+              - name: ansible_sudo_user
+            env:
+              - name: ANSIBLE_BECOME_USER
+              - name: ANSIBLE_SUDO_USER
+            keyword:
+              - name: become_user
+        become_exe:
+            description: Sudo executable
+            default: sudo
+            ini:
+              - section: privilege_escalation
+                key: become_exe
+              - section: sudo_become_plugin
+                key: executable
+            vars:
+              - name: ansible_become_exe
+              - name: ansible_sudo_exe
+            env:
+              - name: ANSIBLE_BECOME_EXE
+              - name: ANSIBLE_SUDO_EXE
+            keyword:
+              - name: become_exe
+        become_pass:
+            description: Password to pass to sudo
+            required: False
+            vars:
+              - name: ansible_become_password
+              - name: ansible_become_pass
+              - name: ansible_sudo_pass
+            env:
+              - name: ANSIBLE_BECOME_PASS
+              - name: ANSIBLE_SUDO_PASS
+            ini:
+              - section: sudo_become_plugin
+                key: password
 """
 
 EXAMPLES = """
@@ -87,5 +133,17 @@ class BecomeModule(BecomeBase):
             return cmd
 
         becomecmd = 'podman unshare'
+
+        user = self.get_option('become_user') or ''
+        if user:
+            cmdlist = [self.get_option('become_exe') or 'sudo']
+            # -i is required, because
+            # podman unshare should be executed in a login shell to avoid chdir permission errors
+            cmdlist.append('-iu %s' % user)
+            if self.get_option('become_pass'):
+                self.prompt = '[sudo podman unshare via ansible, key=%s] password:' % self._id
+                cmdlist.append('-p "%s"' % self.prompt)
+            cmdlist.append('-- %s' % becomecmd)
+            becomecmd = ' '.join(cmdlist)
 
         return ' '.join([becomecmd, self._build_success_command(cmd, shell)])
