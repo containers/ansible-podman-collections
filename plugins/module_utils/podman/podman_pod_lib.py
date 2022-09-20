@@ -396,6 +396,11 @@ class PodmanPodDiff:
         else:
             before = self.info['labels'] if 'labels' in self.info else {}
         after = self.params['label']
+        # Strip out labels that are coming from systemd files
+        # https://github.com/containers/ansible-podman-collections/issues/276
+        if 'podman_systemd_unit' in before:
+            after.pop('podman_systemd_unit', None)
+            before.pop('podman_systemd_unit', None)
         return self._diff_update_and_compare('label', before, after)
 
     # TODO(sshnaidm): https://github.com/containers/podman/pull/6956
