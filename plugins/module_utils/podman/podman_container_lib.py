@@ -855,7 +855,16 @@ class PodmanContainerDiff:
     def diffparam_device(self):
         before = [":".join([i['pathonhost'], i['pathincontainer']])
                   for i in self.info['hostconfig']['devices']]
+        if not before and 'createcommand' in self.info['config']:
+            cr_com = self.info['config']['createcommand']
+            if '--device' in cr_com:
+                before = [cr_com[k + 1].lower()
+                          for k, i in enumerate(cr_com) if i == '--device']
+        before = [":".join((i, i))
+                  if len(i.split(":")) == 1 else i for i in before]
         after = [":".join(i.split(":")[:2]) for i in self.params['device']]
+        after = [":".join((i, i))
+                 if len(i.split(":")) == 1 else i for i in after]
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('devices', before, after)
 
