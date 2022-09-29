@@ -5,35 +5,50 @@
         containers:
           - name: "alpine:3.7"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container1"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container2"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container3"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container4"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem1"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem2"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem3"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem-pod"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: "testidem-pod2"
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
 
     - name: Test no image with default action
       containers.podman.podman_containers:
         containers:
           - name: "container"
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container2"
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container3"
+            executable: "{{ test_executable | default('podman') }}"
             image: alpine
       ignore_errors: true
       register: no_image
@@ -43,8 +58,10 @@
         containers:
           - name: "container"
             state: started
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container2"
             state: started
+            executable: "{{ test_executable | default('podman') }}"
       ignore_errors: true
       register: no_image1
 
@@ -53,11 +70,14 @@
         containers:
           - name: "container"
             state: present
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container2"
             state: present
+            executable: "{{ test_executable | default('podman') }}"
           - name: "container3"
             state: present
             image: alpine
+            executable: "{{ test_executable | default('podman') }}"
       ignore_errors: true
       register: no_image2
 
@@ -77,6 +97,7 @@
       containers.podman.podman_image:
         name: alpine:3.7
         state: absent
+        executable: "{{ test_executable | default('podman') }}"
 
     - name: Check pulling image
       containers.podman.podman_containers:
@@ -85,10 +106,12 @@
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: image
 
     - name: Check using already pulled image
@@ -98,10 +121,12 @@
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container3
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: image2
 
     - name: Check output is correct
@@ -131,10 +156,12 @@
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container
             image: ineverneverneverexist
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: imagefail
       ignore_errors: true
 
@@ -151,11 +178,13 @@
             image: alpine:3.7
             state: present
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container
             image: alpine
             state: present
             command: sleep 1d
             recreate: true
+            executable: "{{ test_executable | default('podman') }}"
       register: recreated
 
     - name: Check output is correct
@@ -173,8 +202,10 @@
         containers:
           - name: container
             state: stopped
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: stopped
+            executable: "{{ test_executable | default('podman') }}"
       register: stopped
 
     - name: Stop the same containers again (idempotency)
@@ -182,8 +213,10 @@
         containers:
           - name: container
             state: stopped
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: stopped
+            executable: "{{ test_executable | default('podman') }}"
       register: stopped_again
 
     - name: Check output is correct
@@ -207,8 +240,10 @@
         containers:
           - name: container
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
       register: deleted
 
     - name: Delete again containers (idempotency)
@@ -216,8 +251,10 @@
         containers:
           - name: container
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
       register: deleted_again
 
     - name: Check output is correct
@@ -242,10 +279,12 @@
             image: alpine:3.7
             state: stopped
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             image: alpine:3.7
             state: created
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: created
 
     - name: Create containers, but don't run again
@@ -255,10 +294,12 @@
             image: alpine:3.7
             state: stopped
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             image: alpine:3.7
             state: created
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: created_again
 
     - name: Check output is correct
@@ -278,8 +319,10 @@
         containers:
           - name: container
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
 
     - name: Start containers that were deleted
       containers.podman.podman_containers:
@@ -288,10 +331,12 @@
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             image: alpine:3.7
             state: started
             command: sleep 1d
+            executable: "{{ test_executable | default('podman') }}"
       register: started
 
     - name: Check output is correct
@@ -308,8 +353,10 @@
         containers:
           - name: container
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
       register: deleted
 
     - name: Delete again container (idempotency)
@@ -317,8 +364,10 @@
         containers:
           - name: container
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: container1
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
       register: deleted_again
 
     - name: Check output is correct
@@ -340,6 +389,7 @@
       containers.podman.podman_containers:
         containers:
           - name: container
+            executable: "{{ test_executable | default('podman') }}"
             image: docker.io/alpine:3.7
             state: started
             command: sleep 1d
@@ -371,6 +421,7 @@
             volumes:
               - /tmp:/data
           - name: container1
+            executable: "{{ test_executable | default('podman') }}"
             image: docker.io/alpine:3.7
             state: started
             command: sleep 1d
@@ -462,14 +513,17 @@
             image: docker.io/alpine
             state: started
             command: sleep 20m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem2
             image: docker.io/alpine
             state: started
             command: sleep 21m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem3
             image: docker.io/alpine
             state: started
             command: sleep 22m
+            executable: "{{ test_executable | default('podman') }}"
 
     - name: Check basic idempotency of running container - run it again
       containers.podman.podman_containers:
@@ -478,14 +532,17 @@
             image: docker.io/alpine
             state: present
             command: sleep 20m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem2
             image: docker.io/alpine
             state: present
             command: sleep 21m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem3
             image: docker.io/alpine
             state: present
             command: sleep 22m
+            executable: "{{ test_executable | default('podman') }}"
       register: idem
 
     - name: Check that nothing was changed
@@ -501,14 +558,17 @@
             state: present
             command: sleep 20m
             tty: true
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem2
             image: docker.io/alpine
             state: present
             command: sleep 21m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem3
             image: docker.io/alpine
             state: present
             command: sleep 22m
+            executable: "{{ test_executable | default('podman') }}"
       register: idem1
 
     - name: Check that container is recreated when changed
@@ -523,14 +583,17 @@
             image: docker.io/alpine
             state: present
             command: sleep 20m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem2
             image: docker.io/alpine
             state: present
             command: sleep 21m
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem3
             image: docker.io/alpine
             state: present
             command: sleep 22m
+            executable: "{{ test_executable | default('podman') }}"
       register: idem2
 
     - name: Check that container is recreated when changed to default value
@@ -543,6 +606,7 @@
         containers:
           - name: testidem
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
       register: remove
 
     - name: Check podman_actions
@@ -552,6 +616,7 @@
 
     - name: Create a pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: testidempod
 
     - name: Check basic idempotency of pod container
@@ -562,11 +627,13 @@
             state: present
             command: sleep 20m
             pod: "testidempod"
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem-pod2
             image: docker.io/alpine
             state: present
             command: sleep 20m
             pod: testidempod
+            executable: "{{ test_executable | default('podman') }}"
 
     - name: Check basic idempotency of pod container - run it again
       containers.podman.podman_containers:
@@ -576,11 +643,13 @@
             state: present
             command: sleep 20m
             pod: testidempod
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem-pod2
             image: docker.io/alpine
             state: present
             command: sleep 20m
             pod: testidempod
+            executable: "{{ test_executable | default('podman') }}"
       register: idem
 
     - name: Check that nothing was changed in pod containers
@@ -597,11 +666,13 @@
             command: sleep 20m
             tty: true
             pod: testidempod
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem-pod2
             image: alpine
             state: present
             command: sleep 20m
             pod: testidempod
+            executable: "{{ test_executable | default('podman') }}"
       register: idem1
 
     - name: Check that container is recreated when changed
@@ -614,12 +685,15 @@
         containers:
           - name: testidem-pod
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
           - name: testidem-pod2
             state: absent
+            executable: "{{ test_executable | default('podman') }}"
 
   always:
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
@@ -638,6 +712,7 @@
 
     - name: Remove pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: testidempod
         state: absent
 

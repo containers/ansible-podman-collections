@@ -15,6 +15,7 @@
 
     - name: Get missing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: nonexist
       ignore_errors: true
@@ -30,6 +31,7 @@
 
     - name: Get existing network info
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
       register: existing_network
 

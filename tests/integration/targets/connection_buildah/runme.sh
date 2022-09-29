@@ -2,6 +2,11 @@
 set -o pipefail
 set -eux
 
+# New requirement from ansible-core 2.14
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
 function run_ansible {
     ${SUDO:-} ${ANSIBLECMD:-ansible-playbook} ../connection/test_connection.yml -i "test_connection.inventory" \
         -e target_hosts="buildah" \

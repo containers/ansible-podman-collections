@@ -3,16 +3,19 @@
 
     - name: Make sure secret doesn't exist
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         state: absent
         name: mysecret
 
     - name: Create secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         name: mysecret
         data: secret content
 
     - name: Recreate secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         name: mysecret
         data: super secret content
         force: true
@@ -20,6 +23,7 @@
 
     - name: Skip secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         name: mysecret
         data: super secret content
         skip_existing: true
@@ -33,6 +37,7 @@
 
     - name: Create container that uses secret
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         image: alpine:3.7
         secrets:
@@ -49,6 +54,7 @@
 
     - name: Create container that uses secret with options
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         image: alpine:3.7
         secrets:
@@ -65,6 +71,7 @@
 
     - name: Remove secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         state: absent
         name: mysecret
       register: removed
@@ -76,6 +83,7 @@
 
     - name: Remove secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         state: absent
         name: mysecret
       register: removed
@@ -87,6 +95,7 @@
 
     - name: Create secret with file driver and custom options
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         name: mysecret
         data: secret content
         driver: file
@@ -96,11 +105,13 @@
 
     - name: Remove secret
       containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
         state: absent
         name: mysecret
 
   always:
     - name: Remove container that uses secret
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: showmysecret
         state: absent

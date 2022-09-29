@@ -3,11 +3,13 @@
 
     - name: Remove pods
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "rootnetpod"
         state: absent
 
     - name: Delete all network leftovers from tests
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
@@ -62,11 +64,13 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "rootnetpod"
         state: absent
 
     - name: Delete all network leftovers from tests
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

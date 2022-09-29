@@ -25,6 +25,7 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
@@ -33,6 +34,7 @@
 
     - name: Create pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: created
       register: pod1_info
@@ -48,6 +50,7 @@
 
     - name: Start pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod2_info
@@ -63,6 +66,7 @@
 
     # - name: Pause pod
     #   containers.podman.podman_pod:
+    #     executable: "{{ test_executable | default('podman') }}"
     #     name: pod1
     #     state: paused
     #   register: pod3_info
@@ -80,6 +84,7 @@
 
     # - name: Unpause pod
     #   containers.podman.podman_pod:
+    #     executable: "{{ test_executable | default('podman') }}"
     #     name: pod1
     #     state: unpaused
     #   register: pod4_info
@@ -97,6 +102,7 @@
 
     - name: Stop pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: stopped
       register: pod5_info
@@ -112,6 +118,7 @@
 
     - name: Stop non-existing pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod-notexist
         state: stopped
       register: pod5a_info
@@ -124,6 +131,7 @@
 
     - name: Kill pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: killed
       register: pod6_info
@@ -139,6 +147,7 @@
 
     - name: Start pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod7_info
@@ -154,6 +163,7 @@
 
     - name: Start pod again for idempotency
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod8_info
@@ -165,6 +175,7 @@
 
     - name: Restart pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: restarted
       register: pod121_info
@@ -176,11 +187,13 @@
 
     - name: Stop pod before restart
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: stopped
 
     - name: Restart stopped pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: restarted
       register: pod122_info
@@ -192,6 +205,7 @@
 
     - name: Stop pod with additional config
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: stopped
         ports:
@@ -206,6 +220,7 @@
 
     - name: Start pod with ports
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         ports:
@@ -226,6 +241,7 @@
 
     - name: Start pod with ports for idempotency
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         ports:
@@ -246,6 +262,7 @@
 
     - name: Start pod again for idempotency
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod11_info
@@ -257,6 +274,7 @@
 
     - name: Start pod with share
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         share: uts
@@ -269,6 +287,7 @@
 
     - name: Start pod with share for idempotency
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         share: uts
@@ -281,6 +300,7 @@
 
     - name: Start pod without shares
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         share: ""
@@ -293,6 +313,7 @@
 
     - name: Start pod with default shares
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod15_info
@@ -304,6 +325,7 @@
 
     - name: Start pod with labels
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         label:
@@ -319,6 +341,7 @@
 
     - name: Start pod with labels again for idempotency
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         label:
@@ -334,6 +357,7 @@
 
     - name: Start pod with different labels
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         label:
@@ -349,6 +373,7 @@
 
     - name: Start pod without labels
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod19_info
@@ -360,6 +385,7 @@
 
     - name: Start pod with dns and hosts settings
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -382,6 +408,7 @@
 
     - name: Start pod with dns and hosts settings again
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -404,6 +431,7 @@
 
     - name: Start pod with changed dns
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -427,6 +455,7 @@
 
     - name: Start pod with changed add host
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -450,6 +479,7 @@
 
     - name: Start pod with changed dns option
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -473,6 +503,7 @@
 
     - name: Start pod with changed dns search
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -495,6 +526,7 @@
 
     - name: Start pod with changed hostname
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -517,6 +549,7 @@
 
     - name: Start pod with removed dns search
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -537,6 +570,7 @@
 
     - name: Start pod with removed dns option
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -555,6 +589,7 @@
 
     - name: Start pod with removed dns
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         add_host:
@@ -570,6 +605,7 @@
 
     - name: Start pod with removed add host
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
         hostname: bestpod
@@ -582,6 +618,7 @@
 
     - name: Start pod without infra
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: created
         infra: false
@@ -594,6 +631,7 @@
 
     - name: Start pod without infra again
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: created
         infra: false
@@ -606,6 +644,7 @@
 
     - name: Start pod with infra
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: started
       register: pod33_info
@@ -617,6 +656,7 @@
 
     - name: Start pod with different infra image
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: created
         infra_image: alpine:3.9
@@ -629,6 +669,7 @@
 
     - name: Start pod with different infra image again
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod1
         state: created
         infra_image: alpine:3.9
@@ -641,12 +682,14 @@
 
     - name: Start pod2 with default settings
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: created
       register: pod36_info
 
     - name: Run container1 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -655,6 +698,7 @@
 
     - name: Run container2 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container2
         image: alpine
         command: top
@@ -663,6 +707,7 @@
 
     - name: Start pod2
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: started
         generate_systemd:
@@ -685,17 +730,20 @@
 
     - name: Remove pod2
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: absent
 
     - name: Run pod2 with network slirp4netns
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: started
         network: slirp4netns:outbound_addr=10.10.10.46
 
     - name: Run container1 in pod
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -704,6 +752,7 @@
 
     - name: Run pod2 with network slirp4netns - again
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: started
         network: slirp4netns:outbound_addr=10.10.10.46
@@ -711,6 +760,7 @@
 
     - name: Run container1 in pod slirp4netns
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -726,6 +776,7 @@
 
     - name: Run pod2 with different network slirp4netns
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: pod2
         state: started
         network: slirp4netns:outbound_addr=10.10.10.47
@@ -733,6 +784,7 @@
 
     - name: Run container1 in different pod slirp4netns
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: container1
         image: alpine
         command: top
@@ -750,6 +802,7 @@
 
     - name: Delete all pods leftovers from tests
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
@@ -758,6 +811,7 @@
 
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:

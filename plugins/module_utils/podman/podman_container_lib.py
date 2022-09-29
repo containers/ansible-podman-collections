@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function)
 import json  # noqa: F402
+import os  # noqa: F402
 import shlex  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -112,6 +113,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     rm=dict(type='bool', aliases=['remove', 'auto_remove']),
     rootfs=dict(type='bool'),
     secrets=dict(type='list', elements='str', no_log=True),
+    sdnotify=dict(type='str'),
     security_opt=dict(type='list', elements='str'),
     shm_size=dict(type='str'),
     sig_proxy=dict(type='bool'),
@@ -479,6 +481,10 @@ class PodmanModuleParams:
         return c
 
     def addparam_network(self, c):
+        if LooseVersion(self.podman_version) >= LooseVersion('4.0.0'):
+            for net in self.params['network']:
+                c += ['--network', net]
+            return c
         return c + ['--network', ",".join(self.params['network'])]
 
     def addparam_network_aliases(self, c):
@@ -534,6 +540,9 @@ class PodmanModuleParams:
 
     def addparam_rootfs(self, c):
         return c + ['--rootfs=%s' % self.params['rootfs']]
+
+    def addparam_sdnotify(self, c):
+        return c + ['--sdnotify=%s' % self.params['sdnotify']]
 
     def addparam_secrets(self, c):
         for secret in self.params['secrets']:
@@ -658,10 +667,10 @@ class PodmanDefaults:
             "read_only": False,
             "rm": False,
             "security_opt": [],
-            "stop_signal": self.image_info['config'].get('stopsignal', "15"),
+            "stop_signal": self.image_info.get('config', {}).get('stopsignal', "15"),
             "tty": False,
             "user": self.image_info.get('user', ''),
-            "workdir": self.image_info['config'].get('workingdir', '/'),
+            "workdir": self.image_info.get('config', {}).get('workingdir', '/'),
             "uts": "",
         }
 
@@ -879,7 +888,16 @@ class PodmanContainerDiff:
     def diffparam_device(self):
         before = [":".join([i['pathonhost'], i['pathincontainer']])
                   for i in self.info['hostconfig']['devices']]
+        if not before and 'createcommand' in self.info['config']:
+            cr_com = self.info['config']['createcommand']
+            if '--device' in cr_com:
+                before = [cr_com[k + 1].lower()
+                          for k, i in enumerate(cr_com) if i == '--device']
+        before = [":".join((i, i))
+                  if len(i.split(":")) == 1 else i for i in before]
         after = [":".join(i.split(":")[:2]) for i in self.params['device']]
+        after = [":".join((i, i))
+                 if len(i.split(":")) == 1 else i for i in after]
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('devices', before, after)
 
@@ -954,13 +972,14 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('hostname', before, after)
 
     def diffparam_image(self):
-        before_id = self.info['image']
+        before_id = self.info['image'] or self.info['rootfs']
         after_id = self.image_info['id']
         if before_id == after_id:
             return self._diff_update_and_compare('image', before_id, after_id)
-        before = self.info['config']['image']
+        is_rootfs = self.info['rootfs'] != '' or self.params['rootfs']
+        before = self.info['config']['image'] or before_id
         after = self.params['image']
-        mode = self.params['image_strict']
+        mode = self.params['image_strict'] or is_rootfs
         if mode is None or not mode:
             # In a idempotency 'lite mode' assume all images from different registries are the same
             before = before.replace(":latest", "")
@@ -1167,7 +1186,7 @@ class PodmanContainerDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
-            image_ports = self.image_info['config'].get('exposedports', {})
+            image_ports = self.image_info.get('config', {}).get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
         after = [
@@ -1345,6 +1364,12 @@ def ensure_image_exists(module, image, module_params):
     """
     image_actions = []
     module_exec = module_params['executable']
+    is_rootfs = module_params['rootfs']
+
+    if is_rootfs:
+        if not os.path.exists(image) or not os.path.isdir(image):
+            module.fail_json(msg="Image rootfs doesn't exist %s" % image)
+        return image_actions
     if not image:
         return image_actions
     rc, out, err = module.run_command([module_exec, 'image', 'exists', image])
@@ -1426,6 +1451,9 @@ class PodmanContainer:
     def get_image_info(self):
         """Inspect container image and gather info about it."""
         # pylint: disable=unused-variable
+        is_rootfs = self.module_params['rootfs']
+        if is_rootfs:
+            return {'Id': self.module_params['image']}
         rc, out, err = self.module.run_command(
             [self.module_params['executable'], b'image', b'inspect', self.module_params['image']])
         return json.loads(out)[0] if rc == 0 else {}
@@ -1503,14 +1531,16 @@ class PodmanContainer:
         """Recreate the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.create()
 
     def recreate_run(self):
         """Recreate and run the container."""
         if self.running:
             self.stop()
-        self.delete()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
         self.run()
 
 
@@ -1545,6 +1575,10 @@ class PodmanManager:
         self.state = self.module_params['state']
         self.restart = self.module_params['force_restart']
         self.recreate = self.module_params['recreate']
+
+        if self.module_params['generate_systemd'].get('new'):
+            self.module_params['rm'] = True
+
         self.container = PodmanContainer(
             self.module, self.name, self.module_params)
 
@@ -1565,7 +1599,10 @@ class PodmanManager:
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
         self.results.update(
-            {'podman_systemd': generate_systemd(self.module, self.module_params, self.name)})
+            {'podman_systemd': generate_systemd(self.module,
+                                                self.module_params,
+                                                self.name,
+                                                self.container.version)})
 
     def make_started(self):
         """Run actions if desired state is 'started'."""

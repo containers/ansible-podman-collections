@@ -3,16 +3,19 @@
 
     - name: Remove container rootlessnet2
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         state: absent
 
     - name: Remove container rootlessnet
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         state: absent
 
     - name: Run container with no specified networks
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -20,6 +23,7 @@
 
     - name: Run container again with no specified networks
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -33,6 +37,7 @@
 
     - name: Run container with network mode host
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -47,6 +52,7 @@
 
     - name: Run container with network mode host again
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -61,6 +67,7 @@
 
     - name: Run container without network at all
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -75,6 +82,7 @@
 
     - name: Run container without network at all again
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -89,6 +97,7 @@
 
     - name: Run container with default network mode
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -102,6 +111,7 @@
 
     - name: Run container with slirp4netns options
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -117,6 +127,7 @@
 
     - name: Run container with slirp4netns options - again
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -132,6 +143,7 @@
 
     - name: Run container with different slirp4netns options
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -147,6 +159,7 @@
 
     - name: Run container without options
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -160,6 +173,7 @@
 
     - name: Run container without options - again
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         image: "{{ idem_image }}"
         command: 1h
@@ -173,6 +187,7 @@
 
     - name: Run container network attached to first one
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         image: "{{ idem_image }}"
         command: 1h
@@ -187,6 +202,7 @@
 
     - name: Run container network attached to first one - again
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         image: "{{ idem_image }}"
         command: 1h
@@ -202,10 +218,12 @@
 
     - name: Delete all containers leftovers from tests
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet2
         state: absent
 
     - name: Delete all containers leftovers from tests 2
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: rootlessnet
         state: absent

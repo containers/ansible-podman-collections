@@ -92,9 +92,8 @@ jobs:
           command -v ansible
           ansible --version
 
-          if [[ '${{ matrix.ansible-version }}'  == 'git+https://github.com/ansible/ansible.git@devel' ]]; then
-            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
-          elif [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
+          export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+          if [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
             export ANSIBLE_CONFIG=$(pwd)/ci/ansible-2.9.cfg
           fi
 

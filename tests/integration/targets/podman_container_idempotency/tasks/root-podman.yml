@@ -2,11 +2,13 @@
 # Ulimits testing
 - name: Make sure container doesn't exist
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: root-idempotency
     state: absent
 
 - name: Run container as is
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: started
@@ -14,6 +16,7 @@
 
 - name: Run container as is again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -27,6 +30,7 @@
 
 - name: Run containers with ulimits
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -43,6 +47,7 @@
 
 - name: Run containers with ulimits - idempotency
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -59,6 +64,7 @@
 
 - name: Run containers with changed ulimits
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -75,6 +81,7 @@
 
 - name: Run containers with changed ulimits - idempotency
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -91,6 +98,7 @@
 
 - name: Run default container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: started
@@ -98,6 +106,7 @@
 
 - name: Run containers with MAC address
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: started
@@ -113,6 +122,7 @@
 
 - name: Run containers with MAC address again - idempotency
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -127,6 +137,7 @@
 
 - name: Run containers with MAC address changed
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -141,6 +152,7 @@
 
 - name: Run again default container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -154,6 +166,7 @@
 
 - name: Run container with publishing ports and ipv6
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -174,6 +187,7 @@
 
 - name: Run container with publishing ports and ipv6 again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: root-idempotency
     state: present
@@ -194,5 +208,6 @@
 
 - name: Make sure container doesn't exist
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: root-idempotency
     state: absent

@@ -452,7 +452,7 @@ class PodmanImageManager(object):
         if not layer_ids:
             layer_ids = lines.splitlines()
 
-        return(layer_ids[-1])
+        return (layer_ids[-1])
 
     def present(self):
         image = self.find_image()

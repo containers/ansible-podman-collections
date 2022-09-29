@@ -6,11 +6,14 @@
         container_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
 
     - name: Make sure container doesn't exist
-      command: podman container rm -f {{ container_name }}
-      ignore_errors: true
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
 
     - name: Get missing container info
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
       register: nonexist
 
@@ -23,6 +26,7 @@
 
     - name: Get missing multiple container info
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
         name:
           - "{{ container_name }}"
           - neverexist
@@ -42,11 +46,13 @@
 
     - name: Get existing container info
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
       register: existing_container
 
     - name: Get mixed existing and non-existing container info
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
         name:
           - "{{ container_name }}"
           - whatever
@@ -54,6 +60,7 @@
 
     - name: Get all containers info
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: all_containers
 
     - name: Dump podman container inspect result
@@ -68,7 +75,10 @@
         podman_inspect_result: "{{ podman_inspect.stdout | from_json }}"
 
     - name: Cleanup
-      command: podman container rm -f {{ container_name }}
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
 
     - name: Make checks
       # https://github.com/containers/podman/issues/9490
@@ -85,5 +95,7 @@
   always:
 
     - name: Cleanup
-      command: podman container rm -f {{ container_name }}
-      ignore_errors: true
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent

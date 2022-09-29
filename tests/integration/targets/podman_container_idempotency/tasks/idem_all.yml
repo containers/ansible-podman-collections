@@ -1,11 +1,13 @@
 # Other settings
 - name: Remove leftovers from other tests
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
 
 - name: Run container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: started
@@ -13,6 +15,7 @@
 
 - name: Run container again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -25,6 +28,7 @@
 
 - name: Run container with environment vars
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -40,6 +44,7 @@
 
 - name: Run container with environment vars again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -55,6 +60,7 @@
 
 - name: Run container with changed environment vars
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -70,6 +76,7 @@
 
 - name: Run container with log opt tag
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -85,6 +92,7 @@
 
 - name: Run container with log opt tag - again
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -100,6 +108,7 @@
 
 - name: Run container with default log opt tag
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -113,6 +122,7 @@
 
 - name: Run container with log opt path
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -128,6 +138,7 @@
 
 - name: Run container with changed log opt path
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -143,6 +154,7 @@
 
 - name: Run container with default log opt path
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -157,6 +169,7 @@
 
 - name: Run container with all log-opts
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
     state: present
@@ -167,7 +180,70 @@
       tag: sometag
     command: 1h
 
+- name: Run container with mounted /dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test15
+
+- name: Run container with mounted /dev/fuse again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test16
+
+- name: Run container with mounted /dev/fuse:/dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse:/dev/fuse
+  register: test17
+
+- name: Run container with mounted /dev/fuse third time
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test18
+
+- name: Run container without mounted device
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+  register: test19
+
+- name: Check info with mounted devices
+  assert:
+    that:
+      - test15 is changed
+      - test16 is not changed
+      - test17 is not changed
+      - test18 is not changed
+      - test19 is changed
+
 - name: Remove test container
   containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent

@@ -358,6 +358,24 @@ options:
             Refer to podman-generate-systemd(1) for more information.
         type: bool
         default: false
+      after:
+        type: list
+        elements: str
+        required: false
+        description:
+          - Add the systemd unit after (After=) option, that ordering dependencies between the list of dependencies and this service.
+      wants:
+        type: list
+        elements: str
+        required: false
+        description:
+          - Add the systemd unit wants (Wants=) option, that this service is (weak) dependent on.
+      requires:
+        type: list
+        elements: str
+        required: false
+        description:
+          - Set the systemd unit requires (Requires=) option. Similar to wants, but declares a stronger requirement dependency.
   gidmap:
     description:
       - Run the container in a new user namespace using the supplied mapping.
@@ -679,6 +697,11 @@ options:
       - If true, the first argument refers to an exploded container on the file
         system. The default is false.
     type: bool
+  sdnotify:
+    description:
+      - Determines how to use the NOTIFY_SOCKET, as passed with systemd and Type=notify.
+        Can be container, conmon, ignore.
+    type: str
   secrets:
     description:
       - Add the named secrets into the container.

@@ -14,11 +14,13 @@
 
     - name: Make sure pod doesn't exist
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}"
         state: absent
 
     - name: Get missing pod info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}"
       register: nonexist
 
@@ -29,6 +31,7 @@
 
     - name: Get all missing pods info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: nonexist2
 
     - name: Check info for missing pod
@@ -38,10 +41,12 @@
 
     - name: Create test pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}"
 
     - name: Get all pods info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: info
 
     - name: Check info for pod
@@ -56,6 +61,7 @@
 
     - name: Get specific pod info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}"
       register: info2
 
@@ -71,10 +77,12 @@
 
     - name: Create another test pod
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}_1"
 
     - name: Get specific another pod info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ pod_name }}"
       register: info3
 
@@ -85,6 +93,7 @@
 
     - name: Get pods info
       containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: info4
 
     - name: Check info for pods
@@ -96,6 +105,7 @@
 
     - name: Make sure pod doesn't exist
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
       loop:
