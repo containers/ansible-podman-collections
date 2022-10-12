@@ -722,39 +722,6 @@ class PodmanContainerDiff:
             return True
         return False
 
-    def _clean_path(self, x):
-        '''Remove trailing and multiple consecutive slashes from path.'''
-        if not x.rstrip("/"):
-            return "/"
-        b = x.rstrip("/")
-        while True:
-            a = b.replace("//", "/")
-            if a == b:
-                break
-            b = a
-        return a
-
-    def _clean_path_in_mount_str(self, mounts):
-        '''Parse a mount string, using _clean_path() on any known path
-           values. Sort the resulting mount string as a defense against
-           order changing as the return is likely used for comparisons.'''
-        mfin = []
-        for mstr in [mounts] if type(mounts) is str else mounts:
-            msfin = []
-            for mitem in sorted(mstr.split(',')):
-                nv = mitem.split('=', maxsplit=1)
-                miname = nv[0]
-                mival = nv[1] if len(nv) > 1 else None
-                if miname in ['src', 'source', 'dst', 'dest', 'destination', 'target']:
-                    if mival:
-                        mival = self._clean_path(mival)
-                if mival is None:
-                    msfin.append(miname)
-                else:
-                    msfin.append("{0}={1}".format(miname, mival))
-            mfin.append(','.join(msfin))
-        return mfin[0] if type(mounts) is str else mfin
-
     def diffparam_annotation(self):
         before = self.info['config']['annotations'] or {}
         after = before.copy()
@@ -1100,21 +1067,6 @@ class PodmanContainerDiff:
             after = before
         return self._diff_update_and_compare('mac_address', before, after)
 
-    def diffparam_mount(self):
-        before = []
-        if self.info['config'].get('createcommand'):
-            cr_com = self.info['config']['createcommand']
-            for i, v in enumerate(cr_com):
-                if v == '--mount':
-                    before.append(self._clean_path_in_mount_str(cr_com[i + 1]))
-        after = self.params.get('mount')
-        if not after:
-            after = []
-        else:
-            after = self._clean_path_in_mount_str(after)
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('mount', before, after)
-
     def diffparam_network(self):
         net_mode_before = self.info['hostconfig']['networkmode']
         net_mode_after = ''
@@ -1227,25 +1179,6 @@ class PodmanContainerDiff:
         after = self.params['timezone']
         return self._diff_update_and_compare('timezone', before, after)
 
-    def diffparam_tmpfs(self):
-        before = []
-        if self.info['config'].get('createcommand'):
-            cr_com = self.info['config']['createcommand']
-            for i, v in enumerate(cr_com):
-                if v == '--tmpfs':
-                    tp, tm = cr_com[i + 1].split(':')
-                    before.append('{0}:{1}'.format(self._clean_path(tp), self._clean_path_in_mount_str(tm)))
-        after = []
-        tmpfs = self.params.get('tmpfs')
-        if tmpfs:
-            for k, v in tmpfs.items():
-                if v:
-                    after.append('{0}:{1}'.format(self._clean_path(k), self._clean_path_in_mount_str(v)))
-                else:
-                    after.append(self._clean_path(k))
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('tmpfs', before, after)
-
     def diffparam_tty(self):
         before = self.info['config']['tty']
         after = self.params['tty']
@@ -1290,37 +1223,220 @@ class PodmanContainerDiff:
             after = before
         return self._diff_update_and_compare('uts', before, after)
 
-    def diffparam_volume(self):
-        def clean_volume_def(vdef):
-            # va = [<srcvol>:|<hostdir>:]<contdir>[:<opts>]
-            va = vdef.split(':', maxsplit=2)
-            if len(va) == 2:
-                if len(va[1]) > 0 and va[1][0] == '/': 
-                    # va = [<srcvol>:|<hostdir>:]<contdir>
-                    return '{0}:{1}'.format(self._clean_path(va[0]), self._clean_path(va[1]))
-                # va = <contdir>[:<opts>]
-                return '{0}:{1}'.format(self._clean_path(va[0]), self._clean_path_in_mount_str(va[1]))
-            elif len(va) == 3:
-                # va = [<srcvol>:|<hostdir>:]<contdir>[:<opts>]
-                return '{0}:{1}:{2}'.format(self._clean_path(va[0]), self._clean_path(va[1]), self._clean_path_in_mount_str(va[2])) 
-            # va = <contdir>
-            return '{0}'.format(self._clean_path(va[0]))
+    def diffparam_volumes_all(self):
+        '''check for difference between old and new uses of --mount, --tmpfs, --volume and
+           Containerfile's VOLUME.'''
+
+        def clean_path(x):
+            '''Remove trailing and multiple consecutive slashes from path. Collapse '/./' to '/'.'''
+            if not x.rstrip("/"):
+                return "/"
+            b = x.rstrip("/")
+            while True:
+                a = b.replace("//", "/")
+                a = a.replace("/./", "/")
+                if a == b:
+                    break
+                b = a
+            return a
+
+        def prep_mount_args_for_comp(mounts, mtype=None):
+            '''Parse a mount string, using clean_path() on any known path
+               values. Sort the resulting mount string as a defense against
+               order changing as the return is likely used for comparisons.'''
+
+            # check the code where defaults below are used if changing. unfortunately things
+            # are not cleanly separated and their handling requires some encoding. :(
+            # the 'fake' mount options are there to allow for matching with tmpfs/volume/etc
+            # options whilst keeping them separate from real options.
+            # all args are assumed to be item[=val] format and comma separated in-code.
+            default_mount_args = {
+                'volume': 'readonly=false,chown=false,idmap=false',
+                'bind': 'readonly=false,chown=false,idmap=false,bind-propagation=rprivate',
+                'tmpfs': 'readonly=false,chown=false,tmpfs-mode=1777',
+                'devpts': 'uid=0,gid=0,mode=600,max=1048576',
+                'image': 'readwrite=false',
+            }
+            noargs_tmpfs_args = 'rw,noexec,nosuid,nodev'
+            default_tmpfs_args = 'rw,suid,dev,exec,size=50%'
+            default_volume_args = 'rw,rprivate,nosuid,nodev'  # manpage says "private" but podman inspect says "rprivate"
+
+            mfin = []
+            wants_str = isinstance(mounts, str)
+            for mstr in [mounts] if wants_str else mounts:
+                mstype = mtype
+                msparsed = {
+                    'type': mtype,
+                }
+                for mitem in sorted(mstr.split(',')):
+                    nv = mitem.split('=', maxsplit=1)
+                    miname = nv[0]
+                    mival = nv[1] if len(nv) > 1 else None
+                    if miname == 'type':
+                        mstype = mival
+                        msparsed['type'] = mstype
+                        break
+                if mstype == 'tmpfs':
+                    if not mstr:
+                        mstr = noargs_tmpfs_args
+                    mstr = ','.join([default_mount_args[mstype], default_tmpfs_args, mstr]).strip(',')
+                elif mstype == 'volume':
+                    mstr = ','.join([default_mount_args[mstype], default_volume_args, mstr]).strip(',')
+                else:
+                    mstr = ','.join([default_mount_args[mstype], mstr]).strip(',')
+                if not mstype:
+                    raise ValueError("mount type not set/found for '{}'.".format(mstr))
+                for mitem in mstr.split(','):
+                    nv = mitem.split('=', maxsplit=1)
+                    miname = nv[0]
+                    mival = nv[1] if len(nv) > 1 else None
+                    if miname in ['source', 'src']:
+                        miname = 'src'
+                        if mival:
+                            mival = clean_path(mival)
+                    elif miname in ['destination', 'dest', 'target', 'dst']:
+                        miname = 'dst'
+                        if mival:
+                            mival = clean_path(mival)
+                    elif miname in ['ro', 'readonly']:
+                        miname = 'readonly'
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['rw', 'readwrite']:
+                        miname = 'readonly'
+                        if not mival:
+                            mival = 'false'
+                        elif mival == 'true':
+                            mival = 'false'
+                        elif mival == 'false':
+                            mival = 'true'
+                    elif miname in ['U', 'chown']:
+                        miname = 'chown'
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['z']:
+                        miname = 'relabel'
+                        mival = 'shared'
+                    elif miname in ['Z']:
+                        miname = 'relabel'
+                        mival = 'private'
+                    elif miname in ['exec', 'dev', 'suid', 'sync']:
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['noexec', 'nodev', 'nosuid']:
+                        miname = miname[2:]
+                        mival = 'false'
+                    elif miname in ['shared', 'slave', 'private', 'unbindable', 'rshared', 'rslave', 'runbindable', 'rprivate']:
+                        mival = miname
+                        miname = 'bind-propagation'
+                    elif miname in ['idmap']:
+                        if not mival:
+                            mival = 'true'
+                    elif mstype == 'tmpfs' and miname in ['size', 'mode'] and mival:
+                        miname = 'tmpfs-{}'.format(miname)
+                    elif miname in ['type', 'tmpfs-size', 'tmpfs-mode', 'bind-propagation', 'relabel']:
+                        pass
+                    elif miname.startswith('_unparsed_'):
+                        pass
+                    else:
+                        miname = '_unparsed_{}'.format(miname)
+                    # source can be optional and can be specified as empty. If it is empty
+                    # remove it altogether so that comparisons can be made simply.
+                    if miname == 'src' and not mival:
+                        miname = None
+                    if miname:
+                        msparsed[miname] = mival
+                msfin = []
+                for miname, mival in msparsed.items():
+                    if mival is None:
+                        msfin.append(miname)
+                    else:
+                        msfin.append("{0}={1}".format(miname, mival))
+                mfin.append(','.join(sorted(list(set(msfin)))))
+            return mfin[0] if wants_str else mfin
+
+        def clean_image_vols(iv_type):
+            '''cleans a list or string of Containerfile VOLUME config(s).'''
+            if iv_type == 'bind':
+                return prep_volume_for_comp(image_volumes)
+            elif iv_type == 'tmpfs':
+                return prep_tmpfs_for_comp(image_volumes)
+            raise ValueError("invalid image volume type: {}.".format(iv_type))
+
+        def prep_tmpfs_for_comp(all_ms):
+            res = []
+            wants_str = isinstance(all_ms, str)
+            is_dict = isinstance(all_ms, dict)
+            for ms in [all_ms] if wants_str else all_ms:
+                if is_dict:
+                    dm = [ms, all_ms[ms]]
+                else:
+                    dm = ms.split(':', maxsplit=1)
+                if len(dm) == 1:
+                    res.append('dst={}'.format(dm[0]))
+                else:
+                    res.append('dst={},{}'.format(dm[0], dm[1]))
+            return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='tmpfs')
+
+        def prep_volume_for_comp(all_ms):
+            res = []
+            wants_str = isinstance(all_ms, str)
+            for ms in [all_ms] if wants_str else all_ms:
+                dm = ms.split(':', maxsplit=2)
+                mtype = 'volume'
+                if len(dm) == 1:
+                    # ms is <contdir>, mtype is volume
+                    dm.append(dm[0])    # <contdir>
+                    dm.append('')       # <opt>
+                    dm[0] = ''          # <srcvol>
+                else:
+                    # ms is <srcvol|hostdir>:<contdir>:<opt>
+                    if dm[0].startswith('/'):
+                        mtype = 'bind'
+                    if len(dm) == 2:
+                        # ms is <srcvol|hostdir>:<contdir>
+                        dm.append('')       # <opt>
+                dm[2] = prep_mount_args_for_comp(dm[2], mtype=mtype)
+                res.append('src={},dst={},{}'.format(dm[0], dm[1], dm[2]).strip(','))
+            return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='volume')
 
         before = []
+        iv_type = 'bind'  # documented default
+        image_volumes = list(map(clean_path, self.image_info['config'].get('volumes', {}).keys()))
         if self.info['config'].get('createcommand'):
             cr_com = self.info['config']['createcommand']
             for i, v in enumerate(cr_com):
-                if v == '--volume':
-                    before.append(clean_volume_def(cr_com[i + 1]))
-        after = []
-        params = self.params.get('volume')
-        if not params:
-            after = []
-        else:
-            for p in params:
-                after.append(clean_volume_def(p))
+                if v == '--image-volume':
+                    if cr_com[i + 1]:
+                        iv_type = cr_com[i + 1]
+                elif v == '--mount':
+                    f = prep_mount_args_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+                elif v == '--tmpfs':
+                    f = prep_tmpfs_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+                elif v == '--volume':
+                    f = prep_volume_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+        before.extend(clean_image_vols(iv_type))
+
+        after = list(self.params.get('mount') or set())
+        after_iv_type = self.params.get('image_volume', 'bind') or 'bind'
+        after.extend(clean_image_vols(after_iv_type))
+
+        tvols = self.params.get('tmpfs')
+        if tvols:
+            after.extend(prep_tmpfs_for_comp(tvols))
+        tvols = self.params.get('volume')
+        if tvols:
+            after.extend(prep_volume_for_comp(tvols))
+        after = prep_mount_args_for_comp(after)
+
         before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('volume', before, after)
+        return self._diff_update_and_compare('volumes_all', before, after)
 
     def diffparam_volumes_from(self):
         # Possibly volumesfrom is not in config
