@@ -1409,7 +1409,7 @@ class PodmanContainerDiff:
                 else:
                     mstr = ','.join([default_mount_args[mstype], mstr]).strip(',')
                 if not mstype:
-                    raise ValueError("mount type not set/found for '{}'.".format(mstr))
+                    raise ValueError("mount type not set/found for '{0}'.".format(mstr))
                 for mitem in mstr.split(','):
                     nv = mitem.split('=', maxsplit=1)
                     miname = nv[0]
@@ -1457,13 +1457,13 @@ class PodmanContainerDiff:
                         if not mival:
                             mival = 'true'
                     elif mstype == 'tmpfs' and miname in ['size', 'mode'] and mival:
-                        miname = 'tmpfs-{}'.format(miname)
+                        miname = 'tmpfs-{0}'.format(miname)
                     elif miname in ['type', 'tmpfs-size', 'tmpfs-mode', 'bind-propagation', 'relabel']:
                         pass
                     elif miname.startswith('_unparsed_'):
                         pass
                     else:
-                        miname = '_unparsed_{}'.format(miname)
+                        miname = '_unparsed_{0}'.format(miname)
                     # source can be optional and can be specified as empty. If it is empty
                     # remove it altogether so that comparisons can be made simply.
                     if miname == 'src' and not mival:
@@ -1485,7 +1485,7 @@ class PodmanContainerDiff:
                 return prep_volume_for_comp(image_volumes)
             elif iv_type == 'tmpfs':
                 return prep_tmpfs_for_comp(image_volumes)
-            raise ValueError("invalid image volume type: {}.".format(iv_type))
+            raise ValueError("invalid image volume type: {0}.".format(iv_type))
 
         def prep_tmpfs_for_comp(all_ms):
             res = []
@@ -1497,9 +1497,9 @@ class PodmanContainerDiff:
                 else:
                     dm = ms.split(':', maxsplit=1)
                 if len(dm) == 1:
-                    res.append('dst={}'.format(dm[0]))
+                    res.append('dst={0}'.format(dm[0]))
                 else:
-                    res.append('dst={},{}'.format(dm[0], dm[1]))
+                    res.append('dst={0},{1}'.format(dm[0], dm[1]))
             return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='tmpfs')
 
         def prep_volume_for_comp(all_ms):
@@ -1521,12 +1521,12 @@ class PodmanContainerDiff:
                         # ms is <srcvol|hostdir>:<contdir>
                         dm.append('')       # <opt>
                 dm[2] = prep_mount_args_for_comp(dm[2], mtype=mtype)
-                res.append('src={},dst={},{}'.format(dm[0], dm[1], dm[2]).strip(','))
+                res.append('src={0},dst={1},{2}'.format(dm[0], dm[1], dm[2]).strip(','))
             return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='volume')
 
         before = []
         iv_type = 'bind'  # documented default
-        image_volumes = list(map(clean_path, self.image_info['config'].get('volumes', {}).keys()))
+        image_volumes = list(map(clean_path, self.image_info.get('config', {}).get('volumes', {}).keys()))
         if self.info['config'].get('createcommand'):
             cr_com = self.info['config']['createcommand']
             for i, v in enumerate(cr_com):
