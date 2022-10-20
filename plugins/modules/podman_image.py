@@ -43,7 +43,7 @@ DOCUMENTATION = r'''
       default: False
       type: bool
     path:
-      description: Path to directory containing the build file.
+      description: Path to the build context directory.
       type: str
     force:
       description:
