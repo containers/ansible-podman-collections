@@ -15,6 +15,8 @@ RETURN = '''
 '''
 
 import os
+from ansible.module_utils.basic import AnsibleModule
+import json
 
 def generate_systemd():
     """Generate systemd .service unit file from a pod or container"""
