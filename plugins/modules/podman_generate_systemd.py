@@ -159,6 +159,68 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
         )
         return changed, {}
 
+    # In case of command execution success, its stdout is a json
+    # dictionary. This dictionary is all the generated systemd units.
+    # Each key value pair is one systemd unit. The key is the unit name
+    # and the value is the unit content.
+
+    # Load the returned json dictionary as a python dictionary
+    systemd_units = json.loads(stdout)
+    
+    # Write the systemd .service unit(s) content to file(s), if
+    # requested and not in check mode
+    if module.params.get('dest') and not module.check_mode:
+        try:
+            systemd_units_dest = os.path.expanduser(module.params.get('dest'))
+            # If destination don't exist and not in check mode
+            if not os.path.exists(systemd_units_dest):
+                # Make it
+                os.makedirs(systemd_units_dest)
+                changed = True
+            # If destination exist but not a directory
+            if not os.path.isdir(systemd_units_dest):
+                # Stop and tell user that the destination is not a directry
+                module.fail_json(
+                    f'Destination {systemd_units_dest} is not a directory.'
+                    "Can't save systemd unit files in."
+                )
+
+            # Write each systemd unit, if needed
+            for unit_name, unit_content in systemd_units.items():
+                # Build full path to unit file
+                unit_file_name = unit_name + '.service'
+                unit_file_full_path = os.path.join(
+                    systemd_units_dest,
+                    unit_file_name,
+                )
+                
+                # See if we need to write the unit file, default yes
+                need_to_write_file = True
+                # If the unit file already exist, compare it with the
+                # generated content
+                if os.path.exists(unit_file_full_path):
+                    # Read the file
+                    with open(unit_file_full_path, 'r') as unit_file:
+                        current_unit_file_content = unit_file.read()                    
+                    # If current unit file content is the same as the
+                    # generated content
+                    if current_unit_file_content == unit_content:
+                        # We don't need to write it
+                        need_to_write_file = False
+
+                # Write the file, if needed
+                if need_to_write_file:
+                    with open(unit_file_full_path, 'w') as unit_file:
+                        unit_file.write(unit_content)
+                        changed = True
+
+        except Exception as exception:
+            # When exception occurs while trying to write units file
+            module.log(
+                'PODMAN-GENERATE-SYSTEMD-DEBUG: '
+                'Error writing systemd units files: '
+                f'{exception}'
+            )
 def main():
     pass
 
