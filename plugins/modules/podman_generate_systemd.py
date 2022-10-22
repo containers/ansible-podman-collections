@@ -145,6 +145,19 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
         module.log('PODMAN-GENERATE-SYSTEMD-DEBUG:'
                    f' Command for generate systemd .service unit: {command}')
     
+    # Run the podman command to generated systemd .service unit(s) content
+    return_code, stdout, stderr = module.run_command(command)
+
+    # In case of error in running the command
+    if return_code != 0:
+        # Print informations about the error and return and empty dictionary
+        module.fail_json(
+            'Error generating systemd .service unit(s).'
+            f' Command executed: {command}'
+            f' Command returned with code: {return_code}.'
+            f' Error message: {stderr}.'
+        )
+        return changed, {}
 
 def main():
     pass
