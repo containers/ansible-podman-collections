@@ -330,7 +330,8 @@ def run_module():
     module.exit_json(**result)
 
 def main():
-    pass
+    '''Main function of this script.'''
+    run_module()
 
 if __name__ == '__main__':
     main()
