@@ -223,6 +223,112 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
             )
     # Return the systemd .service unit(s) content
     return changed, systemd_units
+
+def run_module():
+    '''Run the module on the target'''
+    # Build the list of parameters user can use
+    module_parameters = {
+        'name': {
+            'type': 'str',
+            'required': True,
+        },
+        'dest': {
+            'type': 'str',
+            'required': False,
+        },
+        'new': {
+            'type': 'bool',
+            'required': False,
+            'default': False,
+        },
+        'restart_policy': {
+            'type': 'str',
+            'required': False,
+            'default': 'on-failure',
+            'choices': RESTART_POLICY_CHOICES,
+        },
+        'restart_sec': {
+            'type': 'int',
+            'required': False,
+        },
+        'start_timeout': {
+            'type': 'int',
+            'required': False,
+        },
+        'stop_timeout': {
+            'type': 'int',
+            'required': False,
+        },
+        'use_names': {
+            'type': 'bool',
+            'required': False,
+            'default': True,
+        },
+        'container_prefix': {
+            'type': 'str',
+            'required': False,
+        },
+        'pod_prefix': {
+            'type': 'str',
+            'required': False,
+        },
+        'separator': {
+            'type': 'str',
+            'required': False,
+        },
+        'no_header': {
+            'type': 'bool',
+            'required': False,
+            'default': False,
+        },
+        'after': {
+            'type': 'list',
+            'elements': 'str',
+            'required': False,
+        },
+        'wants': {
+            'type': 'list',
+            'elements': 'str',
+            'required': False,
+        },
+        'requires': {
+            'type': 'list',
+            'elements': 'str',
+            'required': False,
+        },
+        'debug': {
+            'type': 'bool',
+            'required': False,
+            'default': False,
+        },
+        'executable': {
+            'type': 'str',
+            'required': False,
+            'default': 'podman',
+        },
+    }
+    
+    # Build result dictionary
+    result = {
+        'changed': False,
+        'systemd_units': {},
+    }
+
+    # Build the Ansible Module
+    module = AnsibleModule(
+        argument_spec=module_parameters,
+        supports_check_mode=True
+    )
+
+    # Generate the systemd units
+    state_changed, systemd_units = generate_systemd(module)
+
+    result['changed'] = state_changed
+    result['systemd_units'] = systemd_units
+
+    # Return the result
+    module.exit_json(**result)
+
 def main():
     pass
 
