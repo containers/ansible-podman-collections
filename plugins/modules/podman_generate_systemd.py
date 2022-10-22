@@ -28,7 +28,7 @@ RESTART_POLICY_CHOICES = [
     'always',
 ]
 
-def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
+def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     '''Generate systemd .service unit file from a pod or container.
 
     Parameter:
@@ -37,6 +37,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
     Returns:
     - A boolean which indicate whether the targeted systemd state is modified
     - A copy of the generated systemd .service units content
+    - A copy of the command, as a string
     '''
     # Flag which indicate whether the targeted system state is modified
     changed = False
@@ -139,11 +140,6 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
         *command_options,
         module.params['name'],
     ]
-
-    # If debug enabled
-    if module.params.get('debug'):
-        module.log('PODMAN-GENERATE-SYSTEMD-DEBUG:'
-                   f' Command for generate systemd .service unit: {command}')
     
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
@@ -222,7 +218,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
                 f'{exception}'
             )
     # Return the systemd .service unit(s) content
-    return changed, systemd_units
+    return changed, systemd_units, f'{command}'
 
 def run_module():
     '''Run the module on the target'''
@@ -296,11 +292,6 @@ def run_module():
             'elements': 'str',
             'required': False,
         },
-        'debug': {
-            'type': 'bool',
-            'required': False,
-            'default': False,
-        },
         'executable': {
             'type': 'str',
             'required': False,
@@ -312,6 +303,7 @@ def run_module():
     result = {
         'changed': False,
         'systemd_units': {},
+        'podman_command': '',
     }
 
     # Build the Ansible Module
@@ -321,10 +313,11 @@ def run_module():
     )
 
     # Generate the systemd units
-    state_changed, systemd_units = generate_systemd(module)
+    state_changed, systemd_units, podman_command = generate_systemd(module)
 
     result['changed'] = state_changed
     result['systemd_units'] = systemd_units
+    result['podman_command'] = podman_command
 
     # Return the result
     module.exit_json(**result)
