@@ -221,6 +221,8 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str]]:
                 'Error writing systemd units files: '
                 f'{exception}'
             )
+    # Return the systemd .service unit(s) content
+    return changed, systemd_units
 def main():
     pass
 
