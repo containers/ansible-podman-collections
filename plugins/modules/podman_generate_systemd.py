@@ -165,6 +165,19 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+systemd_units:
+  description: A copy of the generated systemd .service unit(s)
+  returned: always
+  type: dict
+  sample: {
+    "container-postgres_local": " #Content of the systemd .servec unit for postgres_local container",
+    "pod-my_webapp": " #Content of the systemd .servec unit for my_webapp pod",
+    }
+podman_command:
+  description: A copy of the podman command used to generate the systemd unit(s)
+  returned: always
+  type: str
+  sample: "podman generate systemd my_webapp"
 '''
 
 import os
