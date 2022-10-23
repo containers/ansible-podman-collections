@@ -178,9 +178,11 @@ podman_command:
   sample: "podman generate systemd my_webapp"
 '''
 
+
 import os
 from ansible.module_utils.basic import AnsibleModule
 import json
+
 
 RESTART_POLICY_CHOICES = [
     'no',
@@ -191,6 +193,7 @@ RESTART_POLICY_CHOICES = [
     'on-abort',
     'always',
 ]
+
 
 def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     '''Generate systemd .service unit file from a pod or container.
@@ -383,6 +386,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     # Return the systemd .service unit(s) content
     return changed, systemd_units, f'{command}'
 
+
 def run_module():
     '''Run the module on the target'''
     # Build the list of parameters user can use
@@ -484,9 +488,11 @@ def run_module():
     # Return the result
     module.exit_json(**result)
 
+
 def main():
     '''Main function of this script.'''
     run_module()
+
 
 if __name__ == '__main__':
     main()
