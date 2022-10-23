@@ -221,7 +221,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
         # If the restart policy requested is not supported by podman
         if restart_policy not in RESTART_POLICY_CHOICES:
             # Then stop the module execution and return an error message
-            modul.fail_json(
+            module.fail_json(
                 msg=f'Restart policy requested is "{restart_policy}"'
                 f',  but must be one of: {RESTART_POLICY_CHOICES}'
             )
