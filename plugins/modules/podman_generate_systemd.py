@@ -142,10 +142,12 @@ EXAMPLES = '''
     name: postgres_local
     image: docker.io/library/postgres:latest
     state: stopped
+
 - name: Systemd unit files for postgres container must exist
   containers.podman.podman_generate_systemd:
     name: postgres_local
     path: ~/.config/systemd/user/
+
 - name: Postgres container must be started and enabled on systemd
   ansible.builtin.systemd:
     name: container-postgres_local
