@@ -152,9 +152,9 @@
           - specific_image2 is not changed
           - "'v3.3.11' in images.stdout"
 
-    - name: Create a build dir
+    - name: Create a build directory with a subdirectory
       file:
-        path: /var/tmp/build
+        path: /var/tmp/build/subdir
         state: directory
 
     - name: Copy Containerfile
@@ -176,18 +176,46 @@
         path: /var/tmp/build
       register: oci_build2
 
-    - name: Inspect build image
+    - name: Build OCI image from a directory without Containerfile (should fail)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2
+        path: /var/tmp/build/subdir
+      register: oci_build3
+      ignore_errors: true
+
+    - name: Build OCI image, point to location of Containerfile
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2
+        path: /var/tmp/build/subdir
+        build:
+          file: /var/tmp/build/Dockerfile
+      register: oci_build4
+
+    - name: Inspect first image
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
         name: testimage
       register: testimage_info
 
-    - name: Ensure OCI image was built properly
+    - name: Inspect second image
+      containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2
+      register: testimage2_info
+
+    - name: Ensure OCI images were built properly
       assert:
         that:
           - oci_build1 is changed
           - oci_build2 is not changed
+          - oci_build3 is not changed
+          - oci_build3 is failed
+          - oci_build4 is changed
           - "'localhost/testimage:latest' in testimage_info.images[0]['RepoTags'][0]"
+          - "'localhost/testimage2:latest' in testimage2_info.images[0]['RepoTags'][0]"
+          - "'no such file or directory' in oci_build3.msg"
 
     - name: Build Docker image
       containers.podman.podman_image:
@@ -207,7 +235,7 @@
           format: docker
       register: docker_build2
 
-    - name: Inspect build image
+    - name: Inspect built image
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
         name: dockerimage
@@ -247,4 +275,5 @@
         - quay.io/coreos/alpine-sh
         - quay.io/coreos/etcd:v3.3.11
         - localhost/testimage
+        - localhost/testimage2
         - localhost/dockerimage
