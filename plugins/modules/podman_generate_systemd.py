@@ -319,7 +319,6 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
             f' Command returned with code: {return_code}.'
             f' Error message: {stderr}.'
         )
-        return changed, {}, f'{command}'
 
     # In case of command execution success, its stdout is a json
     # dictionary. This dictionary is all the generated systemd units.
