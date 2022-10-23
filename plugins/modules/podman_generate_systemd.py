@@ -406,7 +406,6 @@ def run_module():
         'restart_policy': {
             'type': 'str',
             'required': False,
-            'default': 'on-failure',
             'choices': RESTART_POLICY_CHOICES,
         },
         'restart_sec': {
