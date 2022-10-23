@@ -6,6 +6,135 @@
 # TODO: Write DOCUMENTATION, EXAMPLES and RETURN
 
 DOCUMENTATION = '''
+module: podman_generate_systemd
+author:
+  - Sébastien Gendre
+short_description: Generate systemd unit from a pod or a container
+description:
+  - Generate systemd .service unit file(s) from a pod or a container
+  - Support Ansible check mode
+options:
+  name:
+    description:
+      - Name of the pod or container to export
+    type: str
+    required: true
+  dest:
+    description:
+      - Destination of the generated systemd unit file(s)
+    type: str
+    required: false
+  new:
+    description:
+      - Generate unit files that create containers and pods, not only start them.
+      - Refer to podman-generate-systemd(1) man page for more information.
+    type: bool
+    required: false
+  restart_policy:
+    description:
+      - Restart policy of the service
+    type: str
+    required: false
+    choices:
+      - no
+      - on-success
+      - on-failure
+      - on-abnormal
+      - on-watchdog
+      - on-abort
+      - always
+  restart_sec:
+    description:
+      - Configures the time to sleep before restarting a service (as configured with restart-policy).
+      - Takes a value in seconds.
+    type: int
+    required: false
+  start_timeout:
+    description:
+      - Override the default start timeout for the container with the given value in seconds.
+    type: int
+    required: false
+  stop_timeout:
+    description:
+      - Override the default stop timeout for the container with the given value in seconds.
+    type: int
+    required: false
+  use_name:
+    description:
+      - Use name of the containers for the start, stop, and description in the unit file.
+    type: bool
+    required: false
+    default: yes
+  container_prefix:
+    description:
+      - Set the systemd unit name prefix for containers.
+      - If not set, use the default defined by podman, C(container).
+      - Refer to podman-generate-systemd(1) man page for more information.
+    type: str
+    required: false
+  pod_prefix:
+    description:
+      - Set the systemd unit name prefix for pods.
+      - If not set, use the default defined by podman, C(pod).
+      - Refer to podman-generate-systemd(1) man page for more information.
+    type: str
+    required: false
+  separator:
+    description:
+      - Systemd unit name separator between the name/id of a container/pod and the prefix.
+      - If not set, use the default defined by podman, C(-).
+      - Refer to podman-generate-systemd(1) man page for more information.
+    type: str
+    required: false
+  no_header:
+    description:
+      - Do not generate the header including meta data such as the Podman version and the timestamp.
+    type: bool
+    required: false
+    default: no
+  after:
+    description:
+      - Add the systemd unit after (C(After=)) option, that ordering dependencies between the list of dependencies and this service.
+      - This option may be specified more than once.
+      - User-defined dependencies will be appended to the generated unit file
+      - But any existing options such as needed or defined by default (e.g. C(online.target)) will not be removed or overridden.
+    type: list
+    elements: str
+    required: false
+  wants:
+    description:
+      - Add the systemd unit wants (C(Wants=)) option, that this service is (weak) dependent on.
+      - This option may be specified more than once.
+      - This option does not influence the order in which services are started or stopped.
+      - User-defined dependencies will be appended to the generated unit file
+      - But any existing options such as needed or defined by default (e.g. C(online.target)) will not be removed or overridden.
+    type: list
+    elements: str
+    required: false
+  requires:
+    description:
+      - Set the systemd unit requires (Requires=) option.
+      - Similar to wants, but declares a stronger requirement dependency.
+    type: list
+    elements: str
+    required: false
+  executable:
+    description:
+      - C(Podman) executable name or full path
+    type: str
+    required: false
+    default: podman
+requirements:
+  - Podman installed on target host
+notes:
+  - You can store your systemd unit files in C(/etc/systemd/user/) for system wide usage
+  - Or you can store them in C(~/.config/systemd/user/) for usage at a specific user
+  - If you indicate a pod, the systemd units for it and all its containers will be generated
+  - Create all your pods, containers and their dependencies before generating the systemd files
+  - If a container or pod is already started before you do a C(systemctl daemon reload),
+    systemd will not see the container or pod as started
+  - Stop your container or pod before you do a C(systemctl daemon reload),
+    then you can start them with C(systemctl start my_container.servic)
 '''
 
 EXAMPLES = '''
