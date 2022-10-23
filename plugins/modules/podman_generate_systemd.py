@@ -138,6 +138,30 @@ notes:
 '''
 
 EXAMPLES = '''
+# Exemple of creating a container and integrate it into systemd
+- name: A postgres container must exist, stopped
+  containers.podman.podman_container:
+    name: postgres_local
+    image: docker.io/library/postgres:latest
+    state: stopped
+- name: Systemd unit files for postgres container must exist
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    path: ~/.config/systemd/user/
+- name: Postgres container must be started and enabled on systemd
+  ansible.builtin.systemd:
+    name: container-postgres_local
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+
+# Generate the unit files, but store them on an Ansible variable
+# instead of writting them on target host
+- name: Systemd unit files for postgres container must be generated
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+  register: postgres_local_systemd_unit
 '''
 
 RETURN = '''
