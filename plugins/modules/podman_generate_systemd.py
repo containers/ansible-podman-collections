@@ -300,6 +300,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
         *command_options,
         module.params['name'],
     ]
+    command_str = ' '.join(command)
     
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
@@ -309,7 +310,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
         # Print informations about the error and return and empty dictionary
         module.fail_json(
             'Error generating systemd .service unit(s).'
-            f' Command executed: {command}'
+            f' Command executed: {command_str}'
             f' Command returned with code: {return_code}.'
             f' Error message: {stderr}.'
         )
@@ -377,7 +378,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
                 f'{exception}'
             )
     # Return the systemd .service unit(s) content
-    return changed, systemd_units, f'{command}'
+    return changed, systemd_units, command_str
 
 
 def run_module():
