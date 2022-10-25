@@ -43,7 +43,7 @@ DOCUMENTATION = r'''
       default: False
       type: bool
     path:
-      description: Path to directory containing the build file.
+      description: Path to the build context directory.
       type: str
     force:
       description:
@@ -88,6 +88,10 @@ DOCUMENTATION = r'''
         - build_args
         - buildargs
       suboptions:
+        file:
+          description:
+            - Path to the Containerfile if it is not in the build context directory.
+          type: path
         volume:
           description:
             - Specify multiple volume / mount options to mount one or more mounts to a container.
@@ -606,6 +610,10 @@ class PodmanImageManager(object):
         if self.build.get('rm'):
             args.append('--rm')
 
+        containerfile = self.build.get('file')
+        if containerfile:
+            args.extend(['--file', containerfile])
+
         volume = self.build.get('volume')
         if volume:
             for v in volume:
@@ -767,6 +775,7 @@ def main():
                 options=dict(
                     annotation=dict(type='dict'),
                     force_rm=dict(type='bool', default=False),
+                    file=dict(type='path'),
                     format=dict(
                         type='str',
                         choices=['oci', 'docker'],
