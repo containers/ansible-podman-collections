@@ -45,11 +45,13 @@ options:
     description:
       - Configures the time to sleep before restarting a service (as configured with restart-policy).
       - Takes a value in seconds.
+      - Only with Podman 4.0.0 and above
     type: int
     required: false
   start_timeout:
     description:
       - Override the default start timeout for the container with the given value in seconds.
+      - Only with Podman 4.0.0 and above
     type: int
     required: false
   stop_timeout:
@@ -96,6 +98,7 @@ options:
       - This option may be specified more than once.
       - User-defined dependencies will be appended to the generated unit file
       - But any existing options such as needed or defined by default (e.g. C(online.target)) will not be removed or overridden.
+      - Only with Podman 4.0.0 and above
     type: list
     elements: str
     required: false
@@ -106,6 +109,7 @@ options:
       - This option does not influence the order in which services are started or stopped.
       - User-defined dependencies will be appended to the generated unit file
       - But any existing options such as needed or defined by default (e.g. C(online.target)) will not be removed or overridden.
+      - Only with Podman 4.0.0 and above
     type: list
     elements: str
     required: false
@@ -113,6 +117,7 @@ options:
     description:
       - Set the systemd unit requires (Requires=) option.
       - Similar to wants, but declares a stronger requirement dependency.
+      - Only with Podman 4.0.0 and above
     type: list
     elements: str
     required: false
