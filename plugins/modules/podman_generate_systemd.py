@@ -313,7 +313,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     if environment_variables:
         for env_var_name, env_var_value in environment_variables.items():
             command_options.append(
-                f"--env '{env_var_name}={env_var_value}'",
+                f"-e='{env_var_name}={env_var_value}'",
             )
     
     #  Full command, with option include
