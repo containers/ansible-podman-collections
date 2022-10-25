@@ -38,9 +38,9 @@ jobs:
           - 3.8
     steps:
       - name: Check out ${{ github.repository }} on disk
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.runner-python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.runner-python-version }}
       - name: Set up pip cache
@@ -59,7 +59,7 @@ jobs:
           ~/.local/bin/ansible-galaxy collection build --output-path
           "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
       - name: Store migrated collection artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: collection
           path: .cache/collection-tarballs
@@ -94,10 +94,10 @@ jobs:
     steps:
 
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -120,7 +120,7 @@ jobs:
         run: python -m pip install --user '${{ matrix.ansible-version }}'
 
       - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: collection
           path: .cache/collection-tarballs
@@ -184,10 +184,10 @@ jobs:
     steps:
 
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -210,7 +210,7 @@ jobs:
         run: python -m pip install --user '${{ matrix.ansible-version }}'
 
       - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: collection
           path: .cache/collection-tarballs
