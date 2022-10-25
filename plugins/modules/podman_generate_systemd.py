@@ -137,7 +137,7 @@ notes:
   - If a container or pod is already started before you do a C(systemctl daemon reload),
     systemd will not see the container or pod as started
   - Stop your container or pod before you do a C(systemctl daemon reload),
-    then you can start them with C(systemctl start my_container.servic)
+    then you can start them with C(systemctl start my_container.service)
 '''
 
 EXAMPLES = '''
