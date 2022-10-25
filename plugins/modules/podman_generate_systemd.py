@@ -277,35 +277,21 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     #  After option (only for Podman 4.0.0 and above)
     after = module.params.get('after')
     if after:
-        # If after is a single string
-        if isinstance(after, str):
-            command_options.append(f'--after={after}')
-        # If wants is a list
-        if isinstance(after, list):
-            for item in after:
-                command_options.append(f'--after={item}')
+        for item in after:
+            command_options.append(f'--after={item}')
 
     #  Wants option (only for Podman 4.0.0 and above)
     wants = module.params.get('wants')
     if wants:
-        # If wants is a single string
-        if isinstance(wants, str):
-            command_options.append(f'--wants={wants}')
-        # If wants is a list
-        if isinstance(wants, list):
-            for item in wants:
-                command_options.append(f'--wants={item}')
+        for item in wants:
+            command_options.append(f'--wants={item}')
                 
     #  Requires option (only for Podman 4.0.0 and above)
     requires = module.params.get('requires')
     if requires:
-        # If requires is a single string
-        if isinstance(requires, str):
-            command_options.append(f'--requires={requires}')
-        # If requires is a list
-        if isinstance(requires, list):
-            for item in requires:
-                command_options.append(f'--requires={item}')
+        for item in requires:
+            command_options.append(f'--requires={item}')
+
     
     #  Full command, with option include
     command_options.extend(['--format', 'json'])
