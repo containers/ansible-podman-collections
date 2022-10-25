@@ -59,6 +59,13 @@ options:
       - Override the default stop timeout for the container with the given value in seconds.
     type: int
     required: false
+  env:
+    description:
+      - Set environment variables to the systemd unit files.
+      - Keys are the environment variable names, and values are the environment variable values
+      - Only with Podman 4.3.0 and above
+    type: dict
+    required: false
   use_name:
     description:
       - Use name of the containers for the start, stop, and description in the unit file.
@@ -166,6 +173,15 @@ EXAMPLES = '''
 - name: Systemd unit files for postgres container must be generated
   containers.podman.podman_generate_systemd:
     name: postgres_local
+  register: postgres_local_systemd_unit
+
+# Generate the unit files with environment variables sets
+- name: Systemd unit files for postgres container must be generated
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    env:
+      POSTGRES_USER: my_app
+      POSTGRES_PASSWORD: example
   register: postgres_local_systemd_unit
 '''
 
@@ -292,6 +308,13 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
         for item in requires:
             command_options.append(f'--requires={item}')
 
+    # Environment variables (only for Podman 4.3.0 and above)
+    environment_variables = module.params.get('env')
+    if environment_variables:
+        for env_var_name, env_var_value in environment_variables.items():
+            command_options.append(
+                f"--env '{env_var_name}={env_var_value}'",
+            )
     
     #  Full command, with option include
     command_options.extend(['--format', 'json'])
@@ -413,6 +436,10 @@ def run_module():
         },
         'stop_timeout': {
             'type': 'int',
+            'required': False,
+        },
+        'env': {
+            'type': 'dict',
             'required': False,
         },
         'use_names': {
