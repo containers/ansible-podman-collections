@@ -538,7 +538,6 @@ class PodmanPod:
         self.name = name
         self.stdout, self.stderr = '', ''
         self.info = self.get_info()
-        self.ps_info = self.get_ps()
         self.infra_info = self.get_infra_info()
         self.version = self._get_podman_version()
         self.diff = {}
@@ -574,9 +573,14 @@ class PodmanPod:
         """Return True if pod is running now."""
         if 'status' in self.info['State']:
             return self.info['State']['status'] == 'Running'
-        if 'status' in self.ps_info:
-            return self.ps_info['status'] == 'Running'
-        return self.info['State'] == 'Running'
+        elif isinstance(self.info['State'],str):
+            return self.info['State'] == 'Running'
+        # older podman versions don't have status in 'podman pod inspect'
+        # if other methods fail, use 'podman pod ps'
+        ps_info = self.get_ps()
+        if 'status' in ps_info:
+            return ps_info['status'] == 'Running'
+        return False
 
     @property
     def paused(self):
