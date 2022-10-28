@@ -9,7 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: podman_generate_systemd
 author:
-  - Sébastien Gendre
+  - Sébastien Gendre (@CyberFox001)
 short_description: Generate systemd unit from a pod or a container
 description:
   - Generate systemd .service unit file(s) from a pod or a container
