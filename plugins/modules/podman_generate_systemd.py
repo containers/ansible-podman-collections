@@ -23,7 +23,7 @@ options:
   dest:
     description:
       - Destination of the generated systemd unit file(s)
-    type: str
+    type: path
     required: false
   new:
     description:
