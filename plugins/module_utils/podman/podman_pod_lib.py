@@ -607,7 +607,7 @@ class PodmanPod:
         """Inspect pod process and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module_params['executable'], b'pod', b'ps', b'--format', b'json', b'--filter', b'name=' + self.name])
+            [self.module_params['executable'], b'pod', b'ps', b'--format', b'json', b'--filter', 'name=' + self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def get_infra_info(self):
