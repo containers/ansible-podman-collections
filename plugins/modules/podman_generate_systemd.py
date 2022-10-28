@@ -31,6 +31,7 @@ options:
       - Refer to podman-generate-systemd(1) man page for more information.
     type: bool
     required: false
+    default: false
   restart_policy:
     description:
       - Restart policy of the service
@@ -69,7 +70,7 @@ options:
       - Only with Podman 4.3.0 and above
     type: dict
     required: false
-  use_name:
+  use_names:
     description:
       - Use name of the containers for the start, stop, and description in the unit file.
     type: bool
