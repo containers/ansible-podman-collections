@@ -221,13 +221,13 @@ RESTART_POLICY_CHOICES = [
 ]
 
 
-def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
+def generate_systemd(module):
     '''Generate systemd .service unit file from a pod or container.
 
     Parameter:
-    - module: An AnsibleModule object
+    - module (AnsibleModule): An AnsibleModule object
 
-    Returns:
+    Returns (tuple[bool, list[str], str]):
     - A boolean which indicate whether the targeted systemd state is modified
     - A copy of the generated systemd .service units content
     - A copy of the command, as a string
