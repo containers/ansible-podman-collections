@@ -353,7 +353,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     # requested and not in check mode
     if module.params.get('dest') and not module.check_mode:
         try:
-            systemd_units_dest = os.path.expanduser(module.params.get('dest'))
+            systemd_units_dest = module.params.get('dest')
             # If destination don't exist and not in check mode
             if not os.path.exists(systemd_units_dest):
                 # Make it
@@ -416,7 +416,7 @@ def run_module():
             'required': True,
         },
         'dest': {
-            'type': 'str',
+            'type': 'path',
             'required': False,
         },
         'new': {
