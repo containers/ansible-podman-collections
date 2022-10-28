@@ -38,7 +38,7 @@ options:
     type: str
     required: false
     choices:
-      - no
+      - no-restart
       - on-success
       - on-failure
       - on-abnormal
@@ -212,7 +212,7 @@ import json
 
 
 RESTART_POLICY_CHOICES = [
-    'no',
+    'no-restart',
     'on-success',
     'on-failure',
     'on-abnormal',
@@ -254,6 +254,8 @@ def generate_systemd(module):
                 f',  but must be one of: {RESTART_POLICY_CHOICES}'
             )
         # Else add the restart policy to options
+        if restart_policy == 'no-restart':
+            restart_policy = 'no'
         command_options.append(f'--restart-policy={restart_policy}')
 
     #  Restart-sec option (only for Podman 4.0.0 and above)
