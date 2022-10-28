@@ -573,13 +573,12 @@ class PodmanPod:
         """Return True if pod is running now."""
         if 'status' in self.info['State']:
             return self.info['State']['status'] == 'Running'
-        if isinstance(self.info['State'], str):
-            return self.info['State'] == 'Running'
         # older podman versions (1.6.x) don't have status in 'podman pod inspect'
         # if other methods fail, use 'podman pod ps'
         ps_info = self.get_ps()
         if 'status' in ps_info:
             return ps_info['status'] == 'Running'
+        return self.info['State'] == 'Running'
 
     @property
     def paused(self):
