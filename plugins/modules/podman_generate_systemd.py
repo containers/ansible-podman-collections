@@ -234,14 +234,14 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     '''
     # Flag which indicate whether the targeted system state is modified
     changed = False
-    
+
     # Build the podman command, based on the module parameters
     command_options = []
 
     #  New option
     if module.params.get('new'):
         command_options.append('--new')
-    
+
     #  Restart policy option
     restart_policy = module.params.get('restart_policy')
     if restart_policy:
@@ -304,7 +304,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
     if wants:
         for item in wants:
             command_options.append(f'--wants={item}')
-                
+
     #  Requires option (only for Podman 4.0.0 and above)
     requires = module.params.get('requires')
     if requires:
@@ -318,7 +318,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
             command_options.append(
                 f"-e='{env_var_name}={env_var_value}'",
             )
-    
+
     #  Full command, with option include
     command_options.extend(['--format', 'json'])
     command = [
@@ -327,7 +327,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
         module.params['name'],
     ]
     command_str = ' '.join(command)
-    
+
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
 
@@ -348,7 +348,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
 
     # Load the returned json dictionary as a python dictionary
     systemd_units = json.loads(stdout)
-    
+
     # Write the systemd .service unit(s) content to file(s), if
     # requested and not in check mode
     if module.params.get('dest') and not module.check_mode:
@@ -375,7 +375,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
                     systemd_units_dest,
                     unit_file_name,
                 )
-                
+
                 # See if we need to write the unit file, default yes
                 need_to_write_file = True
                 # If the unit file already exist, compare it with the
@@ -383,7 +383,7 @@ def generate_systemd(module: AnsibleModule) -> tuple[bool, list[str], str]:
                 if os.path.exists(unit_file_full_path):
                     # Read the file
                     with open(unit_file_full_path, 'r') as unit_file:
-                        current_unit_file_content = unit_file.read()                    
+                        current_unit_file_content = unit_file.read()
                     # If current unit file content is the same as the
                     # generated content
                     if current_unit_file_content == unit_content:
@@ -488,7 +488,7 @@ def run_module():
             'default': 'podman',
         },
     }
-    
+
     # Build result dictionary
     result = {
         'changed': False,
