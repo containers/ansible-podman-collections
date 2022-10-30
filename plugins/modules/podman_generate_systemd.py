@@ -251,7 +251,10 @@ def generate_systemd(module):
             # Then stop the module execution and return an error message
             module.fail_json(
                 msg=f'Restart policy requested is "{restart_policy}"'
-                f',  but must be one of: {RESTART_POLICY_CHOICES}'
+                f',  but must be one of: {RESTART_POLICY_CHOICES}',
+                changed=changed,
+                systemd_units={},
+                podman_command='',
             )
         # Else add the restart policy to options
         if restart_policy == 'no-restart':
@@ -338,10 +341,13 @@ def generate_systemd(module):
     if return_code != 0:
         # Print informations about the error and return and empty dictionary
         module.fail_json(
-            'Error generating systemd .service unit(s).'
+            msg='Error generating systemd .service unit(s).'
             f' Command executed: {command_str}'
             f' Command returned with code: {return_code}.'
-            f' Error message: {stderr}.'
+            f' Error message: {stderr}.',
+            changed=changed,
+            systemd_units={},
+            podman_command=command_str,
         )
 
     # In case of command execution success, its stdout is a json
@@ -366,8 +372,11 @@ def generate_systemd(module):
             if not os.path.isdir(systemd_units_dest):
                 # Stop and tell user that the destination is not a directry
                 module.fail_json(
-                    f'Destination {systemd_units_dest} is not a directory.'
-                    "Can't save systemd unit files in."
+                    msg=f'Destination {systemd_units_dest} is not a directory.'
+                    "Can't save systemd unit files in.",
+                    changed=changed,
+                    systemd_units=systemd_units,
+                    podman_command=command_str,
                 )
 
             # Write each systemd unit, if needed
