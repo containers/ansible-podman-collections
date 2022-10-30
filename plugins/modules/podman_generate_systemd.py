@@ -225,11 +225,11 @@ def generate_systemd(module):
     command_options = []
 
     #  New option
-    if module.params.get('new'):
+    if module.params['new']:
         command_options.append('--new')
 
     #  Restart policy option
-    restart_policy = module.params.get('restart_policy')
+    restart_policy = module.params['restart_policy']
     if restart_policy:
         # add the restart policy to options
         if restart_policy == 'no-restart':
@@ -237,63 +237,63 @@ def generate_systemd(module):
         command_options.append(f'--restart-policy={restart_policy}')
 
     #  Restart-sec option (only for Podman 4.0.0 and above)
-    restart_sec = module.params.get('restart_sec')
+    restart_sec = module.params['restart_sec']
     if restart_sec:
         command_options.append(f'--restart-sec={restart_sec}')
 
     #  Start-timeout option (only for Podman 4.0.0 and above)
-    start_timeout = module.params.get('start_timeout')
+    start_timeout = module.params['start_timeout']
     if start_timeout:
         command_options.append(f'--start-timeout={start_timeout}')
 
     #  Stop-timeout option
-    stop_timeout = module.params.get('stop_timeout')
+    stop_timeout = module.params['stop_timeout']
     if stop_timeout:
         command_options.append(f'--stop-timeout={stop_timeout}')
 
     #  Use container name(s) option
-    if module.params.get('use_names'):
+    if module.params['use_names']:
         command_options.append('--name')
 
     #  Container-prefix option
-    container_prefix = module.params.get('container_prefix')
+    container_prefix = module.params['container_prefix']
     if container_prefix:
         command_options.append(f'--container-prefix={container_prefix}')
 
     #  Pod-prefix option
-    pod_prefix = module.params.get('pod_prefix')
+    pod_prefix = module.params['pod_prefix']
     if pod_prefix:
         command_options.append(f'--pod-prefix={pod_prefix}')
 
     #  Separator option
-    separator = module.params.get('separator')
+    separator = module.params['separator']
     if separator:
         command_options.append(f'--separator={separator}')
 
     #  No-header option
-    if module.params.get('no_header'):
+    if module.params['no_header']:
         command_options.append('--no-header')
 
     #  After option (only for Podman 4.0.0 and above)
-    after = module.params.get('after')
+    after = module.params['after']
     if after:
         for item in after:
             command_options.append(f'--after={item}')
 
     #  Wants option (only for Podman 4.0.0 and above)
-    wants = module.params.get('wants')
+    wants = module.params['wants']
     if wants:
         for item in wants:
             command_options.append(f'--wants={item}')
 
     #  Requires option (only for Podman 4.0.0 and above)
-    requires = module.params.get('requires')
+    requires = module.params['requires']
     if requires:
         for item in requires:
             command_options.append(f'--requires={item}')
 
     # Environment variables (only for Podman 4.3.0 and above)
-    environment_variables = module.params.get('env')
+    environment_variables = module.params['env']
     if environment_variables:
         for env_var_name, env_var_value in environment_variables.items():
             command_options.append(
@@ -303,7 +303,7 @@ def generate_systemd(module):
     #  Full command, with option include
     command_options.extend(['--format', 'json'])
     command = [
-        module.params.get('executable'), 'generate', 'systemd',
+        module.params['executable'], 'generate', 'systemd',
         *command_options,
         module.params['name'],
     ]
@@ -335,9 +335,9 @@ def generate_systemd(module):
 
     # Write the systemd .service unit(s) content to file(s), if
     # requested and not in check mode
-    if module.params.get('dest') and not module.check_mode:
+    if module.params['dest'] and not module.check_mode:
         try:
-            systemd_units_dest = module.params.get('dest')
+            systemd_units_dest = module.params['dest']
             # If destination don't exist and not in check mode
             if not os.path.exists(systemd_units_dest):
                 # Make it
