@@ -194,6 +194,7 @@ podman_command:
 import os
 from ansible.module_utils.basic import AnsibleModule
 import json
+import shlex
 
 
 RESTART_POLICY_CHOICES = [
@@ -307,7 +308,7 @@ def generate_systemd(module):
         *command_options,
         module.params['name'],
     ]
-    command_str = ' '.join(command)
+    command_str = shlex.join(command)
 
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
