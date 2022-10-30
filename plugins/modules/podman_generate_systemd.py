@@ -231,17 +231,7 @@ def generate_systemd(module):
     #  Restart policy option
     restart_policy = module.params.get('restart_policy')
     if restart_policy:
-        # If the restart policy requested is not supported by podman
-        if restart_policy not in RESTART_POLICY_CHOICES:
-            # Then stop the module execution and return an error message
-            module.fail_json(
-                msg=f'Restart policy requested is "{restart_policy}"'
-                f',  but must be one of: {RESTART_POLICY_CHOICES}',
-                changed=changed,
-                systemd_units={},
-                podman_command='',
-            )
-        # Else add the restart policy to options
+        # add the restart policy to options
         if restart_policy == 'no-restart':
             restart_policy = 'no'
         command_options.append(f'--restart-policy={restart_policy}')
