@@ -25,19 +25,16 @@ options:
     description:
       - Destination of the generated systemd unit file(s)
     type: path
-    required: false
   new:
     description:
       - Generate unit files that create containers and pods, not only start them.
       - Refer to podman-generate-systemd(1) man page for more information.
     type: bool
-    required: false
     default: false
   restart_policy:
     description:
       - Restart policy of the service
     type: str
-    required: false
     choices:
       - no-restart
       - on-success
@@ -52,30 +49,25 @@ options:
       - Takes a value in seconds.
       - Only with Podman 4.0.0 and above
     type: int
-    required: false
   start_timeout:
     description:
       - Override the default start timeout for the container with the given value in seconds.
       - Only with Podman 4.0.0 and above
     type: int
-    required: false
   stop_timeout:
     description:
       - Override the default stop timeout for the container with the given value in seconds.
     type: int
-    required: false
   env:
     description:
       - Set environment variables to the systemd unit files.
       - Keys are the environment variable names, and values are the environment variable values
       - Only with Podman 4.3.0 and above
     type: dict
-    required: false
   use_names:
     description:
       - Use name of the containers for the start, stop, and description in the unit file.
     type: bool
-    required: false
     default: yes
   container_prefix:
     description:
@@ -83,26 +75,22 @@ options:
       - If not set, use the default defined by podman, C(container).
       - Refer to podman-generate-systemd(1) man page for more information.
     type: str
-    required: false
   pod_prefix:
     description:
       - Set the systemd unit name prefix for pods.
       - If not set, use the default defined by podman, C(pod).
       - Refer to podman-generate-systemd(1) man page for more information.
     type: str
-    required: false
   separator:
     description:
       - Systemd unit name separator between the name/id of a container/pod and the prefix.
       - If not set, use the default defined by podman, C(-).
       - Refer to podman-generate-systemd(1) man page for more information.
     type: str
-    required: false
   no_header:
     description:
       - Do not generate the header including meta data such as the Podman version and the timestamp.
     type: bool
-    required: false
     default: no
   after:
     description:
@@ -113,7 +101,6 @@ options:
       - Only with Podman 4.0.0 and above
     type: list
     elements: str
-    required: false
   wants:
     description:
       - Add the systemd unit wants (C(Wants=)) option, that this service is (weak) dependent on.
@@ -124,7 +111,6 @@ options:
       - Only with Podman 4.0.0 and above
     type: list
     elements: str
-    required: false
   requires:
     description:
       - Set the systemd unit requires (Requires=) option.
@@ -132,12 +118,10 @@ options:
       - Only with Podman 4.0.0 and above
     type: list
     elements: str
-    required: false
   executable:
     description:
       - C(Podman) executable name or full path
     type: str
-    required: false
     default: podman
 requirements:
   - Podman installed on target host
