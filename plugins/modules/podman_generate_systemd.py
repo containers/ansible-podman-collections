@@ -235,22 +235,38 @@ def generate_systemd(module):
         # add the restart policy to options
         if restart_policy == 'no-restart':
             restart_policy = 'no'
-        command_options.append(f'--restart-policy={restart_policy}')
+        command_options.append(
+            '--restart-policy={restart_policy}'.format(
+                restart_policy=restart_policy,
+            ),
+        )
 
     #  Restart-sec option (only for Podman 4.0.0 and above)
     restart_sec = module.params['restart_sec']
     if restart_sec:
-        command_options.append(f'--restart-sec={restart_sec}')
+        command_options.append(
+            '--restart-sec={restart_sec}'.format(
+                restart_sec=restart_sec,
+            ),
+        )
 
     #  Start-timeout option (only for Podman 4.0.0 and above)
     start_timeout = module.params['start_timeout']
     if start_timeout:
-        command_options.append(f'--start-timeout={start_timeout}')
+        command_options.append(
+            '--start-timeout={start_timeout}'.format(
+                start_timeout=start_timeout,
+            ),
+        )
 
     #  Stop-timeout option
     stop_timeout = module.params['stop_timeout']
     if stop_timeout:
-        command_options.append(f'--stop-timeout={stop_timeout}')
+        command_options.append(
+            '--stop-timeout={stop_timeout}'.format(
+                stop_timeout=stop_timeout,
+            ),
+        )
 
     #  Use container name(s) option
     if module.params['use_names']:
@@ -259,17 +275,29 @@ def generate_systemd(module):
     #  Container-prefix option
     container_prefix = module.params['container_prefix']
     if container_prefix:
-        command_options.append(f'--container-prefix={container_prefix}')
+        command_options.append(
+            '--container-prefix={container_prefix}'.format(
+                container_prefix=container_prefix,
+            ),
+        )
 
     #  Pod-prefix option
     pod_prefix = module.params['pod_prefix']
     if pod_prefix:
-        command_options.append(f'--pod-prefix={pod_prefix}')
+        command_options.append(
+            '--pod-prefix={pod_prefix}'.format(
+                pod_prefix=pod_prefix,
+            ),
+        )
 
     #  Separator option
     separator = module.params['separator']
     if separator:
-        command_options.append(f'--separator={separator}')
+        command_options.append(
+            '--separator={separator}'.format(
+                separator=separator,
+            ),
+        )
 
     #  No-header option
     if module.params['no_header']:
@@ -279,26 +307,41 @@ def generate_systemd(module):
     after = module.params['after']
     if after:
         for item in after:
-            command_options.append(f'--after={item}')
+            command_options.append(
+                '--after={item}'.format(
+                    item=item,
+                ),
+            )
 
     #  Wants option (only for Podman 4.0.0 and above)
     wants = module.params['wants']
     if wants:
         for item in wants:
-            command_options.append(f'--wants={item}')
+            command_options.append(
+                '--wants={item}'.format(
+                    item=item,
+                )
+            )
 
     #  Requires option (only for Podman 4.0.0 and above)
     requires = module.params['requires']
     if requires:
         for item in requires:
-            command_options.append(f'--requires={item}')
+            command_options.append(
+                '--requires={item}'.format(
+                    item=item,
+                ),
+            )
 
     # Environment variables (only for Podman 4.3.0 and above)
     environment_variables = module.params['env']
     if environment_variables:
         for env_var_name, env_var_value in environment_variables.items():
             command_options.append(
-                f"-e='{env_var_name}={env_var_value}'",
+                "-e='{env_var_name}={env_var_value}'".format(
+                    env_var_name=env_var_name,
+                    env_var_value=env_var_value,
+                ),
             )
 
     #  Full command, with option include
@@ -316,11 +359,16 @@ def generate_systemd(module):
     # In case of error in running the command
     if return_code != 0:
         # Print informations about the error and return and empty dictionary
+        message = 'Error generating systemd .service unit(s).'
+        message += ' Command executed: {command_str}'
+        message += ' Command returned with code: {return_code}.'
+        message += ' Error message: {stderr}.'
         module.fail_json(
-            msg='Error generating systemd .service unit(s).'
-            f' Command executed: {command_str}'
-            f' Command returned with code: {return_code}.'
-            f' Error message: {stderr}.',
+            msg=message.format(
+                command_str=command_str,
+                return_code=return_code,
+                stderr=stderr,
+            ),
             changed=changed,
             systemd_units={},
             podman_command=command_str,
@@ -347,9 +395,12 @@ def generate_systemd(module):
             # If destination exist but not a directory
             if not os.path.isdir(systemd_units_dest):
                 # Stop and tell user that the destination is not a directry
+                message = "Destination {systemd_units_dest} is not a directory."
+                message += " Can't save systemd unit files in."
                 module.fail_json(
-                    msg=f"Destination {systemd_units_dest} is not a directory."
-                    "Can't save systemd unit files in.",
+                    msg=message.format(
+                        systemd_units_dest=systemd_units_dest,
+                    ),
                     changed=changed,
                     systemd_units=systemd_units,
                     podman_command=command_str,
@@ -386,10 +437,13 @@ def generate_systemd(module):
 
         except Exception as exception:
             # When exception occurs while trying to write units file
+            message = 'PODMAN-GENERATE-SYSTEMD-DEBUG: '
+            message += 'Error writing systemd units files: '
+            message += '{exception}'
             module.log(
-                'PODMAN-GENERATE-SYSTEMD-DEBUG: '
-                'Error writing systemd units files: '
-                f'{exception}'
+                message.format(
+                    exception=exception
+                ),
             )
     # Return the systemd .service unit(s) content
     return changed, systemd_units, command_str
