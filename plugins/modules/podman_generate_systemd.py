@@ -68,7 +68,7 @@ options:
     description:
       - Use name of the containers for the start, stop, and description in the unit file.
     type: bool
-    default: yes
+    default: true
   container_prefix:
     description:
       - Set the systemd unit name prefix for containers.
@@ -91,7 +91,7 @@ options:
     description:
       - Do not generate the header including meta data such as the Podman version and the timestamp.
     type: bool
-    default: no
+    default: false
   after:
     description:
       - Add the systemd unit after (C(After=)) option, that ordering dependencies between the list of dependencies and this service.
