@@ -348,7 +348,7 @@ def generate_systemd(module):
             if not os.path.isdir(systemd_units_dest):
                 # Stop and tell user that the destination is not a directry
                 module.fail_json(
-                    msg=f'Destination {systemd_units_dest} is not a directory.'
+                    msg=f"Destination {systemd_units_dest} is not a directory."
                     "Can't save systemd unit files in.",
                     changed=changed,
                     systemd_units=systemd_units,
