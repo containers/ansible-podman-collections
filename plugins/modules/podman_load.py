@@ -155,7 +155,14 @@ def load(module, executable):
     if rc != 0:
         module.fail_json(msg="Image loading failed: %s" % (err))
     image_name_line = [i for i in out.splitlines() if 'Loaded image' in i][0]
-    image_name = image_name_line.split("Loaded image(s): ")[1].split(',')[0].strip()
+    # For Podman < 4.x
+    if 'Loaded image(s):' in image_name_line:
+        image_name = image_name_line.split("Loaded image(s): ")[1].split(',')[0].strip()
+    # For Podman > 4.x
+    elif 'Loaded image:' in image_name_line:
+        image_name = image_name_line.split("Loaded image: ")[1].strip()
+    else:
+        module.fail_json(msg="Not found images in %s" % image_name_line)
     rc, out2, err2 = module.run_command([executable, 'image', 'inspect', image_name])
     if rc != 0:
         module.fail_json(msg="Image %s inspection failed: %s" % (image_name, err2))
