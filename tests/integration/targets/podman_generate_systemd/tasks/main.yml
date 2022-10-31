@@ -1,0 +1,94 @@
+- name: A postgres container must exist, stopped
+  containers.podman.podman_container:
+    name: postgres_local
+    image: docker.io/library/postgres:latest
+    state: stopped
+
+- name: Generate the systemd units as Ansible variables
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+  register: postgres_local_systemd_unit
+  ignore_errors: true
+
+- name: Check systemd unit are generated
+  assert:
+    that:
+      - postgres_local_systemd_unit is succeeded
+
+- name: Check systemd unit exist in registered vars
+  assert:
+    that:
+      - item.key == "container-postgres_local"
+      - item.value != None
+  loop: "{{ postgres_local_systemd_unit.systemd_units | dict2items }}"
+
+- name: Check podman command used to generate systemd units is returned
+  assert:
+    that:
+      - postgres_local_systemd_unit.podman_command != ""
+
+- name: Regenerate the systemd units and write them
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    dest: /tmp/podman_generate_systemd
+  register: postgres_local_systemd_unit
+  ignore_errors: true
+
+- name: Check the unit files exists
+  ansible.builtin.stat:
+    path: "/tmp/podman_generate_systemd/{{ item.key }}.service"
+  loop: "{{ postgres_local_systemd_unit.systemd_units | dict2items }}"
+
+- name: Regenerate the systemd units with all the options
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    new: yes
+    restart_policy: on-abnormal
+    restart_sec: 19
+    start_timeout: 21
+    stop_timeout: 23
+    env:
+      POSTGRES_USER: my_app
+      POSTGRES_PASSWORD: example
+    use_names: yes
+    container_prefix: more
+    pod_prefix: less
+    separator: +
+    no_header: yes
+    after: drink.service
+    wants: water.service
+    requires: ice.service
+    executable: /usr/bin/podman
+  register: postgres_local_systemd_unit
+  ignore_errors: true
+
+- name: Check the correct podman command is build
+  assert:
+    that:
+      - postgres_local_systemd_unit.podman_command is search("postgres_local")
+      - postgres_local_systemd_unit.podman_command is search("--new")
+      - postgres_local_systemd_unit.podman_command is search("--restart-policy=on-abnormal")
+      - postgres_local_systemd_unit.podman_command is search("--restart-sec=19")
+      - postgres_local_systemd_unit.podman_command is search("--start-timeout=21")
+      - postgres_local_systemd_unit.podman_command is search("--stop-timeout=23")
+      - postgres_local_systemd_unit.podman_command is search("-e='POSTGRES_USER=my_app'")
+      - postgres_local_systemd_unit.podman_command is search("-e='POSTGRES_PASSWORD=example'")
+      - postgres_local_systemd_unit.podman_command is search("--name")
+      - postgres_local_systemd_unit.podman_command is search("--container-prefix=more")
+      - postgres_local_systemd_unit.podman_command is search("--pod-prefix=less")
+      - postgres_local_systemd_unit.podman_command is search("--separator=+")
+      - postgres_local_systemd_unit.podman_command is search("--no-header")
+      - postgres_local_systemd_unit.podman_command is search("--after=drink.service")
+      - postgres_local_systemd_unit.podman_command is search("--wants=water.service")
+      - postgres_local_systemd_unit.podman_command is search("--requires=ice.service")
+      - postgres_local_systemd_unit.podman_command is search("/usr/bin/podman")
+
+- name: Remove container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: postgres_local
+    state: absent
+- name: Remove the systemd unit files directory
+  ansible.builtin.file:
+    path: /tmp/podman_generate_systemd
+    state: absent
