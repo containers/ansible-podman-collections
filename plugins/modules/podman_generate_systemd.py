@@ -388,14 +388,15 @@ def generate_systemd(module):
     systemd_units = json.loads(stdout)
 
     # Write the systemd .service unit(s) content to file(s), if
-    # requested and not in check mode
-    if module.params['dest'] and not module.check_mode:
+    # requested
+    if module.params['dest']:
         try:
             systemd_units_dest = module.params['dest']
-            # If destination don't exist and not in check mode
+            # If destination don't exist
             if not os.path.exists(systemd_units_dest):
-                # Make it
-                os.makedirs(systemd_units_dest)
+                # If  not in check mode, make it
+                if not module.check_mode:
+                    os.makedirs(systemd_units_dest)
                 changed = True
             # If destination exist but not a directory
             if not os.path.isdir(systemd_units_dest):
@@ -437,7 +438,9 @@ def generate_systemd(module):
                 # Write the file, if needed
                 if need_to_write_file:
                     with open(unit_file_full_path, 'w') as unit_file:
-                        unit_file.write(unit_content)
+                        # If not in check mode, write the file
+                        if not module.check_mode:
+                            unit_file.write(unit_content)
                         changed = True
 
         except Exception as exception:
