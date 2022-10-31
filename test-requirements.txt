@@ -1,0 +1,4 @@
+ansible-core
+pytest
+pytest-forked
+pytest-xdist
