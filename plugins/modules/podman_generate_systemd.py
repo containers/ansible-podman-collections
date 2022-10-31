@@ -147,7 +147,7 @@ EXAMPLES = '''
 - name: Systemd unit files for postgres container must exist
   containers.podman.podman_generate_systemd:
     name: postgres_local
-    path: ~/.config/systemd/user/
+    dest: ~/.config/systemd/user/
 
 - name: Postgres container must be started and enabled on systemd
   ansible.builtin.systemd:
