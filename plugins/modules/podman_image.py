@@ -204,6 +204,7 @@ EXAMPLES = r"""
         app: nginx
         function: proxy
         info: Load balancer for my cool app
+      extra_args: "--build-arg KEY=value"
 
 - name: Build a Docker formatted image
   containers.podman.podman_image:
