@@ -343,15 +343,21 @@ def generate_systemd(module):
                 ),
             )
 
-    #  Full command, with option include
+    #   Set output format, of podman command, to json
     command_options.extend(['--format', 'json'])
+
+    #  Full command build, with option included    
+    #   Base of the command
     command = [
         module.params['executable'], 'generate', 'systemd',
-        *command_options,
-        module.params['name'],
     ]
+    #   Add the options to the commande
+    command.extend(command_options)
+    #   Add pod or container name to the command
+    command.append(module.params['name'])
+    #   Build the string version of the command, only for module return
     command_str = ' '.join(command)
-
+    
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
 
