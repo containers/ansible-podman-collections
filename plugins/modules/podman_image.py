@@ -84,6 +84,7 @@ DOCUMENTATION = r'''
     build:
       description: Arguments that control image build.
       type: dict
+      default: {}
       aliases:
         - build_args
         - buildargs
@@ -130,6 +131,7 @@ DOCUMENTATION = r'''
     push_args:
       description: Arguments that control pushing images.
       type: dict
+      default: {}
       suboptions:
         compress:
           description:
