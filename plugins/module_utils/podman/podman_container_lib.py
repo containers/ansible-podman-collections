@@ -7,6 +7,7 @@ from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 
 __metaclass__ = type
@@ -1659,6 +1660,10 @@ class PodmanManager:
         if not self.container.exists:
             self.results.update({'changed': False})
         elif self.container.exists:
+            delete_systemd(self.module,
+                           self.module_params,
+                           self.name,
+                           self.container.version)
             self.container.delete()
             self.results['actions'].append('deleted %s' % self.container.name)
             self.results.update({'changed': True})

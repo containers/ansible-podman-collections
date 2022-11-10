@@ -34,12 +34,11 @@ def run_podman_command(module, executable='podman', args=None, expected_rc=0, ig
     return rc, out, err
 
 
-def generate_systemd(module, module_params, name, version):
+def run_generate_systemd_command(module, module_params, name, version):
     """Generate systemd unit file."""
     command = [module_params['executable'], 'generate', 'systemd',
                name, '--format', 'json']
     sysconf = module_params['generate_systemd']
-    empty = {}
     gt4ver = LooseVersion(version) >= LooseVersion('4.0.0')
     if sysconf.get('restart_policy'):
         if sysconf.get('restart_policy') not in [
@@ -95,6 +94,13 @@ def generate_systemd(module, module_params, name, version):
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
                    " ".join(command))
     rc, systemd, err = module.run_command(command)
+    return rc, systemd, err
+
+
+def generate_systemd(module, module_params, name, version):
+    empty = {}
+    sysconf = module_params['generate_systemd']
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
     if rc != 0:
         module.log(
             "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
@@ -118,6 +124,31 @@ def generate_systemd(module, module_params, name, version):
             module.log(
                 "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
             return empty
+
+
+def delete_systemd(module, module_params, name, version):
+    sysconf = module_params['generate_systemd']
+    if not sysconf.get('path'):
+        # We don't know where systemd files are located, nothing to delete
+        module.log(
+            "PODMAN-CONTAINER-DEBUG: Not deleting systemd file - no path!")
+        return
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
+    if rc != 0:
+        module.log(
+            "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
+        return
+    else:
+        try:
+            data = json.loads(systemd)
+            for file_name in data.keys():
+                file_name += ".service"
+                os.unlink(os.path.join(sysconf['path'], file_name))
+            return
+        except Exception as e:
+            module.log(
+                "PODMAN-CONTAINER-DEBUG: Error deleting systemd: %s" % e)
+            return
 
 
 def lower_keys(x):
