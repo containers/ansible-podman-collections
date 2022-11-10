@@ -143,7 +143,9 @@ def delete_systemd(module, module_params, name, version):
             data = json.loads(systemd)
             for file_name in data.keys():
                 file_name += ".service"
-                os.unlink(os.path.join(sysconf['path'], file_name))
+                file_path = os.path.join(sysconf['path'], file_name)
+                if os.path.exists(file_path):
+                    os.unlink(file_path)
             return
         except Exception as e:
             module.log(
