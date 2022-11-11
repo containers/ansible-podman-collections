@@ -109,15 +109,16 @@ def generate_systemd(module, module_params, name, version):
         try:
             data = json.loads(systemd)
             if sysconf.get('path'):
-                if not os.path.exists(sysconf['path']):
-                    os.makedirs(sysconf['path'])
-                if not os.path.isdir(sysconf['path']):
+                full_path = os.path.expanduser(sysconf['path'])
+                if not os.path.exists(full_path):
+                    os.makedirs(full_path)
+                if not os.path.isdir(full_path):
                     module.fail_json("Path %s is not a directory! "
                                      "Can not save systemd unit files there!"
-                                     % sysconf['path'])
+                                     % full_path)
                 for file_name, file_content in data.items():
                     file_name += ".service"
-                    with open(os.path.join(sysconf['path'], file_name), 'w') as f:
+                    with open(os.path.join(full_path, file_name), 'w') as f:
                         f.write(file_content)
             return data
         except Exception as e:
@@ -143,7 +144,8 @@ def delete_systemd(module, module_params, name, version):
             data = json.loads(systemd)
             for file_name in data.keys():
                 file_name += ".service"
-                file_path = os.path.join(sysconf['path'], file_name)
+                full_dir_path = os.path.expanduser(sysconf['path'])
+                file_path = os.path.join(full_dir_path, file_name)
                 if os.path.exists(file_path):
                     os.unlink(file_path)
             return
