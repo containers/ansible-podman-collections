@@ -44,7 +44,7 @@ jobs:
         with:
           python-version: ${{ matrix.runner-python-version }}
       - name: Set up pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
@@ -108,7 +108,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
@@ -198,7 +198,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
