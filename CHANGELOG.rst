@@ -5,6 +5,52 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.10.0
+=======
+
+Release Summary
+---------------
+
+New modules, become plugin and bugfixes.
+
+Major Changes
+-------------
+
+- New become plugin - podman_unshare
+- Podman generate systemd module
+
+Minor Changes
+-------------
+
+- Add --sdnotify option for container
+- Add example unittest for container lib
+- Add protection for systemd files deletion
+- Add unittests for Ansible Podman modules
+- Check for gha updates weekly using dependabot
+- Fix PEP8 issue in podman_image
+- Fix building image with buildah and become
+- Fix docs issues in podman_image
+- Warning about improperly configured remote target
+- add required argument to example
+- docs - added simple extra_args example
+- generate_systemd - implement --wants, --after and --requires
+- podman_image - add file parameter for Containerfile location
+
+Bugfixes
+--------
+
+- Delete systemd files when container/pod is deleted
+- Fix example in systemd generate module
+- Fix expanduser in path for systemd generation
+- Fix idempotency for labels in pods
+- Fix podman load module for Podman 4
+- Fix rerunning playbooks with generate_systemd --new
+- Improve idempotency for devices mount of rootless podman
+- Improve networks idempotency for v4
+- Support passing multiple networks with params
+- fix pod running status for older podman versions
+- podman_container should ensure image by using os path if rootfs is used
+
 v1.9.4
 ======
 
