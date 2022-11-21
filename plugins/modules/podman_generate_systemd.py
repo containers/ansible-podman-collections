@@ -273,7 +273,7 @@ def generate_systemd(module):
 
     #  Container-prefix option
     container_prefix = module.params['container_prefix']
-    if container_prefix:
+    if container_prefix is not None:
         command_options.append(
             '--container-prefix={container_prefix}'.format(
                 container_prefix=container_prefix,
@@ -282,7 +282,7 @@ def generate_systemd(module):
 
     #  Pod-prefix option
     pod_prefix = module.params['pod_prefix']
-    if pod_prefix:
+    if pod_prefix is not None:
         command_options.append(
             '--pod-prefix={pod_prefix}'.format(
                 pod_prefix=pod_prefix,
@@ -291,7 +291,7 @@ def generate_systemd(module):
 
     #  Separator option
     separator = module.params['separator']
-    if separator:
+    if separator is not None:
         command_options.append(
             '--separator={separator}'.format(
                 separator=separator,
