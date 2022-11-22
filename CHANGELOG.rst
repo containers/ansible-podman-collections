@@ -5,6 +5,25 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.10.1
+=======
+
+Release Summary
+---------------
+
+Bugfixes and minor docs changes
+
+Minor Changes
+-------------
+
+- Add missed docs for modules
+
+Bugfixes
+--------
+
+- podman_systemd_generate - allow empty string for prefixes
+- podman_unshare - Fix docs for podman_unshare become plugin
+
 v1.10.0
 =======
 
