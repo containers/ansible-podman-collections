@@ -140,6 +140,15 @@ releases:
       - podman_image - add file parameter for Containerfile location
       release_summary: New modules, become plugin and bugfixes.
     release_date: '2022-11-17'
+  1.10.1:
+    changes:
+      bugfixes:
+      - podman_systemd_generate - allow empty string for prefixes
+      - podman_unshare - Fix docs for podman_unshare become plugin
+      minor_changes:
+      - Add missed docs for modules
+      release_summary: Bugfixes and minor docs changes
+    release_date: '2022-11-22'
   1.2.0:
     changes:
       minor_changes:
