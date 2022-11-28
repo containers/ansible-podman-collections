@@ -110,7 +110,7 @@ def logout(module, executable, registry, authfile, all_registries, ignore_docker
         # The command will return successfully but not log out the user if the
         # credentials were initially created using docker. Catch this behaviour:
         if not ignore_docker_credentials:
-            module.fail_json(msg="Unable to log out of %s: %s" % (registry, out))
+            module.fail_json(msg="Unable to log out %s: %s" % (registry or '', out))
         else:
             changed = False
     return changed, out, err
