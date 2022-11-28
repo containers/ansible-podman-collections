@@ -63,6 +63,7 @@
               - vim
               - dnsmasq
               - slirp4netns
+            state: latest
 
         - name: Discover slirp4netns version
           shell: slirp4netns -v | grep version | awk {'print $3'}

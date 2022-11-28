@@ -25,8 +25,8 @@ on:
 jobs:
 
   test_podman_tag:
-    name: Podman tag ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    name: Podman tag ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash

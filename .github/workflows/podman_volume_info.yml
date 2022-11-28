@@ -27,8 +27,8 @@ on:
 jobs:
 
   test_podman_volume_info:
-    name: Podman volume info ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    name: Podman volume info ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash
