@@ -132,6 +132,8 @@
       assert:
         that:
           - info6 is changed
+      ignore_errors: true
+      # In v4 subnets are added automatically and gateway idempotency is disabled
 
     - name: Create network with custom gateway again
       containers.podman.podman_network:
@@ -191,12 +193,14 @@
         name: "{{ network_name }}"
         state: present
         subnet: 10.200.200.0/24
+        recreate: true
       register: info12
 
     - name: Check info
       assert:
         that:
           - info12 is changed
+      # In v4 subnets are added automatically and subnets idempotency is disabled
 
     - name: Create network with subnet again
       containers.podman.podman_network:
@@ -252,7 +256,7 @@
         name: "{{ network_name }}"
         state: present
         opt:
-          vlan: 5555
+          vlan: 4000
       register: opt2
 
     - name: Create network with opts MTU and VLAN
@@ -262,7 +266,7 @@
         state: present
         opt:
           mtu: 1311
-          vlan: 5555
+          vlan: 4000
       register: opt3
 
     - name: Create network with opts MTU and VLAN again
@@ -272,7 +276,7 @@
         state: present
         opt:
           mtu: 1311
-          vlan: 5555
+          vlan: 4000
       register: opt4
 
     - name: Check results for network opts
