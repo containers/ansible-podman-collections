@@ -1,0 +1,49 @@
+---
+- name: Create directory for user build images
+  file:
+    path: /tmp/usr_img
+    state: directory
+
+- name: Copy files to container build directory
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/usr_img/{{ item }}"
+    mode: 777
+  loop:
+    - Dockerfile
+    - start.sh
+
+- name: Build test docker image for regular user
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "{{ runlabel_image }}"
+    path: /tmp/usr_img
+    build:
+      format: docker
+      extra_args: --cgroup-manager=cgroupfs
+
+- name: Run container runlabel install
+  containers.podman.podman_runlabel:
+    image: "{{ runlabel_image }}"
+    label: install
+
+- name: Run container runlabel run
+  containers.podman.podman_runlabel:
+    image: "{{ runlabel_image }}"
+    label: run
+
+- name: Check file for install exists
+  stat:
+    path: /tmp/testedinstallfortests
+  register: testedinstallfortests
+
+- name: Check file for run exists
+  stat:
+    path: /tmp/testedrunfortests
+  register: testedrunfortests
+
+- name: Make sure files exist
+  assert:
+    that:
+      - testedinstallfortests.stat.exists
+      - testedrunfortests.stat.exists
