@@ -909,7 +909,7 @@ class PodmanContainerDiff:
 
     def diffparam_etc_hosts(self):
         if self.info['hostconfig']['extrahosts']:
-            before = dict([i.split(":")
+            before = dict([i.split(":", 1)
                            for i in self.info['hostconfig']['extrahosts']])
         else:
             before = {}
