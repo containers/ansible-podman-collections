@@ -242,6 +242,38 @@
       - test18 is not changed
       - test19 is changed
 
+- name: Run container with etc_hosts
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test20
+
+- name: Check info with etc_hosts
+  assert:
+    that: test20 is changed
+
+- name: Run container with etc_hosts again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test21
+
+- name: Check info with etc_hosts again
+  assert:
+    that: test21 is not changed
+
 - name: Remove test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
