@@ -173,7 +173,7 @@ def podmanExec(module, target, filters, executable):
         changed = True
     if rc != 0:
         module.fail_json(
-            msg="Error executing prune on {}: {}".format(target, err))
+            msg="Error executing prune on {0}: {1}".format(target, err))
     return changed, out, err
 
 
