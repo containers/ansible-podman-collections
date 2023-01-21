@@ -15,7 +15,8 @@ version_added: '1.10.0'
 short_description: Allows to prune various podman objects
 notes: []
 description:
-    - Allows to run C(podman container prune), C(podman image prune), C(podman network prune), C(podman volume prune) and C(podman system prune)
+    - Allows to run C(podman container prune), C(podman image prune), C(podman network prune), 
+      C(podman volume prune) and C(podman system prune)
 requirements:
     - "Podman installed on host"
 options:
@@ -33,7 +34,8 @@ options:
         description:
             - A dictionary of filter values used for selecting containers to delete.
             - "For example, C(until: 24h)."
-            - See L(the podman documentation, https://docs.podman.io/en/latest/markdown/podman-container-prune.1.html#filter-filters)
+            - See L(the podman documentation, 
+              https://docs.podman.io/en/latest/markdown/podman-container-prune.1.html#filter-filters)
               for more information on possible filters.
         type: dict
     image:
@@ -45,7 +47,8 @@ options:
         description:
             - A dictionary of filter values used for selecting images to delete.
             - "For example, C(dangling: true)."
-            - See L(the podman documentation,https://docs.podman.io/en/latest/markdown/podman-image-prune.1.html#filter-filters)
+            - See L(the podman documentation,
+              https://docs.podman.io/en/latest/markdown/podman-image-prune.1.html#filter-filters)
               for more information on possible filters.
         type: dict
     network:
@@ -56,7 +59,8 @@ options:
     network_filters:
         description:
             - A dictionary of filter values used for selecting networks to delete.
-            - See L(the podman documentation,https://docs.podman.io/en/latest/markdown/podman-network-prune.1.html#filter)
+            - See L(the podman documentation,
+              https://docs.podman.io/en/latest/markdown/podman-network-prune.1.html#filter)
               for more information on possible filters.
         type: dict
     system:
@@ -82,7 +86,8 @@ options:
     volume_filters:
         description:
             - A dictionary of filter values used for selecting volumes to delete.
-            - See L(the podman documentation,https://docs.podman.io/en/latest/markdown/podman-volume-prune.1.html#filter)
+            - See L(the podman documentation,
+              https://docs.podman.io/en/latest/markdown/podman-volume-prune.1.html#filter)
               for more information on possible filters.
         type: dict
 """
@@ -177,7 +182,7 @@ def podmanExec(module, target, filters, executable):
     return changed, out, err
 
 
-def run_module():
+def main():
     module_args = dict(
         container=dict(type='bool', default=False),
         container_filters=dict(type='dict'),
@@ -283,10 +288,6 @@ def run_module():
         )
 
     module.exit_json(**results)
-
-
-def main():
-    run_module()
 
 
 if __name__ == '__main__':
