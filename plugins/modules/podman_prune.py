@@ -7,18 +7,18 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r"""
+DOCUMENTATION = r'''
 module: podman_prune
 author:
-    - "Roberto Alfieri (@rebtoor)"
+    - 'Roberto Alfieri (@rebtoor)'
 version_added: '1.10.0'
 short_description: Allows to prune various podman objects
 notes: []
 description:
-    - Allows to run C(podman container prune), C(podman image prune), C(podman network prune), 
+    - Allows to run C(podman container prune), C(podman image prune), C(podman network prune),
       C(podman volume prune) and C(podman system prune)
 requirements:
-    - "Podman installed on host"
+    - 'Podman installed on host'
 options:
     executable:
         description:
@@ -33,8 +33,8 @@ options:
     container_filters:
         description:
             - A dictionary of filter values used for selecting containers to delete.
-            - "For example, C(until: 24h)."
-            - See L(the podman documentation, 
+            - 'For example, C(until: 24h).'
+            - See L(the podman documentation,
               https://docs.podman.io/en/latest/markdown/podman-container-prune.1.html#filter-filters)
               for more information on possible filters.
         type: dict
@@ -46,7 +46,8 @@ options:
     image_filters:
         description:
             - A dictionary of filter values used for selecting images to delete.
-            - "For example, C(dangling: true)."
+            - 'You can also use C(dangling_only: false) to delete dangling and non-dangling images or C(external: true)
+              to delete images even when they are used by external containers.'
             - See L(the podman documentation,
               https://docs.podman.io/en/latest/markdown/podman-image-prune.1.html#filter-filters)
               for more information on possible filters.
@@ -90,9 +91,9 @@ options:
               https://docs.podman.io/en/latest/markdown/podman-volume-prune.1.html#filter)
               for more information on possible filters.
         type: dict
-"""
+'''
 
-EXAMPLES = r"""
+EXAMPLES = r'''
 - name: Prune containers older than 24h
   containers.podman.podman_prune:
       containers: true
@@ -109,9 +110,9 @@ EXAMPLES = r"""
       system: true
       system_all: true
       system_volumes: true
-"""
+'''
 
-RETURN = r"""
+RETURN = r'''
 # containers
 containers:
     description:
@@ -156,30 +157,49 @@ system:
   type: list
   elements: str
   sample: []
-"""
+'''
 
 
 from ansible.module_utils.basic import AnsibleModule
 
 
 def podmanExec(module, target, filters, executable):
-    changed = False
     command = [executable, target, 'prune', '--force']
-    if filters != "" and target != "system":
-        command.append("--filter=")
-        command.append(filters)
-    if filters != "" and target == "system":
-        split_filters = filters.strip().split(" ")
-        for filter in split_filters:
-            if filter:
-                command.append(filter)
+    if filters:
+        if target != 'system':
+            for common_filter in filters:
+                if isinstance(filters[common_filter], dict):
+                    dict_filters = filters[common_filter]
+                    for single_filter in dict_filters:
+                        command.append('--filter={label}={key}={value}'.format(label=common_filter, key=single_filter,
+                                                                               value=dict_filters[single_filter]))
+                else:
+                    if target == 'image' and (common_filter in ('dangling_only', 'external')):
+                        if common_filter == 'dangling_only' and not filters['dangling_only']:
+                            command.append('-a')
+                        if common_filter == 'external' and filters['external']:
+                            command.append('--external')
+                    else:
+                        command.append('--filter={label}={value}'.format(label=common_filter,
+                                                                         value=filters[common_filter]))
+        else:
+            for system_filter in filters:
+                command.append(filters[system_filter])
+
     rc, out, err = module.run_command(command)
     if out:
         changed = True
+    else:
+        changed = False
     if rc != 0:
         module.fail_json(
-            msg="Error executing prune on {target}: {err}".format(target=target, err=err))
-    return changed, out, err
+            msg='Error executing prune on {target}: {err}'.format(target=target, err=err))
+
+    return {
+        "changed": changed,
+        "stdout": out,
+        "stderr": err
+    }
 
 
 def main():
@@ -205,87 +225,20 @@ def main():
     executable = module.get_bin_path(
         module.params['executable'], required=True)
 
-    if module.params["container"]:
-        target = "container"
-        if not module.params["container_filters"]:
-            filters = ""
-        else:
-            filters = module.params["container_filters"]
-        changed, out, err = podmanExec(module, target, filters, executable)
-        if not out:
-            containers = []
-        else:
-            containers = out.rstrip().split("\n")
-        results = dict(
-            changed=changed,
-            containers=containers,
-            stderr=err
-        )
+    for target, filters in (
+            ('container', 'container_filters'), ('image', 'image_filters'), ('network', 'network_filters'),
+            ('volume', 'volume_filters')):
+        if module.params[target]:
+            results = podmanExec(module, target, module.params[filters], executable)
 
-    if module.params["network"]:
-        target = "network"
-        if not module.params["network_filters"]:
-            filters = ""
-        else:
-            filters = module.params["network_filters"]
-        changed, out, err = podmanExec(module, target, filters, executable)
-        if not out:
-            networks = []
-        else:
-            networks = out.rstrip().split("\n")
-        results = dict(
-            changed=changed,
-            networks=networks,
-            stderr=err
-        )
-
-    if module.params["image"]:
-        target = "image"
-        if not module.params["image_filters"]:
-            filters = ""
-        else:
-            filters = module.params["image_filters"]
-        changed, out, err = podmanExec(module, target, filters, executable)
-        results = dict(
-            changed=changed,
-            stdout=out,
-            stderr=err
-        )
-
-    if module.params["volume"]:
-        target = "volume"
-        if not module.params["volume_filters"]:
-            filters = ""
-        else:
-            filters = module.params["volume_filters"]
-        changed, out, err = podmanExec(module, target, filters, executable)
-        if not out:
-            volumes = []
-        else:
-            volumes = out.rstrip().split("\n")
-        results = dict(
-            changed=changed,
-            volumes=volumes,
-            stderr=err
-        )
-
-    if module.params["system"]:
-        target = "system"
-        filters = str()
-
-        if module.params["system_all"]:
-            filters = " ".join([filters, "--all"])
-
-        if module.params["system_volumes"]:
-            filters = " ".join([filters, "--volumes"])
-
-        changed, out, err = podmanExec(module, target, filters, executable)
-
-        results = dict(
-            changed=changed,
-            stdout=out,
-            stderr=err
-        )
+    if module.params['system']:
+        target = 'system'
+        system_filters = {}
+        if module.params['system_all']:
+            system_filters['system_all'] = '--all'
+        if module.params['system_volumes']:
+            system_filters['system_volumes'] = '--volumes'
+        results = podmanExec(module, target, system_filters, executable)
 
     module.exit_json(**results)
 
