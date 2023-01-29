@@ -137,6 +137,31 @@ notes:
 '''
 
 EXAMPLES = '''
+# Example of creating a container and systemd unit file.
+# When using podman_generate_systemd with new:true then
+# the container needs rm:true for idempotence.
+- name: Create postgres container
+  containers.podman.podman_container:
+    name: postgres
+    image: docker.io/library/postgres:latest
+    rm: true
+    state: created
+
+- name: Generate systemd unit file for postgres container
+  containers.podman.podman_generate_systemd:
+    name: postgres
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+
+- name: Ensure postgres container is started and enabled
+  ansible.builtin.systemd:
+    name: container-postgres
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+
 # Example of creating a container and integrate it into systemd
 - name: A postgres container must exist, stopped
   containers.podman.podman_container:
