@@ -163,34 +163,38 @@ system:
 from ansible.module_utils.basic import AnsibleModule
 
 
+def filtersPrepare(target, filters):
+    filter_out = []
+    if target == 'system':
+        for system_filter in filters:
+            filter_out.append(filters[system_filter])
+    else:
+        for common_filter in filters:
+            if isinstance(filters[common_filter], dict):
+                dict_filters = filters[common_filter]
+                for single_filter in dict_filters:
+                    filter_out.append('--filter={label}={key}={value}'.format(label=common_filter, key=single_filter,
+                                                                              value=dict_filters[single_filter]))
+            else:
+                if target == 'image' and (common_filter in ('dangling_only', 'external')):
+                    if common_filter == 'dangling_only' and not filters['dangling_only']:
+                        filter_out.append('-a')
+                    if common_filter == 'external' and filters['external']:
+                        filter_out.append('--external')
+                else:
+                    filter_out.append('--filter={label}={value}'.format(label=common_filter,
+                                                                        value=filters[common_filter]))
+
+    return filter_out
+
+
 def podmanExec(module, target, filters, executable):
     command = [executable, target, 'prune', '--force']
-    if filters:
-        if target != 'system':
-            for common_filter in filters:
-                if isinstance(filters[common_filter], dict):
-                    dict_filters = filters[common_filter]
-                    for single_filter in dict_filters:
-                        command.append('--filter={label}={key}={value}'.format(label=common_filter, key=single_filter,
-                                                                               value=dict_filters[single_filter]))
-                else:
-                    if target == 'image' and (common_filter in ('dangling_only', 'external')):
-                        if common_filter == 'dangling_only' and not filters['dangling_only']:
-                            command.append('-a')
-                        if common_filter == 'external' and filters['external']:
-                            command.append('--external')
-                    else:
-                        command.append('--filter={label}={value}'.format(label=common_filter,
-                                                                         value=filters[common_filter]))
-        else:
-            for system_filter in filters:
-                command.append(filters[system_filter])
-
+    if filters is not None:
+        command.extend(filtersPrepare(target, filters))
     rc, out, err = module.run_command(command)
-    if out:
-        changed = True
-    else:
-        changed = False
+    changed = bool(out)
+
     if rc != 0:
         module.fail_json(
             msg='Error executing prune on {target}: {err}'.format(target=target, err=err))
