@@ -201,12 +201,13 @@ def podmanExec(module, target, filters, executable):
 
     return {
         "changed": changed,
-        "stdout": out,
-        "stderr": err
+        target: list(filter(None, out.split('\n'))),
+        "errors": err
     }
 
 
 def main():
+    results = dict()
     module_args = dict(
         container=dict(type='bool', default=False),
         container_filters=dict(type='dict'),
@@ -233,7 +234,7 @@ def main():
             ('container', 'container_filters'), ('image', 'image_filters'), ('network', 'network_filters'),
             ('volume', 'volume_filters')):
         if module.params[target]:
-            results = podmanExec(module, target, module.params[filters], executable)
+            results[target] = podmanExec(module, target, module.params[filters], executable)
 
     if module.params['system']:
         target = 'system'
@@ -242,7 +243,7 @@ def main():
             system_filters['system_all'] = '--all'
         if module.params['system_volumes']:
             system_filters['system_volumes'] = '--volumes'
-        results = podmanExec(module, target, system_filters, executable)
+        results[target] = podmanExec(module, target, system_filters, executable)
 
     module.exit_json(**results)
 
