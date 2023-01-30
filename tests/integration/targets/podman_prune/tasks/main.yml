@@ -13,11 +13,13 @@
         image: quay.io/podman/hello:latest
         state: present
       register: container
+
     - name: Create network
       containers.podman.podman_network:
         name: "{{ nname }}"
         state: present
       register: network
+
     - name: Create volume
       containers.podman.podman_volume:
         name: "{{ vname }}"
@@ -30,22 +32,28 @@
         container: true
         network: true
         volume: true
-      register: result
 
-    # Analyze result
-    - name: Show results
-      ansible.builtin.debug:
-        var: result
+    - name: Check if container exists
+      containers.podman.podman_container_info:
+      register: container_exists
+
+    - name: Check if podman network exists
+      containers.podman.podman_network_info:
+      register: network_exists
+
+    - name: Check if podman volume exists
+      containers.podman.podman_volume_info:
+      register: volume_exists
 
     - name: Verify assertions for network, container and volume
       ansible.builtin.assert:
         that:
           # containers
-          - container.container.Id in result.container.container
+          - container.container.Id not in container_exists.containers | map(attribute='Name') | list | flatten
           # networks
-          - network.network.name in result.network.network
+          - network.network.name not in network_exists.networks | map(attribute='id') | list | flatten
           # volumes
-          - volume.volume.Name in result.volume.volume
+          - volume.volume.Name not in volume_exists.volumes | map(attribute='Name') | list | flatten
 
     # Test with filters
     - name: Prune objects with filters
@@ -54,45 +62,68 @@
         image_filters:
           dangling_only: false
           external: true
-      register: image_filters
+
+    - name: Check if image exists
+      containers.podman.podman_image_info:
+      register: image_exists
 
     - name: Verify assertions for image (with filters)
       ansible.builtin.assert:
         that:
-          - image_filters.image.image | length > 0
+          - image_exists.images | length == 0
 
     - name: Create container
       containers.podman.podman_container:
         name: "{{ cname }}"
         image: quay.io/podman/hello:latest
         state: present
-      register: container
+      register: container_system
+
     - name: Create network
       containers.podman.podman_network:
         name: "{{ nname }}"
         state: present
-      register: network
+      register: network_system
+
     - name: Create volume
       containers.podman.podman_volume:
         name: "{{ vname }}"
         state: present
-      register: volume
+      register: volume_system
 
     - name: System prune
       containers.podman.podman_prune:
         system: true
         system_all: true
         system_volumes: true
-      register: system_result
 
-    - name: Show results
-      ansible.builtin.debug:
-        var: system_result
+    - name: Check if container exists
+      containers.podman.podman_container_info:
+      register: container_system_exists
+
+    - name: Check if podman network exists
+      containers.podman.podman_network_info:
+      register: network_system_exists
+
+    - name: Check if podman volume exists
+      containers.podman.podman_volume_info:
+      register: volume_system_exists
+
+    - name: Check if image exists
+      containers.podman.podman_image_info:
+      register: image_system_exists
 
     - name: Verify assertions for system
       ansible.builtin.assert:
         that:
-          - system_result.system.system is search("Total reclaimed space")
+          # container
+          - container_system.container.Id not in container_system_exists.containers | map(attribute='Name') | list | flatten
+          # networks
+          - network_system.network.name not in network_system_exists.networks | map(attribute='id') | list | flatten
+          # volumes
+          - volume_system.volume.Name not in volume_system_exists.volumes | map(attribute='Name') | list | flatten
+          # images
+          - image_system_exists.images | length == 0
 
   always:
     - name: Cleanup
