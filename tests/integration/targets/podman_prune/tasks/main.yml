@@ -1,0 +1,131 @@
+- name: Create random names
+  ansible.builtin.set_fact:
+    cname: "{{ 'ansible-container-%0x' % ((2**32) | random) }}"
+    nname: "{{ 'ansible-network-%0x' % ((2**32) | random) }}"
+    vname: "{{ 'ansible-volume-%0x' % ((2**32) | random) }}"
+
+- name: Test podman_prune module
+  block:
+    # Create objects to be pruned
+    - name: Create container
+      containers.podman.podman_container:
+        name: "{{ cname }}"
+        image: quay.io/podman/hello:latest
+        state: present
+      register: container
+
+    - name: Create network
+      containers.podman.podman_network:
+        name: "{{ nname }}"
+        state: present
+      register: network
+
+    - name: Create volume
+      containers.podman.podman_volume:
+        name: "{{ vname }}"
+        state: present
+      register: volume
+
+    # Prune objects
+    - name: Prune objects
+      containers.podman.podman_prune:
+        container: true
+        network: true
+        volume: true
+
+    - name: Check if container exists
+      containers.podman.podman_container_info:
+      register: container_exists
+
+    - name: Check if podman network exists
+      containers.podman.podman_network_info:
+      register: network_exists
+
+    - name: Check if podman volume exists
+      containers.podman.podman_volume_info:
+      register: volume_exists
+
+    - name: Verify assertions for network, container and volume
+      ansible.builtin.assert:
+        that:
+          # containers
+          - container.container.Id not in container_exists.containers | map(attribute='Name') | list | flatten
+          # networks
+          - network.network.name not in network_exists.networks | map(attribute='id') | list | flatten
+          # volumes
+          - volume.volume.Name not in volume_exists.volumes | map(attribute='Name') | list | flatten
+
+    # Test with filters
+    - name: Prune objects with filters
+      containers.podman.podman_prune:
+        image: true
+        image_filters:
+          dangling_only: false
+          external: true
+
+    - name: Check if image exists
+      containers.podman.podman_image_info:
+      register: image_exists
+
+    - name: Verify assertions for image (with filters)
+      ansible.builtin.assert:
+        that:
+          - image_exists.images | length == 0
+
+    - name: Create container
+      containers.podman.podman_container:
+        name: "{{ cname }}"
+        image: quay.io/podman/hello:latest
+        state: present
+      register: container_system
+
+    - name: Create network
+      containers.podman.podman_network:
+        name: "{{ nname }}"
+        state: present
+      register: network_system
+
+    - name: Create volume
+      containers.podman.podman_volume:
+        name: "{{ vname }}"
+        state: present
+      register: volume_system
+
+    - name: System prune
+      containers.podman.podman_prune:
+        system: true
+        system_all: true
+        system_volumes: true
+
+    - name: Check if container exists
+      containers.podman.podman_container_info:
+      register: container_system_exists
+
+    - name: Check if podman network exists
+      containers.podman.podman_network_info:
+      register: network_system_exists
+
+    - name: Check if podman volume exists
+      containers.podman.podman_volume_info:
+      register: volume_system_exists
+
+    - name: Check if image exists
+      containers.podman.podman_image_info:
+      register: image_system_exists
+
+    - name: Verify assertions for system
+      ansible.builtin.assert:
+        that:
+          # container
+          - container_system.container.Id not in container_system_exists.containers | map(attribute='Name') | list | flatten
+          # networks
+          - network_system.network.name not in network_system_exists.networks | map(attribute='id') | list | flatten
+          # volumes
+          - volume_system.volume.Name not in volume_system_exists.volumes | map(attribute='Name') | list | flatten
+          # images
+          - image_system_exists.images | length == 0
+
+  always:
+    - name: Cleanup
+      ansible.builtin.command: podman system prune -a -f --volumes
+      ignore_errors: true
