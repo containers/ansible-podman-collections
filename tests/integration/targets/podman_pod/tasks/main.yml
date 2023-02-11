@@ -310,6 +310,34 @@
         that:
           - pod15_info is changed
 
+    - name: Start pod with gidmap and uidmap
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        uidmap: 0:100:65536
+        gidmap: 0:100:65536
+        state: created
+      register: pod15_a_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_a_info is changed
+
+    - name: Start pod with share for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        uidmap: 0:100:65536
+        gidmap: 0:100:65536
+        state: created
+      register: pod15_b_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_b_info is not changed
+
     - name: Start pod with labels
       containers.podman.podman_pod:
         executable: "{{ test_executable | default('podman') }}"
