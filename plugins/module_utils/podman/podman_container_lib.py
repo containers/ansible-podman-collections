@@ -66,6 +66,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     healthcheck_retries=dict(type='int'),
     healthcheck_start_period=dict(type='str'),
     healthcheck_timeout=dict(type='str'),
+    hooks_dir=dict(type='list', elements='str'),
     hostname=dict(type='str'),
     http_proxy=dict(type='bool'),
     image_volume=dict(type='str', choices=['bind', 'tmpfs', 'ignore']),
@@ -405,6 +406,11 @@ class PodmanModuleParams:
     def addparam_healthcheck_timeout(self, c):
         return c + ['--healthcheck-timeout',
                     self.params['healthcheck_timeout']]
+
+    def addparam_hooks_dir(self, c):
+        for hook_dir in self.params['hooks_dir']:
+            c += ['--hooks-dir=%s' % hook_dir]
+        return c
 
     def addparam_hostname(self, c):
         return c + ['--hostname', self.params['hostname']]
