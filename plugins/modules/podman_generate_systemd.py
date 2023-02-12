@@ -23,7 +23,9 @@ options:
     required: true
   dest:
     description:
-      - Destination of the generated systemd unit file(s)
+      - Destination of the generated systemd unit file(s).
+      - Use C(/etc/systemd/system) for the system-wide systemd instance.
+      - Use C(/etc/systemd/user) or C(~/.config/systemd/user) for use with per-user instances of systemd.
     type: path
   new:
     description:
@@ -126,18 +128,41 @@ options:
 requirements:
   - Podman installed on target host
 notes:
-  - You can store your systemd unit files in C(/etc/systemd/user/) for system wide usage
-  - Or you can store them in C(~/.config/systemd/user/) for usage at a specific user
   - If you indicate a pod, the systemd units for it and all its containers will be generated
   - Create all your pods, containers and their dependencies before generating the systemd files
-  - If a container or pod is already started before you do a C(systemctl daemon reload),
+  - If a container or pod is already started before you do a C(systemctl daemon-reload),
     systemd will not see the container or pod as started
-  - Stop your container or pod before you do a C(systemctl daemon reload),
+  - Stop your container or pod before you do a C(systemctl daemon-reload),
     then you can start them with C(systemctl start my_container.service)
 '''
 
 EXAMPLES = '''
-# Exemple of creating a container and integrate it into systemd
+# Example of creating a container and systemd unit file.
+# When using podman_generate_systemd with new:true then
+# the container needs rm:true for idempotence.
+- name: Create postgres container
+  containers.podman.podman_container:
+    name: postgres
+    image: docker.io/library/postgres:latest
+    rm: true
+    state: created
+
+- name: Generate systemd unit file for postgres container
+  containers.podman.podman_generate_systemd:
+    name: postgres
+    new: true
+    no_header: true
+    dest: /etc/systemd/system
+
+- name: Ensure postgres container is started and enabled
+  ansible.builtin.systemd:
+    name: container-postgres
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+
+# Example of creating a container and integrate it into systemd
 - name: A postgres container must exist, stopped
   containers.podman.podman_container:
     name: postgres_local
@@ -152,13 +177,13 @@ EXAMPLES = '''
 - name: Postgres container must be started and enabled on systemd
   ansible.builtin.systemd:
     name: container-postgres_local
-    daemon_reload: yes
+    daemon_reload: true
     state: started
-    enabled: yes
+    enabled: true
 
 
 # Generate the unit files, but store them on an Ansible variable
-# instead of writting them on target host
+# instead of writing them on target host
 - name: Systemd unit files for postgres container must be generated
   containers.podman.podman_generate_systemd:
     name: postgres_local

@@ -1164,6 +1164,11 @@ class PodmanContainerDiff:
         after = self.params['read_only']
         return self._diff_update_and_compare('read_only', before, after)
 
+    def diffparam_restart_policy(self):
+        before = self.info['hostconfig']['restartpolicy']['name']
+        after = self.params['restart_policy'] or ""
+        return self._diff_update_and_compare('restart_policy', before, after)
+
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
         after = self.params['rm']
