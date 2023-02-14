@@ -84,7 +84,6 @@ EXAMPLES = r"""
 """
 # noqa: F402
 
-import json  # noqa: F402
 from ansible.module_utils.basic import AnsibleModule
 
 

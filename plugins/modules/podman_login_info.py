@@ -60,7 +60,6 @@ login:
             }
 """
 
-import json
 from ansible.module_utils.basic import AnsibleModule
 
 

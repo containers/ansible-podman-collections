@@ -45,8 +45,6 @@ EXAMPLES = '''
         command: python -V
 '''
 
-from copy import deepcopy  # noqa: F402
-
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_container_lib import PodmanManager  # noqa: F402
 from ..module_utils.podman.podman_container_lib import set_container_opts  # noqa: F402

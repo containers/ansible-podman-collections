@@ -83,7 +83,6 @@ EXAMPLES = r"""
 """
 # noqa: F402
 
-import json  # noqa: F402
 import hashlib
 import os
 from ansible.module_utils.basic import AnsibleModule
