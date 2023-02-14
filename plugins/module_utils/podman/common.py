@@ -7,7 +7,6 @@ __metaclass__ = type
 import json
 import os
 import shutil
-import signal
 
 from ansible.module_utils.six import raise_from
 try:

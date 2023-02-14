@@ -185,7 +185,6 @@ network:
 """
 
 import json  # noqa: F402
-import os  # noqa: F402
 try:
     import ipaddress
     HAS_IP_ADDRESS_MODULE = True
