@@ -1,19 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Containers.Podman &#8212; Python  documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -33,27 +33,34 @@
           <div class="body" role="main">
             
   <div class="section" id="containers-podman">
-<span id="plugins-in-containers-podman"></span><h1>Containers.Podman<a class="headerlink" href="#containers-podman" title="Permalink to this headline">¶</a></h1>
-<p>Collection version 1.9.3</p>
+<span id="plugins-in-containers-podman"></span><h1>Containers.Podman<a class="headerlink" href="#containers-podman" title="Permalink to this heading">¶</a></h1>
+<p>Collection version 1.10.1</p>
 <div class="toctree-wrapper compound">
 </div>
 <div class="section" id="plugin-index">
-<h2>Plugin Index<a class="headerlink" href="#plugin-index" title="Permalink to this headline">¶</a></h2>
+<h2>Plugin Index<a class="headerlink" href="#plugin-index" title="Permalink to this heading">¶</a></h2>
 <p>These are the plugins in the containers.podman collection</p>
+<div class="section" id="become-plugins">
+<h3>Become Plugins<a class="headerlink" href="#become-plugins" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="podman_unshare_become.html#ansible-collections-containers-podman-podman-unshare-become"><span class="std std-ref">podman_unshare</span></a> – Run tasks using podman unshare</p></li>
+</ul>
+</div>
 <div class="section" id="connection-plugins">
-<h3>Connection Plugins<a class="headerlink" href="#connection-plugins" title="Permalink to this headline">¶</a></h3>
+<h3>Connection Plugins<a class="headerlink" href="#connection-plugins" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">buildah</span></a> – Interact with an existing buildah container</p></li>
 <li><p><a class="reference internal" href="podman_connection.html#ansible-collections-containers-podman-podman-connection"><span class="std std-ref">podman</span></a> – Interact with an existing podman container</p></li>
 </ul>
 </div>
 <div class="section" id="modules">
-<h3>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h3>
+<h3>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="podman_container_module.html#ansible-collections-containers-podman-podman-container-module"><span class="std std-ref">podman_container</span></a> – Manage podman containers</p></li>
 <li><p><a class="reference internal" href="podman_container_info_module.html#ansible-collections-containers-podman-podman-container-info-module"><span class="std std-ref">podman_container_info</span></a> – Gather facts about containers using podman</p></li>
 <li><p><a class="reference internal" href="podman_containers_module.html#ansible-collections-containers-podman-podman-containers-module"><span class="std std-ref">podman_containers</span></a> – Manage podman containers in a batch</p></li>
 <li><p><a class="reference internal" href="podman_export_module.html#ansible-collections-containers-podman-podman-export-module"><span class="std std-ref">podman_export</span></a> – Export a podman container</p></li>
+<li><p><a class="reference internal" href="podman_generate_systemd_module.html#ansible-collections-containers-podman-podman-generate-systemd-module"><span class="std std-ref">podman_generate_systemd</span></a> – Generate systemd unit from a pod or a container</p></li>
 <li><p><a class="reference internal" href="podman_image_module.html#ansible-collections-containers-podman-podman-image-module"><span class="std std-ref">podman_image</span></a> – Pull images for use by podman</p></li>
 <li><p><a class="reference internal" href="podman_image_info_module.html#ansible-collections-containers-podman-podman-image-info-module"><span class="std std-ref">podman_image_info</span></a> – Gather info about images using podman</p></li>
 <li><p><a class="reference internal" href="podman_import_module.html#ansible-collections-containers-podman-podman-import-module"><span class="std std-ref">podman_import</span></a> – Import Podman container from a tar file.</p></li>
@@ -109,12 +116,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -131,7 +138,7 @@
       &copy;.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

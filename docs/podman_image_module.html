@@ -1,19 +1,19 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>containers.podman.podman_image – Pull images for use by podman &#8212; Python  documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -33,10 +33,10 @@
           <div class="body" role="main">
             
   <span class="target" id="ansible-collections-containers-podman-podman-image-module"></span><div class="section" id="containers-podman-podman-image-pull-images-for-use-by-podman">
-<h1>containers.podman.podman_image – Pull images for use by podman<a class="headerlink" href="#containers-podman-podman-image-pull-images-for-use-by-podman" title="Permalink to this headline">¶</a></h1>
+<h1>containers.podman.podman_image – Pull images for use by podman<a class="headerlink" href="#containers-podman-podman-image-pull-images-for-use-by-podman" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.9.3).</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.10.1).</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_image</span></code>.</p>
 </div>
@@ -49,13 +49,13 @@
 </ul>
 </div>
 <div class="section" id="synopsis">
-<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Build, pull, or push images using Podman.</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
-<h2><a class="toc-backref" href="#id2">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
 <table  border=0 cellpadding=0 class="documentation-table">
     <tr>
         <th colspan="2">Parameter</th>
@@ -88,7 +88,8 @@
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                                                        </td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">{}</div>
+                                </td>
                                                             <td>
                                         <div>Arguments that control image build.</div>
                                                             <div style="font-size: small; color: darkgreen"><br/>aliases: build_args, buildargs</div>
@@ -144,6 +145,22 @@
                                                                                                                                                         </td>
                                                             <td>
                                         <div>Extra args to pass to build, if executed. Does not idempotently check for new build args.</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                <td class="elbow-placeholder"></td>
+                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-build/file"></div>
+                <b>file</b>
+                <a class="ansibleOptionLink" href="#parameter-build/file" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">path</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                            <td>
+                                        <div>Path to the Containerfile if it is not in the build context directory.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -316,7 +333,7 @@
                             <td>
                                                                                                                                                         </td>
                                                             <td>
-                                        <div>Path to directory containing the build file.</div>
+                                        <div>Path to the build context directory.</div>
                                                     </td>
         </tr>
                             <tr>
@@ -367,7 +384,8 @@
                                                                 </div>
                                                     </td>
                             <td>
-                                                                                                                                                        </td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">{}</div>
+                                </td>
                                                             <td>
                                         <div>Arguments that control pushing images.</div>
                                                     </td>
@@ -564,103 +582,109 @@
                     </table>
 <br/></div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Pull an image</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span>
+<h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pull an image</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove an image</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span>
-    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">absent</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove an image</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/bitnami/wildfly</span><span class="w"></span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Pull a specific version of an image</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">redis</span>
-    <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Remove an image with image id</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0e901e68141f</span><span class="w"></span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">absent</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pull a specific version of an image</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis</span><span class="w"></span>
+<span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image with advanced parameters</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
-    <span class="nt">build</span><span class="p">:</span>
-      <span class="nt">cache</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
-      <span class="nt">force_rm</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-      <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">oci</span>
-      <span class="nt">annotation</span><span class="p">:</span>
-        <span class="nt">app</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-        <span class="nt">function</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">proxy</span>
-        <span class="nt">info</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Load balancer for my cool app</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build a Docker formatted image</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
-    <span class="nt">build</span><span class="p">:</span>
-      <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build a basic OCI image with advanced parameters</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">cache</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no</span><span class="w"></span>
+<span class="w">      </span><span class="nt">force_rm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">      </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"></span>
+<span class="w">      </span><span class="nt">annotation</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">        </span><span class="nt">function</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">proxy</span><span class="w"></span>
+<span class="w">        </span><span class="nt">info</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Load balancer for my cool app</span><span class="w"></span>
+<span class="w">      </span><span class="nt">extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--build-arg</span><span class="nv"> </span><span class="s">KEY=value&quot;</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using existing credentials</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
-    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">push_args</span><span class="p">:</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build a Docker formatted image</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using an auth file</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
-    <span class="nt">push_args</span><span class="p">:</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image using existing credentials</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push_args</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image using username and password</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bugs</span>
-    <span class="nt">password</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vault_registry_password</span> <span class="cp">}}</span><span class="s">&quot;</span>
-    <span class="nt">push_args</span><span class="p">:</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image using an auth file</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">auth_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push_args</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
-    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
-    <span class="nt">loop</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme/nginx</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image using username and password</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bugs</span><span class="w"></span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vault_registry_password</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push_args</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span><span class="w"></span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries with separate parameters</span>
-  <span class="nt">containers.podman.podman_image</span><span class="p">:</span>
-    <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.name</span> <span class="cp">}}</span><span class="s">&quot;</span>
-    <span class="nt">tag</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.tag</span> <span class="cp">}}</span><span class="s">&quot;</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
-    <span class="nt">push</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">auth_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
-    <span class="nt">push_args</span><span class="p">:</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.dest</span> <span class="cp">}}</span><span class="s">&quot;</span>
-    <span class="nt">loop</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-      <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">auth_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span><span class="w"></span>
+<span class="w">    </span><span class="nt">loop</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme/nginx</span><span class="w"></span>
 
-    <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nginx</span>
-      <span class="nt">tag</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
-      <span class="nt">dest</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries with separate parameters</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.name</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.tag</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">auth_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span><span class="w"></span>
+<span class="w">    </span><span class="nt">push_args</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item.dest</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">loop</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">      </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span><span class="w"></span>
+
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span><span class="w"></span>
+<span class="w">      </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w"></span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span><span class="w"></span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id4">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading">¶</a></h2>
 <p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
 <table border=0 cellpadding=0 class="documentation-table">
     <tr>
@@ -687,7 +711,7 @@
         </tr>
                     </table>
 <br/><br/><div class="section" id="authors">
-<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Sam Doran (&#64;samdoran)</p></li>
 </ul>
@@ -724,12 +748,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -746,7 +770,7 @@
       &copy;.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

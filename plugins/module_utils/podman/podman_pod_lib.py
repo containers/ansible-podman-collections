@@ -5,6 +5,8 @@ from ansible.module_utils._text import to_bytes, to_native
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
+
 
 __metaclass__ = type
 
@@ -496,6 +498,8 @@ class PodmanPodDiff:
             # TODO: find out why on Ubuntu the 'net' is not present
             if 'net' not in before:
                 after.remove('net')
+        if self.params["uidmap"] or self.params["gidmap"]:
+            after.append('user')
 
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('share', before, after)
@@ -573,6 +577,11 @@ class PodmanPod:
         """Return True if pod is running now."""
         if 'status' in self.info['State']:
             return self.info['State']['status'] == 'Running'
+        # older podman versions (1.6.x) don't have status in 'podman pod inspect'
+        # if other methods fail, use 'podman pod ps'
+        ps_info = self.get_ps()
+        if 'status' in ps_info:
+            return ps_info['status'] == 'Running'
         return self.info['State'] == 'Running'
 
     @property
@@ -597,6 +606,13 @@ class PodmanPod:
         rc, out, err = self.module.run_command(
             [self.module_params['executable'], b'pod', b'inspect', self.name])
         return json.loads(out) if rc == 0 else {}
+
+    def get_ps(self):
+        """Inspect pod process and gather info about it."""
+        # pylint: disable=unused-variable
+        rc, out, err = self.module.run_command(
+            [self.module_params['executable'], b'pod', b'ps', b'--format', b'json', b'--filter', 'name=' + self.name])
+        return json.loads(out)[0] if rc == 0 else {}
 
     def get_infra_info(self):
         """Inspect pod and gather info about it."""
@@ -840,6 +856,10 @@ class PodmanPodManager:
         if not self.pod.exists:
             self.results.update({'changed': False})
         elif self.pod.exists:
+            delete_systemd(self.module,
+                           self.module_params,
+                           self.name,
+                           self.pod.version)
             self.pod.delete()
             self.results['actions'].append('deleted %s' % self.pod.name)
             self.results.update({'changed': True})

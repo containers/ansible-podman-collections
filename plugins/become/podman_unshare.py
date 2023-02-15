@@ -17,8 +17,7 @@ DOCUMENTATION = """
     version_added: 1.9.0
     options:
         become_user:
-            description: User you 'become' to execute the task
-            default: root
+            description: User you 'become' to execute the task ('root' is not a valid value here).
             ini:
               - section: privilege_escalation
                 key: become_user
@@ -30,8 +29,6 @@ DOCUMENTATION = """
             env:
               - name: ANSIBLE_BECOME_USER
               - name: ANSIBLE_SUDO_USER
-            keyword:
-              - name: become_user
         become_exe:
             description: Sudo executable
             default: sudo
@@ -46,8 +43,6 @@ DOCUMENTATION = """
             env:
               - name: ANSIBLE_BECOME_EXE
               - name: ANSIBLE_SUDO_EXE
-            keyword:
-              - name: become_exe
         become_pass:
             description: Password to pass to sudo
             required: False
@@ -134,8 +129,8 @@ class BecomeModule(BecomeBase):
 
         becomecmd = 'podman unshare'
 
-        user = self.get_option('become_user') or ''
-        if user:
+        user = self.get_option('become_user') or 'root'
+        if user != 'root':
             cmdlist = [self.get_option('become_exe') or 'sudo']
             # -i is required, because
             # podman unshare should be executed in a login shell to avoid chdir permission errors

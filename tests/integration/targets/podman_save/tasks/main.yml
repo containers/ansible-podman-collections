@@ -58,10 +58,18 @@
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
     image: k8s.gcr.io/pause
+    dest: /tmp/imagedir-docker
+    force: true
+    format: docker-dir
+    compress: true
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: k8s.gcr.io/pause
     dest: /tmp/imagedir
     force: true
     format: oci-dir
-    compress: true
 
 - name: Check file
   stat:

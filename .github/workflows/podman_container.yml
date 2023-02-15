@@ -31,8 +31,8 @@ on:
 jobs:
 
   test_podman_container:
-    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.podman-version || 'unstable' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash
@@ -41,21 +41,27 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.12
-          - git+https://github.com/ansible/ansible.git@stable-2.13
+          - git+https://github.com/ansible/ansible.git@stable-2.14
           - git+https://github.com/ansible/ansible.git@devel
         os:
           - ubuntu-22.04
         python-version:
           - 3.9
+        podman-version:
+          - unstable
+        include:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@stable-2.14
+            python-version: 3.9
+            podman-version: stable
 
     steps:
 
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -68,7 +74,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
@@ -109,89 +115,8 @@ jobs:
           -e host=localhost \
           -i localhost, \
           -e ansible_connection=local \
-          -e setup_python=false
-
-          TEST2RUN=podman_container ./ci/run_containers_tests.sh
-        shell: bash
-
-  test_podman_container_with_pip:
-    name: Podman container w/ pip ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
-    defaults:
-      run:
-        shell: bash
-    strategy:
-      fail-fast: false
-      matrix:
-        ansible-version:
-          - ansible<2.10
-          #- git+https://github.com/ansible/ansible.git@stable-2.10
-        os:
-          - ubuntu-22.04
-        python-version:
-          - 3.9
-
-    steps:
-
-      - name: Check out repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Upgrade pip and display Python and PIP versions
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python*-wheel python*-yaml
-          python -m pip install --upgrade pip
-          python -V
-          pip --version
-
-      - name: Set up pip cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: python3 -m pip install --user --force-reinstall --upgrade '${{ matrix.ansible-version }}'
-
-      - name: Build and install the collection tarball
-        run: |
-          export PATH=~/.local/bin:$PATH
-
-          echo "Run ansible version"
-          command -v ansible
-          ansible --version
-          python3 -m pip install --user --force-reinstall --upgrade .
-
-
-      - name: Run collection tests for podman container
-        run: |
-          export PATH=~/.local/bin:$PATH
-          export ANSIBLE_COLLECTIONS_PATHS=~/.local/share/ansible/collections
-
-          export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
-          if [[ '${{ matrix.ansible-version }}'  == 'ansible<2.10' ]]; then
-            export ANSIBLE_CONFIG=$(pwd)/ci/ansible-2.9.cfg
-          fi
-
-          echo $ANSIBLE_CONFIG
-          command -v ansible-playbook
-          pip --version
-          python --version
-          ansible-playbook --version
-
-          ansible-playbook -vv ci/playbooks/pre.yml \
-          -e host=localhost \
-          -i localhost, \
-          -e ansible_connection=local \
-          -e setup_python=false
+          -e setup_python=false \
+          -e podman_version_ubuntu=${{ matrix.podman-version }}
 
           TEST2RUN=podman_container ./ci/run_containers_tests.sh
         shell: bash

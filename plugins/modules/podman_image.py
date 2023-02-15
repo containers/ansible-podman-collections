@@ -43,7 +43,7 @@ DOCUMENTATION = r'''
       default: False
       type: bool
     path:
-      description: Path to directory containing the build file.
+      description: Path to the build context directory.
       type: str
     force:
       description:
@@ -84,10 +84,15 @@ DOCUMENTATION = r'''
     build:
       description: Arguments that control image build.
       type: dict
+      default: {}
       aliases:
         - build_args
         - buildargs
       suboptions:
+        file:
+          description:
+            - Path to the Containerfile if it is not in the build context directory.
+          type: path
         volume:
           description:
             - Specify multiple volume / mount options to mount one or more mounts to a container.
@@ -126,6 +131,7 @@ DOCUMENTATION = r'''
     push_args:
       description: Arguments that control pushing images.
       type: dict
+      default: {}
       suboptions:
         compress:
           description:
@@ -200,6 +206,7 @@ EXAMPLES = r"""
         app: nginx
         function: proxy
         info: Load balancer for my cool app
+      extra_args: "--build-arg KEY=value"
 
 - name: Build a Docker formatted image
   containers.podman.podman_image:
@@ -606,6 +613,10 @@ class PodmanImageManager(object):
         if self.build.get('rm'):
             args.append('--rm')
 
+        containerfile = self.build.get('file')
+        if containerfile:
+            args.extend(['--file', containerfile])
+
         volume = self.build.get('volume')
         if volume:
             for v in volume:
@@ -767,6 +778,7 @@ def main():
                 options=dict(
                     annotation=dict(type='dict'),
                     force_rm=dict(type='bool', default=False),
+                    file=dict(type='path'),
                     format=dict(
                         type='str',
                         choices=['oci', 'docker'],

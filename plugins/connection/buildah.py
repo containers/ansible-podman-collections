@@ -24,6 +24,7 @@ DOCUMENTATION = '''
         default: inventory_hostname
         vars:
             - name: ansible_host
+            - name: inventory_hostname
 #        keyword:
 #            - name: hosts
       remote_user:

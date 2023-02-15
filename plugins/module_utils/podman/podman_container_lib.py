@@ -7,6 +7,7 @@ from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 
 __metaclass__ = type
@@ -65,6 +66,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     healthcheck_retries=dict(type='int'),
     healthcheck_start_period=dict(type='str'),
     healthcheck_timeout=dict(type='str'),
+    hooks_dir=dict(type='list', elements='str'),
     hostname=dict(type='str'),
     http_proxy=dict(type='bool'),
     image_volume=dict(type='str', choices=['bind', 'tmpfs', 'ignore']),
@@ -404,6 +406,11 @@ class PodmanModuleParams:
     def addparam_healthcheck_timeout(self, c):
         return c + ['--healthcheck-timeout',
                     self.params['healthcheck_timeout']]
+
+    def addparam_hooks_dir(self, c):
+        for hook_dir in self.params['hooks_dir']:
+            c += ['--hooks-dir=%s' % hook_dir]
+        return c
 
     def addparam_hostname(self, c):
         return c + ['--hostname', self.params['hostname']]
@@ -865,6 +872,7 @@ class PodmanContainerDiff:
         after = [":".join(i.split(":")[:2]) for i in self.params['device']]
         after = [":".join((i, i))
                  if len(i.split(":")) == 1 else i for i in after]
+        after = [i.lower() for i in after]
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('devices', before, after)
 
@@ -908,7 +916,7 @@ class PodmanContainerDiff:
 
     def diffparam_etc_hosts(self):
         if self.info['hostconfig']['extrahosts']:
-            before = dict([i.split(":")
+            before = dict([i.split(":", 1)
                            for i in self.info['hostconfig']['extrahosts']])
         else:
             before = {}
@@ -1155,6 +1163,11 @@ class PodmanContainerDiff:
         before = self.info['hostconfig']['readonlyrootfs']
         after = self.params['read_only']
         return self._diff_update_and_compare('read_only', before, after)
+
+    def diffparam_restart_policy(self):
+        before = self.info['hostconfig']['restartpolicy']['name']
+        after = self.params['restart_policy'] or ""
+        return self._diff_update_and_compare('restart_policy', before, after)
 
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
@@ -1839,6 +1852,10 @@ class PodmanManager:
         if not self.container.exists:
             self.results.update({'changed': False})
         elif self.container.exists:
+            delete_systemd(self.module,
+                           self.module_params,
+                           self.name,
+                           self.container.version)
             self.container.delete()
             self.results['actions'].append('deleted %s' % self.container.name)
             self.results.update({'changed': True})

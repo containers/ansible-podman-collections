@@ -7,7 +7,6 @@ __metaclass__ = type
 import json
 import os
 import shutil
-import signal
 
 from ansible.module_utils.six import raise_from
 try:
@@ -34,12 +33,11 @@ def run_podman_command(module, executable='podman', args=None, expected_rc=0, ig
     return rc, out, err
 
 
-def generate_systemd(module, module_params, name, version):
+def run_generate_systemd_command(module, module_params, name, version):
     """Generate systemd unit file."""
     command = [module_params['executable'], 'generate', 'systemd',
                name, '--format', 'json']
     sysconf = module_params['generate_systemd']
-    empty = {}
     gt4ver = LooseVersion(version) >= LooseVersion('4.0.0')
     if sysconf.get('restart_policy'):
         if sysconf.get('restart_policy') not in [
@@ -95,6 +93,13 @@ def generate_systemd(module, module_params, name, version):
         module.log("PODMAN-CONTAINER-DEBUG: systemd command: %s" %
                    " ".join(command))
     rc, systemd, err = module.run_command(command)
+    return rc, systemd, err
+
+
+def generate_systemd(module, module_params, name, version):
+    empty = {}
+    sysconf = module_params['generate_systemd']
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
     if rc != 0:
         module.log(
             "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
@@ -103,21 +108,50 @@ def generate_systemd(module, module_params, name, version):
         try:
             data = json.loads(systemd)
             if sysconf.get('path'):
-                if not os.path.exists(sysconf['path']):
-                    os.makedirs(sysconf['path'])
-                if not os.path.isdir(sysconf['path']):
+                full_path = os.path.expanduser(sysconf['path'])
+                if not os.path.exists(full_path):
+                    os.makedirs(full_path)
+                if not os.path.isdir(full_path):
                     module.fail_json("Path %s is not a directory! "
                                      "Can not save systemd unit files there!"
-                                     % sysconf['path'])
+                                     % full_path)
                 for file_name, file_content in data.items():
                     file_name += ".service"
-                    with open(os.path.join(sysconf['path'], file_name), 'w') as f:
+                    with open(os.path.join(full_path, file_name), 'w') as f:
                         f.write(file_content)
             return data
         except Exception as e:
             module.log(
                 "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
             return empty
+
+
+def delete_systemd(module, module_params, name, version):
+    sysconf = module_params['generate_systemd']
+    if not sysconf.get('path'):
+        # We don't know where systemd files are located, nothing to delete
+        module.log(
+            "PODMAN-CONTAINER-DEBUG: Not deleting systemd file - no path!")
+        return
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
+    if rc != 0:
+        module.log(
+            "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
+        return
+    else:
+        try:
+            data = json.loads(systemd)
+            for file_name in data.keys():
+                file_name += ".service"
+                full_dir_path = os.path.expanduser(sysconf['path'])
+                file_path = os.path.join(full_dir_path, file_name)
+                if os.path.exists(file_path):
+                    os.unlink(file_path)
+            return
+        except Exception as e:
+            module.log(
+                "PODMAN-CONTAINER-DEBUG: Error deleting systemd: %s" % e)
+            return
 
 
 def lower_keys(x):

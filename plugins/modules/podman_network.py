@@ -67,10 +67,34 @@ options:
       - Add network options. Currently 'vlan' and 'mtu' are supported.
     type: dict
     suboptions:
+      isolate:
+        description:
+          - This option isolates networks by blocking traffic between those
+            that have this option enabled.
+        type: bool
+        required: false
+      metric:
+        description:
+          - Sets the Route Metric for the default route created in every
+            container joined to this network.
+            Can only be used with the Netavark network backend.
+        type: int
+        required: false
+      mode:
+        description:
+          - This option sets the specified ip/macvlan mode on the interface.
+        type: str
+        required: false
       mtu:
         description:
           - MTU size for bridge network interface.
         type: int
+        required: false
+      parent:
+        description:
+          - The host device which should be used for the macvlan interface.
+            Defaults to the default route interface.
+        type: str
         required: false
       vlan:
         description:
@@ -161,7 +185,6 @@ network:
 """
 
 import json  # noqa: F402
-import os  # noqa: F402
 try:
     import ipaddress
     HAS_IP_ADDRESS_MODULE = True
@@ -627,8 +650,13 @@ def main():
             macvlan=dict(type='str', required=False),
             opt=dict(type='dict', required=False,
                      options=dict(
+                         isolate=dict(type='bool', required=False),
                          mtu=dict(type='int', required=False),
-                         vlan=dict(type='int', required=False))),
+                         metric=dict(type='int', required=False),
+                         mode=dict(type='str', required=False),
+                         parent=dict(type='str', required=False),
+                         vlan=dict(type='int', required=False),
+                     )),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
             recreate=dict(type='bool', default=False),

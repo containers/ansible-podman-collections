@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>containers.podman.podman_unshare – Run tasks using podman unshare &#8212; Python  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="ansible-collections-containers-podman-podman-unshare-become"></span><div class="section" id="containers-podman-podman-unshare-run-tasks-using-podman-unshare">
+<h1>containers.podman.podman_unshare – Run tasks using podman unshare<a class="headerlink" href="#containers-podman-podman-unshare-run-tasks-using-podman-unshare" title="Permalink to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.10.1).</p>
+<p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_unshare</span></code>.</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.9.0: </span>of containers.podman</p>
+</div>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id2">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id3">Examples</a></p></li>
+</ul>
+</div>
+<div class="section" id="synopsis">
+<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>This become plugins allows your remote/login user to execute commands in its container user namespace. Official documentation: <a class="reference external" href="https://docs.podman.io/en/latest/markdown/podman-unshare.1.html">https://docs.podman.io/en/latest/markdown/podman-unshare.1.html</a></p></li>
+</ul>
+</div>
+<div class="section" id="parameters">
+<h2><a class="toc-backref" href="#id2">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
+<table  border=0 cellpadding=0 class="documentation-table">
+    <tr>
+        <th colspan="1">Parameter</th>
+        <th>Choices/<font color="blue">Defaults</font></th>
+                        <th>Configuration</th>
+                    <th width="100%">Comments</th>
+    </tr>
+                <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-become_exe"></div>
+                <b>become_exe</b>
+                <a class="ansibleOptionLink" href="#parameter-become_exe" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"sudo"</div>
+                                </td>
+                                                <td>
+                                                <div> ini entries:
+                                                                <p>
+                                    [privilege_escalation]<br>become_exe = sudo
+                                                                                                                </p>
+                                                                <p>
+                                    [sudo_become_plugin]<br>executable = sudo
+                                                                                                                </p>
+                                                        </div>
+                                                                        <div>
+                            env:ANSIBLE_BECOME_EXE
+                                                                                        </div>
+                                                <div>
+                            env:ANSIBLE_SUDO_EXE
+                                                                                        </div>
+                                                                        <div>
+                            var: ansible_become_exe
+                                                                                        </div>
+                                                <div>
+                            var: ansible_sudo_exe
+                                                                                        </div>
+                                        </td>
+                                            <td>
+                                        <div>Sudo executable</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-become_pass"></div>
+                <b>become_pass</b>
+                <a class="ansibleOptionLink" href="#parameter-become_pass" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                        </td>
+                                                <td>
+                                                <div> ini entries:
+                                                                <p>
+                                    [sudo_become_plugin]<br>password = None
+                                                                                                                </p>
+                                                        </div>
+                                                                        <div>
+                            env:ANSIBLE_BECOME_PASS
+                                                                                        </div>
+                                                <div>
+                            env:ANSIBLE_SUDO_PASS
+                                                                                        </div>
+                                                                        <div>
+                            var: ansible_become_password
+                                                                                        </div>
+                                                <div>
+                            var: ansible_become_pass
+                                                                                        </div>
+                                                <div>
+                            var: ansible_sudo_pass
+                                                                                        </div>
+                                        </td>
+                                            <td>
+                                        <div>Password to pass to sudo</div>
+                                                    </td>
+        </tr>
+                            <tr>
+                                                            <td colspan="1">
+                <div class="ansibleOptionAnchor" id="parameter-become_user"></div>
+                <b>become_user</b>
+                <a class="ansibleOptionLink" href="#parameter-become_user" title="Permalink to this option"></a>
+                <div style="font-size: small">
+                    <span style="color: purple">string</span>
+                                                                </div>
+                                                    </td>
+                            <td>
+                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"root"</div>
+                                </td>
+                                                <td>
+                                                <div> ini entries:
+                                                                <p>
+                                    [privilege_escalation]<br>become_user = root
+                                                                                                                </p>
+                                                                <p>
+                                    [sudo_become_plugin]<br>user = root
+                                                                                                                </p>
+                                                        </div>
+                                                                        <div>
+                            env:ANSIBLE_BECOME_USER
+                                                                                        </div>
+                                                <div>
+                            env:ANSIBLE_SUDO_USER
+                                                                                        </div>
+                                                                        <div>
+                            var: ansible_become_user
+                                                                                        </div>
+                                                <div>
+                            var: ansible_sudo_user
+                                                                                        </div>
+                                        </td>
+                                            <td>
+                                        <div>User you &#x27;become&#x27; to execute the task</div>
+                                                    </td>
+        </tr>
+                    </table>
+<br/></div>
+<div class="section" id="examples">
+<h2><a class="toc-backref" href="#id3">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">checking uid of file &#39;foo&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible.builtin.stat</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">test_dir</span> <span class="cp">}}</span><span class="s">/foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">var</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo.stat.uid</span><span class="w"></span>
+<span class="c1"># The output shows that it&#39;s owned by the login user</span><span class="w"></span>
+<span class="c1"># ok: [test_host] =&gt; {</span><span class="w"></span>
+<span class="c1">#     &quot;foo.stat.uid&quot;: &quot;1003&quot;</span><span class="w"></span>
+<span class="c1"># }</span><span class="w"></span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mounting the file to an unprivileged container and modifying its owner</span><span class="w"></span>
+<span class="w">  </span><span class="nt">containers.podman.podman_container</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chmod_foo</span><span class="w"></span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alpine</span><span class="w"></span>
+<span class="w">    </span><span class="nt">rm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">    </span><span class="nt">volume</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">test_dir</span> <span class="cp">}}</span><span class="s">:/opt/test:z&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chown 1000 /opt/test/foo</span><span class="w"></span>
+
+<span class="c1"># Now the file &#39;foo&#39; is owned by the container uid 1000,</span><span class="w"></span>
+<span class="c1"># which is mapped to something completaly different on the host.</span><span class="w"></span>
+<span class="c1"># It creates a situation when the file is unaccessible to the host user (uid 1003)</span><span class="w"></span>
+<span class="c1"># Running stat again, debug output will be like this:</span><span class="w"></span>
+<span class="c1"># ok: [test_host] =&gt; {</span><span class="w"></span>
+<span class="c1">#     &quot;foo.stat.uid&quot;: &quot;328679&quot;</span><span class="w"></span>
+<span class="c1"># }</span><span class="w"></span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">running stat in modified user namespace</span><span class="w"></span>
+<span class="w">  </span><span class="nt">become_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">containers.podman.podman_unshare</span><span class="w"></span>
+<span class="w">  </span><span class="nt">become</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible.builtin.stat</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">test_dir</span> <span class="cp">}}</span><span class="s">/foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span><span class="w"></span>
+<span class="c1"># By gathering file stats with podman_ushare</span><span class="w"></span>
+<span class="c1"># we can see the uid set in the container:</span><span class="w"></span>
+<span class="c1"># ok: [test_host] =&gt; {</span><span class="w"></span>
+<span class="c1">#     &quot;foo.stat.uid&quot;: &quot;1000&quot;</span><span class="w"></span>
+<span class="c1"># }</span><span class="w"></span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resetting file ownership with podman unshare</span><span class="w"></span>
+<span class="w">  </span><span class="nt">become_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">containers.podman.podman_unshare</span><span class="w"></span>
+<span class="w">  </span><span class="nt">become</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yes</span><span class="w"></span>
+<span class="w">  </span><span class="nt">ansible.builtin.file</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file</span><span class="w"></span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">test_dir</span> <span class="cp">}}</span><span class="s">/foo&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># in a modified user namespace host uid is mapped to 0</span><span class="w"></span>
+<span class="c1"># If we run stat and debug with &#39;become: no&#39;,</span><span class="w"></span>
+<span class="c1"># we can see that the file is ours again:</span><span class="w"></span>
+<span class="c1"># ok: [test_host] =&gt; {</span><span class="w"></span>
+<span class="c1">#     &quot;foo.stat.uid&quot;: &quot;1003&quot;</span><span class="w"></span>
+<span class="c1"># }</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Janos Gerzson (&#64;grzs)</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/podman_unshare_become.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

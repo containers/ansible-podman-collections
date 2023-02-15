@@ -19,10 +19,10 @@ jobs:
     steps:
 
       - name: Check out ${{ github.repository }} on disk
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.runner-python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.runner-python-version }}
 

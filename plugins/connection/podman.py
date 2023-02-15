@@ -23,6 +23,8 @@ DOCUMENTATION = '''
         default: inventory_hostname
         vars:
           - name: ansible_host
+          - name: inventory_hostname
+          - name: ansible_podman_host
       remote_user:
         description:
             - User specified via name or UID which is used to execute commands inside the container. If you

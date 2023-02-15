@@ -25,8 +25,8 @@ on:
 jobs:
 
   test_podman_login:
-    name: Podman login ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-latest' }}
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    name: Podman login ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
         shell: bash
@@ -45,10 +45,10 @@ jobs:
     steps:
 
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -61,7 +61,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs

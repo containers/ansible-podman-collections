@@ -242,6 +242,96 @@
       - test18 is not changed
       - test19 is changed
 
+- name: Run container with etc_hosts
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test20
+
+- name: Check info with etc_hosts
+  assert:
+    that: test20 is changed
+
+- name: Run container with etc_hosts again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test21
+
+- name: Check info with etc_hosts again
+  assert:
+    that: test21 is not changed
+
+- name: Run default container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+
+- name: Run container with restart policy always
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: always
+  register: test22
+
+- name: Check info with restart policy always
+  assert:
+    that: test22 is changed
+
+- name: Run container with restart policy always again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: always
+  register: test23
+
+- name: Check info with restart policy always again
+  assert:
+    that: test23 is not changed
+
+- name: Run container with a different restart policy on-failure
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: on-failure
+  register: test24
+
+- name: Check info with restart policy on-failure
+  assert:
+    that: test24 is changed
+
+- name: Run default container w/o restart policy
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test25
+
+- name: Check info w/o restart policy
+  assert:
+    that: test25 is changed
+
 - name: Remove test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"

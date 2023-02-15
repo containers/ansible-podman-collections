@@ -415,6 +415,13 @@ options:
         is considered failed. Like start-period, the value can be expressed in
         a time format such as 1m22s. The default value is 30s
     type: str
+  hooks_dir:
+    description:
+      - Each .json file in the path configures a hook for Podman containers.
+        For more details on the syntax of the JSON files and the semantics of
+        hook injection, see oci-hooks(5). Can be set multiple times.
+    type: list
+    elements: str
   hostname:
     description:
       - Container host name. Sets the container host name that is available
