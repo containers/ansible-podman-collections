@@ -213,6 +213,10 @@ class PodmanPodModuleParams:
         return c + ['--name', self.params['name']]
 
     def addparam_network(self, c):
+        if LooseVersion(self.podman_version) >= LooseVersion('4.0.0'):
+            for net in self.params['network']:
+                c += ['--network', net]
+            return c
         return c + ['--network', ",".join(self.params['network'])]
 
     def addparam_network_aliases(self, c):
