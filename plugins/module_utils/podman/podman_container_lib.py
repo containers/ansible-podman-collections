@@ -1541,7 +1541,7 @@ class PodmanContainerDiff:
                     f = prep_tmpfs_for_comp(cr_com[i + 1])
                     if f:
                         before.append(f)
-                elif v == '--volume':
+                elif v in ('--volume', '-v'):
                     f = prep_volume_for_comp(cr_com[i + 1])
                     if f:
                         before.append(f)
