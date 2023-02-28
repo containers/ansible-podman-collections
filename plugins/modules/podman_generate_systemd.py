@@ -456,7 +456,14 @@ def generate_systemd(module):
                         current_unit_file_content = unit_file.read()
                     # If current unit file content is the same as the
                     # generated content
-                    if current_unit_file_content == unit_content:
+                    # Remove comments from files, before comparing
+                    current_unit_file_content_nocmnt = "\n".join([
+                        line for line in current_unit_file_content.splitlines()
+                        if not line.startswith('#')])
+                    unit_content_nocmnt = "\n".join([
+                        line for line in unit_content.splitlines()
+                        if not line.startswith('#')])
+                    if current_unit_file_content_nocmnt == unit_content_nocmnt:
                         # We don't need to write it
                         need_to_write_file = False
 
