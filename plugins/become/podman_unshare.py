@@ -74,7 +74,7 @@ EXAMPLES = """
   containers.podman.podman_container:
     name: chmod_foo
     image: alpine
-    rm: yes
+    rm: true
     volume:
     - "{{ test_dir }}:/opt/test:z"
     command: chown 1000 /opt/test/foo
@@ -89,7 +89,7 @@ EXAMPLES = """
 
 - name: running stat in modified user namespace
   become_method: containers.podman.podman_unshare
-  become: yes
+  become: true
   ansible.builtin.stat:
     path: "{{ test_dir }}/foo"
   register: foo
@@ -101,12 +101,12 @@ EXAMPLES = """
 
 - name: resetting file ownership with podman unshare
   become_method: containers.podman.podman_unshare
-  become: yes
+  become: true
   ansible.builtin.file:
     state: file
     path: "{{ test_dir }}/foo"
     owner: 0  # in a modified user namespace host uid is mapped to 0
-# If we run stat and debug with 'become: no',
+# If we run stat and debug with 'become: false',
 # we can see that the file is ours again:
 # ok: [test_host] => {
 #     "foo.stat.uid": "1003"

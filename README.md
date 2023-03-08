@@ -53,7 +53,7 @@ and modules name that you want to use:
         image: redis
         command: redis-server --appendonly yes
         state: present
-        recreate: yes
+        recreate: true
         expose:
           - 6379
         volumes_from:
@@ -73,7 +73,7 @@ Or you can add full namespace and collection name in the `collections` element:
       podman_image:
         name: nginx
         path: /path/to/build/dir
-        push: yes
+        push: true
         push_args:
           dest: quay.io/acme
 ```

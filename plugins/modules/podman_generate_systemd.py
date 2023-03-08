@@ -157,9 +157,9 @@ EXAMPLES = '''
 - name: Ensure postgres container is started and enabled
   ansible.builtin.systemd:
     name: container-postgres
-    daemon_reload: yes
+    daemon_reload: true
     state: started
-    enabled: yes
+    enabled: true
 
 
 # Example of creating a container and integrate it into systemd

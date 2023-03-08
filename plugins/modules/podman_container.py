@@ -851,7 +851,7 @@ EXAMPLES = r"""
     image: redis
     command: redis-server --appendonly yes
     state: present
-    recreate: yes
+    recreate: true
     expose:
       - 6379
     volumes_from:
@@ -868,7 +868,7 @@ EXAMPLES = r"""
     name: myapplication
     image: redis
     state: started
-    restart: yes
+    restart: true
     etc_hosts:
         other: "127.0.0.1"
     restart_policy: "no"
@@ -895,7 +895,7 @@ EXAMPLES = r"""
 - name: Start 4 load-balanced containers
   containers.podman.podman_container:
     name: "container{{ item }}"
-    recreate: yes
+    recreate: true
     image: someuser/anotherappimage
     command: sleep 1d
   with_sequence: count=4

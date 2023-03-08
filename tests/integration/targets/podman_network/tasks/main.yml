@@ -332,7 +332,7 @@
       containers.podman.podman_network:
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
-        ipv6: yes
+        ipv6: true
         subnet: fd4f:552c:830f:0000::/64
         state: present
 
@@ -340,7 +340,7 @@
       containers.podman.podman_network:
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ network_name }}"
-        ipv6: yes
+        ipv6: true
         subnet: fd4f:552c:830f:0000::/64
         state: present
       register: info17
