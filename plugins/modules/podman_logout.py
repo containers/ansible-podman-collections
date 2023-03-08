@@ -52,7 +52,7 @@ options:
         (for docker e.g. `${HOME}/.docker/config.json`), module execution will
         fail if a docker login exists for the registry specified in any
         `authfile` is used by podman. This can be ignored by setting
-        `ignore_docker_credentials` to `yes` - the credentials will be kept and
+        `ignore_docker_credentials` to `true` - the credentials will be kept and
         `changed` will be false.
         This option cannot be used together with `all` since in this case
         podman will not check for existing `authfiles` created by other tools.
@@ -75,12 +75,12 @@ EXAMPLES = r"""
 
 - name: Log out of all registries in auth file
   podman_logout:
-    all: yes
+    all: true
 
 - name: Log out of all registries in specified auth file
   podman_logout:
     authfile: $HOME/.docker/config.json
-    all: yes
+    all: true
 """
 # noqa: F402
 

@@ -664,14 +664,14 @@
       ansible.builtin.unarchive:
         src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture }}.tar.gz"
         dest: "{{ container_tempdir.path }}"
-        remote_src: yes
+        remote_src: true
 
     - name: Check invalid rootfs image pull
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: container
         image: /ineverneverneverexist
-        rootfs: yes
+        rootfs: true
         state: started
         command: sleep 1d
       register: imagerootfsfail
@@ -688,7 +688,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container3
         image: "{{ container_tempdir.path }}"
-        rootfs: yes
+        rootfs: true
         state: started
         command: sleep 1d
       register: image
@@ -710,7 +710,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container3
         image: "{{ container_tempdir.path }}"
-        rootfs: yes
+        rootfs: true
         state: started
         command: sleep 1d
       register: idem
@@ -750,7 +750,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container3
         image: "{{ container_tempdir.path }}"
-        rootfs: yes
+        rootfs: true
         state: started
         command: sleep 1d
       register: image

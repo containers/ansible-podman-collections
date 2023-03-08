@@ -200,7 +200,7 @@ EXAMPLES = r"""
     path: /path/to/build/dir
     build:
       cache: no
-      force_rm: yes
+      force_rm: true
       format: oci
       annotation:
         app: nginx
@@ -219,14 +219,14 @@ EXAMPLES = r"""
   containers.podman.podman_image:
     name: nginx
     path: /path/to/build/dir
-    push: yes
+    push: true
     push_args:
       dest: quay.io/acme
 
 - name: Build and push an image using an auth file
   containers.podman.podman_image:
     name: nginx
-    push: yes
+    push: true
     auth_file: /etc/containers/auth.json
     push_args:
       dest: quay.io/acme
@@ -234,7 +234,7 @@ EXAMPLES = r"""
 - name: Build and push an image using username and password
   containers.podman.podman_image:
     name: nginx
-    push: yes
+    push: true
     username: bugs
     password: "{{ vault_registry_password }}"
     push_args:
@@ -244,7 +244,7 @@ EXAMPLES = r"""
   containers.podman.podman_image:
     name: "{{ item }}"
     path: /path/to/build/dir
-    push: yes
+    push: true
     auth_file: /etc/containers/auth.json
     loop:
     - quay.io/acme/nginx
@@ -255,7 +255,7 @@ EXAMPLES = r"""
     name: "{{ item.name }}"
     tag: "{{ item.tag }}"
     path: /path/to/build/dir
-    push: yes
+    push: true
     auth_file: /etc/containers/auth.json
     push_args:
       dest: "{{ item.dest }}"

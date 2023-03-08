@@ -42,7 +42,7 @@
 - name: Regenerate the systemd units with all the options
   containers.podman.podman_generate_systemd:
     name: postgres_local
-    new: yes
+    new: true
     restart_policy: on-abnormal
     restart_sec: 19
     start_timeout: 21
@@ -50,11 +50,11 @@
     env:
       POSTGRES_USER: my_app
       POSTGRES_PASSWORD: example
-    use_names: yes
+    use_names: true
     container_prefix: more
     pod_prefix: less
     separator: +
-    no_header: yes
+    no_header: true
     after: drink.service
     wants: water.service
     requires: ice.service

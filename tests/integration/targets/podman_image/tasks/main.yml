@@ -253,7 +253,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: bad_image
         pull: false
-        push: yes
+        push: true
       register: bad_push
       ignore_errors: true
 
