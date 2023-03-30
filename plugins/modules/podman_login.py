@@ -120,7 +120,7 @@ def login(module, executable, registry, authfile,
     if os.path.exists(check_file):
         content = open(check_file, 'rb').read()
         if bytes(registry, 'UTF-8') in content:
-            checksum = hashlib.md5(content).hexdigest()
+            checksum = hashlib.sha256(content).hexdigest()
     rc, out, err = module.run_command(command)
     if rc != 0:
         if 'Error: Not logged into' not in err:
@@ -135,7 +135,7 @@ def login(module, executable, registry, authfile,
         if checksum:
             content = open(check_file, 'rb').read()
             if bytes(registry, 'UTF-8') in content:
-                new_checksum = hashlib.md5(content).hexdigest()
+                new_checksum = hashlib.sha256(content).hexdigest()
                 if new_checksum == checksum:
                     changed = False
     return changed, out, err
