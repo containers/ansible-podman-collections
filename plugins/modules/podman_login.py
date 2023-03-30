@@ -9,6 +9,7 @@ module: podman_login
 author:
   - "Jason Hiatt (@jthiatt)"
   - "Clemens Lange (@clelange)"
+  - "Michael Fox (@spmfox)"
 short_description: Login to a container registry using podman
 notes: []
 description:
