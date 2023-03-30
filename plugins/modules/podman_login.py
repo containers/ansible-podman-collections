@@ -119,8 +119,7 @@ def login(module, executable, registry, authfile,
     check_file = authfile if os.path.exists(authfile) else docker_authfile
     if os.path.exists(check_file):
         content = open(check_file, 'rb').read()
-        if bytes(registry, 'UTF-8') in content:
-            checksum = hashlib.sha256(content).hexdigest()
+        checksum = hashlib.sha256(content).hexdigest()
     rc, out, err = module.run_command(command)
     if rc != 0:
         if 'Error: Not logged into' not in err:
@@ -134,10 +133,9 @@ def login(module, executable, registry, authfile,
         # due to the login
         if checksum:
             content = open(check_file, 'rb').read()
-            if bytes(registry, 'UTF-8') in content:
-                new_checksum = hashlib.sha256(content).hexdigest()
-                if new_checksum == checksum:
-                    changed = False
+            new_checksum = hashlib.sha256(content).hexdigest()
+            if new_checksum == checksum:
+                changed = False
     return changed, out, err
 
 
