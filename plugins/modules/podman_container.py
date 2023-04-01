@@ -131,9 +131,10 @@ options:
     type: path
   cmd_args:
     description:
-      - Any additional command options you want to pass to podman command,
-        cmd_args - ['--other-param', 'value']
-        Be aware module doesn't support idempotency if this is set.
+      - Any additional command options you want to pass to podman command itself,
+        for example C(--log-level=debug) or C(--syslog). This is NOT command to
+        run in container, but rather options for podman itself.
+        For container command please use I(command) option.
     type: list
     elements: str
   conmon_pidfile:
