@@ -428,7 +428,8 @@ class PodmanImageManager(object):
             self.name = repo
             self.tag = repo_tag
 
-        self.image_name = '{name}:{tag}'.format(name=self.name, tag=self.tag)
+        delimiter = ':' if "sha256" not in self.tag else '@'
+        self.image_name = '{name}{d}{tag}'.format(name=self.name, d=delimiter, tag=self.tag)
 
         if self.state in ['present', 'build']:
             self.present()
