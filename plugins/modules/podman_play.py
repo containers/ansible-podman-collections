@@ -113,6 +113,13 @@ options:
     description:
       - Hide image pulls logs from output.
     type: bool
+  userns:
+    description:
+    - Set the user namespace mode for all the containers in a pod.
+      It defaults to the PODMAN_USERNS environment variable.
+      An empty value ("") means user namespaces are disabled.
+    required: false
+    type: str
 '''
 
 EXAMPLES = '''
@@ -165,6 +172,7 @@ class PodmanKubeManagement:
             '--seccomp-profile-root': 'seccomp_profile_root',
             '--tls-verify': 'tls_verify',
             '--log-level': 'log_level',
+            '--userns': 'userns',
             '--quiet': 'quiet',
         }.items():
             if self.module.params[param] is not None:
@@ -272,6 +280,7 @@ def main():
             debug=dict(type='bool'),
             quiet=dict(type='bool'),
             recreate=dict(type='bool'),
+            userns=dict(type='str'),
             log_level=dict(
                 type='str',
                 choices=["debug", "info", "warn", "error", "fatal", "panic"]),
