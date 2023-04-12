@@ -161,7 +161,7 @@
     - name: Pull image with SHA256 tag
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
-        name: "quay.io/coreos/etcd@{{ sha_image_info.images.0.Digest }}"  #quay.io/coreos/coreos-installer:latest
+        name: "quay.io/coreos/etcd@{{ sha_image_info.images.0.Digest }}" #quay.io/coreos/coreos-installer:latest
         state: present
 
     - name: Create a build directory with a subdirectory
@@ -284,17 +284,25 @@
         arch: amd64
       register: pull_arch1
 
+    - name: Pull the same image for the same CPU architecture
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/ubuntu
+        arch: amd64
+      register: pull_arch2
+
     - name: Pull the same image but for another CPU architecture
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/ubuntu
         arch: arm
-      register: pull_arch2
+      register: pull_arch3
 
     - name: Ensure the result of pulling image for another CPU architecture
       assert:
         that:
-          - "pull_arch2 is changed"
+          - "pull_arch2 is not changed"
+          - "pull_arch3 is changed"
 
     - name: Get the image info
       containers.podman.podman_image_info:
