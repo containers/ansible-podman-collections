@@ -428,7 +428,8 @@ class PodmanImageManager(object):
             self.name = repo
             self.tag = repo_tag
 
-        self.image_name = '{name}:{tag}'.format(name=self.name, tag=self.tag)
+        delimiter = ':' if "sha256" not in self.tag else '@'
+        self.image_name = '{name}{d}{tag}'.format(name=self.name, d=delimiter, tag=self.tag)
 
         if self.state in ['present', 'build']:
             self.present()
@@ -523,8 +524,9 @@ class PodmanImageManager(object):
             image_name = self.image_name
         args = ['image', 'ls', image_name, '--format', 'json']
         rc, images, err = self._run(args, ignore_errors=True)
+        images = json.loads(images)
         if len(images) > 0:
-            return json.loads(images)
+            return images
         else:
             return None
 
@@ -546,8 +548,9 @@ class PodmanImageManager(object):
             image_name = self.image_name
         args = ['inspect', image_name, '--format', 'json']
         rc, image_data, err = self._run(args)
+        image_data = json.loads(image_data)
         if len(image_data) > 0:
-            return json.loads(image_data)
+            return image_data
         else:
             return None
 
