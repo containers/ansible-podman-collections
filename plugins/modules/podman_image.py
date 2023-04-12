@@ -15,6 +15,10 @@ DOCUMENTATION = r'''
   description:
       - Build, pull, or push images using Podman.
   options:
+    arch:
+      description:
+        - CPU architecutre for the container image
+      type: str
     name:
       description:
         - Name of the image to pull, push, or delete. It may contain a tag using the format C(image:tag).
@@ -267,6 +271,11 @@ EXAMPLES = r"""
     - name: nginx
       tag: 3
       dest: docker.io/acme
+
+- name: Pull an image for a specific CPU architecture
+  containers.podman.podman_image:
+    name: nginx
+    arch: amd64
 """
 
 RETURN = r"""
