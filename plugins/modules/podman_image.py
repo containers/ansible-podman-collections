@@ -15,6 +15,10 @@ DOCUMENTATION = r'''
   description:
       - Build, pull, or push images using Podman.
   options:
+    arch:
+      description:
+        - CPU architecutre for the container image
+      type: str
     name:
       description:
         - Name of the image to pull, push, or delete. It may contain a tag using the format C(image:tag).
@@ -267,6 +271,11 @@ EXAMPLES = r"""
     - name: nginx
       tag: 3
       dest: docker.io/acme
+
+- name: Pull an image for a specific CPU architecture
+  containers.podman.podman_image:
+    name: nginx
+    arch: amd64
 """
 
 RETURN = r"""
@@ -422,6 +431,7 @@ class PodmanImageManager(object):
         self.ca_cert_dir = self.module.params.get('ca_cert_dir')
         self.build = self.module.params.get('build')
         self.push_args = self.module.params.get('push_args')
+        self.arch = self.module.params.get('arch')
 
         repo, repo_tag = parse_repository_tag(self.name)
         if repo_tag:
@@ -526,9 +536,14 @@ class PodmanImageManager(object):
         rc, images, err = self._run(args, ignore_errors=True)
         images = json.loads(images)
         if len(images) > 0:
-            return images
-        else:
-            return None
+            inspect_json = self.inspect_image(image_name)
+            if self._is_target_arch(inspect_json, self.arch) or not self.arch:
+                return images
+
+        return None
+
+    def _is_target_arch(self, inspect_json=None, arch=None):
+        return arch and inspect_json[0]['Architecture'] == arch
 
     def find_image_id(self, image_id=None):
         if image_id is None:
@@ -559,6 +574,9 @@ class PodmanImageManager(object):
             image_name = self.image_name
 
         args = ['pull', image_name, '-q']
+
+        if self.arch:
+            args.extend(['--arch', self.arch])
 
         if self.auth_file:
             args.extend(['--authfile', self.auth_file])
@@ -762,6 +780,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             name=dict(type='str', required=True),
+            arch=dict(type='str'),
             tag=dict(type='str', default='latest'),
             pull=dict(type='bool', default=True),
             push=dict(type='bool', default=False),
