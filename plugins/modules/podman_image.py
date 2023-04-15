@@ -543,9 +543,7 @@ class PodmanImageManager(object):
         return None
 
     def _is_target_arch(self, inspect_json=None, arch=None):
-        if arch and inspect_json[0]['Architecture'] == arch:
-            return True
-        return False
+        return arch and inspect_json[0]['Architecture'] == arch
 
     def find_image_id(self, image_id=None):
         if image_id is None:
