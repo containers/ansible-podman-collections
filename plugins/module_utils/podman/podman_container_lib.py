@@ -836,12 +836,8 @@ class PodmanContainerDiff:
 
     def diffparam_cpu_quota(self):
         before = self.info['hostconfig']['cpuquota']
-<<<<<<< HEAD
-        after = self.params['cpu_quota']
-=======
         # if cpu_quota left to default keep settings
         after = self.params['cpu_quota'] or before
->>>>>>> c18ca33 (Don't recreate if CPU limts are default fixes #559)
         return self._diff_update_and_compare('cpu_quota', before, after)
 
     def diffparam_cpu_rt_period(self):
