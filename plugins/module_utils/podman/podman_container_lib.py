@@ -32,6 +32,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     conmon_pidfile=dict(type='path'),
     command=dict(type='raw'),
     cpu_period=dict(type='int'),
+    cpu_quota=dict(type='int'),
     cpu_rt_period=dict(type='int'),
     cpu_rt_runtime=dict(type='int'),
     cpu_shares=dict(type='int'),
@@ -292,6 +293,9 @@ class PodmanModuleParams:
 
     def addparam_cpu_period(self, c):
         return c + ['--cpu-period', self.params['cpu_period']]
+
+    def addparam_cpu_quota(self, c):
+        return c + ['--cpu-quota', self.params['cpu_quota']]
 
     def addparam_cpu_rt_period(self, c):
         return c + ['--cpu-rt-period', self.params['cpu_rt_period']]
@@ -648,8 +652,8 @@ class PodmanDefaults:
             "cidfile": "",
             "cpus": 0.0,
             "cpu_shares": 0,
-            "cpu_quota": 0,
             "cpu_period": 0,
+            "cpu_quota": 0,
             "cpu_rt_runtime": 0,
             "cpu_rt_period": 0,
             "cpuset_cpus": "",
@@ -737,7 +741,7 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('annotation', before, after)
 
     def diffparam_env_host(self):
-        # It's impossible to get from inspest, recreate it if not default
+        # It's impossible to get from inspect, recreate it if not default
         before = False
         after = self.params['env_host']
         return self._diff_update_and_compare('env_host', before, after)
@@ -826,8 +830,15 @@ class PodmanContainerDiff:
 
     def diffparam_cpu_period(self):
         before = self.info['hostconfig']['cpuperiod']
-        after = self.params['cpu_period']
+        # if cpu_period left to default keep settings
+        after = self.params['cpu_period'] or before
         return self._diff_update_and_compare('cpu_period', before, after)
+
+    def diffparam_cpu_quota(self):
+        before = self.info['hostconfig']['cpuquota']
+        # if cpu_quota left to default keep settings
+        after = self.params['cpu_quota'] or before
+        return self._diff_update_and_compare('cpu_quota', before, after)
 
     def diffparam_cpu_rt_period(self):
         before = self.info['hostconfig']['cpurealtimeperiod']
@@ -846,7 +857,8 @@ class PodmanContainerDiff:
 
     def diffparam_cpus(self):
         before = int(self.info['hostconfig']['nanocpus']) / 1000000000
-        after = self.params['cpus']
+        # if cpus left to default keep settings
+        after = self.params['cpus'] or before
         return self._diff_update_and_compare('cpus', before, after)
 
     def diffparam_cpuset_cpus(self):
@@ -1146,7 +1158,8 @@ class PodmanContainerDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
-            image_ports = self.image_info.get('config', {}).get('exposedports', {})
+            image_ports = self.image_info.get(
+                'config', {}).get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
         after = [
