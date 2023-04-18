@@ -856,23 +856,23 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('cpu_shares', before, after)
 
     def diffparam_cpus(self):
-        before = int(self.info['hostconfig']['nanocpus']) / 1000000000
+        before = self.info['hostconfig']['nanocpus']) / 1000000000
         # if cpus left to default keep settings
-        after = self.params['cpus'] or before
+        after=float(self.params['cpus'] or before)
         return self._diff_update_and_compare('cpus', before, after)
 
     def diffparam_cpuset_cpus(self):
-        before = self.info['hostconfig']['cpusetcpus']
-        after = self.params['cpuset_cpus']
+        before=self.info['hostconfig']['cpusetcpus']
+        after=self.params['cpuset_cpus']
         return self._diff_update_and_compare('cpuset_cpus', before, after)
 
     def diffparam_cpuset_mems(self):
-        before = self.info['hostconfig']['cpusetmems']
-        after = self.params['cpuset_mems']
+        before=self.info['hostconfig']['cpusetmems']
+        after=self.params['cpuset_mems']
         return self._diff_update_and_compare('cpuset_mems', before, after)
 
     def diffparam_device(self):
-        before = [":".join([i['pathonhost'], i['pathincontainer']])
+        before=[":".join([i['pathonhost'], i['pathincontainer']])
                   for i in self.info['hostconfig']['devices']]
         if not before and 'createcommand' in self.info['config']:
             cr_com = self.info['config']['createcommand']
