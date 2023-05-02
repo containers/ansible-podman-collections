@@ -485,7 +485,8 @@ class PodmanImageManager(object):
                 # Build the image
                 self.results['actions'].append('Built image {image_name} from {path}'.format(image_name=self.image_name, path=self.path))
                 if not self.module.check_mode:
-                    image = self.results['image'] = self.build_image()
+                    self.results['image'], self.results['stdout'] = self.build_image()
+                    image = self.results['image']
             else:
                 # Pull the image
                 self.results['actions'].append('Pulled image {image_name}'.format(image_name=self.image_name))
@@ -509,7 +510,8 @@ class PodmanImageManager(object):
             self.results['actions'].append(push_format_string.format(image_name=self.image_name, dest=self.push_args['dest']))
             self.results['changed'] = True
             if not self.module.check_mode:
-                self.results['image'] = self.push_image()
+                self.results['image'], output = self.push_image()
+                self.results['stdout'] += "\n" + output
 
     def absent(self):
         image = self.find_image()
@@ -604,7 +606,7 @@ class PodmanImageManager(object):
         return self.inspect_image(out.strip())
 
     def build_image(self):
-        args = ['build', '-q']
+        args = ['build']
         args.extend(['-t', self.image_name])
 
         if self.validate_certs is not None:
@@ -661,7 +663,7 @@ class PodmanImageManager(object):
             self.module.fail_json(msg="Failed to build image {image}: {out} {err}".format(image=self.image_name, out=out, err=err))
 
         last_id = self._get_id_from_output(out, startswith='-->')
-        return self.inspect_image(last_id)
+        return self.inspect_image(last_id), out + err
 
     def push_image(self):
         args = ['push']
@@ -738,7 +740,7 @@ class PodmanImageManager(object):
         last_id = self._get_id_from_output(
             out + err, contains=':', split_on=':')
 
-        return self.inspect_image(last_id)
+        return self.inspect_image(last_id), out + err
 
     def remove_image(self, image_name=None):
         if image_name is None:
@@ -849,6 +851,7 @@ def main():
         actions=[],
         podman_actions=[],
         image={},
+        stdout='',
     )
 
     PodmanImageManager(module, results)
