@@ -32,6 +32,15 @@
         - "pod1"
         - "pod2"
 
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "container1"
+        - "container2"
+
     - name: Create pod
       containers.podman.podman_pod:
         executable: "{{ test_executable | default('podman') }}"
@@ -860,7 +869,7 @@
 - name: Test idempotency for root pods
   include_tasks: root-pod.yml
   vars:
-    ansible_python_interpreter: "/usr/bin/python"
+    ansible_python_interpreter: "/usr/bin/python3"
   args:
     apply:
       become: true
@@ -868,7 +877,7 @@
 - name: Test idempotency for root pods and networks
   include_tasks: net-pod.yml
   vars:
-    ansible_python_interpreter: "/usr/bin/python"
+    ansible_python_interpreter: "/usr/bin/python3"
   args:
     apply:
       become: true
