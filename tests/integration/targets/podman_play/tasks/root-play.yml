@@ -82,7 +82,7 @@
     - name: Check if pod is running well
       containers.podman.podman_pod_info:
         executable: "{{ test_executable | default('podman') }}"
-        name: web-deploy-root-pod-0
+        name: web-deploy-root-pod
       register: info1
 
     - name: Check pod info
