@@ -139,9 +139,6 @@ except ImportError:
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 
 
-NAME = re.compile('name "([^"]+)" is in use')
-
-
 class PodmanKubeManagement:
 
     def __init__(self, module, executable):
@@ -202,7 +199,12 @@ class PodmanKubeManagement:
                         "No metadata in Kube file!\n%s" % pod)
             else:
                 with open(self.module.params['kube_file']) as text:
-                    re_pod = NAME.search(text.read())
+                    # the following formats are matched for a kube name:
+                    # should match name field within metadata (2 or 4 spaces in front of name)
+                    # the name can be written without quotes, in single or double quotes
+                    # the name can contain -_
+                    re_pod_name = re.compile(r'^\s{2,4}name: ["|\']?(?P<pod_name>[\w|\-|\_]+)["|\']?', re.MULTILINE)
+                    re_pod = re_pod_name.search(text.read())
                     if re_pod:
                         pod_name = re_pod.group(1)
         if not pod_name:
