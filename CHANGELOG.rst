@@ -5,6 +5,47 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.10.2
+=======
+
+Release Summary
+---------------
+
+Bugfixes and docs changes
+
+Bugfixes
+--------
+
+- Add hooks-dir parameter for containers
+- Add idempotency for restart-policy for containers
+- Add missing options to podman network
+- Add more explanation about cmd_args command usage
+- Add stdout to podman build and push actions
+- Added support for "userns" parameter to "play" module
+- CI - fix pip installation of the collection
+- CI - fix podman play job for 4.4.x versions
+- Change yes/no to true/false in the modules
+- Convert str to json format before evaluating length.
+- Fix CI for newest Ansible branch 2.16
+- Fix idempotency for pods with uidmap and gidmap
+- Fix idempotency lowercase for devices
+- Fix network tests for Podman v4
+- Fix podman logout tests for v4
+- Fix pylint issues for CI ansible-test
+- Fix undesirable splitting of IPv6 host addresses
+- Improved documentation of `podman_generate_systemd` module
+- Prepare CI for Podman v3 backward compatibility
+- Support SHA256 tag for podman images
+- Update podman_image to specify CPU arch when pulling image
+- added podman_prune module
+- become plugin podman_unshare become_user default
+- fix for buildah improper remote target
+- for pod kube recreate
+- pod - Support passing multiple networks with params
+- podman-login - fix FIPS md5 issue and registry requirement
+- podman-pod - Fix idempotency for pods in 4.4.x versions
+- podman_systemd - Ignore header when comparing systemd files content
+
 v1.10.1
 =======
 
