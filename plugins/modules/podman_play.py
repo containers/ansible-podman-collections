@@ -113,6 +113,13 @@ options:
     description:
       - Hide image pulls logs from output.
     type: bool
+  userns:
+    description:
+    - Set the user namespace mode for all the containers in a pod.
+      It defaults to the PODMAN_USERNS environment variable.
+      An empty value ("") means user namespaces are disabled.
+    required: false
+    type: str
 '''
 
 EXAMPLES = '''
@@ -130,9 +137,6 @@ except ImportError:
     HAS_YAML = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
-
-
-NAME = re.compile('name "([^"]+)" is in use')
 
 
 class PodmanKubeManagement:
@@ -165,6 +169,7 @@ class PodmanKubeManagement:
             '--seccomp-profile-root': 'seccomp_profile_root',
             '--tls-verify': 'tls_verify',
             '--log-level': 'log_level',
+            '--userns': 'userns',
             '--quiet': 'quiet',
         }.items():
             if self.module.params[param] is not None:
@@ -194,7 +199,12 @@ class PodmanKubeManagement:
                         "No metadata in Kube file!\n%s" % pod)
             else:
                 with open(self.module.params['kube_file']) as text:
-                    re_pod = NAME.search(text.read())
+                    # the following formats are matched for a kube name:
+                    # should match name field within metadata (2 or 4 spaces in front of name)
+                    # the name can be written without quotes, in single or double quotes
+                    # the name can contain -_
+                    re_pod_name = re.compile(r'^\s{2,4}name: ["|\']?(?P<pod_name>[\w|\-|\_]+)["|\']?', re.MULTILINE)
+                    re_pod = re_pod_name.search(text.read())
                     if re_pod:
                         pod_name = re_pod.group(1)
         if not pod_name:
@@ -272,6 +282,7 @@ def main():
             debug=dict(type='bool'),
             quiet=dict(type='bool'),
             recreate=dict(type='bool'),
+            userns=dict(type='str'),
             log_level=dict(
                 type='str',
                 choices=["debug", "info", "warn", "error", "fatal", "panic"]),
