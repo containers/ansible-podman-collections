@@ -41,7 +41,7 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.14
+          - git+https://github.com/ansible/ansible.git@stable-2.15
           - git+https://github.com/ansible/ansible.git@devel
         os:
           - ubuntu-22.04
