@@ -41,7 +41,7 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.14
+          - git+https://github.com/ansible/ansible.git@stable-2.15
           - git+https://github.com/ansible/ansible.git@devel
         os:
           - ubuntu-22.04
@@ -51,7 +51,7 @@ jobs:
           - unstable
         include:
           - os: ubuntu-22.04
-            ansible-version: git+https://github.com/ansible/ansible.git@stable-2.14
+            ansible-version: git+https://github.com/ansible/ansible.git@stable-2.15
             python-version: 3.9
             podman-version: stable
 
