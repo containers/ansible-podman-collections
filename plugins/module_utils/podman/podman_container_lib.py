@@ -1166,7 +1166,15 @@ class PodmanContainerDiff:
 
     def diffparam_restart_policy(self):
         before = self.info['hostconfig']['restartpolicy']['name']
+        before_max_count = int(self.info['hostconfig']['restartpolicy'].get('maximumretrycount', 0))
         after = self.params['restart_policy'] or ""
+        if ':' in after:
+            after, after_max_count = after.rsplit(':', 1)
+            after_max_count = int(after_max_count)
+        else:
+            after_max_count = 0
+        before = "%s:%i" % (before, before_max_count)
+        after = "%s:%i" % (after, after_max_count)
         return self._diff_update_and_compare('restart_policy', before, after)
 
     def diffparam_rm(self):
