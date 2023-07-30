@@ -219,7 +219,7 @@ podman_command:
 import os
 from ansible.module_utils.basic import AnsibleModule
 import json
-
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
 
 RESTART_POLICY_CHOICES = [
     'no-restart',
@@ -447,25 +447,7 @@ def generate_systemd(module):
                 )
 
                 # See if we need to write the unit file, default yes
-                need_to_write_file = True
-                # If the unit file already exist, compare it with the
-                # generated content
-                if os.path.exists(unit_file_full_path):
-                    # Read the file
-                    with open(unit_file_full_path, 'r') as unit_file:
-                        current_unit_file_content = unit_file.read()
-                    # If current unit file content is the same as the
-                    # generated content
-                    # Remove comments from files, before comparing
-                    current_unit_file_content_nocmnt = "\n".join([
-                        line for line in current_unit_file_content.splitlines()
-                        if not line.startswith('#')])
-                    unit_content_nocmnt = "\n".join([
-                        line for line in unit_content.splitlines()
-                        if not line.startswith('#')])
-                    if current_unit_file_content_nocmnt == unit_content_nocmnt:
-                        # We don't need to write it
-                        need_to_write_file = False
+                need_to_write_file = bool(compare_systemd_file_content(unit_file_full_path, unit_content))
 
                 # Write the file, if needed
                 if need_to_write_file:

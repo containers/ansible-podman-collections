@@ -1567,11 +1567,19 @@ class PodmanManager:
             self.results.update({'diff': self.container.diff})
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
+        sysd = generate_systemd(self.module,
+                                self.module_params,
+                                self.name,
+                                self.container.version)
+        self.results['changed'] = changed or sysd['changed']
         self.results.update(
-            {'podman_systemd': generate_systemd(self.module,
-                                                self.module_params,
-                                                self.name,
-                                                self.container.version)})
+            {'podman_systemd': sysd['systemd']})
+        if sysd['diff']:
+            if 'diff' not in self.results:
+                self.results.update({'diff': sysd['diff']})
+            else:
+                self.results['diff']['before'] += sysd['diff']['before']
+                self.results['diff']['after'] += sysd['diff']['after']
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
