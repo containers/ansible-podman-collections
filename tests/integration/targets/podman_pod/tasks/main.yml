@@ -333,7 +333,7 @@
         that:
           - pod15_a_info is changed
 
-    - name: Start pod with share for idempotency
+    - name: Start pod with gidmap and uidmap for idempotency
       containers.podman.podman_pod:
         executable: "{{ test_executable | default('podman') }}"
         name: pod1
@@ -346,6 +346,47 @@
       assert:
         that:
           - pod15_b_info is not changed
+
+    # Reset the namespace check.
+    # This is because changing from `uidmap/gidmap` to `userns` does not
+    # report a difference currently
+    - name: Start pod without uidmap to reset
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+      register: pod15_c_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_c_info is changed
+
+    - name: Start pod with userns
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        userns: auto
+        state: created
+      register: pod_userns_a_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod_userns_a_info is changed
+
+    - name: Start pod with userns for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        userns: auto
+        state: created
+      register: pod_userns_b_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod_userns_b_info is not changed
 
     - name: Start pod with labels
       containers.podman.podman_pod:

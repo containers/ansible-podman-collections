@@ -511,7 +511,7 @@ class PodmanPodDiff:
             # TODO: find out why on Ubuntu the 'net' is not present
             if 'net' not in before:
                 after.remove('net')
-        if self.params["uidmap"] or self.params["gidmap"]:
+        if self.params["uidmap"] or self.params["gidmap"] or self.params["userns"]:
             after.append('user')
 
         before, after = sorted(list(set(before))), sorted(list(set(after)))
