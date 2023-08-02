@@ -872,7 +872,7 @@ class PodmanContainerDiff:
         after = [":".join(i.split(":")[:2]) for i in self.params['device']]
         after = [":".join((i, i))
                  if len(i.split(":")) == 1 else i for i in after]
-        after = [i.lower() for i in after]
+        before, after = [i.lower() for i in before], [i.lower() for i in after]
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('devices', before, after)
 
