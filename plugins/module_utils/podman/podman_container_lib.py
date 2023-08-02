@@ -1362,6 +1362,7 @@ class PodmanContainer:
         self.version = self._get_podman_version()
         self.diff = {}
         self.actions = []
+        self.systemd_unit = ''
 
     @property
     def exists(self):
@@ -1460,6 +1461,40 @@ class PodmanContainer:
                     msg="Can't %s container %s" % (action, self.name),
                     stdout=out, stderr=err)
 
+    def _perform_systemd_action(self, action):
+        """Perform action with systemd.
+
+        Arguments:
+            action {str} -- action to perform - start, stop, restart, daemon-reload
+        """
+        unit_name = (self.info["Config"]["Labels"] or {}).get("PODMAN_SYSTEMD_UNIT", None)
+        if not unit_name:
+            return self._perform_action(action)
+
+        command_components = ["systemctl", action]
+        if action != 'daemon-reload':
+            command_components.append(unit_name)
+
+        full_cmd = " ".join(command_components)
+        self.actions.append(full_cmd)
+
+        if self.module.check_mode:
+            self.module.log(
+                "PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+        else:
+            rc, out, err = self.module.run_command(full_cmd)
+            self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
+            if self.module_params['debug']:
+                self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
+                self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
+                self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
+            self.stdout = out
+            self.stderr = err
+            if rc != 0:
+                self.module.fail_json(
+                    msg="Can't %s container systemd unit %s" % (action, unit_name),
+                    stdout=out, stderr=err)
+
     def run(self):
         """Run the container."""
         self._perform_action('run')
@@ -1470,19 +1505,36 @@ class PodmanContainer:
 
     def stop(self):
         """Stop the container."""
-        self._perform_action('stop')
+        if self.module_params['generate_systemd']:
+            self._perform_systemd_action('stop')
+        else:
+            self._perform_action('stop')
 
     def start(self):
         """Start the container."""
-        self._perform_action('start')
+        if self.module_params['generate_systemd']:
+            if self.different:
+                self._perform_systemd_action('daemon-reload')
+            self._perform_systemd_action('start')
+        else:
+            self._perform_action('start')
 
     def restart(self):
         """Restart the container."""
-        self._perform_action('restart')
+        if self.module_params['generate_systemd']:
+            if self.different:
+                self._perform_systemd_action('daemon-reload')
+            self._perform_systemd_action('restart')
+        else:
+            self._perform_action('restart')
 
     def create(self):
         """Create the container."""
         self._perform_action('create')
+        self.systemd_unit = generate_systemd(self.module,
+                                             self.module_params,
+                                             self.name,
+                                             self.version)
 
     def recreate(self):
         """Recreate the container."""
@@ -1555,11 +1607,7 @@ class PodmanManager:
             self.results.update({'diff': self.container.diff})
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.container.version})
-        self.results.update(
-            {'podman_systemd': generate_systemd(self.module,
-                                                self.module_params,
-                                                self.name,
-                                                self.container.version)})
+        self.results.update({'podman_systemd': self.container.systemd_unit})
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
