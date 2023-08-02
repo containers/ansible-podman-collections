@@ -1158,8 +1158,7 @@ class PodmanContainerDiff:
                     before.append(compose(port, h))
         after = self.params['publish'] or []
         if self.params['publish_all']:
-            image_ports = self.image_info.get(
-                'config', {}).get('exposedports', {})
+            image_ports = self.image_info.get('config', {}).get('exposedports', {})
             if image_ports:
                 after += list(image_ports.keys())
         after = [
