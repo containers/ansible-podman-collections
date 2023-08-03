@@ -32,6 +32,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     conmon_pidfile=dict(type='path'),
     command=dict(type='raw'),
     cpu_period=dict(type='int'),
+    cpu_quota=dict(type='int'),
     cpu_rt_period=dict(type='int'),
     cpu_rt_runtime=dict(type='int'),
     cpu_shares=dict(type='int'),
