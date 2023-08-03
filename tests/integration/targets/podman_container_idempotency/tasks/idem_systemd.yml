@@ -1,0 +1,123 @@
+# Systemd generation
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      no_header: true
+      names: true
+      pod_prefix: whocares
+      separator: zzzz
+      container_prefix: contain
+  register: system0
+
+- name: Check if the result is changed
+  assert:
+    that:
+      - system0 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      no_header: true
+      names: true
+      pod_prefix: whocares
+      separator: zzzz
+      container_prefix: contain
+  register: system1
+
+- name: Check if the result is not changed
+  assert:
+    that:
+      - system1 is not changed
+
+- name: Remove the systemd unit file
+  ansible.builtin.file:
+    path: /tmp/containzzzzidempotency.service
+    state: absent
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      no_header: true
+      names: true
+      pod_prefix: whocares
+      separator: zzzz
+      container_prefix: contain
+  register: system2
+
+- name: Check if the result is changed
+  assert:
+    that:
+      - system2 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      no_header: true
+      names: true
+      pod_prefix: whocares
+      separator: zzzz
+      container_prefix: contain
+  register: system3
+
+- name: Check if the result is not changed
+  assert:
+    that:
+      - system3 is not changed
+
+- name: Add string to change the systemd unit file
+  ansible.builtin.shell: echo 'test=onetwo' >> /tmp/containzzzzidempotency.service
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    generate_systemd:
+      path: /tmp/
+      restart_policy: always
+      time: 120
+      no_header: true
+      names: true
+      pod_prefix: whocares
+      separator: zzzz
+      container_prefix: contain
+  register: system4
+
+- name: Check if the result is changed
+  assert:
+    that:
+      - system4 is changed

@@ -23,6 +23,9 @@
 - name: Test idempotency of containers in pods
   include_tasks: idem_pods.yml
 
+- name: Test idempotency of systemd generation
+  include_tasks: idem_systemd.yml
+
 - name: Test idempotency of other settings
   include_tasks: idem_all.yml
 

@@ -96,34 +96,93 @@ def run_generate_systemd_command(module, module_params, name, version):
     return rc, systemd, err
 
 
+def compare_systemd_file_content(file_path, file_content):
+    if not os.path.exists(file_path):
+        # File does not exist, so all lines in file_content are different
+        return '', file_content
+    # Read the file
+    with open(file_path, 'r') as unit_file:
+        current_unit_file_content = unit_file.read()
+
+    # Function to remove comments from file content
+    def remove_comments(content):
+        return "\n".join([line for line in content.splitlines() if not line.startswith('#')])
+
+    # Remove comments from both file contents before comparison
+    current_unit_file_content_nocmnt = remove_comments(current_unit_file_content)
+    unit_content_nocmnt = remove_comments(file_content)
+    if current_unit_file_content_nocmnt == unit_content_nocmnt:
+        return None
+
+    # Get the different lines between the two contents
+    diff_in_file = [line
+                    for line in unit_content_nocmnt.splitlines()
+                    if line not in current_unit_file_content_nocmnt.splitlines()]
+    diff_in_string = [line
+                      for line in current_unit_file_content_nocmnt.splitlines()
+                      if line not in unit_content_nocmnt.splitlines()]
+
+    return diff_in_string, diff_in_file
+
+
 def generate_systemd(module, module_params, name, version):
-    empty = {}
+    result = {
+        'changed': False,
+        'systemd': {},
+        'diff': {},
+    }
     sysconf = module_params['generate_systemd']
     rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
     if rc != 0:
         module.log(
             "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
-        return empty
+        return result
     else:
         try:
             data = json.loads(systemd)
+            result['systemd'] = data
             if sysconf.get('path'):
                 full_path = os.path.expanduser(sysconf['path'])
                 if not os.path.exists(full_path):
                     os.makedirs(full_path)
+                    result['changed'] = True
                 if not os.path.isdir(full_path):
                     module.fail_json("Path %s is not a directory! "
                                      "Can not save systemd unit files there!"
                                      % full_path)
                 for file_name, file_content in data.items():
                     file_name += ".service"
+                    if not os.path.exists(os.path.join(full_path, file_name)):
+                        result['changed'] = True
+                        if result['diff'].get('before') is None:
+                            result['diff'] = {'before': {}, 'after': {}}
+                        result['diff']['before'].update({f'systemd_{file_name}.service': ''})
+                        result['diff']['after'].update({f'systemd_{file_name}.service': file_content})
+
+                    else:
+                        diff_ = compare_systemd_file_content(os.path.join(full_path, file_name), file_content)
+                        if diff_:
+                            result['changed'] = True
+                            if result['diff'].get('before') is None:
+                                result['diff'] = {'before': {}, 'after': {}}
+                            result['diff']['before'].update({f'systemd_{file_name}.service': "\n".join(diff_[0])})
+                            result['diff']['after'].update({f'systemd_{file_name}.service': "\n".join(diff_[1])})
                     with open(os.path.join(full_path, file_name), 'w') as f:
                         f.write(file_content)
-            return data
+                diff_before = "\n".join(
+                    [f"{j} - {k}" for j, k in result['diff'].get('before', {}).items() if 'PIDFile' not in k]).strip()
+                diff_after = "\n".join(
+                    [f"{j} - {k}" for j, k in result['diff'].get('after', {}).items() if 'PIDFile' not in k]).strip()
+                if diff_before or diff_after:
+                    result['diff']['before'] = diff_before + "\n"
+                    result['diff']['after'] = diff_after + "\n"
+                else:
+                    result['diff'] = {}
+            return result
         except Exception as e:
             module.log(
                 "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
-            return empty
+            return result
 
 
 def delete_systemd(module, module_params, name, version):
