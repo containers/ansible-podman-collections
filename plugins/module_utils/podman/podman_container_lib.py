@@ -32,6 +32,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     conmon_pidfile=dict(type='path'),
     command=dict(type='raw'),
     cpu_period=dict(type='int'),
+    cpu_quota=dict(type='int'),
     cpu_rt_period=dict(type='int'),
     cpu_rt_runtime=dict(type='int'),
     cpu_shares=dict(type='int'),
@@ -292,6 +293,9 @@ class PodmanModuleParams:
 
     def addparam_cpu_period(self, c):
         return c + ['--cpu-period', self.params['cpu_period']]
+
+    def addparam_cpu_quota(self, c):
+        return c + ['--cpu-quota', self.params['cpu_quota']]
 
     def addparam_cpu_rt_period(self, c):
         return c + ['--cpu-rt-period', self.params['cpu_rt_period']]
@@ -829,6 +833,12 @@ class PodmanContainerDiff:
         # if cpu_period left to default keep settings
         after = self.params['cpu_period'] or before
         return self._diff_update_and_compare('cpu_period', before, after)
+
+    def diffparam_cpu_quota(self):
+        before = self.info['hostconfig']['cpuquota']
+        # if cpu_quota left to default keep settings
+        after = self.params['cpu_quota'] or before
+        return self._diff_update_and_compare('cpu_quota', before, after)
 
     def diffparam_cpu_rt_period(self):
         before = self.info['hostconfig']['cpurealtimeperiod']
