@@ -45,6 +45,7 @@ Bugfixes
 - podman-login - fix FIPS md5 issue and registry requirement
 - podman-pod - Fix idempotency for pods in 4.4.x versions
 - podman_systemd - Ignore header when comparing systemd files content
+- Add volume support to `podman_import` and `podman_export`
 
 v1.10.1
 =======

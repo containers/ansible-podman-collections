@@ -29,6 +29,10 @@ options:
     - Set changes as list of key-value pairs, see example.
     type: list
     elements: dict
+  volume:
+    description:
+    - Volume to import, cannot be used with change and commit_message
+    type: str
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -95,8 +99,12 @@ EXAMPLES = '''
       - "CMD": /bin/bash
       - "User": root
     commit_message: "Importing image"
+- containers.podman.podman_import:
+    src: /path/to/tar/file
+    volume: myvolume
 '''
 
+import os  # noqa: E402
 import json  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
@@ -127,6 +135,27 @@ def load(module, executable):
         module.fail_json(msg="Could not parse JSON from image %s: %s" % (image_name, e))
     return changed, out, err, info, command
 
+def volume_load(module, executable):
+    changed = False
+    command = [executable, 'volume', 'import', module.params['volume'], module.params['src']]
+    src = module.params['src']
+    if os.path.exists(src):
+        changed = True
+        if module.check_mode:
+            return changed, '', '', '', command
+        rc, out, err = module.run_command(command)
+        if rc != 0:
+            module.fail_json(msg="Error importing volume %s: %s" % (src, err))
+        rc, out2, err2 = module.run_command([executable, 'volume', 'inspect', module.params['volume']])
+        if rc != 0:
+            module.fail_json(msg="Volume %s inspection failed: %s" % (image_name, err2))
+        try:
+            info = json.loads(out2)[0]
+        except Exception as e:
+            module.fail_json(msg="Could not parse JSON from volume %s: %s" % (image_name, e))
+    else:
+        module.fail_json(msg="Error %s does not exist: %s" % (src))
+    return changed, out, err, info, command
 
 def main():
     module = AnsibleModule(
@@ -134,21 +163,36 @@ def main():
             src=dict(type='str', required=True),
             commit_message=dict(type='str'),
             change=dict(type='list', elements='dict'),
-            executable=dict(type='str', default='podman')
+            executable=dict(type='str', default='podman'),
+            volume=dict(type='str', required=False),
         ),
+        mutually_exclusive=[
+         ('volume', 'commit_message'),
+         ('volume', 'change'),
+        ],
         supports_check_mode=True,
     )
 
     executable = module.get_bin_path(module.params['executable'], required=True)
-    changed, out, err, image_info, command = load(module, executable)
+    import_object = ''
+    import_info = ''
+    if module.params['volume']:
+        changed, out, err, volume_info, command = volume_load(module, executable)
+        import_object = 'volume'
+        import_info = volume_info
+    else:
+        changed, out, err, image_info, command = load(module, executable)
+        import_object = 'image'
+        import_info = image_info
 
     results = {
         "changed": changed,
         "stdout": out,
         "stderr": err,
-        "image": image_info,
+        import_object: import_info,
         "podman_command": " ".join(command)
     }
+
 
     module.exit_json(**results)
 
