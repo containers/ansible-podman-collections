@@ -737,7 +737,7 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('annotation', before, after)
 
     def diffparam_env_host(self):
-        # It's impossible to get from inspest, recreate it if not default
+        # It's impossible to get from inspect, recreate it if not default
         before = False
         after = self.params['env_host']
         return self._diff_update_and_compare('env_host', before, after)
@@ -826,7 +826,8 @@ class PodmanContainerDiff:
 
     def diffparam_cpu_period(self):
         before = self.info['hostconfig']['cpuperiod']
-        after = self.params['cpu_period']
+        # if cpu_period left to default keep settings
+        after = self.params['cpu_period'] or before
         return self._diff_update_and_compare('cpu_period', before, after)
 
     def diffparam_cpu_rt_period(self):
@@ -845,8 +846,9 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('cpu_shares', before, after)
 
     def diffparam_cpus(self):
-        before = int(self.info['hostconfig']['nanocpus']) / 1000000000
-        after = self.params['cpus']
+        before = self.info['hostconfig']['nanocpus'] / 1000000000
+        # if cpus left to default keep settings
+        after = float(self.params['cpus'] or before)
         return self._diff_update_and_compare('cpus', before, after)
 
     def diffparam_cpuset_cpus(self):
