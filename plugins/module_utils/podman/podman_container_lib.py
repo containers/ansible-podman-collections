@@ -648,6 +648,7 @@ class PodmanDefaults:
             "cidfile": "",
             "cpus": 0.0,
             "cpu_shares": 0,
+            "cpu_quota": 0,
             "cpu_period": 0,
             "cpu_rt_runtime": 0,
             "cpu_rt_period": 0,
