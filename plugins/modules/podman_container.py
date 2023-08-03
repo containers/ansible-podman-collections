@@ -151,6 +151,10 @@ options:
     description:
       - Limit the CPU real-time period in microseconds
     type: int
+  cpu_quota:
+    description:
+      - Limit the CPU CFS (Completely Fair Scheduler) quota
+    type: int
   cpu_rt_period:
     description:
       - Limit the CPU real-time period in microseconds.
