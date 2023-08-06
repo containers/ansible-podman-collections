@@ -1,5 +1,18 @@
 - name: Test podman_image
   block:
+    - name: List all images on host before test
+      containers.podman.podman_image_info:
+
+    - name: Remove images for test
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - quay.io/coreos/alpine-sh
+        - docker.io/alpine
+        - docker.io/library/ubuntu
+        - docker.io/library/alpine
+
     - name: Pull image
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
@@ -47,7 +60,7 @@
           - pull1.podman_actions is defined
           - pull2 is not changed
           - pull3 is changed
-          - pull4 is changed
+          - pull4 is not changed
           - pull5 is not changed
           - pull6 is changed
           - "'alpine-sh' in images.stdout"
@@ -83,14 +96,14 @@
         state: absent
       register: rmi3
 
-    - name: Try to remove docker.io image using short url
+    - name: Remove docker.io image using short url
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: docker.io/alpine
         state: absent
       register: rmi4
 
-    - name: Remove docker.io image using normalised url
+    - name: Try to remove docker.io image using normalised url
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: docker.io/library/alpine
@@ -121,8 +134,8 @@
           - rmi1 is changed
           - rmi2 is not changed
           - rmi3 is changed
-          - rmi4 is not changed
-          - rmi5 is changed
+          - rmi4 is changed
+          - rmi5 is not changed
           - rmi6 is changed
           - "'alpine-sh' not in images.stdout"
           - "'library/ubuntu' not in images.stdout"

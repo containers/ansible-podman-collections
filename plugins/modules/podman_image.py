@@ -512,6 +512,8 @@ class PodmanImageManager(object):
             if not self.module.check_mode:
                 self.results['image'], output = self.push_image()
                 self.results['stdout'] += "\n" + output
+        if image and not self.results.get('image'):
+            self.results['image'] = image
 
     def absent(self):
         image = self.find_image()
@@ -537,11 +539,17 @@ class PodmanImageManager(object):
         args = ['image', 'ls', image_name, '--format', 'json']
         rc, images, err = self._run(args, ignore_errors=True)
         images = json.loads(images)
+        if len(images) == 0:
+            # Let's find out if image exists
+            rc, out, err = self._run(['image', 'exists', image_name], ignore_errors=True)
+            if rc == 0:
+                inspect_json = self.inspect_image(image_name)
+            else:
+                return None
         if len(images) > 0:
             inspect_json = self.inspect_image(image_name)
-            if self._is_target_arch(inspect_json, self.arch) or not self.arch:
-                return images
-
+        if self._is_target_arch(inspect_json, self.arch) or not self.arch:
+            return images or inspect_json
         return None
 
     def _is_target_arch(self, inspect_json=None, arch=None):
