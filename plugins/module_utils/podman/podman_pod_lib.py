@@ -759,11 +759,19 @@ class PodmanPodManager:
             self.results.update({'diff': self.pod.diff})
         if self.module.params['debug'] or self.module_params['debug']:
             self.results.update({'podman_version': self.pod.version})
+        sysd = generate_systemd(self.module,
+                                self.module_params,
+                                self.name,
+                                self.pod.version)
+        self.results['changed'] = changed or sysd['changed']
         self.results.update(
-            {'podman_systemd': generate_systemd(self.module,
-                                                self.module_params,
-                                                self.name,
-                                                self.pod.version)})
+            {'podman_systemd': sysd['systemd']})
+        if sysd['diff']:
+            if 'diff' not in self.results:
+                self.results.update({'diff': sysd['diff']})
+            else:
+                self.results['diff']['before'] += sysd['diff']['before']
+                self.results['diff']['after'] += sysd['diff']['after']
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""

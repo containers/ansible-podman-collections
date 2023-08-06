@@ -323,6 +323,18 @@ options:
             - 'on-watchdog'
             - 'on-abort'
             - 'always'
+      restart_sec:
+        description: Set the systemd service restartsec value.
+        type: int
+        required: false
+      start_timeout:
+        description: Override the default start timeout for the container with the given value.
+        type: int
+        required: false
+      stop_timeout:
+        description: Override the default stop timeout for the container with the given value.
+        type: int
+        required: false
       time:
         description:
           - Override the default stop timeout for the container with the given value.

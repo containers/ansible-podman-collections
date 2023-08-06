@@ -50,6 +50,12 @@ def run_generate_systemd_command(module, module_params, name, version):
         command.extend([
             '--restart-policy',
             sysconf['restart_policy']])
+    if sysconf.get('restart_sec') is not None:
+        command.extend(['--restart-sec=%s' % sysconf['restart_sec']])
+    if sysconf.get('stop_timeout') is not None:
+        command.extend(['--stop-timeout=%s' % sysconf['stop_timeout']])
+    if sysconf.get('start_timeout') is not None:
+        command.extend(['--start-timeout=%s' % sysconf['start_timeout']])
     if sysconf.get('time'):
         command.extend(['--time', str(sysconf['time'])])
     if sysconf.get('no_header'):

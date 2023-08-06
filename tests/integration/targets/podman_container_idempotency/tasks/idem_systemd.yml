@@ -13,12 +13,14 @@
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
       no_header: true
       names: true
       pod_prefix: whocares
       separator: zzzz
       container_prefix: contain
+      restart_sec: 10
+      start_timeout: 20
+      stop_timeout: 15
   register: system0
 
 - name: Check if the result is changed
@@ -35,12 +37,14 @@
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
       no_header: true
       names: true
       pod_prefix: whocares
       separator: zzzz
       container_prefix: contain
+      restart_sec: 10
+      start_timeout: 20
+      stop_timeout: 15
   register: system1
 
 - name: Check if the result is not changed
@@ -62,12 +66,14 @@
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
       no_header: true
       names: true
       pod_prefix: whocares
       separator: zzzz
       container_prefix: contain
+      restart_sec: 10
+      start_timeout: 20
+      stop_timeout: 15
   register: system2
 
 - name: Check if the result is changed
@@ -84,12 +90,14 @@
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
       no_header: true
       names: true
       pod_prefix: whocares
       separator: zzzz
       container_prefix: contain
+      restart_sec: 10
+      start_timeout: 20
+      stop_timeout: 15
   register: system3
 
 - name: Check if the result is not changed
@@ -109,12 +117,14 @@
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
       no_header: true
       names: true
       pod_prefix: whocares
       separator: zzzz
       container_prefix: contain
+      restart_sec: 10
+      start_timeout: 20
+      stop_timeout: 15
   register: system4
 
 - name: Check if the result is changed
