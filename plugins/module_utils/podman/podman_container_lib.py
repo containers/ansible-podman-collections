@@ -208,7 +208,7 @@ class PodmanModuleParams:
         """
         if self.action in ['start', 'stop', 'delete', 'restart']:
             return self.start_stop_delete()
-        if self.action in ['create', 'run', 'recreate']:
+        if self.action in ['create', 'run']:
             cmd = [self.action, '--name', self.params['name']]
             all_param_methods = [func for func in dir(self)
                                  if callable(getattr(self, func))
@@ -1443,14 +1443,11 @@ class PodmanContainer:
             action {str} -- action to perform - start, create, stop, run,
                             delete, restart
         """
-        b_command = PodmanModuleParams(action if action != 'recreate' else 'create',
+        b_command = PodmanModuleParams(action,
                                        self.module_params,
                                        self.version,
                                        self.module,
                                        ).construct_command_from_params()
-        if action == 'recreate':
-            action = 'create'
-            b_command.insert(1, b'--replace')
         if action == 'create':
             b_command.remove(b'--detach=True')
         full_cmd = " ".join([self.module_params['executable']]
@@ -1501,7 +1498,11 @@ class PodmanContainer:
 
     def recreate(self):
         """Recreate the container."""
-        self._perform_action('recreate')
+        if self.running:
+            self.stop()
+        if not self.info['HostConfig']['AutoRemove']:
+            self.delete()
+        self.create()
 
     def recreate_run(self):
         """Recreate and run the container."""
