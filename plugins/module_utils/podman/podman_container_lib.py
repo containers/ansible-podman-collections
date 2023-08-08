@@ -9,16 +9,11 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
-<<<<<<< HEAD
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import diff_generic
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import createcommand
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import ContainerQuadlet
-
-=======
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 from .common import PodmanAPI
->>>>>>> e7671a8 (Add option to run with podman-py API)
 
 __metaclass__ = type
 
@@ -1189,6 +1184,20 @@ class PodmanContainerDiff:
             return True
         return False
 
+    def clean_aliases(self, params):
+        aliases = {}
+        for k, v in ARGUMENTS_SPEC_CONTAINER.items():
+            if 'aliases' in v:
+                for alias in v['aliases']:
+                    aliases[alias] = k
+        return {aliases.get(k, k): v for k, v in params.items()}
+
+    def _get_create_command_annotation(self):
+        if ('annotations' in self.info['config']
+                and 'ansible.podman.collection.cmd' in self.info['config']['annotations']):
+            return self.clean_aliases(json.loads(self.info['config']['annotations']['ansible.podman.collection.cmd']))
+        return {}
+
     def _diff_generic(self, module_arg, cmd_arg, boolean_type=False):
         """
         Generic diff function for module arguments from CreateCommand
@@ -1204,6 +1213,14 @@ class PodmanContainerDiff:
 
         """
         info_config = self.info["config"]
+        if USE_API:
+            cmd = self._get_create_command_annotation()
+            if cmd:
+                params = self.clean_aliases(self.params)
+                self.module.log("PODMAN-DEBUG: cmd_arg = %s and param arg = %s" % (cmd.get(module_arg), params.get(module_arg)))
+                return self._diff_update_and_compare(module_arg, cmd.get(module_arg), params.get(module_arg))
+            return self._diff_update_and_compare(module_arg, None, None)
+
         before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
         return self._diff_update_and_compare(module_arg, before, after)
 
@@ -1707,7 +1724,10 @@ class PodmanContainerDiff:
                 return "/"
             return x.replace("//", "/").rstrip("/")
 
-        before = createcommand('--volume', self.info['config'])
+        if USE_API:
+            before = self._get_create_command_annotation().get('volume')
+        else:
+            before = createcommand('--volume', self.info['config'])
         if before == []:
             before = None
         after = self.params['volume']
@@ -1716,7 +1736,6 @@ class PodmanContainerDiff:
                 [clean_volume(i) for i in v.split(":")[:2]]) for v in self.params['volume']]
         if before is not None:
             before = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before]
-        self.module.log("PODMAN Before: %s and After: %s" % (before, after))
         if before is None and after is None:
             return self._diff_update_and_compare('volume', before, after)
         if after is not None:
@@ -1920,6 +1939,9 @@ class PodmanContainer:
                     self.client.containers.remove(self.name, force=True)
             elif action == 'create':
                 new_params.pop('detach')
+                if not new_params.get('annotations'):
+                    new_params['annotations'] = {}
+                new_params['annotations'].update({'ansible.podman.collection.cmd': json.dumps(self.module_params)})
                 try:
                     container = self.client.containers.create(
                         **new_params
@@ -1927,6 +1949,10 @@ class PodmanContainer:
                 except Exception as e:
                     self.module.fail_json(msg=str(e))
             elif action == 'run':
+                new_params.pop('detach')
+                if not new_params.get('annotations'):
+                    new_params['annotations'] = {}
+                new_params['annotations'].update({'ansible.podman.collection.cmd': json.dumps(self.module_params)})
                 try:
                     container = self.client.containers.run(
                         **new_params

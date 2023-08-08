@@ -31,7 +31,7 @@ on:
 jobs:
 
   test_podman_container_api:
-    name: Podman API container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}
+    name: Podman API container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.podman-version || 'unstable' }}
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
@@ -47,6 +47,13 @@ jobs:
           - ubuntu-22.04
         python-version:
           - "3.10"
+        podman-version:
+          - unstable
+        include:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@stable-2.15
+            python-version: "3.10"
+            podman-version: stable
 
     steps:
 
@@ -112,7 +119,8 @@ jobs:
           -e host=localhost \
           -i localhost, \
           -e ansible_connection=local \
-          -e setup_python=false
+          -e setup_python=false \
+          -e podman_version_ubuntu=${{ matrix.podman-version }}
 
           TEST2RUN=podman_container_api ./ci/run_containers_tests.sh
         shell: bash
