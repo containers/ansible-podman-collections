@@ -104,7 +104,6 @@ EXAMPLES = '''
     volume: myvolume
 '''
 
-import os  # noqa: E402
 import json  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
@@ -135,27 +134,25 @@ def load(module, executable):
         module.fail_json(msg="Could not parse JSON from image %s: %s" % (image_name, e))
     return changed, out, err, info, command
 
+
 def volume_load(module, executable):
-    changed = False
+    changed = True
     command = [executable, 'volume', 'import', module.params['volume'], module.params['src']]
     src = module.params['src']
-    if os.path.exists(src):
-        changed = True
-        if module.check_mode:
-            return changed, '', '', '', command
-        rc, out, err = module.run_command(command)
-        if rc != 0:
-            module.fail_json(msg="Error importing volume %s: %s" % (src, err))
-        rc, out2, err2 = module.run_command([executable, 'volume', 'inspect', module.params['volume']])
-        if rc != 0:
-            module.fail_json(msg="Volume %s inspection failed: %s" % (image_name, err2))
-        try:
-            info = json.loads(out2)[0]
-        except Exception as e:
-            module.fail_json(msg="Could not parse JSON from volume %s: %s" % (image_name, e))
-    else:
-        module.fail_json(msg="Error %s does not exist: %s" % (src))
+    if module.check_mode:
+        return changed, '', '', '', command
+    rc, out, err = module.run_command(command)
+    if rc != 0:
+        module.fail_json(msg="Error importing volume %s: %s" % (src, err))
+    rc, out2, err2 = module.run_command([executable, 'volume', 'inspect', module.params['volume']])
+    if rc != 0:
+        module.fail_json(msg="Volume %s inspection failed: %s" % (module.params['volume'], err2))
+    try:
+        info = json.loads(out2)[0]
+    except Exception as e:
+        module.fail_json(msg="Could not parse JSON from volume %s: %s" % (module.params['volume'], e))
     return changed, out, err, info, command
+
 
 def main():
     module = AnsibleModule(
@@ -167,32 +164,28 @@ def main():
             volume=dict(type='str', required=False),
         ),
         mutually_exclusive=[
-         ('volume', 'commit_message'),
-         ('volume', 'change'),
+            ('volume', 'commit_message'),
+            ('volume', 'change'),
         ],
         supports_check_mode=True,
     )
 
     executable = module.get_bin_path(module.params['executable'], required=True)
-    import_object = ''
-    import_info = ''
+    volume_info = ''
+    image_info = ''
     if module.params['volume']:
         changed, out, err, volume_info, command = volume_load(module, executable)
-        import_object = 'volume'
-        import_info = volume_info
     else:
         changed, out, err, image_info, command = load(module, executable)
-        import_object = 'image'
-        import_info = image_info
 
     results = {
         "changed": changed,
         "stdout": out,
         "stderr": err,
-        import_object: import_info,
+        "image": image_info,
+        "volume": volume_info,
         "podman_command": " ".join(command)
     }
-
 
     module.exit_json(**results)
 

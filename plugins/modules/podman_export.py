@@ -24,7 +24,6 @@ options:
     description:
     - Container to export.
     type: str
-    required: true
   volume:
     description:
     - Volume to export.
@@ -91,8 +90,9 @@ def export(module, executable):
     rc, out, err = module.run_command(command)
     if rc != 0:
         module.fail_json(msg="Error exporting %s %s: %s" % (export_type,
-            module.params['container'], err))
+                         module.params['container'], err))
     return changed, out, err
+
 
 def main():
     module = AnsibleModule(
@@ -105,13 +105,13 @@ def main():
         ),
         supports_check_mode=True,
         mutually_exclusive=[
-         ('container', 'volume'),
+            ('container', 'volume'),
         ],
         required_one_of=[
-        ('container', 'volume'),
+            ('container', 'volume'),
         ],
     )
-    
+
     executable = module.get_bin_path(module.params['executable'], required=True)
     changed, out, err = export(module, executable)
 
