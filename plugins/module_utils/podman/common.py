@@ -452,6 +452,8 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
     else:
         before = ",".join(sorted(before)) if len(before) > 1 else before[0]
     return before, after
+
+
 class PodmanAPI:
     def __init__(self, module, module_params):
         if module_params.get('podman_socket') and not HAS_REQUESTS:
