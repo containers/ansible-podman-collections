@@ -473,6 +473,7 @@
             - label=type:spc_t
             - label=filetype:container_share_t
             - seccomp=unconfined
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Recreate container with same security_opt flags
       containers.podman.podman_container:
@@ -486,6 +487,7 @@
             - label=type:spc_t
             - label=filetype:container_share_t
             - seccomp=unconfined
+        podman_socket: "{{ podman_socket | default(omit) }}"
       register: recreate_security_opt
 
     - name: Check if output is correct
@@ -502,6 +504,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: container
         state: absent
+        podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Recreate container with parameters
       containers.podman.podman_container:
@@ -913,6 +916,7 @@
       assert:
         that:
           - envfile.stdout == "foo\n"
+      when: podman_socket is not defined
 
     - name: Create container with multiple environment variables files
       containers.podman.podman_container:
@@ -937,6 +941,7 @@
       assert:
         that:
           - envfile2.stdout == "qwerty\n"
+      when: podman_socket is not defined
 
     - name: Delete container with environment variables file
       containers.podman.podman_container:
@@ -1095,12 +1100,14 @@
           - stderr
       register: attach
       ignore_errors: true
+      when: podman_socket is not defined
 
     - name: Check output is correct for started container with attaching
       assert:
         that:
           - attach is failed
           - "'No such file or directory' in attach.stderr"
+      when: podman_socket is not defined
 
     - name: Delete container with attaching
       containers.podman.podman_container:
@@ -1120,6 +1127,7 @@
           - stdout
           - stderr
         podman_socket: "{{ podman_socket | default(omit) }}"
+      when: podman_socket is not defined
 
     - name: Start container with attaching from created state
       containers.podman.podman_container:
@@ -1132,12 +1140,14 @@
         podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach2
       ignore_errors: true
+      when: podman_socket is not defined
 
     - name: Check output is correct for started container with attaching from created state
       assert:
         that:
           - attach2 is failed
           - "'No such file or directory' in attach2.stderr"
+      when: podman_socket is not defined
 
     - name: Delete container with attaching from created state
       containers.podman.podman_container:
@@ -1154,6 +1164,7 @@
         state: created
         command: ls /nonexists
         podman_socket: "{{ podman_socket | default(omit) }}"
+      when: podman_socket is not defined
 
     - name: Start container without attaching from created state
       containers.podman.podman_container:
@@ -1162,11 +1173,13 @@
         state: started
         podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach21
+      when: podman_socket is not defined
 
     - name: Check output is correct for container without attaching from created state
       assert:
         that:
           - attach21 is success
+      when: podman_socket is not defined
 
     - name: Delete container without attaching from created state
       containers.podman.podman_container:
@@ -1184,6 +1197,7 @@
         command: ls /nonexists
         detach: false
         podman_socket: "{{ podman_socket | default(omit) }}"
+      when: podman_socket is not defined
 
     - name: Start container with detach False
       containers.podman.podman_container:
@@ -1194,12 +1208,14 @@
         podman_socket: "{{ podman_socket | default(omit) }}"
       register: attach3
       ignore_errors: true
+      when: podman_socket is not defined
 
     - name: Check output is correct for started container with detach False
       assert:
         that:
           - attach3 is failed
           - "'No such file or directory' in attach3.stderr"
+      when: podman_socket is not defined
 
     - name: Create a Quadlet for container with filename
       containers.podman.podman_container:
