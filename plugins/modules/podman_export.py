@@ -24,7 +24,10 @@ options:
     description:
     - Container to export.
     type: str
-    required: true
+  volume:
+    description:
+    - Volume to export.
+    type: str
   force:
     description:
     - Force saving to file even if it exists.
@@ -48,6 +51,9 @@ EXAMPLES = '''
 - containers.podman.podman_export:
     dest: /path/to/tar/file
     container: container-name
+- containers.podman.podman_export:
+    dest: /path/to/tar/file
+    volume: volume-name
 '''
 
 import os  # noqa: E402
@@ -57,8 +63,16 @@ from ..module_utils.podman.common import remove_file_or_dir  # noqa: E402
 
 def export(module, executable):
     changed = False
-    command = [executable, 'export']
-    command += ['-o=%s' % module.params['dest'], module.params['container']]
+    export_type = ''
+    command = []
+    if module.params['container']:
+        export_type = 'container'
+        command = [executable, 'export']
+    else:
+        export_type = 'volume'
+        command = [executable, 'volume', 'export']
+
+    command += ['-o=%s' % module.params['dest'], module.params[export_type]]
     if module.params['force']:
         dest = module.params['dest']
         if os.path.exists(dest):
@@ -75,8 +89,8 @@ def export(module, executable):
         return changed, '', ''
     rc, out, err = module.run_command(command)
     if rc != 0:
-        module.fail_json(msg="Error exporting container %s: %s" % (
-            module.params['container'], err))
+        module.fail_json(msg="Error exporting %s %s: %s" % (export_type,
+                         module.params['container'], err))
     return changed, out, err
 
 
@@ -84,11 +98,18 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             dest=dict(type='str', required=True),
-            container=dict(type='str', required=True),
+            container=dict(type='str'),
+            volume=dict(type='str'),
             force=dict(type='bool', default=True),
             executable=dict(type='str', default='podman')
         ),
         supports_check_mode=True,
+        mutually_exclusive=[
+            ('container', 'volume'),
+        ],
+        required_one_of=[
+            ('container', 'volume'),
+        ],
     )
 
     executable = module.get_bin_path(module.params['executable'], required=True)

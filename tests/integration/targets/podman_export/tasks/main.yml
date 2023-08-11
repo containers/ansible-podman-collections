@@ -1,5 +1,5 @@
 ---
-- name: Test podman export
+- name: Test podman container export
   block:
     - name: Start container
       containers.podman.podman_container:
@@ -68,4 +68,84 @@
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
         name: container
+        state: absent
+
+- name: Test podman volume export
+  block:
+    - name: Start container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: started
+        volume:
+          - "volume:/test"
+        command: sleep 1d
+
+    - name: Export volume
+      containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
+        volume: volume
+        dest: /tmp/volume
+
+    - name: Check file
+      stat:
+        path: /tmp/volume
+      register: vlm
+
+    - name: Check it's exported
+      assert:
+        that:
+          - vlm.stat.exists
+
+    - name: Import volume
+      containers.podman.podman_import:
+        executable: "{{ test_executable | default('podman') }}"
+        src: /tmp/volume
+        volume: "volume"
+      register: volume
+
+    - name: Check it's imported
+      assert:
+        that:
+          - volume is success
+
+    - name: Export volume without force
+      containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
+        volume: volume
+        dest: /tmp/volume
+        force: false
+      register: volume2
+
+    - name: Check it's exported
+      assert:
+        that:
+          - volume2 is success
+          - volume2 is not changed
+
+    - name: Export volume with force
+      containers.podman.podman_export:
+        executable: "{{ test_executable | default('podman') }}"
+        volume: volume
+        dest: /tmp/volume
+        force: true
+      register: volume3
+
+    - name: Check it's not exported
+      assert:
+        that:
+          - volume3 is changed
+
+  always:
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+
+    - name: Remove volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test_volume
         state: absent
