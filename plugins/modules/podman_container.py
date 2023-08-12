@@ -932,6 +932,16 @@ EXAMPLES = r"""
     image: busybox
     log_options: path=/var/log/container/mycontainer.json
     log_driver: k8s-file
+
+- name: Run container with complex command with quotes
+  containers.podman.podman_container:
+    name: mycontainer
+    image: certbot/certbot
+    command:
+      - renew
+      - --deploy-hook
+      - "echo 1 > /var/lib/letsencrypt/complete"
+
 """
 
 RETURN = r"""
