@@ -1136,8 +1136,19 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('privileged', before, after)
 
     def diffparam_pid(self):
+        def get_container_id_by_name(name):
+            rc, podman_inspect_info, err = self.module.run_command(
+                [self.module.params["executable"], "inspect", name, "-f", "{{.Id}}"])
+            if rc != 0:
+                return None
+            return podman_inspect_info.strip()
+
         before = self.info['hostconfig']['pidmode']
         after = self.params['pid']
+        if after is not None and "container:" in after and "container:" in before:
+            if after.split(":")[1] == before.split(":")[1]:
+                return self._diff_update_and_compare('pid', before, after)
+            after = "container:" + get_container_id_by_name(after.split(":")[1])
         return self._diff_update_and_compare('pid', before, after)
 
     # TODO(sshnaidm) Need to add port ranges support

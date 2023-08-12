@@ -332,6 +332,63 @@
   assert:
     that: test25 is changed
 
+- name: Run container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test26
+
+- name: Check info with PID
+  assert:
+    that: test26 is not changed
+
+- name: Run second container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:idempotency"
+  register: test27
+
+- name: Check info of second container with PID
+  assert:
+    that: test27 is changed
+
+- name: Run second container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:idempotency"
+  register: test28
+
+- name: Check info of second container with PID again
+  assert:
+    that: test28 is not changed
+
+- name: Run second container for linking with PID with container ID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:{{ test26.container.Id }}"
+  register: test29
+
+- name: Check info of second container with PID of container ID again
+  assert:
+    that: test29 is not changed
+
+- name: Remove dependant test container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    state: absent
+
 - name: Remove test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
