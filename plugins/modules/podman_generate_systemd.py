@@ -27,6 +27,12 @@ options:
       - Use C(/etc/systemd/system) for the system-wide systemd instance.
       - Use C(/etc/systemd/user) or C(~/.config/systemd/user) for use with per-user instances of systemd.
     type: path
+  force:
+    description:
+      - Replace the systemd unit file(s) even if it already exists.
+      - This works with dest option.
+    type: bool
+    default: false
   new:
     description:
       - Generate unit files that create containers and pods, not only start them.
@@ -446,8 +452,13 @@ def generate_systemd(module):
                     unit_file_name,
                 )
 
-                # See if we need to write the unit file, default yes
-                need_to_write_file = bool(compare_systemd_file_content(unit_file_full_path, unit_content))
+                if module.params['force']:
+                    # Force to replace the existing unit file
+                    need_to_write_file = True
+                else:
+                    # See if we need to write the unit file, default yes
+                    need_to_write_file = bool(compare_systemd_file_content(
+                        unit_file_full_path, unit_content))
 
                 # Write the file, if needed
                 if need_to_write_file:
@@ -484,6 +495,11 @@ def run_module():
             'required': False,
         },
         'new': {
+            'type': 'bool',
+            'required': False,
+            'default': False,
+        },
+        'force': {
             'type': 'bool',
             'required': False,
             'default': False,

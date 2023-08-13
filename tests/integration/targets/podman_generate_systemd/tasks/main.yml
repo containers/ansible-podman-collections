@@ -39,6 +39,48 @@
     path: "/tmp/podman_generate_systemd/{{ item.key }}.service"
   loop: "{{ postgres_local_systemd_unit.systemd_units | dict2items }}"
 
+- name: Try to create a systemd unit file on the same path
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    dest: /tmp/podman_generate_systemd
+  register: generate1
+
+- name: Check the unit files exists
+  ansible.builtin.stat:
+    path: "/tmp/podman_generate_systemd/{{ item.key }}.service"
+  loop: "{{ generate1.systemd_units | dict2items }}"
+  register: unitfile1
+
+- name: Get checksum value
+  set_fact:
+    checksum1: "{{ item.stat.checksum }}"
+  with_items: "{{ unitfile1.results }}"
+
+- name: Force to create a systemd unit file on the same path
+  containers.podman.podman_generate_systemd:
+    name: postgres_local
+    dest: /tmp/podman_generate_systemd
+    force: true
+  register: generate2
+
+- name: Check the unit files exists again
+  ansible.builtin.stat:
+    path: "/tmp/podman_generate_systemd/{{ item.key }}.service"
+  loop: "{{ generate2.systemd_units | dict2items }}"
+  register: unitfile2
+
+- name: Get checksum value again
+  set_fact:
+    checksum2: "{{ item.stat.checksum }}"
+  with_items: "{{ unitfile2.results }}"
+
+- name: Check if the sytemd unit files are as expected
+  assert:
+    that:
+      - generate1 is not changed
+      - generate2 is changed
+      - checksum1 != checksum2
+
 - name: Regenerate the systemd units with all the options
   containers.podman.podman_generate_systemd:
     name: postgres_local
