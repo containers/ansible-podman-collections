@@ -4,10 +4,6 @@
 # 2022, Sébastien Gendre <seb@k-7.ch>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
-import json
-from ansible.module_utils.basic import AnsibleModule
-import os
 __metaclass__ = type
 
 
@@ -225,6 +221,11 @@ podman_command:
   sample: "podman generate systemd my_webapp"
 '''
 
+
+import os
+from ansible.module_utils.basic import AnsibleModule
+import json
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
 
 RESTART_POLICY_CHOICES = [
     'no-restart',
