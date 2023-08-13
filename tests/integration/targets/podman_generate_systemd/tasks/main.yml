@@ -60,7 +60,7 @@
   containers.podman.podman_generate_systemd:
     name: postgres_local
     dest: /tmp/podman_generate_systemd
-    #force: true
+    force: true
   register: generate2
 
 - name: Check the unit files exists again
