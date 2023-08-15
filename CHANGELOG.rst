@@ -5,6 +5,31 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.10.3
+=======
+
+Release Summary
+---------------
+
+Bugfixes and new options for modules
+
+Bugfixes
+--------
+
+- podman_container - Add diff and change detection to systemd generation
+- podman_container - Add example with quotes in command to docs
+- podman_container - Fix healthcheck issue where defined in image
+- podman_container - Fix idempoency issue with PID of container
+- podman_container - Fix idempotency for RestartPolicy when MaximumRetryCount > 0
+- podman_container - Fix idempotency for devices
+- podman_container - Fixed idempotency with cpus parameter
+- podman_container - Improve docs about container env_file on remote machine
+- podman_container - added cpu_quota parameter to podman_container
+- podman_export,podman_import - Adding volume import and export option
+- podman_generate_systemd - Add a force field to podman_generate_systemd
+- podman_image - Add restart-sec and other options to systemd generation
+- podman_image - Fix pulling short image name
+
 v1.10.2
 =======
 
