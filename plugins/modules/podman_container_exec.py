@@ -121,6 +121,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.six import string_types
 import shlex
 
+
 def run_container_exec(module: AnsibleModule) -> dict:
     '''
     Execute podman-container-exec for the given options
@@ -196,32 +197,33 @@ def main():
     argument_spec = {
         'name': {
             'type': 'str',
-            'required': True
+            'required': True,
         },
         'command': {
             'type': 'str',
         },
         'argv': {
             'type': 'list',
+            'elements': 'str',
         },
         'detach': {
             'type': 'bool',
-            'default': False
+            'default': False,
         },
         'env': {
             'type': 'dict',
         },
         'privileged': {
             'type': 'bool',
-            'default': False
+            'default': False,
         },
         'privileged': {
             'type': 'bool',
-            'default': False
+            'default': False,
         },
         'tty': {
             'type': 'bool',
-            'default': False
+            'default': False,
         },
         'user': {
             'type': 'str',
