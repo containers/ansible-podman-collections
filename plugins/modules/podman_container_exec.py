@@ -67,24 +67,24 @@ notes:
 
 EXAMPLES = r'''
 - name: Execute a command with workdir
-    containers.podman.podman_container_exec:
+  containers.podman.podman_container_exec:
     name: ubi8
     command: "cat redhat-release"
     workdir: /etc
 
 - name: Execute a command with a list of args and enviroment variables
-    containers.podman.podman_container_exec:
+  containers.podman.podman_container_exec:
     name: test_container
     argv:
-        - /bin/sh
-        - -c
-        - echo $HELLO $BYE
+      - /bin/sh
+      - -c
+      - echo $HELLO $BYE
     env:
-        HELLO: hello world
-        BYE: goodbye world
+      HELLO: hello world
+      BYE: goodbye world
 
 - name: Execute command in background by using detach
-    containers.podman.podman_container_exec:
+  containers.podman.podman_container_exec:
     name: detach_container
     command: "cat redhat-release"
     detach: true
@@ -115,12 +115,11 @@ exec_id:
   - The ID of the exec session.
 '''
 
-import shlex
-from ansible.module_utils.six import string_types
-from ansible.module_utils._text import to_text
-from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
-
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_text
+from ansible.module_utils.six import string_types
+import shlex
 
 def run_container_exec(module: AnsibleModule) -> dict:
     '''
