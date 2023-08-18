@@ -115,11 +115,12 @@ exec_id:
   - The ID of the exec session.
 '''
 
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.six import string_types
+
 import shlex
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_text
+from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
 
 
 def run_container_exec(module: AnsibleModule) -> dict:
@@ -212,10 +213,6 @@ def main():
         },
         'env': {
             'type': 'dict',
-        },
-        'privileged': {
-            'type': 'bool',
-            'default': False,
         },
         'privileged': {
             'type': 'bool',
