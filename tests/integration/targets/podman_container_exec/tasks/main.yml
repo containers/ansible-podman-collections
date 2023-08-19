@@ -17,7 +17,7 @@
       ignore_errors: true
       register: no_container
 
-    - name: Create and start a postgres container for testing
+    - name: Create and start a container for testing
       containers.podman.podman_container:
         name: "{{ container_name }}"
         image: registry.access.redhat.com/ubi8
@@ -31,7 +31,7 @@
         workdir: /etc
       register: exec1
 
-    - name: Test exec when argv and env options
+    - name: Test exec with argv and env options
       containers.podman.podman_container_exec:
         name: "{{ container_name }}"
         argv:
@@ -58,7 +58,6 @@
           - "'hello world' in exec2.stdout"
           - "'goodbye world' in exec2.stdout"
           - exec3.exec_id is defined
-          -
 
   always:
     - name: Cleanup
