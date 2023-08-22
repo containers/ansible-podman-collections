@@ -1,0 +1,67 @@
+- name: Test podman_container_exec
+  block:
+    - name: Generate random value for container name
+      set_fact:
+        container_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure container doesn't exist
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Test exec when the container doesn't exist
+      containers.podman.podman_container_exec:
+        name: "{{ container_name }}"
+        command: "cat /etc/redhat-release"
+      ignore_errors: true
+      register: no_container
+
+    - name: Create and start a container for testing
+      containers.podman.podman_container:
+        name: "{{ container_name }}"
+        image: registry.access.redhat.com/ubi8
+        command: sleep 1d
+        state: started
+
+    - name: Test exec with command and workdir options
+      containers.podman.podman_container_exec:
+        name: "{{ container_name }}"
+        command: "cat redhat-release"
+        workdir: /etc
+      register: exec1
+
+    - name: Test exec with argv and env options
+      containers.podman.podman_container_exec:
+        name: "{{ container_name }}"
+        argv:
+          - /bin/sh
+          - -c
+          - echo $HELLO $BYE
+        env:
+          HELLO: hello world
+          BYE: goodbye world
+      register: exec2
+
+    - name: Test exec with detach option
+      containers.podman.podman_container_exec:
+        name: "{{ container_name }}"
+        command: "cat redhat-release"
+        detach: true
+      register: exec3
+
+    - name: Check if the result is as expected
+      assert:
+        that:
+          - no_container is failed
+          - "'Red Hat Enterprise Linux' in exec1.stdout"
+          - "'hello world' in exec2.stdout"
+          - "'goodbye world' in exec2.stdout"
+          - exec3.exec_id is defined
+
+  always:
+    - name: Cleanup
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
