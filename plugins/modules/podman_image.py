@@ -132,6 +132,10 @@ DOCUMENTATION = r'''
           description:
             - Extra args to pass to build, if executed. Does not idempotently check for new build args.
           type: str
+        target:
+          description:
+            - Specify the target build stage to build.
+          type: str
     push_args:
       description: Arguments that control pushing images.
       type: dict
@@ -664,6 +668,10 @@ class PodmanImageManager(object):
         if extra_args:
             args.extend(shlex.split(extra_args))
 
+        target = self.build.get('target')
+        if target:
+            args.extend(['--target', target])
+
         args.append(self.path)
 
         rc, out, err = self._run(args, ignore_errors=True)
@@ -820,6 +828,7 @@ def main():
                     rm=dict(type='bool', default=True),
                     volume=dict(type='list', elements='str'),
                     extra_args=dict(type='str'),
+                    target=dict(type='str'),
                 ),
             ),
             push_args=dict(
