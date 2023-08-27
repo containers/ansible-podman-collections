@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_load.py'
       - 'tests/integration/targets/podman_load/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_load.yml'

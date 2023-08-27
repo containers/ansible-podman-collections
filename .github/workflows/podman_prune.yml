@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_prune.py'
       - 'tests/integration/targets/podman_prune/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_prune.yml'

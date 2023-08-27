@@ -11,7 +11,7 @@ on:
       - 'tests/integration/targets/connection/**'
       - 'tests/integration/targets/connection_*/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/connections_tests.yml'

@@ -11,7 +11,7 @@ on:
       - 'plugins/modules/podman_volume.py'
       - 'tests/integration/targets/podman_volume_info/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_volume_info.yml'
