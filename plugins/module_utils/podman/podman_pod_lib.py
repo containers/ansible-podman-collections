@@ -323,10 +323,8 @@ class PodmanPodDiff:
         return self._diff_update_and_compare('add_host', before, after)
 
     def diffparam_cgroup_parent(self):
-        if 'cgroupparent' in self.info:
-            before = self.info['cgroupparent']
-        elif 'config' in self.info and self.info['config'].get('cgroupparent'):
-            before = self.info['config']['cgroupparent']
+        before = (self.info.get('cgroupparent', '')
+                  or self.info.get('hostconfig', {}).get('cgroupparent', ''))
         after = self.params['cgroup_parent'] or before
         return self._diff_update_and_compare('cgroup_parent', before, after)
 
