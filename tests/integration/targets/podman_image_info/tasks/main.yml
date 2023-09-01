@@ -39,7 +39,7 @@
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
         name: nope
-      register: single_nonexistant
+      register: single_nonexistent
 
     - name: Get info on multiple images that do not exist
       containers.podman.podman_image_info:
@@ -47,7 +47,7 @@
         name:
           - nope
           - reallynope
-      register: multiple_nonexistant
+      register: multiple_nonexistent
 
     - name: Get info with one image that does not exist
       containers.podman.podman_image_info:
@@ -56,11 +56,11 @@
           - dnsmasq
           - nope
           - etcd
-      register: mixed_nonexistant
+      register: mixed_nonexistent
 
-    - name: Ensure image info was returned when non-existant image info was requisted
+    - name: Ensure image info was returned when non-existent image info was requisted
       assert:
         that:
-          - single_nonexistant.images | length == 0
-          - multiple_nonexistant.images | length == 0
-          - mixed_nonexistant.images | length == 2
+          - single_nonexistent.images | length == 0
+          - multiple_nonexistent.images | length == 0
+          - mixed_nonexistent.images | length == 2

@@ -394,7 +394,7 @@ def generate_systemd(module):
 
     # In case of error in running the command
     if return_code != 0:
-        # Print informations about the error and return and empty dictionary
+        # Print information about the error and return and empty dictionary
         message = 'Error generating systemd .service unit(s).'
         message += ' Command executed: {command_str}'
         message += ' Command returned with code: {return_code}.'
@@ -431,7 +431,7 @@ def generate_systemd(module):
                 changed = True
             # If destination exist but not a directory
             if not os.path.isdir(systemd_units_dest):
-                # Stop and tell user that the destination is not a directry
+                # Stop and tell user that the destination is not a directory
                 message = "Destination {systemd_units_dest} is not a directory."
                 message += " Can't save systemd unit files in."
                 module.fail_json(

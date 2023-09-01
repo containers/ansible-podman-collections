@@ -390,7 +390,7 @@
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Exemple of creating a container and integrate it into systemd</span><span class="w"></span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example of creating a container and integrate it into systemd</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A postgres container must exist, stopped</span><span class="w"></span>
 <span class="w">  </span><span class="nt">containers.podman.podman_container</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres_local</span><span class="w"></span>
@@ -411,7 +411,7 @@
 
 
 <span class="c1"># Generate the unit files, but store them on an Ansible variable</span><span class="w"></span>
-<span class="c1"># instead of writting them on target host</span><span class="w"></span>
+<span class="c1"># instead of writing them on target host</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Systemd unit files for postgres container must be generated</span><span class="w"></span>
 <span class="w">  </span><span class="nt">containers.podman.podman_generate_systemd</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres_local</span><span class="w"></span>

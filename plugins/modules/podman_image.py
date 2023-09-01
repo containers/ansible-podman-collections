@@ -17,7 +17,7 @@ DOCUMENTATION = r'''
   options:
     arch:
       description:
-        - CPU architecutre for the container image
+        - CPU architecture for the container image
       type: str
     name:
       description:

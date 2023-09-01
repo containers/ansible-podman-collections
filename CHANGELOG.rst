@@ -298,7 +298,7 @@ Bugfixes
 - Don't add newlines to secrets
 - Fix issue with podman and exposed ports
 - Fix signal diff for truncated and RT signal names
-- Support empty stings in prefixes
+- Support empty strings in prefixes
 - Update error message when pull set to false
 
 v1.8.1

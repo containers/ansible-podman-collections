@@ -72,7 +72,7 @@ EXAMPLES = r'''
     command: "cat redhat-release"
     workdir: /etc
 
-- name: Execute a command with a list of args and enviroment variables
+- name: Execute a command with a list of args and environment variables
   containers.podman.podman_container_exec:
     name: test_container
     argv:
