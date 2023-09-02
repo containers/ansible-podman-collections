@@ -1,34 +1,6 @@
 FROM alpine
 
-LABEL "key"="amazing value"
-LABEL nobody=cares
-LABEL install="touch /tmp/testedinstallfortests"
-LABEL run="touch /tmp/testedrunfortests"
+LABEL install="podman run --env IMAGE=IMAGE --rm IMAGE /bin/sh /testinstall.sh"
+LABEL run="/usr/bin/touch /tmp/testedrunfortests"
 
-ARG build_arg
-
-ENV password root
-ENV username root
-
-WORKDIR /work
-
-RUN adduser -D user && \
-	adduser -D user2
-
-COPY start.sh /start
-
-RUN chmod a+rwx /start
-
-EXPOSE 80
-EXPOSE 8080/tcp
-VOLUME ["/data", "/data2"]
-USER user
-STOPSIGNAL KILL
-
-# problem with OS w/o systemd
-# HEALTHCHECK --interval=5m --timeout=3s \
-#   CMD date
-
-CMD ["1d"]
-ENTRYPOINT ["/start"]
-
+ADD testinstall.sh /

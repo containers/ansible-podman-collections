@@ -77,7 +77,7 @@ def main():
     results = {
         "changed": changed,
         "stdout": out,
-        "stderr": err,
+        "stderr": err
     }
     module.exit_json(**results)
 
