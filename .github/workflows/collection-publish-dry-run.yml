@@ -34,7 +34,7 @@ jobs:
     steps:
 
       - name: Check out ${{ github.repository }} on disk
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.runner-python-version }}
         uses: actions/setup-python@v4
