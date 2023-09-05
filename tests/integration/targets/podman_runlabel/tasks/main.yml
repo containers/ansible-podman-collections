@@ -4,14 +4,14 @@
     path: /tmp/usr_img
     state: directory
 
-- name: Copy files to container build directory
+- name: Copy Dockerfile to container build directory
   copy:
     src: "{{ item }}"
     dest: "/tmp/usr_img/{{ item }}"
-    mode: 777
+    mode: 755
   loop:
     - Dockerfile
-    - start.sh
+    - testinstall.sh
 
 - name: Build test docker image for regular user
   containers.podman.podman_image:
@@ -22,20 +22,16 @@
       format: docker
       extra_args: --cgroup-manager=cgroupfs
 
-- name: Run container runlabel install
+- name: Run container label install
   containers.podman.podman_runlabel:
     image: "{{ runlabel_image }}"
     label: install
+  register: install_runlabel
 
-- name: Run container runlabel run
+- name: Run container label run
   containers.podman.podman_runlabel:
     image: "{{ runlabel_image }}"
     label: run
-
-- name: Check file for install exists
-  stat:
-    path: /tmp/testedinstallfortests
-  register: testedinstallfortests
 
 - name: Check file for run exists
   stat:
@@ -45,5 +41,8 @@
 - name: Make sure files exist
   assert:
     that:
-      - testedinstallfortests.stat.exists
       - testedrunfortests.stat.exists
+
+- name: Make sure install label exited with 128
+  assert:
+    that: install_runlabel.stdout == 'Installed.'
