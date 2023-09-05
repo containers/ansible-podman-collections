@@ -50,7 +50,7 @@ EXAMPLES = r"""
 
 RETURN = r"""
 containers:
-    description: Facts from all or specificed containers
+    description: Facts from all or specified containers
     returned: always
     type: list
     elements: dict

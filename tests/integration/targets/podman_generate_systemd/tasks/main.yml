@@ -74,7 +74,7 @@
     checksum2: "{{ item.stat.checksum }}"
   with_items: "{{ unitfile2.results }}"
 
-- name: Check if the sytemd unit files are as expected
+- name: Check if the systemd unit files are as expected
   assert:
     that:
       - generate1 is not changed

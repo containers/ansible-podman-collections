@@ -383,7 +383,7 @@
   assert:
     that: test29 is not changed
 
-- name: Remove dependant test container
+- name: Remove dependent test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency2

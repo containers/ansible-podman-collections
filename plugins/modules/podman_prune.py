@@ -66,17 +66,17 @@ options:
         type: dict
     system:
         description:
-            - Wheter to prune unused pods, containers, image, networks and volume data
+            - Whether to prune unused pods, containers, image, networks and volume data
         type: bool
         default: false
     system_all:
         description:
-            - Wheter to prune all unused images, not only dangling images.
+            - Whether to prune all unused images, not only dangling images.
         type: bool
         default: false
     system_volumes:
         description:
-            - Wheter to prune volumes currently unused by any container.
+            - Whether to prune volumes currently unused by any container.
         type: bool
         default: false
     volume:
