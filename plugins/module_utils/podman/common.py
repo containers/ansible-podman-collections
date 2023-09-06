@@ -162,8 +162,10 @@ def generate_systemd(module, module_params, name, version):
                         result['changed'] = True
                         if result['diff'].get('before') is None:
                             result['diff'] = {'before': {}, 'after': {}}
-                        result['diff']['before'].update({f'systemd_{file_name}.service': ''})
-                        result['diff']['after'].update({f'systemd_{file_name}.service': file_content})
+                        result['diff']['before'].update(
+                            {'systemd_{file_name}.service'.format(file_name=file_name): ''})
+                        result['diff']['after'].update(
+                            {'systemd_{file_name}.service'.format(file_name=file_name): file_content})
 
                     else:
                         diff_ = compare_systemd_file_content(os.path.join(full_path, file_name), file_content)
@@ -171,14 +173,18 @@ def generate_systemd(module, module_params, name, version):
                             result['changed'] = True
                             if result['diff'].get('before') is None:
                                 result['diff'] = {'before': {}, 'after': {}}
-                            result['diff']['before'].update({f'systemd_{file_name}.service': "\n".join(diff_[0])})
-                            result['diff']['after'].update({f'systemd_{file_name}.service': "\n".join(diff_[1])})
+                            result['diff']['before'].update(
+                                {'systemd_{file_name}.service'.format(file_name=file_name): "\n".join(diff_[0])})
+                            result['diff']['after'].update(
+                                {'systemd_{file_name}.service'.format(file_name=file_name): "\n".join(diff_[1])})
                     with open(os.path.join(full_path, file_name), 'w') as f:
                         f.write(file_content)
                 diff_before = "\n".join(
-                    [f"{j} - {k}" for j, k in result['diff'].get('before', {}).items() if 'PIDFile' not in k]).strip()
+                    ["{j} - {k}".format(j=j, k=k)
+                     for j, k in result['diff'].get('before', {}).items() if 'PIDFile' not in k]).strip()
                 diff_after = "\n".join(
-                    [f"{j} - {k}" for j, k in result['diff'].get('after', {}).items() if 'PIDFile' not in k]).strip()
+                    ["{j} - {k}".format(j=j, k=k)
+                     for j, k in result['diff'].get('after', {}).items() if 'PIDFile' not in k]).strip()
                 if diff_before or diff_after:
                     result['diff']['before'] = diff_before + "\n"
                     result['diff']['after'] = diff_after + "\n"
