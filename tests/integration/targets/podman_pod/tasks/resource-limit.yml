@@ -1,0 +1,38 @@
+- name: Test podman_pod for limiting resources
+  block:
+
+  - name: Set variables for limiting resources
+    set_fact:
+      limit:
+        blkio_weight: 123
+        cpuset_mems: '0-1'
+        cpu_shares: 1024
+        device_write_bps: ['/dev/zero:1048576']
+
+  - name: Create pod for limiting resources
+    containers.podman.podman_pod:
+      name: limited-pod
+      state: created
+      blkio_weight: "{{ limit.blkio_weight }}"
+      cpuset_mems: "{{ limit.cpuset_mems }}"
+      cpu_shares: "{{ limit.cpu_shares }}"
+      device_write_bps: "{{ limit.device_write_bps }}"
+
+  - name: Get information on pod for limiting resources
+    containers.podman.podman_pod_info:
+      name: limited-pod
+    register: pod_info
+
+  - name: Check if the result is as expected
+    assert:
+      that:
+        - item.blkio_weight == limit.blkio_weight
+        - item.cpuset_mems == limit.cpuset_mems
+        - item.cpu_shares == limit.cpu_shares
+    with_items: "{{ pod_info.pods }}"
+
+  always:
+    - name: Cleanup
+      containers.podman.podman_pod:
+        name: limited-pod
+        state: absent
