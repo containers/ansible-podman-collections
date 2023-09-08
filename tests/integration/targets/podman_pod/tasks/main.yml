@@ -925,3 +925,11 @@
   args:
     apply:
       become: true
+
+- name: Test podman_pod for limiting resources
+  include_tasks: resource-limit.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  args:
+    apply:
+      become: true
