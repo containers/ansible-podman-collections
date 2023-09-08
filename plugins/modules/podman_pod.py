@@ -52,6 +52,7 @@ options:
     description:
     - Block IO relative device weight.
     type: list
+    elements: str
     required: false
   cgroup_parent:
     description:
@@ -99,6 +100,7 @@ options:
     description:
     - Limit write rate (in bytes per second) to a device.
     type: list
+    elements: str
     required: false
   dns:
     description:
