@@ -42,6 +42,17 @@ options:
     type: list
     elements: str
     required: false
+  blkio_weight:
+    description:
+    - Block IO relative weight. The weight is a value between 10 and 1000.
+    - This option is not supported on cgroups V1 rootless systems.
+    type: str
+    required: false
+  blkio_weight_device:
+    description:
+    - Block IO relative device weight.
+    type: list
+    required: false
   cgroup_parent:
     description:
     - Path to cgroups under which the cgroup for the pod will be created. If the path
@@ -61,6 +72,16 @@ options:
       Unlike `cpus` this is of type string and parsed as a list of numbers. Format is 0-3,0,1
     required: false
     type: str
+  cpuset_mems:
+    description:
+    - Memory nodes in which to allow execution (0-3, 0,1). Only effective on NUMA systems.
+    required: false
+    type: str
+  cpu_shares:
+    description:
+    - CPU shares (relative weight).
+    required: false
+    type: str
   device:
     description:
     - Add a host device to the pod. Optional permissions parameter can be used to specify
@@ -74,6 +95,11 @@ options:
     elements: str
     required: false
     type: list
+  device_write_bps:
+    description:
+    - Limit write rate (in bytes per second) to a device.
+    type: list
+    required: false
   dns:
     description:
     - Set custom DNS servers in the /etc/resolv.conf file that will be shared between
@@ -252,6 +278,18 @@ options:
   mac_address:
     description:
     - Set a static MAC address for the pod's shared network.
+    type: str
+    required: false
+  memory:
+    description:
+    - Set memory limit.
+    - A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes).
+    type: str
+    required: false
+  memory_swap:
+    description:
+    - Set limit value equal to memory plus swap.
+    - A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes).
     type: str
     required: false
   name:

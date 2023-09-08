@@ -27,10 +27,15 @@ ARGUMENTS_SPEC_POD = dict(
     recreate=dict(type='bool', default=False),
     add_host=dict(type='list', required=False, elements='str'),
     cgroup_parent=dict(type='str', required=False),
+    blkio_weight=dict(type='str', required=False),
+    blkio_weight_device=dict(type='list', elements='str', required=False),
     cpus=dict(type='str', required=False),
     cpuset_cpus=dict(type='str', required=False),
+    cpuset_mems=dict(type='str', required=False),
+    cpu_shares=dict(type='str', required=False),
     device=dict(type='list', elements='str', required=False),
     device_read_bps=dict(type='list', elements='str', required=False),
+    device_write_bps=dict(type='list', elements='str', required=False),
     dns=dict(type='list', elements='str', required=False),
     dns_opt=dict(type='list', elements='str', required=False),
     dns_search=dict(type='list', elements='str', required=False),
@@ -46,6 +51,8 @@ ARGUMENTS_SPEC_POD = dict(
     label=dict(type='dict', required=False),
     label_file=dict(type='str', required=False),
     mac_address=dict(type='str', required=False),
+    memory=dict(type='str', required=False),
+    memory_swap=dict(type='str', required=False),
     name=dict(type='str', required=True),
     network=dict(type='list', elements='str', required=False),
     network_alias=dict(type='list', elements='str', required=False,
@@ -135,14 +142,34 @@ class PodmanPodModuleParams:
             c += ['--add-host', g]
         return c
 
+    def addparam_blkio_weight(self, c):
+        self.check_version('--blkio-weight', minv='4.3.0')
+        return c + ['--blkio-weight', self.params['blkio_weight']]
+
+    def addparam_blkio_weight_device(self, c):
+        self.check_version('--blkio-weight-device', minv='4.3.0')
+        for dev in self.params['blkio_weight_device']:
+            c += ['--blkio-weight-device', dev]
+        return c
+
     def addparam_cgroup_parent(self, c):
         return c + ['--cgroup-parent', self.params['cgroup_parent']]
 
     def addparam_cpus(self, c):
+        self.check_version('--cpus', minv='4.2.0')
         return c + ['--cpus', self.params['cpus']]
 
     def addparam_cpuset_cpus(self, c):
+        self.check_version('--cpus', minv='4.2.0')
         return c + ['--cpuset-cpus', self.params['cpuset_cpus']]
+
+    def addparam_cpuset_mems(self, c):
+        self.check_version('--cpuset-mems', minv='4.3.0')
+        return c + ['--cpuset-mems', self.params['cpuset_mems']]
+
+    def addparam_cpu_shares(self, c):
+        self.check_version('--cpu-shares', minv='4.3.0')
+        return c + ['--cpu-shares', self.params['cpu_shares']]
 
     def addparam_device(self, c):
         for dev in self.params['device']:
@@ -150,8 +177,15 @@ class PodmanPodModuleParams:
         return c
 
     def addparam_device_read_bps(self, c):
+        self.check_version('--device-read-bps', minv='4.3.0')
         for dev in self.params['device_read_bps']:
             c += ['--device-read-bps', dev]
+        return c
+
+    def addparam_device_write_bps(self, c):
+        self.check_version('--device-write-bps', minv='4.3.0')
+        for dev in self.params['device_write_bps']:
+            c += ['--device-write-bps', dev]
         return c
 
     def addparam_dns(self, c):
@@ -208,6 +242,14 @@ class PodmanPodModuleParams:
 
     def addparam_mac_address(self, c):
         return c + ['--mac-address', self.params['mac_address']]
+
+    def addparam_memory(self, c):
+        self.check_version('--memory', minv='4.2.0')
+        return c + ['--memory', self.params['memory']]
+
+    def addparam_memory_swap(self, c):
+        self.check_version('--memory-swap', minv='4.3.0')
+        return c + ['--memory-swap', self.params['memory_swap']]
 
     def addparam_name(self, c):
         return c + ['--name', self.params['name']]
