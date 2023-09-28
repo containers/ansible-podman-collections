@@ -279,7 +279,7 @@ def main():
             executable=dict(type='str', default='podman'),
             kube_file=dict(type='path', required=True),
             authfile=dict(type='path'),
-            build=dict(type=bool),
+            build=dict(type='bool'),
             cert_dir=dict(type='path'),
             configmap=dict(type='list', elements='path'),
             context_dir=dict(type='path'),
