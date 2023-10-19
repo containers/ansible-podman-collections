@@ -41,7 +41,7 @@ EXAMPLES = '''
       - name: web
         image: nginx
       - name: test
-        image: python:3-alpine
+        image: python:3.10-alpine
         command: python -V
 '''
 
