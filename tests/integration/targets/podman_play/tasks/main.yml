@@ -128,3 +128,9 @@
   args:
     apply:
       become: true
+
+- name: Test play kube with on-demand image build
+  include_tasks: play-with-build.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+    

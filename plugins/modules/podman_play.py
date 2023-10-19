@@ -37,6 +37,11 @@ options:
         Note - You can also override the default path of the authentication file
         by setting the REGISTRY_AUTH_FILE environment variable. export REGISTRY_AUTH_FILE=path
     type: path
+  build:
+    description:
+      - Build images even if they are found in the local storage.
+      - It is required to exist subdirectories matching the image names to be build.
+    type: bool
   cert_dir:
     description:
       - Use certificates at path (*.crt, *.cert, *.key) to connect to the registry.
@@ -51,6 +56,11 @@ options:
         Kubernetes configmap YAMLs
     type: list
     elements: path
+  context_dir:
+    description:
+      - Use path as the build context directory for each image.
+        Requires build option be true.
+    type: path
   seccomp_profile_root:
     description:
       - Directory path for seccomp profiles (default is "/var/lib/kubelet/seccomp").
@@ -164,7 +174,9 @@ class PodmanKubeManagement:
         self.command.extend(['--start=%s' % str(start).lower()])
         for arg, param in {
             '--authfile': 'authfile',
+            '--build': 'build',
             '--cert-dir': 'cert_dir',
+            '--context-dir': 'context_dir',
             '--log-driver': 'log_driver',
             '--seccomp-profile-root': 'seccomp_profile_root',
             '--tls-verify': 'tls_verify',
@@ -267,8 +279,10 @@ def main():
             executable=dict(type='str', default='podman'),
             kube_file=dict(type='path', required=True),
             authfile=dict(type='path'),
+            build=dict(type='bool'),
             cert_dir=dict(type='path'),
             configmap=dict(type='list', elements='path'),
+            context_dir=dict(type='path'),
             seccomp_profile_root=dict(type='path'),
             username=dict(type='str'),
             password=dict(type='str', no_log=True),

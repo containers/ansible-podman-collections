@@ -1,0 +1,3 @@
+FROM ubi8-init
+RUN dnf -y install httpd; dnf -y clean all
+RUN systemctl enable httpd.service

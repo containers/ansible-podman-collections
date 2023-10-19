@@ -1,0 +1,21 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-4.4.1
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    org.opencontainers.image.base.digest/buil-test: sha256:e08f47885d5794a7d8b6404e9db9b0c0a9fc6c633da3c3af0c355299
+    org.opencontainers.image.base.name/buil-test: registry.redhat.io/ubi8-init:latest
+  creationTimestamp: "2023-09-28T01:12:34Z"
+  labels:
+    app: buil-test-pod
+  name: buil-test-pod
+spec:
+  containers:
+  - image: localhost/build-test:latest
+    name: buil-test
+    ports:
+    - containerPort: 80
+      hostPort: 8080

@@ -1,0 +1,51 @@
+---
+- name: Test play kube with on-demand image build
+  vars:
+    image_name: build-test
+    build_context_dir: /tmp/contextdir
+    kube_dir: /tmp
+    success_msg: "Successfully tagged localhost/{{ image_name }}:latest"
+  block:
+
+    - name: Make sure that {{ image_name }} image is absent
+      containers.podman.podman_image:
+        name: "{{ image_name }}"
+        state: absent
+
+    - name: Copy files to known place
+      copy:
+        src: kube-buil-test.yaml
+        dest: "{{ kube_dir }}/kube-buil-test.yaml"
+        remote_src: false
+
+    - name: Create context dir for build
+      file:
+        path: "{{ build_context_dir }}/{{ image_name }}"
+        state: directory
+
+    - name: Copy Containerfile for build
+      copy:
+        src: Containerfile
+        dest: "{{ build_context_dir }}/{{ image_name }}/Containerfile"
+        remote_src: false
+
+    - name: Play kube file with image build
+      containers.podman.podman_play:
+        kube_file: "{{ kube_dir }}/kube-buil-test.yaml"
+        build: true
+        context_dir: "{{ build_context_dir }}"
+        state: started
+      register: play_with_build
+
+    - name: Check if the result is changed
+      assert:
+        that:
+          - play_with_build is changed
+          - success_msg in play_with_build.stdout
+
+  always:
+
+    - name: Cleanup pods
+      containers.podman.podman_play:
+        kube_file: "{{ kube_dir }}/kube-buil-test.yaml"
+        state: absent
