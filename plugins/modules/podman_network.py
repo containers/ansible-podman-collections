@@ -3,7 +3,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-
 __metaclass__ = type
 
 
@@ -42,6 +41,7 @@ options:
     description:
       - Remove all containers that use the network.
         If the container is running, it is stopped and removed.
+    default: False
     type: bool
   gateway:
     description:
@@ -231,7 +231,7 @@ class PodmanNetworkModuleParams:
 
     def _delete_action(self):
         cmd = ['rm', self.params['name']]
-        if self.params.get('force', False):
+        if self.params['force']:
             cmd += ['--force']
         return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
@@ -655,7 +655,7 @@ def main():
             name=dict(type='str', required=True),
             disable_dns=dict(type='bool', required=False),
             driver=dict(type='str', required=False),
-            force=dict(type='bool', required=False),
+            force=dict(type='bool', default=False),
             gateway=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
             ip_range=dict(type='str', required=False),
