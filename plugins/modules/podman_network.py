@@ -37,6 +37,12 @@ options:
     description:
       - Driver to manage the network (default "bridge")
     type: str
+  force:
+    description:
+      - Remove all containers that use the network.
+        If the container is running, it is stopped and removed.
+    default: False
+    type: bool
   gateway:
     description:
       - IPv4 or IPv6 gateway for the subnet
@@ -219,14 +225,15 @@ class PodmanNetworkModuleParams:
            list -- list of byte strings for Popen command
         """
         if self.action in ['delete']:
-            return self._simple_action()
+            return self._delete_action()
         if self.action in ['create']:
             return self._create_action()
 
-    def _simple_action(self):
-        if self.action == 'delete':
-            cmd = ['rm', '-f', self.params['name']]
-            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+    def _delete_action(self):
+        cmd = ['rm', self.params['name']]
+        if self.params['force']:
+            cmd += ['--force']
+        return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
     def _create_action(self):
         cmd = [self.action, self.params['name']]
@@ -648,6 +655,7 @@ def main():
             name=dict(type='str', required=True),
             disable_dns=dict(type='bool', required=False),
             driver=dict(type='str', required=False),
+            force=dict(type='bool', default=False),
             gateway=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
             ip_range=dict(type='str', required=False),
