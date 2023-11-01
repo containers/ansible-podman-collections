@@ -67,6 +67,8 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     healthcheck_retries=dict(type='int'),
     healthcheck_start_period=dict(type='str'),
     healthcheck_timeout=dict(type='str'),
+    healthcheck_failure_action=dict(type='str', choices=[
+        'none', 'kill', 'restart', 'stop']),
     hooks_dir=dict(type='list', elements='str'),
     hostname=dict(type='str'),
     http_proxy=dict(type='bool'),
@@ -410,6 +412,10 @@ class PodmanModuleParams:
     def addparam_healthcheck_timeout(self, c):
         return c + ['--healthcheck-timeout',
                     self.params['healthcheck_timeout']]
+
+    def addparam_healthcheck_failure_action(self, c):
+        return c + ['--health-on-failure',
+                    self.params['healthcheck_failure_action']]
 
     def addparam_hooks_dir(self, c):
         for hook_dir in self.params['hooks_dir']:
@@ -951,6 +957,14 @@ class PodmanContainerDiff:
                 before = self.info['config']['healthcheck']['test'][1]
         after = self.params['healthcheck'] or before
         return self._diff_update_and_compare('healthcheck', before, after)
+
+    def diffparam_healthcheck_failure_action(self):
+        if 'healthcheckonfailureaction' in self.info['config']:
+            before = self.info['config']['healthcheckonfailureaction']
+        else:
+            before = ''
+        after = self.params['healthcheck_failure_action'] or before
+        return self._diff_update_and_compare('healthcheckonfailureaction', before, after)
 
     # Because of hostname is random generated, this parameter has partial idempotency only.
     def diffparam_hostname(self):

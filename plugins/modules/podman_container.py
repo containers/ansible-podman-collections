@@ -436,6 +436,17 @@ options:
         is considered failed. Like start-period, the value can be expressed in
         a time format such as 1m22s. The default value is 30s
     type: str
+  healthcheck_failure_action:
+    description:
+      - The action to be taken when the container is considered unhealthy. The action must be one of
+            "none", "kill", "restart", or "stop".
+            The default policy is "none".
+    type: str
+    choices:
+      - 'none'
+      - 'kill'
+      - 'restart'
+      - 'stop'
   hooks_dir:
     description:
       - Each .json file in the path configures a hook for Podman containers.
