@@ -12,6 +12,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
+        force: true
       loop:
         - testnet
         - anothernet
@@ -73,6 +74,7 @@
         executable: "{{ test_executable | default('podman') }}"
         name: "{{ item }}"
         state: absent
+        force: true
       loop:
         - testnet
         - anothernet
