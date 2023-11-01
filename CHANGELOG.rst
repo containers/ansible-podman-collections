@@ -5,6 +5,36 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.10.4
+=======
+
+Release Summary
+---------------
+
+Bugfixes and new modules
+
+Minor Changes
+-------------
+
+- podman_container - Add support for health-on-failure action
+- podman_image -Add target support for podman build image
+- podman_play - Add build and context_dir option to podman_play
+- podman_pod - Add options for resource limits to podman_pod
+
+Bugfixes
+--------
+
+- Fix common file for Python 2.7
+- podman_network - Do not force network removal by default
+- podman_network - Fix network DNS enable idempotency issue
+- podman_pod - Fix idempotency when running inside Podman container
+
+New Modules
+-----------
+
+- containers.podman.podman_container_exec - Executes a command in a running container
+- containers.podman.podman_runlabel - Run given label from given image
+
 v1.10.3
 =======
 
@@ -20,7 +50,7 @@ Bugfixes
 - podman_container - Add example with quotes in command to docs
 - podman_container - Fix healthcheck issue where defined in image
 - podman_container - Fix idempoency issue with PID of container
-- podman_container - Fix idempotency for RestartPolicy when MaximumRetryCount > 0
+- podman_container - Fix idempotency for RestartPolicy when MaximumRetryCount
 - podman_container - Fix idempotency for devices
 - podman_container - Fixed idempotency with cpus parameter
 - podman_container - Improve docs about container env_file on remote machine

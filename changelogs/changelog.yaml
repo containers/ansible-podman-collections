@@ -201,6 +201,27 @@ releases:
       - podman_image - Fix pulling short image name
       release_summary: Bugfixes and new options for modules
     release_date: '2023-08-15'
+  1.10.4:
+    changes:
+      bugfixes:
+      - Fix common file for Python 2.7
+      - podman_network - Do not force network removal by default
+      - podman_network - Fix network DNS enable idempotency issue
+      - podman_pod - Fix idempotency when running inside Podman container
+      minor_changes:
+      - podman_container - Add support for health-on-failure action
+      - podman_image -Add target support for podman build image
+      - podman_play - Add build and context_dir option to podman_play
+      - podman_pod - Add options for resource limits to podman_pod
+      release_summary: Bugfixes and new modules
+    modules:
+    - description: Executes a command in a running container
+      name: podman_container_exec
+      namespace: ''
+    - description: Run given label from given image
+      name: podman_runlabel
+      namespace: ''
+    release_date: '2023-11-01'
   1.2.0:
     changes:
       minor_changes:
