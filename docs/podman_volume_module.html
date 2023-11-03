@@ -1,21 +1,22 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>containers.podman.podman_volume – Manage Podman volumes &#8212; Python  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<meta content="2.5.0" name="antsibull-docs" />
+
+    <title>containers.podman.podman_volume module – Manage Podman volumes &#8212; Python  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/antsibull-minimal.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="containers.podman.podman_volume_info module – Gather info about podman volumes" href="podman_volume_info_module.html" />
+    <link rel="prev" title="containers.podman.podman_tag module – Add an additional name to a local image" href="podman_tag_module.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,18 +33,20 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="ansible-collections-containers-podman-podman-volume-module"></span><div class="section" id="containers-podman-podman-volume-manage-podman-volumes">
-<h1>containers.podman.podman_volume – Manage Podman volumes<a class="headerlink" href="#containers-podman-podman-volume-manage-podman-volumes" title="Permalink to this heading">¶</a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-volume-module"></span><section id="containers-podman-podman-volume-module-manage-podman-volumes">
+<h1>containers.podman.podman_volume module – Manage Podman volumes<a class="headerlink" href="#containers-podman-podman-volume-module-manage-podman-volumes" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/containers/podman">containers.podman collection</a> (version 1.10.1).</p>
-<p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.11.0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-containers-podman-podman-volume-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
 <p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_volume</span></code>.</p>
 </div>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 1.1.0: </span>of containers.podman</p>
-</div>
-<div class="contents local topic" id="contents">
+<p class="ansible-version-added">New in containers.podman 1.1.0</p>
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
@@ -51,213 +54,155 @@
 <li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
 <li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
 </ul>
-</div>
-<div class="section" id="synopsis">
-<h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading">¶</a></h2>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Manage Podman volumes</p></li>
 </ul>
-</div>
-<div class="section" id="requirements">
-<h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="requirements">
+<span id="ansible-collections-containers-podman-podman-volume-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>podman</p></li>
 </ul>
-</div>
-<div class="section" id="parameters">
-<h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
-<table  border=0 cellpadding=0 class="documentation-table">
-    <tr>
-        <th colspan="1">Parameter</th>
-        <th>Choices/<font color="blue">Defaults</font></th>
-                    <th width="100%">Comments</th>
-    </tr>
-                <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-debug"></div>
-                <b>debug</b>
-                <a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">boolean</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>yes</li>
-                                                                                </ul>
-                                                                        </td>
-                                                            <td>
-                                        <div>Return additional information which can be helpful for investigations.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-driver"></div>
-                <b>driver</b>
-                <a class="ansibleOptionLink" href="#parameter-driver" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Specify volume driver name (default local).</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-executable"></div>
-                <b>executable</b>
-                <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"podman"</div>
-                                </td>
-                                                            <td>
-                                        <div>Path to <code>podman</code> executable if it is not in the <code>$PATH</code> on the machine running <code>podman</code></div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-label"></div>
-                <b>label</b>
-                <a class="ansibleOptionLink" href="#parameter-label" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">dictionary</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Add metadata to a pod volume (e.g., label com.example.key=value).</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-name"></div>
-                <b>name</b>
-                <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                             / <span style="color: red">required</span>                    </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Name of volume.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-options"></div>
-                <b>options</b>
-                <a class="ansibleOptionLink" href="#parameter-options" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">list</span>
-                     / <span style="color: purple">elements=string</span>                                            </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                        </td>
-                                                            <td>
-                                        <div>Set driver specific options. For example &#x27;device=tpmfs&#x27;, &#x27;type=tmpfs&#x27;. UID and GID idempotency is not supported due to changes in podman.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-recreate"></div>
-                <b>recreate</b>
-                <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">boolean</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                                                                                                                <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>yes</li>
-                                                                                </ul>
-                                                                        </td>
-                                                            <td>
-                                        <div>Recreate volume even if exists.</div>
-                                                    </td>
-        </tr>
-                            <tr>
-                                                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="parameter-state"></div>
-                <b>state</b>
-                <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>
-                <div style="font-size: small">
-                    <span style="color: purple">string</span>
-                                                                </div>
-                                                    </td>
-                            <td>
-                                                                                                                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                                                                                                                                            <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                                                                                                                                                                            <li>absent</li>
-                                                                                </ul>
-                                                                        </td>
-                                                            <td>
-                                        <div>State of volume, default &#x27;present&#x27;</div>
-                                                    </td>
-        </tr>
-                    </table>
-<br/></div>
-<div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podman_volume</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">volume1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">label</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span><span class="w"></span>
-<span class="w">      </span><span class="nt">key2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value2</span><span class="w"></span>
-<span class="w">    </span><span class="nt">options</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;device=/dev/loop1&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;type=ext4&quot;</span><span class="w"></span>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-debug"><strong>debug</strong></p>
+<a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Return additional information which can be helpful for investigations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-driver"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-driver"><strong>driver</strong></p>
+<a class="ansibleOptionLink" href="#parameter-driver" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Specify volume driver name (default local).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-executable"><strong>executable</strong></p>
+<a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path to <code class="docutils literal notranslate"><span class="pre">podman</span></code> executable if it is not in the <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> on the machine running <code class="docutils literal notranslate"><span class="pre">podman</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;podman&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-label"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-label"><strong>label</strong></p>
+<a class="ansibleOptionLink" href="#parameter-label" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Add metadata to a pod volume (e.g., label com.example.key=value).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of volume.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-options"><strong>options</strong></p>
+<a class="ansibleOptionLink" href="#parameter-options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set driver specific options. For example ‘device=tpmfs’, ‘type=tmpfs’. UID and GID idempotency is not supported due to changes in podman.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-recreate"><strong>recreate</strong></p>
+<a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Recreate volume even if exists.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>State of volume, default ‘present’</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podman_volume</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">volume1</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+<span class="w">      </span><span class="nt">key2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value2</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;device=/dev/loop1&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;type=ext4&quot;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this heading">¶</a></h2>
 <p>Common return values are documented <span class="xref std std-ref">here</span>, the following are the fields unique to this module:</p>
-<table border=0 cellpadding=0 class="documentation-table">
-    <tr>
-        <th colspan="1">Key</th>
-        <th>Returned</th>
-        <th width="100%">Description</th>
-    </tr>
-                <tr>
-                            <td colspan="1">
-                <div class="ansibleOptionAnchor" id="return-volume"></div>
-                <b>volume</b>
-                <a class="ansibleOptionLink" href="#return-volume" title="Permalink to this return value"></a>
-                <div style="font-size: small">
-                  <span style="color: purple">dictionary</span>
-                                      </div>
-                                </td>
-            <td>always</td>
-            <td>
-                                        <div>Volume inspection results if exists.</div>
-                                    <br/>
-                                        <div style="font-size: smaller"><b>Sample:</b></div>
-                                            <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;CreatedAt&#x27;: &#x27;2020-06-05T16:38:55.277628769+03:00&#x27;, &#x27;Driver&#x27;: &#x27;local&#x27;, &#x27;Labels&#x27;: {&#x27;key.com&#x27;: &#x27;value&#x27;, &#x27;key.org&#x27;: &#x27;value2&#x27;}, &#x27;Mountpoint&#x27;: &#x27;/home/user/.local/share/containers/storage/volumes/test/_data&#x27;, &#x27;Name&#x27;: &#x27;test&#x27;, &#x27;Options&#x27;: {}, &#x27;Scope&#x27;: &#x27;local&#x27;}</div>
-                                </td>
-        </tr>
-                    </table>
-<br/><br/><div class="section" id="authors">
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-volume"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-return-volume"><strong>volume</strong></p>
+<a class="ansibleOptionLink" href="#return-volume" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Volume inspection results if exists.</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">{&quot;CreatedAt&quot;:</span> <span class="pre">&quot;2020-06-05T16:38:55.277628769+03:00&quot;,</span> <span class="pre">&quot;Driver&quot;:</span> <span class="pre">&quot;local&quot;,</span> <span class="pre">&quot;Labels&quot;:</span> <span class="pre">{&quot;key.com&quot;:</span> <span class="pre">&quot;value&quot;,</span> <span class="pre">&quot;key.org&quot;:</span> <span class="pre">&quot;value2&quot;},</span> <span class="pre">&quot;Mountpoint&quot;:</span> <span class="pre">&quot;/home/user/.local/share/containers/storage/volumes/test/_data&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;test&quot;,</span> <span class="pre">&quot;Options&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;Scope&quot;:</span> <span class="pre">&quot;local&quot;}</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
 </ul>
-</div>
-</div>
-</div>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Permalink to this heading">¶</a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/containers/ansible-podman-collections/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/containers/ansible-podman-collections" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+</ul>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -276,11 +221,47 @@
 
 
 <h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="podman_container_module.html">containers.podman.podman_container module – Manage podman containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_container_exec_module.html">containers.podman.podman_container_exec module – Executes a command in a running container.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_container_info_module.html">containers.podman.podman_container_info module – Gather facts about containers using podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_containers_module.html">containers.podman.podman_containers module – Manage podman containers in a batch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_export_module.html">containers.podman.podman_export module – Export a podman container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_generate_systemd_module.html">containers.podman.podman_generate_systemd module – Generate systemd unit from a pod or a container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_image_module.html">containers.podman.podman_image module – Pull images for use by podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_image_info_module.html">containers.podman.podman_image_info module – Gather info about images using podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_import_module.html">containers.podman.podman_import module – Import Podman container from a tar file.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_load_module.html">containers.podman.podman_load module – Load image from a tar file.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_login_module.html">containers.podman.podman_login module – Login to a container registry using podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_login_info_module.html">containers.podman.podman_login_info module – Return the logged-in user if any for a given registry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_logout_module.html">containers.podman.podman_logout module – Log out of a container registry using podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_network_module.html">containers.podman.podman_network module – Manage podman networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_network_info_module.html">containers.podman.podman_network_info module – Gather info about podman networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_play_module.html">containers.podman.podman_play module – Play kubernetes YAML file using podman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_pod_module.html">containers.podman.podman_pod module – Manage Podman pods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_pod_info_module.html">containers.podman.podman_pod_info module – Gather info about podman pods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_prune_module.html">containers.podman.podman_prune module – Allows to prune various podman objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_runlabel_module.html">containers.podman.podman_runlabel module – Run given label from given image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_save_module.html">containers.podman.podman_save module – Saves podman image to tar file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_secret_module.html">containers.podman.podman_secret module – Manage podman secrets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_tag_module.html">containers.podman.podman_tag module – Add an additional name to a local image</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">containers.podman.podman_volume module – Manage Podman volumes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_volume_info_module.html">containers.podman.podman_volume_info module – Gather info about podman volumes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="podman_unshare_become.html">containers.podman.podman_unshare become – Run tasks using podman unshare</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="buildah_connection.html">containers.podman.buildah connection – Interact with an existing buildah container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_connection.html">containers.podman.podman connection – Interact with an existing podman container</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="podman_tag_module.html" title="previous chapter">containers.podman.podman_tag module – Add an additional name to a local image</a></li>
+      <li>Next: <a href="podman_volume_info_module.html" title="next chapter">containers.podman.podman_volume_info module – Gather info about podman volumes</a></li>
   </ul></li>
 </ul>
 </div>
@@ -310,8 +291,8 @@
       &copy;.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/podman_volume_module.rst.txt"

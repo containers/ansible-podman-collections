@@ -5,6 +5,14 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.11.0
+=======
+
+Minor Changes
+-------------
+
+- Update docs
+
 v1.10.4
 =======
 
