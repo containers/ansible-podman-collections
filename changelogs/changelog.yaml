@@ -222,6 +222,11 @@ releases:
       name: podman_runlabel
       namespace: ''
     release_date: '2023-11-01'
+  1.11.0:
+    changes:
+      minor_changes:
+      - Update docs
+    release_date: '2023-11-05'
   1.2.0:
     changes:
       minor_changes:
