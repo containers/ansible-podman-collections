@@ -29,6 +29,10 @@ options:
       - Path to file with YAML configuration for a Pod.
     type: path
     required: True
+  annotation:
+    description:
+      - Add an annotation to the container or pod.
+    type: dict
   authfile:
     description:
       - Path of the authentication file. Default is ${XDG_RUNTIME_DIR}/containers/auth.json,
@@ -78,6 +82,28 @@ options:
     description:
       - Set logging driver for all created containers.
     type: str
+  log_opt:
+    description:
+      - Logging driver specific options. Set custom logging configuration.
+    type: dict
+    aliases:
+      - log_options
+    suboptions:
+      path:
+        description:
+          - specify a path to the log file (e.g. /var/log/container/mycontainer.json).
+        type: str
+        required: false
+      max_size:
+        description:
+          - Specify a max size of the log file (e.g 10mb).
+        type: str
+        required: false
+      tag:
+        description:
+          - specify a custom log tag for the container. This option is currently supported only by the journald log driver in Podman.
+        type: str
+        required: false
   log_level:
     description:
       - Set logging level for podman calls. Log messages above specified level
@@ -158,6 +184,9 @@ class PodmanKubeManagement:
         self.command = [self.executable, 'play', 'kube']
         creds = []
         # pod_name = extract_pod_name(module.params['kube_file'])
+        if self.module.params['annotation']:
+          for k, v in self.module.params['annotation'].items():
+            self.command.extend(['--annotation', '"{k}={v}"'.format(k=k, v=v)])
         if self.module.params['username']:
             creds += [self.module.params['username']]
             if self.module.params['password']:
@@ -170,6 +199,9 @@ class PodmanKubeManagement:
         if self.module.params['configmap']:
             configmaps = ",".join(self.module.params['configmap'])
             self.command.extend(['--configmap=%s' % configmaps])
+        if self.module.params['log_opt']:
+          for k, v in self.module.params['log_opt'].items():
+            self.command.extend(['--log-opt', '{k}={v}'.format(k=k.replace('_', '-'), v=v)])
         start = self.module.params['state'] == 'started'
         self.command.extend(['--start=%s' % str(start).lower()])
         for arg, param in {
@@ -276,6 +308,7 @@ class PodmanKubeManagement:
 def main():
     module = AnsibleModule(
         argument_spec=dict(
+            annotation=dict(type='dict'),
             executable=dict(type='str', default='podman'),
             kube_file=dict(type='path', required=True),
             authfile=dict(type='path'),
@@ -287,6 +320,10 @@ def main():
             username=dict(type='str'),
             password=dict(type='str', no_log=True),
             log_driver=dict(type='str'),
+            log_opt=dict(type='dict', aliases=['log_options'], options=dict(
+                path=dict(type='str'),
+                max_size=dict(type='str'),
+                tag=dict(type='str'))),
             network=dict(type='list', elements='str'),
             state=dict(
                 type='str',
