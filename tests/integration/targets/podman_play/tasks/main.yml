@@ -133,4 +133,15 @@
   include_tasks: play-with-build.yml
   vars:
     ansible_python_interpreter: "/usr/bin/python"
-    
+
+- name: Test play kube options
+  include_tasks: play-options.yml
+  vars:
+    target_pod: web-deploy
+    target_container: web-deploy-alpinex
+    log_opt:
+      path: /tmp/mycontainer.json
+      size: 10mb
+    userns: host
+    kube_dir: /tmp
+    kube_file: play-pod.yaml
