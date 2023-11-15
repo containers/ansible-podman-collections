@@ -9,7 +9,7 @@
 
   - name: Create Pod with many options
     containers.podman.podman_play:
-      kube_file: ./files/play-pod.yaml
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
       state: started
       recreate: true
       annotation:
@@ -48,5 +48,5 @@
 
   - name: Cleanup pods
     containers.podman.podman_play:
-      kube_file: ./files/play-pod.yaml
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
       state: absent

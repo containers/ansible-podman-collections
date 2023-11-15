@@ -135,7 +135,7 @@
     ansible_python_interpreter: "/usr/bin/python"
 
 - name: Test play kube options
-  include_tasks: play-options.yml
+  include_tasks: play-with-options.yml
   vars:
     target_pod: web-deploy
     target_container: web-deploy-alpinex
