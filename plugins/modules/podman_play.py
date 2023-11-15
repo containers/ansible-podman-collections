@@ -33,6 +33,8 @@ options:
     description:
       - Add an annotation to the container or pod.
     type: dict
+    aliases:
+      - annotations
   authfile:
     description:
       - Path of the authentication file. Default is ${XDG_RUNTIME_DIR}/containers/auth.json,
@@ -164,6 +166,18 @@ EXAMPLES = '''
     kube_file: ~/kube.yaml
     state: started
 
+- name: Recreate pod from a kube file with options
+  containers.podman.podman_play:
+    kube_file: ~/kube.yaml
+    state: started
+    recreate: true
+    annotations:
+      greeting: hello
+      greet_to: world
+    userns: host
+    log_opt:
+      path: /tmp/my-container.log
+      max_size: 10mb
 '''
 import re  # noqa: F402
 try:
@@ -308,7 +322,7 @@ class PodmanKubeManagement:
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            annotation=dict(type='dict'),
+            annotation=dict(type='dict', aliases=['annotations']),
             executable=dict(type='str', default='podman'),
             kube_file=dict(type='path', required=True),
             authfile=dict(type='path'),
