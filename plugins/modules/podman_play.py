@@ -185,8 +185,8 @@ class PodmanKubeManagement:
         creds = []
         # pod_name = extract_pod_name(module.params['kube_file'])
         if self.module.params['annotation']:
-          for k, v in self.module.params['annotation'].items():
-            self.command.extend(['--annotation', '"{k}={v}"'.format(k=k, v=v)])
+            for k, v in self.module.params['annotation'].items():
+                self.command.extend(['--annotation', '"{k}={v}"'.format(k=k, v=v)])
         if self.module.params['username']:
             creds += [self.module.params['username']]
             if self.module.params['password']:
@@ -200,8 +200,8 @@ class PodmanKubeManagement:
             configmaps = ",".join(self.module.params['configmap'])
             self.command.extend(['--configmap=%s' % configmaps])
         if self.module.params['log_opt']:
-          for k, v in self.module.params['log_opt'].items():
-            self.command.extend(['--log-opt', '{k}={v}'.format(k=k.replace('_', '-'), v=v)])
+            for k, v in self.module.params['log_opt'].items():
+                self.command.extend(['--log-opt', '{k}={v}'.format(k=k.replace('_', '-'), v=v)])
         start = self.module.params['state'] == 'started'
         self.command.extend(['--start=%s' % str(start).lower()])
         for arg, param in {
