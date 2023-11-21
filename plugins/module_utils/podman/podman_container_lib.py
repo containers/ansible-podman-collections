@@ -1654,7 +1654,8 @@ class PodmanManager:
             self.results['actions'].append('started %s' % self.container.name)
             self.update_container_result()
             return
-        elif self.container.stopped and self.container.different:
+        elif self.container.stopped and \
+                (self.container.different or self.recreate):
             self.container.recreate_run()
             self.results['actions'].append('recreated %s' %
                                            self.container.name)

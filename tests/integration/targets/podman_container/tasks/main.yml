@@ -235,6 +235,26 @@
         fail_msg: "Creating stopped container test failed!"
         success_msg: "Creating stopped container test passed!"
 
+    - name: Force recreate stopped container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+        recreate: true
+      register: recreate_stopped
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreate_stopped is changed
+          - recreate_stopped.container is defined
+          - recreate_stopped.container['State']['Running']|bool
+          - "'recreated container' in recreate_stopped.actions"
+        fail_msg: Force recreate stopped test failed!
+        success_msg: Force recreate stopped test passed!
+
     - name: Delete created container
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
