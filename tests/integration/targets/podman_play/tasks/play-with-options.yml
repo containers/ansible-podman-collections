@@ -1,0 +1,52 @@
+---
+- name: Test play pod with options
+  block:
+  - name: Copy kube file
+    copy:
+      src: "{{ kube_file }}"
+      dest: "{{ kube_dir }}/{{ kube_file }}"
+      remote_src: false
+
+  - name: Create Pod with many options
+    containers.podman.podman_play:
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
+      state: started
+      recreate: true
+      annotation:
+        greeting: hello
+        greet_to: world
+      userns: "{{ userns }}"
+      log_opt:
+        path: "{{ log_opt.path }}"
+        max_size: "{{ log_opt.size }}"
+    register: play_pod
+
+  - name: Get pod info
+    containers.podman.podman_pod_info:
+      name: "{{ target_pod }}"
+    register: play_pod_info
+
+  - name: Check userns is set in Pod
+    assert:
+      that:
+        - play_pod_info.pods.0.InfraConfig.userns == userns
+
+  - name: Get container info
+    containers.podman.podman_container_info:
+      name: "{{ target_container }}"
+    register: play_container_info
+
+  - name: Check annotations and log options are set in Pod
+    assert:
+      that:
+        - play_container_info.containers.0.Config.Annotations["greeting"] == "hello"
+        - play_container_info.containers.0.Config.Annotations["greet_to"] == "world"
+        - play_container_info.containers.0.HostConfig.LogConfig["Path"] == log_opt.path
+        - play_container_info.containers.0.HostConfig.LogConfig["Size"] | lower == log_opt.size
+
+  always:
+
+  - name: Cleanup pods
+    containers.podman.podman_play:
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
+      state: absent

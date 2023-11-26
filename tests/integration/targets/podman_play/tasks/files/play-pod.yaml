@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-deploy
+  labels:
+    app: webapp
+spec:
+  containers:
+  - name: alpinex
+    image: alpine
+    command: ['sleep', '1d']
+  - name: alpiney
+    image: alpine
+    command: ['sleep', '1d']
