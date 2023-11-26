@@ -20,7 +20,8 @@ options:
   image:
     description:
     - Image to save.
-    type: str
+    type: list
+    elements: str
     required: true
   compress:
     description:
@@ -70,9 +71,14 @@ RETURN = '''
 EXAMPLES = '''
 # What modules does for example
 - containers.podman.podman_save:
-    dest: /path/to/tar/file
-    compress: true
-    format: oci-dir
+    image: nginx
+    dest: /tmp/file123.tar
+- containers.podman.podman_save:
+    image:
+      - nginx
+      - fedora
+    dest: /tmp/file456.tar
+    multi_image_archive: true
 '''
 
 import os  # noqa: E402
@@ -92,7 +98,8 @@ def save(module, executable):
     for param in module.params:
         if module.params[param] is not None and param in cmd_args:
             command += cmd_args[param]
-    command.append(module.params['image'])
+    for img in module.params['image']:
+        command.append(img)
     if module.params['force']:
         dest = module.params['dest']
         if os.path.exists(dest):
@@ -116,7 +123,7 @@ def save(module, executable):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            image=dict(type='str', required=True),
+            image=dict(type='list', elements='str', required=True),
             compress=dict(type='bool'),
             dest=dict(type='str', required=True, aliases=['path']),
             format=dict(type='str', choices=['docker-archive', 'oci-archive', 'oci-dir', 'docker-dir']),

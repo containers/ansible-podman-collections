@@ -2,12 +2,15 @@
 - name: Pull image
   containers.podman.podman_image:
     executable: "{{ test_executable | default('podman') }}"
-    name: k8s.gcr.io/pause
+    name: "{{ item }}"
+  loop:
+    - registry.k8s.io/pause
+    - registry.k8s.io/coredns/coredns:v1.9.3
 
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/image.tar
 
 - name: Check file
@@ -23,7 +26,7 @@
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/image.tar
     force: true
 
@@ -40,7 +43,7 @@
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/imagedir
     format: oci-dir
 
@@ -57,7 +60,7 @@
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/imagedir-docker
     force: true
     format: docker-dir
@@ -66,7 +69,7 @@
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/imagedir
     force: true
     format: oci-dir
@@ -84,7 +87,7 @@
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/image2.tar
     multi_image_archive: true
 
@@ -94,6 +97,25 @@
   register: img
 
 - name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save multi image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image:
+      - registry.k8s.io/pause
+      - registry.k8s.io/coredns/coredns:v1.9.3
+    dest: /tmp/image-multi.tar
+    multi_image_archive: true
+
+- name: Check mult image file
+  stat:
+    path: /tmp/image-multi.tar
+  register: img
+
+- name: Check multi image is saved
   assert:
     that:
       - img.stat.exists
