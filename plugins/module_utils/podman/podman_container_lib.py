@@ -1220,11 +1220,16 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('rm', before, after)
 
     def diffparam_security_opt(self):
-        before = self.info['hostconfig']['securityopt']
-        # In rootful containers with apparmor there is a default security opt
-        before = [o for o in before if 'apparmor=containers-default' not in o]
-        after = self.params['security_opt']
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
+        unsorted_before = self.info['hostconfig']['securityopt']
+        unsorted_after = self.params['security_opt']
+        # In rootful containers with apparmor there is a profile, "container-default",
+        # which is already added by default
+        # Since SElinux labels are basically annotations, they are merged in a single list
+        # element by podman so we need to split them in a (sorted) list if we want to compare it
+        # to the list we provide to the module
+        before = sorted(item for element in unsorted_before for item in element.split(',')
+                        if 'apparmor=container-default' not in item)
+        after = sorted(list(set(unsorted_after)))
         return self._diff_update_and_compare('security_opt', before, after)
 
     def diffparam_stop_signal(self):

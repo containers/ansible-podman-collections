@@ -363,6 +363,48 @@
         fail_msg: Deleting started container test failed!
         success_msg: Deleting started container test passed!
 
+    - name: Create container with security_opt
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: docker.io/alpine:3.7
+        state: started
+        command: sleep 1d
+        security_opt:
+            - label=level:s0
+            - label=type:spc_t
+            - label=filetype:container_share_t
+            - seccomp=unconfined
+
+    - name: Recreate container with same security_opt flags
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: docker.io/alpine:3.7
+        state: started
+        command: sleep 1d
+        security_opt:
+            - label=level:s0
+            - label=type:spc_t
+            - label=filetype:container_share_t
+            - seccomp=unconfined
+      register: recreate_security_opt
+
+    - name: Check if output is correct
+      assert:
+        that:
+          - recreate_security_opt is not changed
+          - recreate_security_opt.container is defined
+          - recreate_security_opt.container != {}
+          - recreate_security_opt.container['State']['Running']
+          - "'recreated container' not in recreate_security_opt.actions"
+
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+
     - name: Recreate container with parameters
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
