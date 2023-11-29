@@ -47,6 +47,12 @@ options:
     description:
       - IPv4 or IPv6 gateway for the subnet
     type: str
+  interface_name:
+    description:
+      - For bridge, it uses the bridge interface name.
+        For macvlan, it is the parent device on the host (it is the same
+        as 'opt.parent')
+    type: str
   internal:
     description:
       - Restrict external access from this network (default "false")
@@ -98,7 +104,8 @@ options:
         required: false
       parent:
         description:
-          - The host device which should be used for the macvlan interface.
+          - The host device which should be used for the macvlan interface
+            (it is the same as 'interface' in that case).
             Defaults to the default route interface.
         type: str
         required: false
@@ -276,6 +283,9 @@ class PodmanNetworkModuleParams:
 
     def addparam_macvlan(self, c):
         return c + ['--macvlan', self.params['macvlan']]
+
+    def addparam_interface_name(self, c):
+        return c + ['--interface-name', self.params['interface_name']]
 
     def addparam_internal(self, c):
         return c + ['--internal=%s' % self.params['internal']]
@@ -657,6 +667,7 @@ def main():
             driver=dict(type='str', required=False),
             force=dict(type='bool', default=False),
             gateway=dict(type='str', required=False),
+            interface_name=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
             ip_range=dict(type='str', required=False),
             ipv6=dict(type='bool', required=False),
