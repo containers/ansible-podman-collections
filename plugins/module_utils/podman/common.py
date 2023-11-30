@@ -142,6 +142,8 @@ def generate_systemd(module, module_params, name, version):
     if rc != 0:
         module.log(
             "PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
+        if sysconf:
+            module.fail_json(msg="Error generating systemd: %s" % err)
         return result
     else:
         try:
@@ -194,6 +196,8 @@ def generate_systemd(module, module_params, name, version):
         except Exception as e:
             module.log(
                 "PODMAN-CONTAINER-DEBUG: Error writing systemd: %s" % e)
+            if sysconf:
+                module.fail_json(msg="Error writing systemd: %s" % e)
             return result
 
 
