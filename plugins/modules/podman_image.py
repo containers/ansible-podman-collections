@@ -542,7 +542,10 @@ class PodmanImageManager(object):
             image_name = self.image_name
         args = ['image', 'ls', image_name, '--format', 'json']
         rc, images, err = self._run(args, ignore_errors=True)
-        images = json.loads(images)
+        try:
+            images = json.loads(images)
+        except json.decoder.JSONDecodeError:
+            self.module.fail_json(msg='Failed to parse JSON output from podman image ls: {out}'.format(out=images))
         if len(images) == 0:
             # Let's find out if image exists
             rc, out, err = self._run(['image', 'exists', image_name], ignore_errors=True)
@@ -577,7 +580,10 @@ class PodmanImageManager(object):
             image_name = self.image_name
         args = ['inspect', image_name, '--format', 'json']
         rc, image_data, err = self._run(args)
-        image_data = json.loads(image_data)
+        try:
+            image_data = json.loads(image_data)
+        except json.decoder.JSONDecodeError:
+            self.module.fail_json(msg='Failed to parse JSON output from podman inspect: {out}'.format(out=image_data))
         if len(image_data) > 0:
             return image_data
         else:
