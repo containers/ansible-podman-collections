@@ -1187,7 +1187,7 @@ class PodmanContainerDiff:
             if image_ports:
                 after += list(image_ports.keys())
         after = [
-            i.replace("/tcp", "").replace("[", "").replace("]", "")
+            i.replace("/tcp", "").replace("[", "").replace("]", "").replace("0.0.0.0:", "")
             for i in after]
         # No support for port ranges yet
         for ports in after:
