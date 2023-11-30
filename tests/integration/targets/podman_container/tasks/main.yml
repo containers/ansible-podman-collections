@@ -834,7 +834,7 @@
           - image.container is defined
           - image.container['State']['Running']
           - image.container['Image'] == ""
-          - image.container['Rootfs'] == "{{ container_tempdir.path }}"
+          - image.container['Rootfs'] == container_tempdir.path
           - "'started container3' in image.actions"
         fail_msg: Rootfs container test failed!
         success_msg: Rootfs container test passed!
@@ -896,7 +896,7 @@
           - image.container is defined
           - image.container['State']['Running']
           - image.container['Image'] == ""
-          - image.container['Rootfs'] == "{{ container_tempdir.path }}"
+          - image.container['Rootfs'] == container_tempdir.path
           - "'recreated container3' in image.actions"
         fail_msg: Rootfs container test failed!
         success_msg: Rootfs container test passed!
