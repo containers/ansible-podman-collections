@@ -52,9 +52,9 @@ def run_generate_systemd_command(module, module_params, name, version):
             sysconf['restart_policy']])
     if sysconf.get('restart_sec') is not None:
         command.extend(['--restart-sec=%s' % sysconf['restart_sec']])
-    if sysconf.get('stop_timeout') is not None or sysconf.get('time') is not None:
+    if (sysconf.get('stop_timeout') is not None) or (sysconf.get('time') is not None):
         # Select correct parameter name based on version
-        arg_name = 'stop_timeout' if gt4ver else 'time'
+        arg_name = 'stop-timeout' if gt4ver else 'time'
         arg_value = sysconf.get('stop_timeout') if sysconf.get('stop_timeout') is not None else sysconf.get('time')
         command.extend(['--%s=%s' % (arg_name, arg_value)])
         del arg_name, arg_value
