@@ -327,7 +327,13 @@ class PodmanVolume:
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
             [self.module.params['executable'], b'volume', b'inspect', self.name])
-        return json.loads(out)[0] if rc == 0 else {}
+        if rc == 0:
+            data = json.loads(out)
+            if data:
+                data = data[0]
+                if data.get("Name") == self.name:
+                    return data
+        return {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
