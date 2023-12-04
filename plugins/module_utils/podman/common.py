@@ -57,7 +57,6 @@ def run_generate_systemd_command(module, module_params, name, version):
         arg_name = 'stop-timeout' if gt4ver else 'time'
         arg_value = sysconf.get('stop_timeout') if sysconf.get('stop_timeout') is not None else sysconf.get('time')
         command.extend(['--%s=%s' % (arg_name, arg_value)])
-        del arg_name, arg_value
     if sysconf.get('start_timeout') is not None:
         command.extend(['--start-timeout=%s' % sysconf['start_timeout']])
     if sysconf.get('no_header'):
