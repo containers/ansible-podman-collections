@@ -336,14 +336,12 @@ options:
         type: int
         required: false
       stop_timeout:
-        description: Override the default stop timeout for the container with the given value.
-        type: int
-        required: false
-      time:
         description:
-          - Override the default stop timeout for the container with the given value.
+          - Override the default stop timeout for the container with the given value. Called `time` before version 4.
         type: int
         required: false
+        aliases:
+          - time
       no_header:
         description:
           - Do not generate the header including meta data such as the Podman version and the timestamp.
@@ -891,7 +889,7 @@ EXAMPLES = r"""
     generate_systemd:
       path: /tmp/
       restart_policy: always
-      time: 120
+      stop_timeout: 120
       names: true
       container_prefix: ainer
 
