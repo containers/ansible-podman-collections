@@ -75,7 +75,7 @@ EXAMPLES = r"""
     username: user
     password: 'p4ssw0rd'
 
-- name: Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json
+- name: Login to quay.io and create ${XDG_RUNTIME_DIR}/containers/auth.json
   containers.podman.podman_login:
     username: user
     password: 'p4ssw0rd'
