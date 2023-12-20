@@ -306,3 +306,15 @@ def normalize_signal(signal_name_or_number):
         if signal_name not in _signal_map:
             raise RuntimeError("Unknown signal '{0}'".format(signal_name_or_number))
         return str(_signal_map[signal_name])
+
+
+def get_podman_version(module, fail=True):
+    executable = module.params['executable'] if module.params['executable'] else 'podman'
+    rc, out, err = module.run_command(
+        [executable, b'--version'])
+    if rc != 0 or not out or "version" not in out:
+        if fail:
+            module.fail_json(msg="'%s --version' run failed! Error: %s" %
+                             (executable, err))
+        return None
+    return out.split("version")[1].strip()
