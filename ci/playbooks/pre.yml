@@ -82,6 +82,22 @@
             - ansible_distribution_major_version is version('22', '>=')
             - version.stdout is version('1.1.0', '<')
 
+        - name: Discover conmon version
+          shell: conmon --version | grep version | awk {'print $3'}
+          register: conmon_version
+          when:
+            - ansible_distribution == 'Ubuntu'
+            - ansible_distribution_major_version is version('22', '>=')
+
+        - name: Downgrade broken conmon
+          shell: >-
+            wget https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/amd64/conmon_2.1.2~0_amd64.deb -O /tmp/conmon_2.1.2.deb;
+            apt install -y /tmp/conmon_2.1.2.deb
+          when:
+            - ansible_distribution == 'Ubuntu'
+            - ansible_distribution_major_version is version('22', '>=')
+            - conmon_version.stdout is version('2.1.9', '==')
+
     - name: Remove virtualenv if need
       file:
         path: "{{ ansible_venv }}"
