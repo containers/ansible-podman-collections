@@ -61,6 +61,15 @@ options:
     choices:
       - absent
       - present
+  labels:
+    description:
+      - Labels to set on the secret.
+    type: dict
+  debug:
+    description:
+      - Enable debug mode for module.
+    type: bool
+    default: False
 '''
 
 EXAMPLES = r"""
@@ -91,19 +100,75 @@ EXAMPLES = r"""
     """
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import get_podman_version
+
+diff = {"before": '', "after": ''}
+
+
+def podman_secret_exists(module, executable, name, version):
+    if version is None or LooseVersion(version) < LooseVersion('4.5.0'):
+        rc, out, err = module.run_command(
+            [executable, 'secret', 'ls', "--format", "{{.Name}}"])
+        return name in [i.strip() for i in out.splitlines()]
+    rc, out, err = module.run_command(
+        [executable, 'secret', 'exists', name])
+    return rc == 0
+
+
+def need_update(module, executable, name, data, driver, driver_opts, debug, labels):
+
+    cmd = [executable, 'secret', 'inspect', '--showsecret', name]
+    rc, out, err = module.run_command(cmd)
+    if rc != 0:
+        if debug:
+            module.log("PODMAN-SECRET-DEBUG: Unable to get secret info: %s" % err)
+        return True
+    try:
+        secret = module.from_json(out)[0]
+        # We support only file driver for now
+        if (driver and driver != 'file') or secret['Spec']['Driver']['Name'] != 'file':
+            if debug:
+                module.log("PODMAN-SECRET-DEBUG: Idempotency of driver %s is not supported" % driver)
+            return True
+        if secret['SecretData'] != data:
+            diff['after'] = "<different-secret>"
+            diff['before'] = "<secret>"
+            return True
+        if driver_opts:
+            for k, v in driver_opts.items():
+                if secret['Spec']['Driver']['Options'].get(k) != v:
+                    diff['after'] = "=".join([k, v])
+                    diff['before'] = "=".join(
+                        [k, secret['Spec']['Driver']['Options'].get(k)])
+                    return True
+        if labels:
+            for k, v in labels.items():
+                if secret['Spec']['Labels'].get(k) != v:
+                    diff['after'] = "=".join([k, v])
+                    diff['before'] = "=".join(
+                        [k, secret['Spec']['Labels'].get(k)])
+                    return True
+    except Exception:
+        return True
+    return False
 
 
 def podman_secret_create(module, executable, name, data, force, skip,
-                         driver, driver_opts):
-    if force:
-        module.run_command([executable, 'secret', 'rm', name])
-    if skip:
-        rc, out, err = module.run_command(
-            [executable, 'secret', 'ls', "--format", "{{.Name}}"])
-        if name in [i.strip() for i in out.splitlines()]:
-            return {
-                "changed": False,
-            }
+                         driver, driver_opts, debug, labels):
+    podman_version = get_podman_version(module, fail=False)
+    if (podman_version is not None and
+        LooseVersion(podman_version) >= LooseVersion('4.7.0')
+            and (driver is None or driver == 'file')):
+        if not skip and need_update(module, executable, name, data, driver, driver_opts, debug, labels):
+            podman_secret_remove(module, executable, name)
+        else:
+            return {"changed": False}
+    else:
+        if force:
+            podman_secret_remove(module, executable, name)
+        if skip and podman_secret_exists(module, executable, name, podman_version):
+            return {"changed": False}
 
     cmd = [executable, 'secret', 'create']
     if driver:
@@ -112,6 +177,10 @@ def podman_secret_create(module, executable, name, data, force, skip,
     if driver_opts:
         cmd.append('--driver-opts')
         cmd.append(",".join("=".join(i) for i in driver_opts.items()))
+    if labels:
+        for k, v in labels.items():
+            cmd.append('--label')
+            cmd.append("=".join([k, v]))
     cmd.append(name)
     cmd.append('-')
 
@@ -121,6 +190,10 @@ def podman_secret_create(module, executable, name, data, force, skip,
 
     return {
         "changed": True,
+        "diff": {
+            "before": diff['before'] + "\n",
+            "after": diff['after'] + "\n",
+        },
     }
 
 
@@ -150,6 +223,8 @@ def main():
             skip_existing=dict(type='bool', default=False),
             driver=dict(type='str'),
             driver_opts=dict(type='dict'),
+            labels=dict(type='dict'),
+            debug=dict(type='bool', default=False),
         ),
     )
 
@@ -165,9 +240,11 @@ def main():
         skip = module.params['skip_existing']
         driver = module.params['driver']
         driver_opts = module.params['driver_opts']
+        debug = module.params['debug']
+        labels = module.params['labels']
         results = podman_secret_create(module, executable,
                                        name, data, force, skip,
-                                       driver, driver_opts)
+                                       driver, driver_opts, debug, labels)
     else:
         results = podman_secret_remove(module, executable, name)
 

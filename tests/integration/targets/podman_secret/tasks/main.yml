@@ -1,6 +1,18 @@
 - name: Test podman_secret
   block:
 
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version fact
+      set_fact:
+        podman_version: "{{ podman_v.stdout | string }}"
+
+    - name: Set podman version fact to gt than 4.7.0 if so
+      set_fact:
+        podman_version_gt470: "{{ podman_version is version('4.7.0', '>=') }}"
+
     - name: Make sure secret doesn't exist
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"
@@ -11,6 +23,7 @@
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"
         name: mysecret
+        debug: true
         data: secret content
 
     - name: Recreate secret
@@ -27,13 +40,33 @@
         name: mysecret
         data: super secret content
         skip_existing: true
+        debug: true
       register: skipped
+
+    - name: Force secret to same
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mysecret
+        data: super secret content
+        force: true
+        debug: true
+      register: forced2
 
     - name: Check assertions
       assert:
         that:
           - forced is changed
           - skipped is not changed
+          - forced2 is changed
+      when: not podman_version_gt470
+
+    - name: Check assertions for podman >= 4.7.0
+      assert:
+        that:
+          - forced is changed
+          - skipped is not changed
+          - forced2 is not changed
+      when: podman_version_gt470
 
     - name: Create container that uses secret
       containers.podman.podman_container:
@@ -93,6 +126,24 @@
         that:
           - removed is not changed
 
+    - name: Create secret with file driver labels
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mysecret
+        data: secret content
+        driver: file
+        labels:
+          lab1: somestringhere
+          label2: "some value is there"
+          "long label": onestring
+          "boring label": "multi string value"
+
+    - name: Remove secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        state: absent
+        name: mysecret
+
     - name: Create secret with file driver and custom options
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"
@@ -102,6 +153,131 @@
         driver_opts:
           a: b
           c: d
+
+    - when: podman_version_gt470
+      block:
+
+        - name: Create secret with file driver and different options
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: secret content
+            driver: file
+            driver_opts:
+              a: b
+              c: e
+          register: opts_changed
+
+        - name: Create secret with file driver and different options again
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: secret content
+            driver: file
+            driver_opts:
+              a: b
+              c: e
+          register: opts_changed2
+
+        - name: Create secret with different content
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: other secret content
+            driver_opts:
+              a: b
+              c: e
+          register: secret_changed
+
+        - name: Create secret with different content again
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: other secret content
+            driver_opts:
+              a: b
+              c: e
+          register: secret_changed2
+
+        - name: Create secret with different content but skipped
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: other secret content and skipped
+            skip_existing: true
+            debug: true
+            driver_opts:
+              a: b
+              c: e
+          register: skip_secret_changed
+
+        - name: Create secret with different content but forced
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: other secret content and skipped
+            force: true
+            debug: true
+            driver_opts:
+              a: b
+              c: e
+          register: force_secret_changed
+
+        - name: Check opts changes
+          assert:
+            that:
+              - opts_changed is changed
+              - opts_changed2 is not changed
+              - secret_changed is changed
+              - secret_changed2 is not changed
+              - skip_secret_changed is not changed
+              - force_secret_changed is changed
+
+        - name: Create secret with file driver and labels
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: secret content
+            driver: file
+            labels:
+              lab1: somestringhere
+              label2: "some value is there"
+              "long label": onestring
+              "boring label": "multi string value"
+          register: secretlabels
+
+        - name: Create secret with file driver and labels again
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: secret content
+            driver: file
+            labels:
+              lab1: somestringhere
+              label2: "some value is there"
+              "long label": onestring
+              "boring label": "multi string value"
+          register: secretlabels2
+
+        - name: Create secret with file driver and different labels
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret
+            data: secret content
+            driver: file
+            labels:
+              lab1: somestringhere
+              label2: "some value is not there"
+              "long label": onestring
+              "boring label": "multi string value"
+          register: secretlabels3
+
+        - name: Check labels changes
+          assert:
+            that:
+              - secretlabels is changed
+              - secretlabels2 is not changed
+              - secretlabels3 is changed
 
     - name: Remove secret
       containers.podman.podman_secret:
