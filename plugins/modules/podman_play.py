@@ -337,6 +337,7 @@ def main():
             log_opt=dict(type='dict', aliases=['log_options'], options=dict(
                 path=dict(type='str'),
                 max_size=dict(type='str'),
+                max_file=dict(type='str'),
                 tag=dict(type='str'))),
             network=dict(type='list', elements='str'),
             state=dict(
