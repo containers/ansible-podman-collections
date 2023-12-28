@@ -101,6 +101,11 @@ options:
           - Specify a max size of the log file (e.g 10mb).
         type: str
         required: false
+      max_file:
+        description:
+          - Specify a max number of the log files (e.g 10).
+        type: str
+        required: false
       tag:
         description:
           - specify a custom log tag for the container. This option is currently supported only by the journald log driver in Podman.
