@@ -90,6 +90,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     log_opt=dict(type='dict', aliases=['log_options'],
                  options=dict(
         max_size=dict(type='str'),
+        max_file=dict(type='str'),
         path=dict(type='str'),
         tag=dict(type='str'))),
     mac_address=dict(type='str'),
@@ -468,6 +469,16 @@ class PodmanModuleParams:
             if v is not None:
                 c += ['--log-opt',
                       b"=".join([to_bytes(k.replace('max_size', 'max-size'),
+                                          errors='surrogate_or_strict'),
+                                 to_bytes(v,
+                                          errors='surrogate_or_strict')])]
+        return c
+
+    def addparam_log_opt_file_size(self, c):
+        for k, v in self.params['log_opt'].items():
+            if v is not None:
+                c += ['--log-opt',
+                      b"=".join([to_bytes(k.replace('max_file', 'max-file'),
                                           errors='surrogate_or_strict'),
                                  to_bytes(v,
                                           errors='surrogate_or_strict')])]

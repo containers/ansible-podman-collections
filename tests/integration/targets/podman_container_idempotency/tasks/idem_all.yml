@@ -177,6 +177,7 @@
     log_opt:
       path: /tmp/container3.log
       max_size: 100mb
+      max_file: '10'
       tag: sometag
     command: 1h
 

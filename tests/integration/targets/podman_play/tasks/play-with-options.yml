@@ -19,6 +19,7 @@
       log_opt:
         path: "{{ log_opt.path }}"
         max_size: "{{ log_opt.size }}"
+        max_file: "{{ log_opt.file }}"
     register: play_pod
 
   - name: Get pod info
