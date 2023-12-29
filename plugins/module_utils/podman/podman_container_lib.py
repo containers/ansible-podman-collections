@@ -467,22 +467,14 @@ class PodmanModuleParams:
     def addparam_log_opt(self, c):
         for k, v in self.params['log_opt'].items():
             if v is not None:
+                if k in ('max_file', 'max_size'):
+                    opt = k.replace('_', '-')
                 c += ['--log-opt',
-                      b"=".join([to_bytes(k.replace('max_size', 'max-size'),
-                                          errors='surrogate_or_strict'),
+                      b"=".join([to_bytes(opt, errors='surrogate_or_strict'),
                                  to_bytes(v,
                                           errors='surrogate_or_strict')])]
         return c
 
-    def addparam_log_opt_file_size(self, c):
-        for k, v in self.params['log_opt'].items():
-            if v is not None:
-                c += ['--log-opt',
-                      b"=".join([to_bytes(k.replace('max_file', 'max-file'),
-                                          errors='surrogate_or_strict'),
-                                 to_bytes(v,
-                                          errors='surrogate_or_strict')])]
-        return c
 
     def addparam_log_level(self, c):
         return c + ['--log-level', self.params['log_level']]
