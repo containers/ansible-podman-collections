@@ -9,6 +9,7 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import ARGUMENTS_OPTS_DICT
 
 __metaclass__ = type
 
@@ -732,6 +733,35 @@ class PodmanContainerDiff:
                 params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
+    def _createcommand(self, argument):
+        """Returns list of values for given argument from CreateCommand
+        from Podman container inspect output.
+
+        Args:
+            argument (str): argument name
+
+        Returns:
+
+            all_values: list of values for given argument from createcommand
+        """
+        if "createcommand" not in self.info["config"]:
+            return []
+        cr_com = self.info["config"]["createcommand"]
+        argument_values = ARGUMENTS_OPTS_DICT.get(argument, [argument])
+        all_values = []
+        for arg in argument_values:
+            for ind, cr_opt in enumerate(cr_com):
+                if arg == cr_opt:
+                    # This is a key=value argument
+                    if not cr_com[ind + 1].startswith("-"):
+                        all_values.append(cr_com[ind + 1])
+                    else:
+                        # This is a false/true switching argument
+                        return [True]
+                if cr_opt.startswith("%s=" % arg):
+                    all_values.append(cr_opt.split("=", 1)[1])
+        return all_values
+
     def _diff_update_and_compare(self, param_name, before, after):
         if before != after:
             self.diff['before'].update({param_name: before})
@@ -881,10 +911,7 @@ class PodmanContainerDiff:
         before = [":".join([i['pathonhost'], i['pathincontainer']])
                   for i in self.info['hostconfig']['devices']]
         if not before and 'createcommand' in self.info['config']:
-            cr_com = self.info['config']['createcommand']
-            if '--device' in cr_com:
-                before = [cr_com[k + 1].lower()
-                          for k, i in enumerate(cr_com) if i == '--device']
+            before = [i.lower() for i in self._createcommand('--device')]
         before = [":".join((i, i))
                   if len(i.split(":")) == 1 else i for i in before]
         after = [":".join(i.split(":")[:2]) for i in self.params['device']]
@@ -1092,9 +1119,8 @@ class PodmanContainerDiff:
             if macs:
                 before = macs[0]
         if not before and 'createcommand' in self.info['config']:
-            cr_com = self.info['config']['createcommand']
-            if '--mac-address' in cr_com:
-                before = cr_com[cr_com.index('--mac-address') + 1].lower()
+            before = [i.lower() for i in self._createcommand('--mac-address')]
+            before = before[0] if before else ''
         if self.module_params['mac_address'] is not None:
             after = self.params['mac_address']
         else:
@@ -1110,11 +1136,10 @@ class PodmanContainerDiff:
             before = []
         # Special case for options for slirp4netns rootless networking from v2
         if net_mode_before == 'slirp4netns' and 'createcommand' in self.info['config']:
-            cr_com = self.info['config']['createcommand']
-            if '--network' in cr_com:
-                cr_net = cr_com[cr_com.index('--network') + 1].lower()
-                if 'slirp4netns:' in cr_net:
-                    before = [cr_net]
+            cr_net = [i.lower() for i in self._createcommand('--network')]
+            for cr_net_opt in cr_net:
+                if 'slirp4netns:' in cr_net_opt:
+                    before = [cr_net_opt]
         after = self.params['network'] or []
         # If container is in pod and no networks are provided
         if not self.module_params['network'] and self.params['pod']:
@@ -1256,11 +1281,7 @@ class PodmanContainerDiff:
         after = self.params['ulimit'] or []
         # In case of latest podman
         if 'createcommand' in self.info['config']:
-            ulimits = []
-            for k, c in enumerate(self.info['config']['createcommand']):
-                if c == '--ulimit':
-                    ulimits.append(self.info['config']['createcommand'][k + 1])
-            before = ulimits
+            before = self._createcommand('--ulimit')
             before, after = sorted(before), sorted(after)
             return self._diff_update_and_compare('ulimit', before, after)
         if after:
