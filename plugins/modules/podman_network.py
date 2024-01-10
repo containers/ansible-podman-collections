@@ -348,11 +348,7 @@ class PodmanNetworkDiff:
     def diffparam_disable_dns(self):
         # For v3 it's impossible to find out DNS settings.
         if LooseVersion(self.version) >= LooseVersion('4.0.0'):
-            if self.info.get('driver') == 'bridge':
-                before = not self.info.get('dns_enabled', True)
-            # for all other drivers except bridge DNS is disabled by default
-            else:
-                before = False
+            before = not self.info.get('dns_enabled', True)
             after = self.params['disable_dns']
             # compare only if set explicitly
             if self.params['disable_dns'] is None:
