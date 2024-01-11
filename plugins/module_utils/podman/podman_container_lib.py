@@ -1501,6 +1501,9 @@ class PodmanContainer:
                                        ).construct_command_from_params()
         if action == 'create':
             b_command.remove(b'--detach=True')
+
+        if action == 'start' and not self.module_params['detach']:
+            b_command.append(b'--attach')
         full_cmd = " ".join([self.module_params['executable']]
                             + [to_native(i) for i in b_command])
         self.actions.append(full_cmd)
