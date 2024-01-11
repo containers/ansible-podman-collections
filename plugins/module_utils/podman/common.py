@@ -19,6 +19,25 @@ except ImportError:
                                ' < 2.11, you need to use Python < 3.12 with '
                                'distutils.version present'), exc)
 
+ARGUMENTS_OPTS_DICT = {
+    '--attach': ['--attach', '-a'],
+    '--cpu-shares': ['--cpu-shares', '-c'],
+    '--detach': ['--detach', '-d'],
+    '--env': ['--env', '-e'],
+    '--hostname': ['--hostname', '-h'],
+    '--interactive': ['--interactive', '-i'],
+    '--label': ['--label', '-l'],
+    '--memory': ['--memory', '-m'],
+    '--network': ['--network', '--net'],
+    '--publish': ['--publish', '-p'],
+    '--publish-all': ['--publish-all', '-P'],
+    '--quiet': ['--quiet', '-q'],
+    '--tty': ['--tty', '-t'],
+    '--user': ['--user', '-u'],
+    '--volume': ['--volume', '-v'],
+    '--workdir': ['--workdir', '-w'],
+}
+
 
 def run_podman_command(module, executable='podman', args=None, expected_rc=0, ignore_errors=False):
     if not isinstance(executable, list):
