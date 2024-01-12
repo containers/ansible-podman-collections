@@ -53,7 +53,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     dns_search=dict(type='str', aliases=['dns_search_domains']),
     entrypoint=dict(type='str'),
     env=dict(type='dict'),
-    env_file=dict(type='path'),
+    env_file=dict(type='list', elements='path', aliases=['env_files']),
     env_host=dict(type='bool'),
     etc_hosts=dict(type='dict', aliases=['add_hosts']),
     expose=dict(type='list', elements='str', aliases=[
@@ -369,7 +369,9 @@ class PodmanModuleParams:
         return c
 
     def addparam_env_file(self, c):
-        return c + ['--env-file', self.params['env_file']]
+        for env_file in self.params['env_files']:
+            c += ['--env-file', env_file]
+        return c
 
     def addparam_env_host(self, c):
         self.check_version('--env-host', minv='1.5.0')
