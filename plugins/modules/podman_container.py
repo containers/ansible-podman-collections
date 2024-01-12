@@ -272,6 +272,8 @@ options:
         copy or slurp module.
     type: list
     elements: path
+    aliases:
+      - env_files
   env_host:
     description:
       - Use all current host environment variables in container.
