@@ -612,7 +612,7 @@
     - name: Check podman_actions
       assert:
         that:
-          - "'podman rm -f testidem' in remove.podman_actions"
+          - "'podman rm --force testidem' in remove.podman_actions"
 
     - name: Create a pod
       containers.podman.podman_pod:

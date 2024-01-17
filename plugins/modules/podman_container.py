@@ -76,6 +76,15 @@ options:
       - Add an annotation to the container. The format is key value, multiple
         times.
     type: dict
+  attach:
+    description:
+      - Attach to STDIN, STDOUT or STDERR. The default in Podman is false.
+    type: list
+    elements: str
+    choices:
+      - stdin
+      - stdout
+      - stderr
   authfile:
     description:
       - Path of the authentication file. Default is
@@ -184,6 +193,22 @@ options:
       - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
         effective on NUMA systems.
     type: str
+  delete_depend:
+    description:
+      - Remove selected container and recursively remove all containers that depend on it.
+        Applies to "delete" command.
+    type: bool
+  delete_time:
+    description:
+      - Seconds to wait before forcibly stopping the container. Use -1 for infinite wait.
+        Applies to "delete" command.
+    type: str
+  delete_volumes:
+    description:
+      - Remove anonymous volumes associated with the container.
+        This does not include named volumes created with podman volume create,
+        or the --volume option of podman run and podman create.
+    type: bool
   detach:
     description:
       - Run container in detach mode
@@ -300,6 +325,11 @@ options:
     default: False
     aliases:
       - restart
+  force_delete:
+    description:
+        - Force deletion of container when it's being deleted.
+    type: bool
+    default: True
   generate_systemd:
     description:
       - Generate systemd unit file for container.
@@ -722,6 +752,11 @@ options:
         * always - Restart containers when they exit, regardless of status,
           retrying indefinitely
     type: str
+  restart_time:
+    description:
+      - Seconds to wait before forcibly stopping the container when restarting. Use -1 for infinite wait.
+        Applies to "restarted" status.
+    type: str
   rm:
     description:
       - Automatically remove the container when it exits. The default is false.
@@ -769,6 +804,11 @@ options:
     description:
       - Signal to stop a container. Default is SIGTERM.
     type: int
+  stop_time:
+    description:
+      - Seconds to wait before forcibly stopping the container. Use -1 for infinite wait.
+        Applies to "stopped" status.
+    type: str
   stop_timeout:
     description:
       - Timeout (in seconds) to stop a container. Default is 10.

@@ -610,7 +610,7 @@
     - name: Check podman_actions
       assert:
         that:
-          - "'podman rm -f testidem' in remove.podman_actions"
+          - "'podman rm --force testidem' in remove.podman_actions"
 
     # - name: Create a pod
     #   shell: podman pod create --name testidempod
@@ -900,6 +900,115 @@
           - "'recreated container3' in image.actions"
         fail_msg: Rootfs container test failed!
         success_msg: Rootfs container test passed!
+
+    - name: Run started container with attaching
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: started
+        command: ls /nonexists
+        attach:
+          - stdout
+          - stderr
+      register: attach
+      ignore_errors: true
+
+    - name: Check output is correct for started container with attaching
+      assert:
+        that:
+          - attach is failed
+          - "'No such file or directory' in attach.stderr"
+
+    - name: Delete container with attaching
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container with attaching in created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+        attach:
+          - stdout
+          - stderr
+
+    - name: Start container with attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+        attach:
+          - stdout
+          - stderr
+      register: attach2
+      ignore_errors: true
+
+    - name: Check output is correct for started container with attaching from created state
+      assert:
+        that:
+          - attach2 is failed
+          - "'No such file or directory' in attach2.stderr"
+
+    - name: Delete container with attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container without attaching in created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+
+    - name: Start container without attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+      register: attach21
+
+    - name: Check output is correct for container without attaching from created state
+      assert:
+        that:
+          - attach21 is success
+
+    - name: Delete container without attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container with detach False
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+        detach: false
+
+    - name: Start container with detach False
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+        detach: false
+      register: attach3
+      ignore_errors: true
+
+    - name: Check output is correct for started container with detach False
+      assert:
+        that:
+          - attach3 is failed
+          - "'No such file or directory' in attach3.stderr"
 
   always:
 
