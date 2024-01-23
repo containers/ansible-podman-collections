@@ -20,6 +20,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
         'absent', 'present', 'stopped', 'started', 'created']),
     image=dict(type='str'),
     annotation=dict(type='dict'),
+    attach=dict(type='list', elements='str', choices=['stdout', 'stderr', 'stdin']),
     authfile=dict(type='path'),
     blkio_weight=dict(type='int'),
     blkio_weight_device=dict(type='dict'),
@@ -40,6 +41,9 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     cpus=dict(type='str'),
     cpuset_cpus=dict(type='str'),
     cpuset_mems=dict(type='str'),
+    delete_depend=dict(type='bool'),
+    delete_time=dict(type='str'),
+    delete_volumes=dict(type='bool'),
     detach=dict(type='bool', default=True),
     debug=dict(type='bool', default=False),
     detach_keys=dict(type='str', no_log=False),
@@ -60,6 +64,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
                 'exposed', 'exposed_ports']),
     force_restart=dict(type='bool', default=False,
                        aliases=['restart']),
+    force_delete=dict(type='bool', default=True),
     generate_systemd=dict(type='dict', default={}),
     gidmap=dict(type='list', elements='str'),
     group_add=dict(type='list', elements='str', aliases=['groups']),
@@ -116,6 +121,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     recreate=dict(type='bool', default=False),
     requires=dict(type='list', elements='str'),
     restart_policy=dict(type='str'),
+    restart_time=dict(type='str'),
     rm=dict(type='bool', aliases=['remove', 'auto_remove']),
     rootfs=dict(type='bool'),
     secrets=dict(type='list', elements='str', no_log=True),
@@ -125,6 +131,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     sig_proxy=dict(type='bool'),
     stop_signal=dict(type='int'),
     stop_timeout=dict(type='int'),
+    stop_time=dict(type='str'),
     subgidname=dict(type='str'),
     subuidname=dict(type='str'),
     sysctl=dict(type='dict'),
@@ -231,12 +238,35 @@ class PodmanModuleParams:
 
     def start_stop_delete(self):
 
+        def complete_params(cmd):
+            if self.params['attach'] and self.action == 'start':
+                cmd.append('--attach')
+            if self.params['detach'] is False and self.action == 'start' and '--attach' not in cmd:
+                cmd.append('--attach')
+            if self.params['detach_keys'] and self.action == 'start':
+                cmd += ['--detach-keys', self.params['detach_keys']]
+            if self.params['sig_proxy'] and self.action == 'start':
+                cmd.append('--sig-proxy')
+            if self.params['stop_time'] and self.action == 'stop':
+                cmd += ['--time', self.params['stop_time']]
+            if self.params['restart_time'] and self.action == 'restart':
+                cmd += ['--time', self.params['restart_time']]
+            if self.params['delete_depend'] and self.action == 'delete':
+                cmd.append('--depend')
+            if self.params['delete_time'] and self.action == 'delete':
+                cmd += ['--time', self.params['delete_time']]
+            if self.params['delete_volumes'] and self.action == 'delete':
+                cmd.append('--volumes')
+            if self.params['force_delete'] and self.action == 'delete':
+                cmd.append('--force')
+            return cmd
+
         if self.action in ['stop', 'start', 'restart']:
-            cmd = [self.action, self.params['name']]
+            cmd = complete_params([self.action]) + [self.params['name']]
             return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
         if self.action == 'delete':
-            cmd = ['rm', '-f', self.params['name']]
+            cmd = complete_params(['rm']) + [self.params['name']]
             return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
     def check_version(self, param, minv=None, maxv=None):
@@ -254,6 +284,11 @@ class PodmanModuleParams:
     def addparam_annotation(self, c):
         for annotate in self.params['annotation'].items():
             c += ['--annotation', '='.join(annotate)]
+        return c
+
+    def addparam_attach(self, c):
+        for attach in self.params['attach']:
+            c += ['--attach=%s' % attach]
         return c
 
     def addparam_authfile(self, c):
@@ -319,6 +354,9 @@ class PodmanModuleParams:
         return c + ['--cpuset-mems', self.params['cpuset_mems']]
 
     def addparam_detach(self, c):
+        # Remove detach from create command and don't set if attach is true
+        if self.action == 'create' or self.params['attach']:
+            return c
         return c + ['--detach=%s' % self.params['detach']]
 
     def addparam_detach_keys(self, c):
@@ -1499,8 +1537,6 @@ class PodmanContainer:
                                        self.version,
                                        self.module,
                                        ).construct_command_from_params()
-        if action == 'create':
-            b_command.remove(b'--detach=True')
         full_cmd = " ".join([self.module_params['executable']]
                             + [to_native(i) for i in b_command])
         self.actions.append(full_cmd)
@@ -1520,7 +1556,7 @@ class PodmanContainer:
             self.stderr = err
             if rc != 0:
                 self.module.fail_json(
-                    msg="Can't %s container %s" % (action, self.name),
+                    msg="Container %s exited with code %s when %sed" % (self.name, rc, action),
                     stdout=out, stderr=err)
 
     def run(self):
