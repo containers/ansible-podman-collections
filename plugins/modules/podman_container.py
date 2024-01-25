@@ -295,7 +295,10 @@ options:
         running, not on the controller machine where Ansible is executing.
         If you need to copy the file from controller to remote machine, use the
         copy or slurp module.
-    type: path
+    type: list
+    elements: path
+    aliases:
+      - env_files
   env_host:
     description:
       - Use all current host environment variables in container.
