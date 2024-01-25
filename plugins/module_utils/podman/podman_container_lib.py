@@ -369,7 +369,7 @@ class PodmanModuleParams:
         return c
 
     def addparam_env_file(self, c):
-        for env_file in self.params['env_files']:
+        for env_file in self.params['env_file']:
             c += ['--env-file', env_file]
         return c
 
