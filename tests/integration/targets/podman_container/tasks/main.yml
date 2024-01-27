@@ -775,6 +775,71 @@
         that:
           - not service2_file.stat.exists | bool
 
+    - name: Create environment variables files
+      copy:
+        dest: /tmp/envfile
+        content: |
+          FOO=bar
+          BAR=foo
+          TEST=1
+          BOOL=false
+
+    - name: Create another environment variables files
+      copy:
+        dest: /tmp/envfile2
+        content: |
+          TESTVAR=qwerty
+
+    - name: Create container with environment variables file
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command:
+          - sh
+          - -c
+          - echo $BAR
+        attach:
+          - stdout
+          - stderr
+        env_file: /tmp/envfile
+      register: envfile
+
+    - name: Check output is correct for env file
+      assert:
+        that:
+          - envfile.stdout == "foo\n"
+
+    - name: Create container with multiple environment variables files
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command:
+          - sh
+          - -c
+          - echo $TESTVAR
+        attach:
+          - stdout
+          - stderr
+        env_file:
+          - /tmp/envfile
+          - /tmp/envfile2
+      register: envfile2
+
+    - name: Check output is correct for multiple env files
+      assert:
+        that:
+          - envfile2.stdout == "qwerty\n"
+
+    - name: Delete container with environment variables file
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
     - name: Create temporary rootfs directory
       ansible.builtin.tempfile:
         state: directory
