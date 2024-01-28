@@ -1,0 +1,107 @@
+- name: Test podman_secret
+  block:
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version fact
+      set_fact:
+        podman_version: "{{ podman_v.stdout | string }}"
+
+    - name: Set podman version fact to gt than 4.7.0 if so
+      set_fact:
+        podman_version_gt470: "{{ podman_version is version('4.7.0', '>=') }}"
+
+    - name: Make sure secrets don't exist
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        state: absent
+        name: "{{ item }}"
+      loop:
+        - mysecret
+        - second_secret
+
+    - name: Create secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mysecret
+        debug: true
+        data: secret content
+
+    - name: Create another secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: second_secret
+        debug: true
+        data: "not secret content"
+
+    - name: Get info about all secrets
+      containers.podman.podman_secret_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: secrets_info
+
+    - name: Get info about one secret
+      containers.podman.podman_secret_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mysecret
+      register: mysecret_info
+
+    - name: Get info about second secret with secret data
+      containers.podman.podman_secret_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: second_secret
+        showsecret: true
+      register: second_secret_info
+      when: podman_version_gt470
+
+    - name: Get info about secret that does not exist
+      containers.podman.podman_secret_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: doesnotexist
+      register: notfound
+      ignore_errors: true
+
+    # Delete all secrets
+    - name: Remove secrets
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        state: absent
+        name: "{{ item }}"
+      loop:
+        - mysecret
+        - second_secret
+
+    - name: Get info about all secrets when no secrets
+      containers.podman.podman_secret_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: secrets_info2
+
+    - name: Check secrets info
+      assert:
+        that:
+          - secrets_info.secrets | length == 2
+          - mysecret_info.secrets | length == 1
+          - mysecret_info.secrets[0].Spec.Name == 'mysecret'
+          - "'SecretData' not in mysecret_info.secrets[0]"
+          - notfound is failed
+          - secrets_info2.secrets | length == 0
+
+    - name: Check secrets info for Podman > 4.7.0
+      assert:
+        that:
+          - second_secret_info.secrets[0].SecretData == 'not secret content'
+          - second_secret_info.secrets | length == 1
+          - second_secret_info.secrets[0].Spec.Name == 'second_secret'
+      when: podman_version_gt470
+
+  always:
+
+    - name: Remove secrets
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        state: absent
+        name: "{{ item }}"
+      loop:
+        - mysecret
+        - second_secret
