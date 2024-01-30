@@ -5,6 +5,46 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.12.0
+=======
+
+Release Summary
+---------------
+
+New podman_secret_info module, improvements and bugfixes
+
+Minor Changes
+-------------
+
+- Add log_opt and annotaion options to podman_play module
+- Add option to parse CreateCommand easily for diff calc
+- Add support for setting underlying interface in podman_network
+- Alias generate systemd options stop_timeout and time
+- Fix CI rootfs for podman_container
+- Fix broken conmon version in CI install
+- Improve security_opt comparison between existing container
+- podman_container - Add new arguments to podman status commands
+- podman_container - Update env_file to accept a list of files instead of a single file
+- podman_secret_info - Add secrets info module
+
+Bugfixes
+--------
+
+- Add idempotency for podman_secret module
+- Catch exceptions when no JSON output in podman_image
+- Fail if systemd generation failed and it's explicitly set
+- Fix example name
+- Fix idempotency for podman_network
+- Fix idempotency when using 0.0.0.0 in ports
+- Fix multi-image support for podman_save
+- Fix volume inspection by name in podman_volume
+- Recreate stopped containers if recreate flag is enabled
+
+New Modules
+-----------
+
+- containers.podman.podman_secret_info - Secrets info module
+
 v1.11.0
 =======
 

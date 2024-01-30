@@ -76,13 +76,22 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-annotation"></div>
+<div class="ansibleOptionAnchor" id="parameter-annotations"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-annotations"><span id="ansible-collections-containers-podman-podman-play-module-parameter-annotation"></span><strong>annotation</strong></p>
+<a class="ansibleOptionLink" href="#parameter-annotation" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: annotations</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Add an annotation to the container or pod.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-authfile"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-authfile"><strong>authfile</strong></p>
 <a class="ansibleOptionLink" href="#parameter-authfile" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path of the authentication file. Default is ${XDG_RUNTIME_DIR}/containers/auth.json, which is set using podman login. If the authorization state is not found there, $HOME/.docker/config.json is checked, which is set using docker login. Note - You can also override the default path of the authentication file by setting the REGISTRY_AUTH_FILE environment variable. export REGISTRY_AUTH_FILE=path</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-build"><strong>build</strong></p>
 <a class="ansibleOptionLink" href="#parameter-build" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -95,28 +104,28 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-cert_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-cert-dir"><strong>cert_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-cert_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use certificates at path (*.crt, *.cert, *.key) to connect to the registry. Default certificates directory is /etc/containers/certs.d. (This option is not available with the remote Podman client)</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-configmap"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-configmap"><strong>configmap</strong></p>
 <a class="ansibleOptionLink" href="#parameter-configmap" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use Kubernetes configmap YAML at path to provide a source for environment variable values within the containers of the pod. Note - The configmap option can be used multiple times to pass multiple Kubernetes configmap YAMLs</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-context_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-context-dir"><strong>context_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-context_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Use path as the build context directory for each image. Requires build option be true.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-debug"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-debug"><strong>debug</strong></p>
 <a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -128,7 +137,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-executable"><strong>executable</strong></p>
 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -136,21 +145,21 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;podman&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-kube_file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-kube-file"><strong>kube_file</strong></p>
 <a class="ansibleOptionLink" href="#parameter-kube_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to file with YAML configuration for a Pod.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_driver"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-driver"><strong>log_driver</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_driver" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set logging driver for all created containers.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_level"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-level"><strong>log_level</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_level" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -166,21 +175,54 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-log_opt"></div>
+<div class="ansibleOptionAnchor" id="parameter-log_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt"></span><strong>log_opt</strong></p>
+<a class="ansibleOptionLink" href="#parameter-log_opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: log_options</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Logging driver specific options. Set custom logging configuration.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-log_opt/max_size"></div>
+<div class="ansibleOptionAnchor" id="parameter-log_options/max_size"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-max-size"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-max-size"></span><strong>max_size</strong></p>
+<a class="ansibleOptionLink" href="#parameter-log_opt/max_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify a max size of the log file (e.g 10mb).</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-log_opt/path"></div>
+<div class="ansibleOptionAnchor" id="parameter-log_options/path"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-path"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-path"></span><strong>path</strong></p>
+<a class="ansibleOptionLink" href="#parameter-log_opt/path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>specify a path to the log file (e.g. /var/log/container/mycontainer.json).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-log_opt/tag"></div>
+<div class="ansibleOptionAnchor" id="parameter-log_options/tag"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-tag"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-tag"></span><strong>tag</strong></p>
+<a class="ansibleOptionLink" href="#parameter-log_opt/tag" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>specify a custom log tag for the container. This option is currently supported only by the journald log driver in Podman.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-network"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-network"><strong>network</strong></p>
 <a class="ansibleOptionLink" href="#parameter-network" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of the names of CNI networks the pod should join.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-password"><strong>password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The username and password to use to authenticate with the registry if required.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quiet"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-quiet"><strong>quiet</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quiet" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -192,7 +234,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-recreate"><strong>recreate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -204,14 +246,14 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-seccomp_profile_root"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-seccomp-profile-root"><strong>seccomp_profile_root</strong></p>
 <a class="ansibleOptionLink" href="#parameter-seccomp_profile_root" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Directory path for seccomp profiles (default is “/var/lib/kubelet/seccomp”). This option is not available with the remote Podman client</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
@@ -224,7 +266,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tls_verify"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-tls-verify"><strong>tls_verify</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tls_verify" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -236,14 +278,14 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-username"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-username"><strong>username</strong></p>
 <a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The username and password to use to authenticate with the registry if required.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-userns"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-userns"><strong>userns</strong></p>
 <a class="ansibleOptionLink" href="#parameter-userns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -259,6 +301,19 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">  </span><span class="nt">containers.podman.podman_play</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">kube_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/kube.yaml</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Recreate pod from a kube file with options</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_play</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">kube_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/kube.yaml</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
+<span class="w">    </span><span class="nt">recreate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">greeting</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hello</span>
+<span class="w">      </span><span class="nt">greet_to</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">world</span>
+<span class="w">    </span><span class="nt">userns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span>
+<span class="w">    </span><span class="nt">log_opt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/my-container.log</span>
+<span class="w">      </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10mb</span>
 </pre></div>
 </div>
 <section id="authors">
@@ -317,6 +372,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <li class="toctree-l1"><a class="reference internal" href="podman_runlabel_module.html">containers.podman.podman_runlabel module – Run given label from given image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_save_module.html">containers.podman.podman_save module – Saves podman image to tar file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_secret_module.html">containers.podman.podman_secret module – Manage podman secrets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_secret_info_module.html">containers.podman.podman_secret_info module – Gather info about podman secrets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_tag_module.html">containers.podman.podman_tag module – Add an additional name to a local image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_volume_module.html">containers.podman.podman_volume module – Manage Podman volumes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_volume_info_module.html">containers.podman.podman_volume_info module – Gather info about podman volumes</a></li>
