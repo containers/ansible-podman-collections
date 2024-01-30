@@ -136,6 +136,13 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-interface_name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-interface-name"><strong>interface_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-interface_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>For bridge, it uses the bridge interface name. For macvlan, it is the parent device on the host (it is the same as ‘opt.parent’)</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-internal"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-internal"><strong>internal</strong></p>
 <a class="ansibleOptionLink" href="#parameter-internal" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -147,14 +154,14 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ip_range"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-ip-range"><strong>ip_range</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ip_range" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Allocate container IP from range</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ipv6"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-ipv6"><strong>ipv6</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -166,28 +173,28 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-macvlan"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-macvlan"><strong>macvlan</strong></p>
 <a class="ansibleOptionLink" href="#parameter-macvlan" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Create a Macvlan connection based on this device</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the network</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt"><strong>opt</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Add network options. Currently ‘vlan’ and ‘mtu’ are supported.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/isolate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-isolate"><strong>isolate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/isolate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -199,42 +206,42 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/metric"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-metric"><strong>metric</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/metric" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Sets the Route Metric for the default route created in every container joined to this network. Can only be used with the Netavark network backend.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option sets the specified ip/macvlan mode on the interface.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/mtu"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mtu"><strong>mtu</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/mtu" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>MTU size for bridge network interface.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/parent"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-parent"><strong>parent</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/parent" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The host device which should be used for the macvlan interface. Defaults to the default route interface.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The host device which should be used for the macvlan interface (it is the same as ‘interface’ in that case). Defaults to the default route interface.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/vlan"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-vlan"><strong>vlan</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/vlan" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VLAN tag for bridge which enables vlan_filtering.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-recreate"><strong>recreate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -246,7 +253,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -258,7 +265,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-subnet"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-subnet"><strong>subnet</strong></p>
 <a class="ansibleOptionLink" href="#parameter-subnet" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -363,6 +370,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <li class="toctree-l1"><a class="reference internal" href="podman_runlabel_module.html">containers.podman.podman_runlabel module – Run given label from given image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_save_module.html">containers.podman.podman_save module – Saves podman image to tar file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_secret_module.html">containers.podman.podman_secret module – Manage podman secrets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="podman_secret_info_module.html">containers.podman.podman_secret_info module – Gather info about podman secrets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_tag_module.html">containers.podman.podman_tag module – Add an additional name to a local image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_volume_module.html">containers.podman.podman_volume module – Manage Podman volumes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="podman_volume_info_module.html">containers.podman.podman_volume_info module – Gather info about podman volumes</a></li>
