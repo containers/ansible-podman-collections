@@ -183,6 +183,7 @@ EXAMPLES = '''
 - name: Postgres container must be started and enabled on systemd
   ansible.builtin.systemd:
     name: container-postgres_local
+    scope: user
     daemon_reload: true
     state: started
     enabled: true
