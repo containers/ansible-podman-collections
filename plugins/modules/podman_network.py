@@ -46,7 +46,8 @@ options:
   gateway:
     description:
       - IPv4 or IPv6 gateway for the subnet
-    type: str
+    type: list
+    elements: str
   interface_name:
     description:
       - For bridge, it uses the bridge interface name.
@@ -60,7 +61,8 @@ options:
   ip_range:
     description:
       - Allocate container IP from range
-    type: str
+    type: list
+    elements: str
   ipv6:
     description:
       - Enable IPv6 (Dual Stack) networking. You must pass a IPv6 subnet.
@@ -69,7 +71,8 @@ options:
   subnet:
     description:
       - Subnet in CIDR format
-    type: str
+    type: list
+    elements: str
   macvlan:
     description:
       - Create a Macvlan connection based on this device
@@ -197,6 +200,7 @@ network:
         ]
 """
 
+from itertools import chain
 import json  # noqa: F402
 try:
     import ipaddress
@@ -267,16 +271,22 @@ class PodmanNetworkModuleParams:
                                       param, minv, self.podman_version))
 
     def addparam_gateway(self, c):
-        return c + ['--gateway', self.params['gateway']]
+        for gateway in self.params['network']:
+            c + ['--gateway', gateway]
+        return c
 
     def addparam_driver(self, c):
         return c + ['--driver', self.params['driver']]
 
     def addparam_subnet(self, c):
-        return c + ['--subnet', self.params['subnet']]
+        for subnet in self.params['subnet']:
+            c + ['--subnet', subnet]
+        return c
 
     def addparam_ip_range(self, c):
-        return c + ['--ip-range', self.params['ip_range']]
+        for ip_range in self.params['ip_range']:
+            c + ['--ip-range', ip_range]
+        return c
 
     def addparam_ipv6(self, c):
         return c + ['--ipv6=%s' % self.params['ipv6']]
@@ -376,9 +386,9 @@ class PodmanNetworkDiff:
         if LooseVersion(self.version) >= LooseVersion('4.0.0'):
             return self._diff_update_and_compare('gateway', '', '')
         try:
-            before = self.info['plugins'][0]['ipam']['ranges'][0][0]['gateway']
+            before = [entry['gateway'] for entry in chain.from_iterable(self.info['plugins'][0]['ipam']['ranges'])]
         except (IndexError, KeyError):
-            before = ''
+            before = []
         after = before
         if self.params['gateway'] is not None:
             after = self.params['gateway']
@@ -407,14 +417,14 @@ class PodmanNetworkDiff:
         if LooseVersion(self.version) >= LooseVersion('4.0.0'):
             return self._diff_update_and_compare('subnet', '', '')
         try:
-            before = self.info['plugins'][0]['ipam']['ranges'][0][0]['subnet']
+            before = [entry['subnet'] for entry in chain.from_iterable(self.info['plugins'][0]['ipam']['ranges'])]
         except (IndexError, KeyError):
-            before = ''
+            before = []
         after = before
         if self.params['subnet'] is not None:
             after = self.params['subnet']
             if HAS_IP_ADDRESS_MODULE:
-                after = ipaddress.ip_network(after).compressed
+                after = [ipaddress.ip_network(addr).compressed for addr in after]
         return self._diff_update_and_compare('subnet', before, after)
 
     def diffparam_macvlan(self):
@@ -662,12 +672,12 @@ def main():
             disable_dns=dict(type='bool', required=False),
             driver=dict(type='str', required=False),
             force=dict(type='bool', default=False),
-            gateway=dict(type='str', required=False),
+            gateway=dict(type='list', elements='str', required=False),
             interface_name=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
-            ip_range=dict(type='str', required=False),
+            ip_range=dict(type='list', elements='str', required=False),
             ipv6=dict(type='bool', required=False),
-            subnet=dict(type='str', required=False),
+            subnet=dict(type='list', elements='str', required=False),
             macvlan=dict(type='str', required=False),
             opt=dict(type='dict', required=False,
                      options=dict(
