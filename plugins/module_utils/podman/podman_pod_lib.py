@@ -800,6 +800,8 @@ class PodmanPodManager:
                               (default: {True})
         """
         facts = self.pod.get_info() if changed else self.pod.info
+        if isinstance(facts, list):
+            facts = facts[0]
         out, err = self.pod.stdout, self.pod.stderr
         self.results.update({'changed': changed, 'pod': facts,
                              'podman_actions': self.pod.actions},
