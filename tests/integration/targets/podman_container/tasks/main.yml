@@ -855,9 +855,14 @@
         dest: "{{ container_tempdir.path }}/latest-releases.yaml"
       register: alpine_releases_file
 
+    - name: Get content of alpine releases file
+      ansible.builtin.slurp:
+        src: "{{ container_tempdir.path }}/latest-releases.yaml"
+      register: latest_releases_file
+
     - name: Download alpine latest rootfs
       vars:
-        latest_releases: "{{ lookup('file', alpine_releases_file.dest) }}"
+        latest_releases: "{{ latest_releases_file.content | b64decode }}"
         latest_version: "{{ (latest_releases | from_yaml)[0].version }}"
         latest_branch: "{{ (latest_releases | from_yaml)[0].branch }}"
       ansible.builtin.unarchive:
