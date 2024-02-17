@@ -658,7 +658,16 @@ class PodmanPod:
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
             [self.module_params['executable'], b'pod', b'inspect', self.name])
-        return json.loads(out) if rc == 0 else {}
+        if rc == 0:
+            info = json.loads(out)
+            # from podman 5 onwards, this is a list of dicts,
+            # before it was just a single dict when querying
+            # a single pod
+            if isinstance(info, list):
+                return info[0]
+            else:
+                return info
+        return {}
 
     def get_ps(self):
         """Inspect pod process and gather info about it."""
