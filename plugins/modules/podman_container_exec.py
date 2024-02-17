@@ -40,6 +40,10 @@ options:
     description:
       - Set environment variables.
     type: dict
+  env_quoted:
+    description: Double-quote the environment variables.
+    type: bool
+    default: true
   privileged:
     description:
       - Give extended privileges to the container.
@@ -137,6 +141,7 @@ def run_container_exec(module: AnsibleModule) -> dict:
     command = module.params['command']
     detach = module.params['detach']
     env = module.params['env']
+    env_quoted = module.params['env_quoted']
     privileged = module.params['privileged']
     tty = module.params['tty']
     user = module.params['user']
@@ -155,8 +160,13 @@ def run_container_exec(module: AnsibleModule) -> dict:
                     msg="Specify string value %s on the env field" % (value))
 
             to_text(value, errors='surrogate_or_strict')
-            exec_options += ['--env',
-                             '%s="%s"' % (key, value)]
+
+          if env_quoted is not None and env_quoted == false:
+                exec_options += ['--env',
+                                 '%s=%s' % (key, value)]
+            else:
+                exec_options += ['--env',
+                                 '%s="%s"' % (key, value)]
 
     if privileged:
         exec_options.append('--privileged')
