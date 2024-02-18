@@ -12,6 +12,7 @@
 
     - name: Test exec when the container doesn't exist
       containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         command: "cat /etc/redhat-release"
       ignore_errors: true
@@ -19,6 +20,7 @@
 
     - name: Create and start a container for testing
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         image: registry.access.redhat.com/ubi8
         command: sleep 1d
@@ -26,6 +28,7 @@
 
     - name: Test exec with command and workdir options
       containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         command: "cat redhat-release"
         workdir: /etc
@@ -33,6 +36,7 @@
 
     - name: Test exec with argv and env options
       containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         argv:
           - /bin/sh
@@ -45,6 +49,7 @@
 
     - name: Test exec with detach option
       containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ container_name }}"
         command: "cat redhat-release"
         detach: true
@@ -58,6 +63,21 @@
           - "'hello world' in exec2.stdout"
           - "'goodbye world' in exec2.stdout"
           - exec3.exec_id is defined
+
+    - name: Test exec with failing command
+      containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        command: "ls /nonexistent"
+      register: exec4
+      ignore_errors: true
+
+    - name: Check if the result is as expected in case of a failing command
+      assert:
+        that:
+          - exec4 is failed
+          - "'No such file or directory' in exec4.stderr"
+          - exec4.rc != 0
 
   always:
     - name: Cleanup
