@@ -11,6 +11,7 @@
 
   - name: Create pod for limiting resources
     containers.podman.podman_pod:
+      executable: "{{ test_executable | default('podman') }}"
       name: limited-pod
       state: created
       blkio_weight: "{{ limit.blkio_weight }}"
@@ -20,6 +21,7 @@
 
   - name: Get information on pod for limiting resources
     containers.podman.podman_pod_info:
+      executable: "{{ test_executable | default('podman') }}"
       name: limited-pod
     register: pod_info
 
@@ -34,5 +36,6 @@
   always:
     - name: Cleanup
       containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
         name: limited-pod
         state: absent
