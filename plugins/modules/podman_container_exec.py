@@ -40,6 +40,11 @@ options:
     description:
       - Set environment variables.
     type: dict
+  executable:
+    description:
+        - The path to the podman executable.
+    type: str
+    default: podman
   privileged:
     description:
       - Give extended privileges to the container.
@@ -141,6 +146,7 @@ def run_container_exec(module: AnsibleModule) -> dict:
     tty = module.params['tty']
     user = module.params['user']
     workdir = module.params['workdir']
+    executable = module.params['executable']
 
     if command is not None:
         argv = shlex.split(command)
@@ -178,7 +184,7 @@ def run_container_exec(module: AnsibleModule) -> dict:
     exec_with_args.extend(exec_options)
 
     rc, stdout, stderr = run_podman_command(
-        module=module, executable='podman', args=exec_with_args)
+        module=module, executable=executable, args=exec_with_args, ignore_errors=True)
 
     result = {
         'changed': changed,
@@ -210,6 +216,10 @@ def main():
         'detach': {
             'type': 'bool',
             'default': False,
+        },
+        'executable': {
+            'type': 'str',
+            'default': 'podman',
         },
         'env': {
             'type': 'dict',
