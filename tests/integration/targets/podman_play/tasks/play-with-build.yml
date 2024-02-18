@@ -9,6 +9,7 @@
 
     - name: Make sure that {{ image_name }} image is absent
       containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ image_name }}"
         state: absent
 
@@ -31,6 +32,7 @@
 
     - name: Play kube file with image build
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: "{{ kube_dir }}/kube-buil-test.yaml"
         build: true
         context_dir: "{{ build_context_dir }}"
@@ -47,5 +49,6 @@
 
     - name: Cleanup pods
       containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
         kube_file: "{{ kube_dir }}/kube-buil-test.yaml"
         state: absent

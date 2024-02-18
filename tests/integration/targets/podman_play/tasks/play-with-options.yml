@@ -9,6 +9,7 @@
 
   - name: Create Pod with many options
     containers.podman.podman_play:
+      executable: "{{ test_executable | default('podman') }}"
       kube_file: "{{ kube_dir }}/{{ kube_file }}"
       state: started
       recreate: true
@@ -23,6 +24,7 @@
 
   - name: Get pod info
     containers.podman.podman_pod_info:
+      executable: "{{ test_executable | default('podman') }}"
       name: "{{ target_pod }}"
     register: play_pod_info
 
@@ -33,6 +35,7 @@
 
   - name: Get container info
     containers.podman.podman_container_info:
+      executable: "{{ test_executable | default('podman') }}"
       name: "{{ target_container }}"
     register: play_container_info
 
@@ -48,5 +51,6 @@
 
   - name: Cleanup pods
     containers.podman.podman_play:
+      executable: "{{ test_executable | default('podman') }}"
       kube_file: "{{ kube_dir }}/{{ kube_file }}"
       state: absent

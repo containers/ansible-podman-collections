@@ -9,6 +9,7 @@
     # Create objects to be pruned
     - name: Create container
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ cname }}"
         image: quay.io/podman/hello:latest
         state: present
@@ -16,12 +17,14 @@
 
     - name: Create network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ nname }}"
         state: present
       register: network
 
     - name: Create volume
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ vname }}"
         state: present
       register: volume
@@ -29,12 +32,14 @@
     # Prune objects
     - name: Prune objects
       containers.podman.podman_prune:
+        executable: "{{ test_executable | default('podman') }}"
         container: true
         network: true
         volume: true
 
     - name: Check if container exists
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: container_exists
 
     - name: Check if podman network exists
@@ -43,6 +48,7 @@
 
     - name: Check if podman volume exists
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: volume_exists
 
     - name: Verify assertions for network, container and volume
@@ -58,6 +64,7 @@
     # Test with filters
     - name: Prune objects with filters
       containers.podman.podman_prune:
+        executable: "{{ test_executable | default('podman') }}"
         image: true
         image_filters:
           dangling_only: false
@@ -65,6 +72,7 @@
 
     - name: Check if image exists
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: image_exists
 
     - name: Verify assertions for image (with filters)
@@ -74,6 +82,7 @@
 
     - name: Create container
       containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ cname }}"
         image: quay.io/podman/hello:latest
         state: present
@@ -81,36 +90,43 @@
 
     - name: Create network
       containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ nname }}"
         state: present
       register: network_system
 
     - name: Create volume
       containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
         name: "{{ vname }}"
         state: present
       register: volume_system
 
     - name: System prune
       containers.podman.podman_prune:
+        executable: "{{ test_executable | default('podman') }}"
         system: true
         system_all: true
         system_volumes: true
 
     - name: Check if container exists
       containers.podman.podman_container_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: container_system_exists
 
     - name: Check if podman network exists
       containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: network_system_exists
 
     - name: Check if podman volume exists
       containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: volume_system_exists
 
     - name: Check if image exists
       containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
       register: image_system_exists
 
     - name: Verify assertions for system
