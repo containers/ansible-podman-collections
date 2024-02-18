@@ -109,9 +109,12 @@ def get_pod_info(module, executable, name):
         rc, out, err = module.run_command(command + [pod])
         errs.append(err.strip())
         rcs += [rc]
-        if not out or json.loads(out) is None or not json.loads(out):
+        data = json.loads(out)
+        if isinstance(data, list) and data:
+            data = data[0]
+        if not out or data is None or not data:
             continue
-        result.append(json.loads(out))
+        result.append(data)
     return result, errs, rcs
 
 
