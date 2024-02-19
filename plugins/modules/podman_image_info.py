@@ -48,7 +48,7 @@ RETURN = r"""
 images:
     description: info from all or specified images
     returned: always
-    type: dict
+    type: list
     sample: [
         {
             "Annotations": {},
