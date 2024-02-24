@@ -162,7 +162,7 @@ def run_container_exec(module: AnsibleModule) -> dict:
 
             to_text(value, errors='surrogate_or_strict')
             exec_options += ['--env',
-                             '%s="%s"' % (key, value)]
+                             '%s=%s' % (key, value)]
 
     if privileged:
         exec_options.append('--privileged')
