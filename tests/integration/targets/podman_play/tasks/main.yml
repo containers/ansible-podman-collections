@@ -146,3 +146,11 @@
     userns: host
     kube_dir: /tmp
     kube_file: play-pod.yaml
+
+- name: Test play kube with multi doc yaml
+  include_tasks: play-multi-yaml.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+    kube_dir: /tmp
+    kube_file: multi-yaml.yml
+    target_container: foobar-container-1

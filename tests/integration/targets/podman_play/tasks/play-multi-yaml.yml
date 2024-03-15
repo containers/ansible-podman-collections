@@ -1,0 +1,35 @@
+---
+- name: Test kube play wih multi doc yaml 
+  block:
+  - name: Copy kube file
+    copy:
+      src: "{{ kube_file }}"
+      dest: "{{ kube_dir }}/{{ kube_file }}"
+      remote_src: false
+
+  - name: Create Pod with multi doc yaml
+    containers.podman.podman_play:
+      executable: "{{ test_executable | default('podman') }}"
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
+      state: started
+      recreate: true
+    register: play_pod
+
+  - name: Get pod info
+    containers.podman.podman_container_info:
+      executable: "{{ test_executable | default('podman') }}"
+      name: "{{ target_container }}"
+    register: info
+
+  - name: Check if an expected container is running
+    assert:
+      that:
+        - info.containers.0.State.Running == true
+        - '"FOO=bar" in info.containers.0.Config.Env'
+  always:
+
+  - name: Cleanup pod
+    containers.podman.podman_play:
+      executable: "{{ test_executable | default('podman') }}"
+      kube_file: "{{ kube_dir }}/{{ kube_file }}"
+      state: absent

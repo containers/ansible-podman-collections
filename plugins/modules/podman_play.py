@@ -249,12 +249,13 @@ class PodmanKubeManagement:
         if self.module.params['kube_file']:
             if HAS_YAML:
                 with open(self.module.params['kube_file']) as f:
-                    pod = yaml.safe_load(f)
-                if 'metadata' in pod:
-                    pod_name = pod['metadata'].get('name')
-                else:
-                    self.module.fail_json(
-                        "No metadata in Kube file!\n%s" % pod)
+                    pods = list(yaml.safe_load_all(f))
+                for pod in pods:
+                    if 'metadata' in pod:
+                        pod_name = pod['metadata'].get('name')
+                    else:
+                        self.module.fail_json(
+                            "No metadata in Kube file!\n%s" % pod)
             else:
                 with open(self.module.params['kube_file']) as text:
                     # the following formats are matched for a kube name:
