@@ -154,10 +154,7 @@ def main():
         supports_check_mode=True,
         required_together=(
             ['username', 'password'],
-        ),
-        mutually_exclusive=(
-            ['certdir', 'tlsverify'],
-        ),
+        )
     )
 
     registry = module.params['registry']
