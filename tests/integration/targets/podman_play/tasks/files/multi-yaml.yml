@@ -19,3 +19,10 @@ spec:
     - configMapRef:
         name: foo
         optional: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo2
+data:
+    FOO2: bar2
