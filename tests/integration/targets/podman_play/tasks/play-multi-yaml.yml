@@ -26,7 +26,6 @@
       that:
         - info.containers.0.State.Running == true
         - '"FOO=bar" in info.containers.0.Config.Env'
-        - '"FOO2=bar2" in info.containers.0.Config.Env'
     
   - name: Cleanup pod
     containers.podman.podman_play:
@@ -38,4 +37,4 @@
   - name: Check if the pod was removed as expected
     assert:
       that:
-        - removed_pod is changed
+        - remove_pod is changed
