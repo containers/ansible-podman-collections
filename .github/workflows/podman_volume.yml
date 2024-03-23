@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_volume.py'
       - 'tests/integration/targets/podman_volume/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_volume.yml'

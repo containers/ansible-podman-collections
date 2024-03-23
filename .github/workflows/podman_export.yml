@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_export.py'
       - 'tests/integration/targets/podman_export/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_export.yml'

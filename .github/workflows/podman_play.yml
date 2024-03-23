@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_play.py'
       - 'tests/integration/targets/podman_play/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_play.yml'
