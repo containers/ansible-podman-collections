@@ -337,3 +337,11 @@ def get_podman_version(module, fail=True):
                              (executable, err))
         return None
     return out.split("version")[1].strip()
+
+
+def check_quadlet_directory(module, fail_if_missing=True):
+    if not os.path.exists(os.path.dirname(module.params['quadlet_file_path'])):
+        if fail_if_missing:
+            module.fail_json(
+                msg="Directory for quadlet_file_path doesn't exist!")
+        os.makedirs(os.path.dirname(module.params['quadlet_file_path']))

@@ -64,6 +64,7 @@ DOCUMENTATION = r'''
         - present
         - absent
         - build
+        - quadlet
     validate_certs:
       description:
         - Require HTTPS and validate certificates when pulling or pushing. Also used during build if a pull or push is necessary.
@@ -175,6 +176,18 @@ DOCUMENTATION = r'''
             - docker-daemon
             - oci-archive
             - ostree
+    quadlet_file_path:
+      description:
+        - Path to the quadlet file to be created.
+      type: path
+      required: false
+    quadlet_options:
+      description:
+        - Options for the quadlet file. Provide missing in usual network args
+          options as a list of lines to add.
+      type: list
+      elements: str
+      required: false
 '''
 
 EXAMPLES = r"""
@@ -410,6 +423,7 @@ import shlex
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
 
 
 class PodmanImageManager(object):
@@ -450,6 +464,9 @@ class PodmanImageManager(object):
 
         if self.state in ['absent']:
             self.absent()
+
+        if self.state == 'quadlet':
+            self.make_quadlet()
 
     def _run(self, args, expected_rc=0, ignore_errors=False):
         cmd = " ".join([self.executable]
@@ -536,6 +553,11 @@ class PodmanImageManager(object):
             self.results['image']['state'] = 'Deleted'
             if not self.module.check_mode:
                 self.remove_image_id()
+
+    def make_quadlet(self):
+        results_update = create_quadlet_state(self.module, "image")
+        self.results.update(results_update)
+        self.module.exit_json(**self.results)
 
     def find_image(self, image_name=None):
         if image_name is None:
@@ -810,13 +832,15 @@ def main():
             push=dict(type='bool', default=False),
             path=dict(type='str'),
             force=dict(type='bool', default=False),
-            state=dict(type='str', default='present', choices=['absent', 'present', 'build']),
+            state=dict(type='str', default='present', choices=['absent', 'present', 'build', 'quadlet']),
             validate_certs=dict(type='bool', aliases=['tlsverify', 'tls_verify']),
             executable=dict(type='str', default='podman'),
             auth_file=dict(type='path', aliases=['authfile']),
             username=dict(type='str'),
             password=dict(type='str', no_log=True),
             ca_cert_dir=dict(type='path'),
+            quadlet_file_path=dict(type='path', required=False),
+            quadlet_options=dict(type='list', elements='str', required=False),
             build=dict(
                 type='dict',
                 aliases=['build_args', 'buildargs'],
@@ -863,6 +887,9 @@ def main():
         required_together=(
             ['username', 'password'],
         ),
+        required_if=[
+            ('state', 'quadlet', ['quadlet_file_path']),
+        ],
         mutually_exclusive=(
             ['auth_file', 'username'],
             ['auth_file', 'password'],

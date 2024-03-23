@@ -1,11 +1,12 @@
 from __future__ import (absolute_import, division, print_function)
-import json
+import json  # noqa: F402
 
 from ansible.module_utils._text import to_bytes, to_native
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state, PodQuadlet
 
 
 __metaclass__ = type
@@ -23,6 +24,7 @@ ARGUMENTS_SPEC_POD = dict(
             'stopped',
             'paused',
             'unpaused',
+            'quadlet'
         ]),
     recreate=dict(type='bool', default=False),
     add_host=dict(type='list', required=False, elements='str'),
@@ -62,6 +64,8 @@ ARGUMENTS_SPEC_POD = dict(
     pod_id_file=dict(type='str', required=False),
     publish=dict(type='list', required=False,
                  elements='str', aliases=['ports']),
+    quadlet_file_path=dict(type='path'),
+    quadlet_options=dict(type='list', elements='str'),
     share=dict(type='str', required=False),
     subgidname=dict(type='str', required=False),
     subuidname=dict(type='str', required=False),
@@ -267,7 +271,7 @@ class PodmanPodModuleParams:
         return c
 
     def addparam_no_hosts(self, c):
-        return c + ["=".join('--no-hosts', self.params['no_hosts'])]
+        return c + ["=".join(['--no-hosts', self.params['no_hosts']])]
 
     def addparam_pid(self, c):
         return c + ['--pid', self.params['pid']]
@@ -823,6 +827,9 @@ class PodmanPodManager:
             else:
                 self.results['diff']['before'] += sysd['diff']['before']
                 self.results['diff']['after'] += sysd['diff']['after']
+        quadlet = PodQuadlet(self.module_params)
+        quadlet_content = quadlet.create_quadlet_content()
+        self.results.update({'podman_quadlet': quadlet_content})
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
@@ -835,7 +842,7 @@ class PodmanPodManager:
             'killed': self.make_killed,
             'paused': self.make_paused,
             'unpaused': self.make_unpaused,
-
+            'quadlet': self.make_quadlet,
         }
         process_action = states_map[self.state]
         process_action()
@@ -937,3 +944,7 @@ class PodmanPodManager:
             self.results.update({'changed': True})
         self.results.update({'pod': {},
                              'podman_actions': self.pod.actions})
+
+    def make_quadlet(self):
+        results_update = create_quadlet_state(self.module, "pod")
+        self.results.update(results_update)
