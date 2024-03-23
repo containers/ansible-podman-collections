@@ -10,6 +10,8 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import ARGUMENTS_OPTS_DICT
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state, ContainerQuadlet
+
 
 __metaclass__ = type
 
@@ -17,7 +19,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     name=dict(required=True, type='str'),
     executable=dict(default='podman', type='str'),
     state=dict(type='str', default='started', choices=[
-        'absent', 'present', 'stopped', 'started', 'created']),
+        'absent', 'present', 'stopped', 'started', 'created', 'quadlet']),
     image=dict(type='str'),
     annotation=dict(type='dict'),
     attach=dict(type='list', elements='str', choices=['stdout', 'stderr', 'stdin']),
@@ -116,6 +118,8 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     publish=dict(type='list', elements='str', aliases=[
         'ports', 'published', 'published_ports']),
     publish_all=dict(type='bool'),
+    quadlet_file_path=dict(type='path'),
+    quadlet_options=dict(type='list', elements='str'),
     read_only=dict(type='bool'),
     read_only_tmpfs=dict(type='bool'),
     recreate=dict(type='bool', default=False),
@@ -1669,6 +1673,9 @@ class PodmanManager:
             else:
                 self.results['diff']['before'] += sysd['diff']['before']
                 self.results['diff']['after'] += sysd['diff']['after']
+        quadlet = ContainerQuadlet(self.module_params)
+        quadlet_content = quadlet.create_quadlet_content()
+        self.results.update({'podman_quadlet': quadlet_content})
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
@@ -1800,6 +1807,10 @@ class PodmanManager:
         self.results.update({'container': {},
                              'podman_actions': self.container.actions})
 
+    def make_quadlet(self):
+        results_update = create_quadlet_state(self.module, "container")
+        self.results.update(results_update)
+
     def execute(self):
         """Execute the desired action according to map of actions & states."""
         states_map = {
@@ -1808,6 +1819,7 @@ class PodmanManager:
             'absent': self.make_absent,
             'stopped': self.make_stopped,
             'created': self.make_created,
+            'quadlet': self.make_quadlet,
         }
         process_action = states_map[self.state]
         process_action()

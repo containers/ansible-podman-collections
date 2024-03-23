@@ -30,6 +30,7 @@ options:
       - stopped
       - paused
       - unpaused
+      - quadlet
   recreate:
     description:
       - Use with present and started states to force the re-creation of an
@@ -340,6 +341,16 @@ options:
     required: false
     aliases:
       - ports
+  quadlet_file_path:
+    description:
+      - Path to the quadlet file to write.
+    type: path
+  quadlet_options:
+    description:
+      - Options for the quadlet file. Provide missing in usual container args
+        options as a list of lines to add.
+    type: list
+    elements: str
   share:
     description:
     - A comma delimited list of kernel namespaces to share. If none or "" is specified,
@@ -455,7 +466,10 @@ from ..module_utils.podman.podman_pod_lib import ARGUMENTS_SPEC_POD  # noqa: F40
 
 def main():
     module = AnsibleModule(
-        argument_spec=ARGUMENTS_SPEC_POD
+        argument_spec=ARGUMENTS_SPEC_POD,
+        required_if=[
+            ('state', 'quadlet', ['quadlet_file_path']),
+        ],
     )
     results = PodmanPodManager(module, module.params).execute()
     module.exit_json(**results)

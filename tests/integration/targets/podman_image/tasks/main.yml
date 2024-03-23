@@ -329,6 +329,115 @@
           - item.Architecture == "arm"
       loop: "{{ imageinfo_arch.images }}"
 
+    - name: Create quadlet image file
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/coreos-installer:latest
+        state: quadlet
+        arch: x86_64
+        ca_cert_dir: /etc/docker/certs.d
+        username: user
+        password: pass
+        validate_certs: false
+        quadlet_file_path: /tmp/quadlet.image
+        quadlet_options:
+          - "ImageTag=quay.io/coreos/coreos-installer:12345"
+          - "AllTags=true"
+          - |-
+            [Install]
+            WantedBy=default.target
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/quadlet.image
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet image in /tmp/quadlet.image file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/quadlet.image
+      lineinfile:
+        path: /tmp/quadlet.image
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Image]"
+        - "Image=quay.io/coreos/coreos-installer:latest"
+        - "ImageTag=quay.io/coreos/coreos-installer:12345"
+        - "AllTags=true"
+        - "WantedBy=default.target"
+        - "Arch=x86_64"
+        - "CertDir=/etc/docker/certs.d"
+        - "Creds=user:pass"
+        - "TLSVerify=false"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/quadlet.image: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet image file - same
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/coreos-installer:latest
+        state: quadlet
+        arch: x86_64
+        ca_cert_dir: /etc/docker/certs.d
+        username: user
+        password: pass
+        validate_certs: false
+        quadlet_file_path: /tmp/quadlet.image
+        quadlet_options:
+          - "ImageTag=quay.io/coreos/coreos-installer:12345"
+          - "AllTags=true"
+          - |-
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet image file - different
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/coreos-installer:latest
+        state: quadlet
+        arch: arm64
+        ca_cert_dir: /etc/docker/certs.d
+        username: user
+        password: pass
+        validate_certs: false
+        quadlet_file_path: /tmp/quadlet.image
+        quadlet_options:
+          - "ImageTag=quay.io/coreos/coreos-installer:12345"
+          - "AllTags=true"
+          - |-
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'arm64' in quad3.diff.after"
+
   always:
     - name: Cleanup images
       containers.podman.podman_image:
