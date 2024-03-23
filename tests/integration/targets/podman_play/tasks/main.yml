@@ -107,6 +107,34 @@
         that:
           - info1['pods'][0]['State'] == 'Running'
 
+    - name: Remove pods created by kube play
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: "{{ item }}"
+        state: absent
+      register: remove_pod
+      loop:
+        - /tmp/play1.yaml
+        - /tmp/play3.yaml
+
+    - name: Get deleted pod info
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+      loop:
+        - web-deploy
+        - web-deploy-pod
+        - web-deploy-pod-0
+        - web-deploy-pod-1
+        - web-deploy-pod-2
+      register: nonexist
+
+    - name: Check if the result is as expected
+      assert:
+        that:
+          - item.pods == []
+      with_items: "{{ nonexist.results }}"
+
   always:
 
     - name: Delete all pods leftovers from tests
