@@ -1,0 +1,27 @@
+kind: ConfigMap
+metadata:
+  name: foo
+data:
+  FOO: bar
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: foobar
+spec:
+  containers:
+  - command:
+    - top
+    name: container-1
+    image: alpine
+    envFrom:
+    - configMapRef:
+        name: foo
+        optional: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo2
+data:
+    FOO2: bar2
