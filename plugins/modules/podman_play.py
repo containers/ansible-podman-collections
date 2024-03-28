@@ -187,6 +187,7 @@ except ImportError:
     HAS_YAML = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion, get_podman_version
 
 
 class PodmanKubeManagement:
@@ -196,6 +197,7 @@ class PodmanKubeManagement:
         self.actions = []
         self.executable = executable
         self.command = [self.executable, 'play', 'kube']
+        self.version = get_podman_version(module)
         creds = []
         # pod_name = extract_pod_name(module.params['kube_file'])
         if self.module.params['annotation']:
@@ -243,6 +245,22 @@ class PodmanKubeManagement:
             self.module.log('PODMAN-PLAY-KUBE stderr: %s' % err)
             self.module.log('PODMAN-PLAY-KUBE rc: %s' % rc)
         return rc, out, err
+
+    def tear_down_pods(self):
+        '''
+        Tear down the pod and contaiers by using --down option in kube play
+        which is supported since Podman 3.4.0
+        '''
+        changed = False
+        kube_file = self.module.params['kube_file']
+
+        rc, out, err = self._command_run([self.executable, "kube", "play", "--down", kube_file])
+        if rc != 0:
+            self.module.fail_json(msg="Failed to delete Pod with %s" % (kube_file))
+        else:
+            changed = True
+
+        return changed, out, err
 
     def discover_pods(self):
         pod_name = ''
@@ -292,8 +310,12 @@ class PodmanKubeManagement:
         return changed, out_all, err_all
 
     def pod_recreate(self):
-        pods = self.discover_pods()
-        self.remove_associated_pods(pods)
+        if self.version is not None and LooseVersion(self.version) >= LooseVersion('3.4.0'):
+            self.tear_down_pods()
+        else:
+            pods = self.discover_pods()
+            self.remove_associated_pods(pods)
+
         # Create a pod
         rc, out, err = self._command_run(self.command)
         if rc != 0:
@@ -357,8 +379,12 @@ def main():
         module.params['executable'], required=True)
     manage = PodmanKubeManagement(module, executable)
     if module.params['state'] == 'absent':
-        pods = manage.discover_pods()
-        changed, out, err = manage.remove_associated_pods(pods)
+        if manage.version is not None and LooseVersion(manage.version) > LooseVersion('3.4.0'):
+            manage.module.log(msg="version: %s, kube file %s" % (manage.version, manage.module.params['kube_file']))
+            changed, out, err = manage.tear_down_pods()
+        else:
+            pods = manage.discover_pods()
+            changed, out, err = manage.remove_associated_pods(pods)
     else:
         changed, out, err = manage.play()
     results = {
