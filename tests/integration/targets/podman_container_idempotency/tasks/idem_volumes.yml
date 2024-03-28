@@ -190,7 +190,7 @@
 
 - name: check test13
   assert:
-    that: test13 is not changed
+    that: test13 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
