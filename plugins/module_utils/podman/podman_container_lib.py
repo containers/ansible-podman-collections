@@ -1180,21 +1180,29 @@ class PodmanContainerDiff:
             for cr_net_opt in cr_net:
                 if 'slirp4netns:' in cr_net_opt:
                     before = [cr_net_opt]
+        if net_mode_before == 'pasta':
+            cr_net = [i.lower() for i in self._createcommand('--network')]
+            for cr_net_opt in cr_net:
+                if 'pasta:' in cr_net_opt:
+                    before = [cr_net_opt]
         after = self.params['network'] or []
+        after = [i.lower() for i in after]
         # If container is in pod and no networks are provided
         if not self.module_params['network'] and self.params['pod']:
             after = before
             return self._diff_update_and_compare('network', before, after)
         # Check special network modes
-        if after in [['bridge'], ['host'], ['slirp4netns'], ['none']]:
+        if after in [['bridge'], ['host'], ['slirp4netns'], ['none'], ['pasta']]:
             net_mode_after = after[0]
         # If changes are only for network mode and container has no networks
         if net_mode_after and not before:
             # Remove differences between v1 and v2
             net_mode_after = net_mode_after.replace('bridge', 'default')
             net_mode_after = net_mode_after.replace('slirp4netns', 'default')
+            net_mode_after = net_mode_after.replace('pasta', 'default')
             net_mode_before = net_mode_before.replace('bridge', 'default')
             net_mode_before = net_mode_before.replace('slirp4netns', 'default')
+            net_mode_before = net_mode_before.replace('pasta', 'default')
             return self._diff_update_and_compare('network', net_mode_before, net_mode_after)
         # If container is attached to network of a different container
         if "container" in net_mode_before:
