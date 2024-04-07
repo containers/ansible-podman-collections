@@ -109,53 +109,108 @@
         that:
           - info5 is changed
 
-    - name: Run container with slirp4netns options
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: rootlessnet
-        image: "{{ idem_image }}"
-        command: 1h
-        state: present
-        network:
-          - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
-      register: info6
+    - when: podman_version < 5
+      name: Run container tasks with slirp4netns options before v5
+      block:
+        - name: Run container with slirp4netns options
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+          register: info6
 
-    - name: Check info with slirp4netns options
-      assert:
-        that:
-          - info6 is changed
+        - name: Check info with slirp4netns options
+          assert:
+            that:
+              - info6 is changed
 
-    - name: Run container with slirp4netns options - again
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: rootlessnet
-        image: "{{ idem_image }}"
-        command: 1h
-        state: present
-        network:
-          - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
-      register: info7
+        - name: Run container with slirp4netns options - again
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - slirp4netns:allow_host_loopback=true,cidr=10.0.3.0/24
+          register: info7
 
-    - name: Check info with slirp4netns options - again
-      assert:
-        that:
-          - info7 is not changed
+        - name: Check info with slirp4netns options - again
+          assert:
+            that:
+              - info7 is not changed
 
-    - name: Run container with different slirp4netns options
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: rootlessnet
-        image: "{{ idem_image }}"
-        command: 1h
-        state: present
-        network:
-          - slirp4netns:allow_host_loopback=true,cidr=10.0.4.0/24
-      register: info8
+        - name: Run container with different slirp4netns options
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - slirp4netns:allow_host_loopback=true,cidr=10.0.4.0/24
+          register: info8
 
-    - name: Check info with different slirp4netns options
-      assert:
-        that:
-          - info8 is changed
+        - name: Check info with different slirp4netns options
+          assert:
+            that:
+              - info8 is changed
+
+
+    - when: podman_version >= 5
+      name: Run container tasks with pasta options for v5 and later
+      block:
+        - name: Run container with pasta options
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+          register: info6
+
+        - name: Check info with pasta options
+          assert:
+            that:
+              - info6 is changed
+
+        - name: Run container with pasta options - again
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+          register: info7
+
+        - name: Check info with pasta options - again
+          assert:
+            that:
+              - info7 is not changed
+
+        - name: Run container with different pasta options
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: rootlessnet
+            image: "{{ idem_image }}"
+            command: 1h
+            state: present
+            network:
+              - "pasta:-4,-t,8008,-u,4443,-T,3000"
+          register: info8
+
+        - name: Check info with different pasta options
+          assert:
+            that:
+              - info8 is changed
 
     - name: Run container without options
       containers.podman.podman_container:

@@ -1246,6 +1246,9 @@ class PodmanContainerDiff:
             s = ":".join(
                 [str(h["hostport"]), p.replace('/tcp', '')]
             ).strip(":")
+            if h['hostip'] == '0.0.0.0' and LooseVersion(self.version) >= LooseVersion('5.0.0'):
+                self.module.log("PODMAN NNNNET %s" % s)
+                return s
             if h['hostip']:
                 return ":".join([h['hostip'], s])
             return s

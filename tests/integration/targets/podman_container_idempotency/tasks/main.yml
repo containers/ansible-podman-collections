@@ -1,4 +1,24 @@
 ---
+
+- name: Discover podman version
+  shell: podman version | grep "^Version:" | awk {'print $2'}
+  register: podman_v
+
+- name: Set podman version to 3
+  set_fact:
+    podman_version: 3
+  when: podman_v.stdout is version('4.0.0', 'lt')
+
+- name: Set podman version to 4
+  set_fact:
+    podman_version: 4
+  when: podman_v.stdout is version('4.0.0', '>=')
+
+- name: Set podman version to 5
+  set_fact:
+    podman_version: 5
+  when: podman_v.stdout is version('5.0.0', '>=')
+
 - name: Prepare a container
   include_tasks: build_test_container.yml
 
