@@ -118,7 +118,7 @@
       assert:
         that:
           - remove_pod is changed
-          
+
     - name: Get deleted pod info
       containers.podman.podman_pod_info:
         executable: "{{ test_executable | default('podman') }}"
@@ -129,7 +129,7 @@
       assert:
         that:
           - nonexist.pods == []
-  
+
   always:
 
     - name: Delete all pods leftovers from tests
