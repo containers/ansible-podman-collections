@@ -202,7 +202,7 @@ class PodmanKubeManagement:
         # pod_name = extract_pod_name(module.params['kube_file'])
         if self.module.params['annotation']:
             for k, v in self.module.params['annotation'].items():
-                self.command.extend(['--annotation', '"{k}={v}"'.format(k=k, v=v)])
+                self.command.extend(['--annotation', '{k}={v}'.format(k=k, v=v)])
         if self.module.params['username']:
             creds += [self.module.params['username']]
             if self.module.params['password']:
