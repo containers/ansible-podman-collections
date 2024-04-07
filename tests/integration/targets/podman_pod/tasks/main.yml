@@ -15,6 +15,21 @@
         podman_version: 2
       when: podman_v.stdout is version('2.0.0', '>=')
 
+    - name: Set podman version to 3
+      set_fact:
+        podman_version: 3
+      when: podman_v.stdout is version('3.0.0', '>=')
+
+    - name: Set podman version to 4
+      set_fact:
+        podman_version: 4
+      when: podman_v.stdout is version('4.0.0', '>=')
+
+    - name: Set podman version to 5
+      set_fact:
+        podman_version: 5
+      when: podman_v.stdout is version('5.0.0', '>=')
+
     - name: Discover cgroups version
       shell: podman info | grep cgroupVersion | awk {'print $2'}
       register: cgroups
@@ -153,6 +168,7 @@
              pod6_info.pod['State']['status'] == 'Exited') or
              (pod6_info.pod['State']['status'] is not defined and
              pod6_info.pod['State'] == 'Exited')
+      when: podman_version < 5
 
     - name: Start pod
       containers.podman.podman_pod:
@@ -826,69 +842,144 @@
         that:
           - not podsys2_stat.stat.exists|bool
 
-    - name: Run pod2 with network slirp4netns
-      containers.podman.podman_pod:
-        executable: "{{ test_executable | default('podman') }}"
-        name: pod2
-        state: started
-        network: slirp4netns:outbound_addr=10.10.10.46
+    - name: Run slirp4netns tests for podman < 5
+      when: podman_version < 5
+      block:
 
-    - name: Run container1 in pod
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container1
-        image: alpine
-        command: top
-        pod: pod2
-        state: started
+        - name: Run pod2 with network slirp4netns
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.46
 
-    - name: Run pod2 with network slirp4netns - again
-      containers.podman.podman_pod:
-        executable: "{{ test_executable | default('podman') }}"
-        name: pod2
-        state: started
-        network: slirp4netns:outbound_addr=10.10.10.46
-      register: slip4net_pod
+        - name: Run container1 in pod
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
 
-    - name: Run container1 in pod slirp4netns
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container1
-        image: alpine
-        command: top
-        pod: pod2
-        state: started
-      register: slip4net_cont
+        - name: Run pod2 with network slirp4netns - again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.46
+          register: slip4net_pod
 
-    - name: Check that slirp4netns is idempotent
-      assert:
-        that:
-          - slip4net_pod is not changed
-          - slip4net_cont is not changed
+        - name: Run container1 in pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: slip4net_cont
 
-    - name: Run pod2 with different network slirp4netns
-      containers.podman.podman_pod:
-        executable: "{{ test_executable | default('podman') }}"
-        name: pod2
-        state: started
-        network: slirp4netns:outbound_addr=10.10.10.47
-      register: slip4net_pod2
+        - name: Check that slirp4netns is idempotent
+          assert:
+            that:
+              - slip4net_pod is not changed
+              - slip4net_cont is not changed
 
-    - name: Run container1 in different pod slirp4netns
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container1
-        image: alpine
-        command: top
-        pod: pod2
-        state: started
-      register: slip4net_cont2
+        - name: Run pod2 with different network slirp4netns
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.47
+          register: slip4net_pod2
 
-    - name: Check that slirp4netns is idempotent and changed
-      assert:
-        that:
-          - slip4net_pod2 is changed
-          - slip4net_cont2 is changed
+        - name: Run container1 in different pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: slip4net_cont2
+
+        - name: Check that slirp4netns is idempotent and changed
+          assert:
+            that:
+              - slip4net_pod2 is changed
+              - slip4net_cont2 is changed
+
+    - name: Run pasta tests for podman >= 5
+      when: podman_version >= 5
+      block:
+
+        - name: Run pod2 with network pasta
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+
+        - name: Run container1 in pod
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+
+        - name: Run pod2 with network pasta - again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+          register: pasta_pod
+
+        - name: Run container1 in pod pasta
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: pasta_cont
+
+        - name: Check that pasta is idempotent
+          assert:
+            that:
+              - pasta_pod is not changed
+              - pasta_cont is not changed
+
+        - name: Run pod2 with different network pasta
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8008,-u,4443,-T,3000"
+          register: pasta_pod2
+
+        - name: Run container1 in different pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: pasta_cont2
+
+        - name: Check that slirp4netns is idempotent and changed
+          assert:
+            that:
+              - pasta_pod2 is changed
+              - pasta_cont2 is changed
 
   always:
 

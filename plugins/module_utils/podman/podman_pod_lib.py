@@ -267,7 +267,7 @@ class PodmanPodModuleParams:
         return c
 
     def addparam_no_hosts(self, c):
-        return c + ["=".join('--no-hosts', self.params['no_hosts'])]
+        return c + ["=".join(['--no-hosts', self.params['no_hosts']])]
 
     def addparam_pid(self, c):
         return c + ['--pid', self.params['pid']]
@@ -465,6 +465,7 @@ class PodmanPodDiff:
         if before == ['podman']:
             before = []
         after = self.params['network'] or []
+        after = [i.lower() for i in after]
         # Special case for options for slirp4netns rootless networking from v2
         if net_mode_before == 'slirp4netns' and 'createcommand' in self.info:
             cr_com = self.info['createcommand']
@@ -472,16 +473,24 @@ class PodmanPodDiff:
                 cr_net = cr_com[cr_com.index('--network') + 1].lower()
                 if 'slirp4netns:' in cr_net:
                     before = [cr_net]
+        if net_mode_before == 'pasta' and 'createcommand' in self.info:
+            cr_com = self.info['createcommand']
+            if '--network' in cr_com:
+                cr_net = cr_com[cr_com.index('--network') + 1].lower()
+                if 'pasta:' in cr_net:
+                    before = [cr_net]
         # Currently supported only 'host' and 'none' network modes idempotency
-        if after in [['bridge'], ['host'], ['slirp4netns']]:
+        if after in [['bridge'], ['host'], ['slirp4netns'], ['pasta']]:
             net_mode_after = after[0]
 
         if net_mode_after and not before:
             # Remove differences between v1 and v2
             net_mode_after = net_mode_after.replace('bridge', 'default')
             net_mode_after = net_mode_after.replace('slirp4netns', 'default')
+            net_mode_after = net_mode_after.replace('pasta', 'default')
             net_mode_before = net_mode_before.replace('bridge', 'default')
             net_mode_before = net_mode_before.replace('slirp4netns', 'default')
+            net_mode_before = net_mode_before.replace('pasta', 'default')
             return self._diff_update_and_compare('network', net_mode_before, net_mode_after)
         # For 4.4.0+ podman versions with no network specified
         if not net_mode_after and net_mode_before == 'slirp4netns' and not after:
@@ -492,6 +501,11 @@ class PodmanPodDiff:
             net_mode_after = 'bridge'
             if before == ['bridge']:
                 after = ['bridge']
+        # For pasta networking for Podman v5
+        if not net_mode_after and net_mode_before == 'pasta' and not after:
+            net_mode_after = 'pasta'
+            if before == ['pasta']:
+                after = ['pasta']
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('network', before, after)
 
@@ -507,6 +521,8 @@ class PodmanPodDiff:
             s = ":".join(
                 [str(h["hostport"]), p.replace('/tcp', '')]
             ).strip(":")
+            if h['hostip'] == '0.0.0.0' and LooseVersion(self.version) >= LooseVersion('5.0.0'):
+                return s
             if h['hostip']:
                 return ":".join([h['hostip'], s])
             return s
