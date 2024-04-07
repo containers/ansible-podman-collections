@@ -743,6 +743,8 @@ class PodmanDefaults:
             self.defaults['ipc'] = "private"
             self.defaults['uts'] = "private"
             self.defaults['pid'] = "private"
+        if (LooseVersion(self.version) >= LooseVersion('5.0.0')):
+            self.defaults['network'] = ["pasta"]
         if (LooseVersion(self.version) >= LooseVersion('3.0.0')):
             self.defaults['log_level'] = "warning"
         if (LooseVersion(self.version) >= LooseVersion('4.1.0')):
