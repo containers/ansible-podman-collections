@@ -5,6 +5,40 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.12.1
+=======
+
+Release Summary
+---------------
+
+Support for Podman v5 and bugfixes
+
+Minor Changes
+-------------
+
+- CI - Fix rootfs test in CI
+- CI - add custom podman path to tasks
+- CI - add parametrized executables to tests
+- podman_container - Add pasta as default network mode after v5
+- podman_container_exec - Return data for podman exec module
+- podman_generate_systemd - Fix broken example for podman_generate_systemd (#708)
+- podman_login - Update podman_login.py
+- podman_play - Add support for kube yaml files with multi-documents (#724)
+- podman_play - Update the logic for deleting pods/containers in podman_play
+- podman_pod_info - handle return being list in Podman 5 (#713)
+
+Bugfixes
+--------
+
+- podman_container - Add check and fixed for v5 network diff
+- podman_container - Fix pasta networking idempotency for v5 (#728)
+- podman_container_exec - Remove unnecessary quotes in podman_container_exec module
+- podman_image_info - Fix wrong return data type in podman_image_info
+- podman_play - Fix kube play annotations
+- podman_pod - Fix broken info of pods in Podman v5
+- podman_pod - Fix pod for Podman v5
+- podman_pod - Fix podman pod v5 broken info issue
+
 v1.12.0
 =======
 
