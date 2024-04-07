@@ -26,14 +26,14 @@
       that:
         - info.containers.0.State.Running == true
         - '"FOO=bar" in info.containers.0.Config.Env'
-    
+
   - name: Cleanup pod
     containers.podman.podman_play:
       executable: "{{ test_executable | default('podman') }}"
       kube_file: "{{ kube_dir }}/{{ kube_file }}"
       state: absent
     register: remove_pod
-    
+
   - name: Check if the pod was removed as expected
     assert:
       that:

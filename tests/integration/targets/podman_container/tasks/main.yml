@@ -15,6 +15,11 @@
         podman_version: 4
       when: podman_v.stdout is version('4.0.0', '>=')
 
+    - name: Set podman version to 5
+      set_fact:
+        podman_version: 5
+      when: podman_v.stdout is version('5.0.0', '>=')
+
     - name: Delete all container leftovers from tests
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
