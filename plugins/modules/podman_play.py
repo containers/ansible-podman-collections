@@ -103,7 +103,8 @@ options:
         required: false
       tag:
         description:
-          - specify a custom log tag for the container. This option is currently supported only by the journald log driver in Podman.
+          - Specify a custom log tag for the container.
+            This option is currently supported only by the journald log driver in Podman.
         type: str
         required: false
   log_level:
@@ -131,6 +132,7 @@ options:
       - created
       - started
       - absent
+      - quadlet
     required: True
   tls_verify:
     description:
@@ -158,6 +160,24 @@ options:
       An empty value ("") means user namespaces are disabled.
     required: false
     type: str
+  quadlet_dir:
+    description:
+      - Path to the directory to write quadlet file in.
+        By default, it will be set as C(/etc/containers/systemd/) for root user,
+        C(~/.config/containers/systemd/) for non-root users.
+    type: path
+    required: false
+  quadlet_filename:
+    description:
+      - Name of quadlet file to write. Must be specified if state is quadlet.
+    type: str
+  quadlet_options:
+    description:
+      - Options for the quadlet file. Provide missing in usual network args
+        options as a list of lines to add.
+    type: list
+    elements: str
+    required: false
 '''
 
 EXAMPLES = '''
@@ -188,6 +208,7 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion, get_podman_version
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state  # noqa: F402
 
 
 class PodmanKubeManagement:
@@ -338,6 +359,12 @@ class PodmanKubeManagement:
             changed = True
         return changed, out, err
 
+    def make_quadlet(self):
+        results = {"changed": False}
+        results_update = create_quadlet_state(self.module, "kube")
+        results.update(results_update)
+        self.module.exit_json(**results)
+
 
 def main():
     module = AnsibleModule(
@@ -361,7 +388,7 @@ def main():
             network=dict(type='list', elements='str'),
             state=dict(
                 type='str',
-                choices=['started', 'created', 'absent'],
+                choices=['started', 'created', 'absent', 'quadlet'],
                 required=True),
             tls_verify=dict(type='bool'),
             debug=dict(type='bool'),
@@ -371,8 +398,14 @@ def main():
             log_level=dict(
                 type='str',
                 choices=["debug", "info", "warn", "error", "fatal", "panic"]),
+            quadlet_dir=dict(type='path', required=False),
+            quadlet_filename=dict(type='str', required=False),
+            quadlet_options=dict(type='list', elements='str', required=False),
         ),
         supports_check_mode=True,
+        required_if=[
+            ('state', 'quadlet', ['quadlet_filename']),
+        ],
     )
 
     executable = module.get_bin_path(
@@ -385,6 +418,8 @@ def main():
         else:
             pods = manage.discover_pods()
             changed, out, err = manage.remove_associated_pods(pods)
+    elif module.params['state'] == 'quadlet':
+        manage.make_quadlet()
     else:
         changed, out, err = manage.play()
     results = {

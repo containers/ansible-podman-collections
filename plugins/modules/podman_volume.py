@@ -24,6 +24,7 @@ options:
     choices:
       - present
       - absent
+      - quadlet
   recreate:
     description:
       - Recreate volume even if exists.
@@ -62,6 +63,24 @@ options:
       - Return additional information which can be helpful for investigations.
     type: bool
     default: False
+  quadlet_dir:
+    description:
+      - Path to the directory to write quadlet file in.
+        By default, it will be set as C(/etc/containers/systemd/) for root user,
+        C(~/.config/containers/systemd/) for non-root users.
+    type: path
+    required: false
+  quadlet_filename:
+    description:
+      - Name of quadlet file to write. By default it takes I(name) value.
+    type: str
+  quadlet_options:
+    description:
+      - Options for the quadlet file. Provide missing in usual network args
+        options as a list of lines to add.
+    type: list
+    elements: str
+    required: false
 
 requirements:
   - "podman"
@@ -105,6 +124,7 @@ from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
 
 
 class PodmanVolumeModuleParams:
@@ -436,6 +456,7 @@ class PodmanVolumeManager:
         states_map = {
             'present': self.make_present,
             'absent': self.make_absent,
+            'quadlet': self.make_quadlet,
         }
         process_action = states_map[self.state]
         process_action()
@@ -468,12 +489,17 @@ class PodmanVolumeManager:
                              'podman_actions': self.volume.actions})
         self.module.exit_json(**self.results)
 
+    def make_quadlet(self):
+        results_update = create_quadlet_state(self.module, "volume")
+        self.results.update(results_update)
+        self.module.exit_json(**self.results)
+
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type='str', default="present",
-                       choices=['present', 'absent']),
+                       choices=['present', 'absent', 'quadlet']),
             name=dict(type='str', required=True),
             label=dict(type='dict', required=False),
             driver=dict(type='str', required=False),
@@ -481,6 +507,9 @@ def main():
             recreate=dict(type='bool', default=False),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
+            quadlet_dir=dict(type='path', required=False),
+            quadlet_filename=dict(type='str', required=False),
+            quadlet_options=dict(type='list', elements='str', required=False),
         ))
 
     PodmanVolumeManager(module).execute()

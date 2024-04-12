@@ -981,6 +981,151 @@
               - pasta_pod2 is changed
               - pasta_cont2 is changed
 
+    - name: Create a Quadlet for pod with filename
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.pod
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+
+    - name: Create a Quadlet pod file
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        add_host:
+          - host1
+        volume:
+          - /tmp:/data
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quadlet_pod
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/podq.pod
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet container in /tmp/podq.pod file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/podq.pod
+      lineinfile:
+        path: /tmp/podq.pod
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Pod]"
+        - "Network=examplenet"
+        - "PodName=podq"
+        - "PublishPort=8000:8001"
+        - "Volume=/tmp:/data"
+        - "Volume=/whocares:/data2:ro"
+        - "PodmanArgs=--add-host host1"
+        - "PodmanArgs=--share net"
+        - "PodmanArgs=--subuidname username1"
+        - "PodmanArgs=--userns auto"
+        - "PodmanArgs=--add-host host1"
+        - "Label=somelabel=labelvalue"
+        - "WantedBy=default.target"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/podq.pod: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create a Quadlet pod file - same
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        add_host:
+          - host1
+        volume:
+          - /tmp:/data
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create a Quadlet pod file - different
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        add_host:
+          - host1
+        volume:
+          - /tmp:/newdata
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'newdata' in quad3.diff.after"
+
   always:
 
     - name: Delete all pods leftovers from tests

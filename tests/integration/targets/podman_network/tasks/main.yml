@@ -350,6 +350,131 @@
         that:
           - info17 is not changed
 
+    - name: Create a Quadlet for network with filename
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.network
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+
+    - name: Create quadlet network file
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.12.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/testnet.network
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet network in /tmp/testnet.network file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/testnet.network
+      lineinfile:
+        path: /tmp/testnet.network
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Network]"
+        - "NetworkName=testnet"
+        - "Subnet=10.123.12.0"
+        - "DisableDNS=true"
+        - "Internal=false"
+        - "Options=isolate=True"
+        - "Options=mtu=1511"
+        - "Options=vlan=111"
+        - "Label=Test=network"
+        - "Label=foo=bar"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/testnet.network: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet network file - same
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.12.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet network file - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.15.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'10.123.15.0' in quad3.diff.after"
+
   always:
 
     - name: Cleanup

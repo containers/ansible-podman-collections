@@ -55,6 +55,8 @@ options:
         If container doesn't exist, the module creates it and leaves it in
         'created' state. If configuration doesn't match or 'recreate' option is
         set, the container will be recreated
+      - I(quadlet) - Write a quadlet file with the specified configuration.
+        Requires the C(quadlet_dir) option to be set.
     type: str
     default: started
     choices:
@@ -63,6 +65,7 @@ options:
       - stopped
       - started
       - created
+      - quadlet
   image:
     description:
       - Repository path (or image name) and tag used to create the container.
@@ -721,6 +724,22 @@ options:
       - Publish all exposed ports to random ports on the host interfaces. The
         default is false.
     type: bool
+  quadlet_dir:
+    description:
+      - Path to the directory to write quadlet file in.
+        By default, it will be set as C(/etc/containers/systemd/) for root user,
+        C(~/.config/containers/systemd/) for non-root users.
+    type: path
+  quadlet_filename:
+    description:
+      - Name of quadlet file to write. By default it takes I(name) value.
+    type: str
+  quadlet_options:
+    description:
+      - Options for the quadlet file. Provide missing in usual container args
+        options as a list of lines to add.
+    type: list
+    elements: str
   read_only:
     description:
       - Mount the container's root filesystem as read only. Default is false
@@ -994,6 +1013,23 @@ EXAMPLES = r"""
       - --deploy-hook
       - "echo 1 > /var/lib/letsencrypt/complete"
 
+- name: Create a Quadlet file
+  containers.podman.podman_container:
+    name: quadlet-container
+    image: nginx
+    state: quadlet
+    quadlet_dir: ~/.config/containers/systemd/nginx.container
+    device: "/dev/sda:/dev/xvda:rwm"
+    ports:
+      - "8080:80"
+    volumes:
+      - "/var/www:/usr/share/nginx/html"
+    quadlet_options:
+      - "AutoUpdate=registry"
+      - "Pull=true"
+      - |
+        [Install]
+        WantedBy=default.target
 """
 
 RETURN = r"""

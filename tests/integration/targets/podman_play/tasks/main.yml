@@ -130,6 +130,157 @@
         that:
           - nonexist.pods == []
 
+
+    - name: Create a Quadlet for kube with filename
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.kube
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+
+    - name: Create a kube quadlet without filename
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        quadlet_dir: /tmp
+      register: quadlet_file_no_name
+      ignore_errors: true
+
+    - name: Check that task failed
+      assert:
+        that:
+          - quadlet_file_no_name is failed
+
+    - name: Create a kube quadlet
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap1
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/quadlet.kube
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet container in /tmp/quadlet.kube file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/quadlet.kube
+      lineinfile:
+        path: /tmp/quadlet.kube
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Kube]"
+        - "ConfigMap=/tmp/configmap1"
+        - "ConfigMap=/tmp/configmap2"
+        - "LogDriver=journald"
+        - "Network=host"
+        - "Yaml=/home/kubeuser/tmp/multipod.yaml"
+        - "UserNS=keep-id:uid=200,gid=210"
+        - "GlobalArgs=--log-level debug"
+        - "WantedBy=default.target"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/quadlet.kube: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create a kube quadlet - same
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap1
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet.kube
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create a kube quadlet - different
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap55
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet.kube
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'configmap55' in quad3.diff.after"
+
   always:
 
     - name: Delete all pods leftovers from tests

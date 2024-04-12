@@ -161,6 +161,134 @@
           - info10 is failed
           - delete.volume == {}
 
+    - name: Create a Quadlet for volume with filename
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.volume
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+
+    - name: Create quadlet volume file
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop1"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/testvol.volume
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet volume in /tmp/testvol.volume file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/testvol.volume
+      lineinfile:
+        path: /tmp/testvol.volume
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Volume]"
+        - "VolumeName=testvol"
+        - "Driver=local"
+        - "Label=namelabel=value"
+        - "Label=foo=bar"
+        - "Label=Test=volume"
+        - "Label=test1=value1"
+        - "PodmanArgs=--opt device=/dev/loop1"
+        - "PodmanArgs=--opt type=ext4"
+        - "GlobalArgs=--log-level debug"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/testvol.volume: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet volume file - same
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop1"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet volume file - different
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop5"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'loop5' in quad3.diff.after"
+
   always:
 
     - name: Make sure volume doesn't exist
