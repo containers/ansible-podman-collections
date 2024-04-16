@@ -116,14 +116,15 @@ def podman_secret_exists(module, executable, name, version):
     return rc == 0
 
 
-def need_update(module, executable, name, data, driver, driver_opts, debug, labels):
-
+def need_update(module, executable, name, data, skip, driver, driver_opts, debug, labels):
     cmd = [executable, 'secret', 'inspect', '--showsecret', name]
     rc, out, err = module.run_command(cmd)
     if rc != 0:
         if debug:
             module.log("PODMAN-SECRET-DEBUG: Unable to get secret info: %s" % err)
         return True
+    if skip:
+        return False
     try:
         secret = module.from_json(out)[0]
         # We support only file driver for now
@@ -160,7 +161,7 @@ def podman_secret_create(module, executable, name, data, force, skip,
     if (podman_version is not None and
         LooseVersion(podman_version) >= LooseVersion('4.7.0')
             and (driver is None or driver == 'file')):
-        if not skip and need_update(module, executable, name, data, driver, driver_opts, debug, labels):
+        if need_update(module, executable, name, data, skip, driver, driver_opts, debug, labels):
             podman_secret_remove(module, executable, name)
         else:
             return {"changed": False}
