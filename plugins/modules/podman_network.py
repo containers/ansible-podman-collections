@@ -167,6 +167,14 @@ EXAMPLES = r"""
     subnet: 192.168.22.0/24
     gateway: 192.168.22.1
   become: true
+
+- name: Create Quadlet file for podman network
+  containers.podman.podman_network:
+    name: podman_network
+    state: quadlet
+    quadlet_options:
+      - IPv6=true
+      - Label=”ipv6 network”
 """
 
 RETURN = r"""

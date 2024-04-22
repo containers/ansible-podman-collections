@@ -732,7 +732,7 @@ options:
     type: path
   quadlet_filename:
     description:
-      - Name of quadlet file to write. By default it takes I(name) value.
+      - Name of quadlet file to write. By default it takes C(name) value.
     type: str
   quadlet_options:
     description:
@@ -1018,7 +1018,7 @@ EXAMPLES = r"""
     name: quadlet-container
     image: nginx
     state: quadlet
-    quadlet_dir: ~/.config/containers/systemd/nginx.container
+    quadlet_filename: custome-container
     device: "/dev/sda:/dev/xvda:rwm"
     ports:
       - "8080:80"

@@ -107,7 +107,8 @@ volume:
 
 EXAMPLES = '''
 # What modules does for example
-- podman_volume:
+- name: Create a volume
+  containers.podman.podman_volume:
     state: present
     name: volume1
     label:
@@ -116,6 +117,17 @@ EXAMPLES = '''
     options:
       - "device=/dev/loop1"
       - "type=ext4"
+
+- name: Create a Quadlet file for a volume
+  containers.podman.podman_volume:
+    state: quadlet
+    name: quadlet_volume
+    quadlet_filename: custom-name
+    quadlet_options:
+      - Group=192
+      - Copy=true
+      - Image=quay.io/centos/centos:latest
+
 '''
 # noqa: F402
 import json  # noqa: F402
