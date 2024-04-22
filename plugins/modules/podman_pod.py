@@ -452,7 +452,7 @@ pod:
 
 EXAMPLES = '''
 # What modules does for example
-- podman_pod:
+- containers.podman.podman_pod:
     name: pod1
     state: started
     ports:
@@ -464,6 +464,16 @@ EXAMPLES = '''
     name: pod2
     state: started
     publish: "127.0.0.1::80"
+
+# Create a Quadlet file for a pod
+- containers.podman.podman_pod:
+    name: qpod
+    state: quadlet
+    ports:
+      - "4444:5555"
+    volume:
+      - /var/run/docker.sock:/var/run/docker.sock
+    quadlet_dir: /custom/dir
 '''
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_pod_lib import PodmanPodManager  # noqa: F402

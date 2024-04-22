@@ -198,6 +198,19 @@ EXAMPLES = '''
     log_opt:
       path: /tmp/my-container.log
       max_size: 10mb
+
+- name: Create a Quadlet file
+  containers.podman.podman_play:
+    kube_file: ~/kube.yaml
+    state: quadlet
+    annotations:
+      greeting: hello
+      greet_to: world
+    userns: host
+    quadlet_filename: kube-pod
+    quadlet_options:
+      - "SetWorkingDirectory=yaml"
+      - "ExitCodePropagation=any"
 '''
 import re  # noqa: F402
 try:

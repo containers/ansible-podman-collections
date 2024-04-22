@@ -299,6 +299,18 @@ EXAMPLES = r"""
   containers.podman.podman_image:
     name: nginx
     arch: amd64
+
+- name: Create a quadlet file for an image
+  containers.podman.podman_image:
+    name: docker.io/library/alpine:latest
+    state: quadlet
+    quadlet_dir: /etc/containers/systemd
+    quadlet_filename: alpine-latest
+    quadlet_options:
+      - Variant=arm/v7
+      - |
+        [Install]
+        WantedBy=default.target
 """
 
 RETURN = r"""
