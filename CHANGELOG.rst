@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.13.0
+=======
+
+Release Summary
+---------------
+
+Quadlet support for Podman
+
+Major Changes
+-------------
+
+- Add quadlet support for Podman modules
+
+Bugfixes
+--------
+
+- Fix pod info for non-existant pods
+
 v1.12.1
 =======
 

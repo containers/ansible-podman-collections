@@ -174,7 +174,7 @@ EXAMPLES = r"""
     state: quadlet
     quadlet_options:
       - IPv6=true
-      - Label=”ipv6 network”
+      - Label="ipv6 network"
 """
 
 RETURN = r"""

@@ -282,6 +282,14 @@ releases:
       - podman_pod_info - handle return being list in Podman 5 (#713)
       release_summary: Support for Podman v5 and bugfixes
     release_date: '2024-04-08'
+  1.13.0:
+    changes:
+      bugfixes:
+      - Fix pod info for non-existant pods
+      major_changes:
+      - Add quadlet support for Podman modules
+      release_summary: Quadlet support for Podman
+    release_date: '2024-04-22'
   1.2.0:
     changes:
       minor_changes:

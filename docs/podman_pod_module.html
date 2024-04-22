@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_pod module – Manage Podman pods<a class="headerlink" href="#containers-podman-podman-pod-module-manage-podman-pods" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.12.1).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.13.0).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -486,6 +486,27 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_filename"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-filename"><strong>quadlet_filename</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_filename" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of quadlet file to write. By default it takes <em>name</em> value.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-options"><strong>quadlet_options</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Options for the quadlet file. Provide missing in usual container args options as a list of lines to add.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-recreate"><strong>recreate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -497,14 +518,14 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-share"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-share"><strong>share</strong></p>
 <a class="ansibleOptionLink" href="#parameter-share" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A comma delimited list of kernel namespaces to share. If none or “” is specified, no namespaces will be shared. The namespaces to choose from are ipc, net, pid, user, uts.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -519,38 +540,39 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;stopped&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;paused&quot;</span></code></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;unpaused&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;quadlet&quot;</span></code></p></li>
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-subgidname"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-subgidname"><strong>subgidname</strong></p>
 <a class="ansibleOptionLink" href="#parameter-subgidname" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name for GID map from the /etc/subgid file. Using this flag will run the container with user namespace enabled. This flag conflicts with `userns` and `gidmap`.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-subuidname"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-subuidname"><strong>subuidname</strong></p>
 <a class="ansibleOptionLink" href="#parameter-subuidname" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name for UID map from the /etc/subuid file. Using this flag will run the container with user namespace enabled. This flag conflicts with `userns` and `uidmap`.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-uidmap"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-uidmap"><strong>uidmap</strong></p>
 <a class="ansibleOptionLink" href="#parameter-uidmap" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Run the container in a new user namespace using the supplied mapping. This option conflicts with the `userns` and `subuidname` options. This option provides a way to map host UIDs to container UIDs. It can be passed several times to map different ranges.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-userns"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-userns"><strong>userns</strong></p>
 <a class="ansibleOptionLink" href="#parameter-userns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set the user namespace mode for all the containers in a pod. It defaults to the PODMAN_USERNS environment variable. An empty value (“”) means user namespaces are disabled.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-volume"></div>
 <div class="ansibleOptionAnchor" id="parameter-volumes"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-volumes"><span id="ansible-collections-containers-podman-podman-pod-module-parameter-volume"></span><strong>volume</strong></p>
 <a class="ansibleOptionLink" href="#parameter-volume" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: volumes</span></p>
@@ -565,7 +587,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <section id="examples">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">podman_pod</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containers.podman.podman_pod</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pod1</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
 <span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
@@ -577,6 +599,16 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pod2</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
 <span class="w">    </span><span class="nt">publish</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;127.0.0.1::80&quot;</span>
+
+<span class="c1"># Create a Quadlet file for a pod</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containers.podman.podman_pod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qpod</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadlet</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;4444:5555&quot;</span>
+<span class="w">    </span><span class="nt">volume</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/docker.sock:/var/run/docker.sock</span>
+<span class="w">    </span><span class="nt">quadlet_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/custom/dir</span>
 </pre></div>
 </div>
 </section>
