@@ -1010,6 +1010,8 @@
         subuidname: username1
         userns: auto
         publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
         add_host:
           - host1
         volume:
@@ -1052,6 +1054,7 @@
         - "PodmanArgs=--subuidname username1"
         - "PodmanArgs=--userns auto"
         - "PodmanArgs=--add-host host1"
+        - "PodmanArgs=--sysctl net.ipv4.ip_forward=1"
         - "Label=somelabel=labelvalue"
         - "WantedBy=default.target"
       loop_control:
@@ -1075,6 +1078,8 @@
         subuidname: username1
         userns: auto
         publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
         add_host:
           - host1
         volume:
@@ -1103,6 +1108,8 @@
         subuidname: username1
         userns: auto
         publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
         add_host:
           - host1
         volume:

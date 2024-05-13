@@ -8,6 +8,7 @@
         cpuset_mems: '0-1'
         cpu_shares: 1024
         device_write_bps: ['/dev/zero:1048576']
+        shm_size: 1G
 
   - name: Create pod for limiting resources
     containers.podman.podman_pod:
@@ -18,6 +19,7 @@
       cpuset_mems: "{{ limit.cpuset_mems }}"
       cpu_shares: "{{ limit.cpu_shares }}"
       device_write_bps: "{{ limit.device_write_bps }}"
+      shm_size: "{{ limit.shm_size }}"
 
   - name: Get information on pod for limiting resources
     containers.podman.podman_pod_info:
