@@ -43,6 +43,7 @@ ARGUMENTS_SPEC_POD = dict(
     dns_search=dict(type='list', elements='str', required=False),
     generate_systemd=dict(type='dict', default={}),
     gidmap=dict(type='list', elements='str', required=False),
+    gpus=dict(type='str', required=False),
     hostname=dict(type='str', required=False),
     infra=dict(type='bool', required=False),
     infra_conmon_pidfile=dict(type='str', required=False),
@@ -50,6 +51,7 @@ ARGUMENTS_SPEC_POD = dict(
     infra_image=dict(type='str', required=False),
     infra_name=dict(type='str', required=False),
     ip=dict(type='str', required=False),
+    ip6=dict(type='str', required=False),
     label=dict(type='dict', required=False),
     label_file=dict(type='str', required=False),
     mac_address=dict(type='str', required=False),
@@ -67,13 +69,20 @@ ARGUMENTS_SPEC_POD = dict(
     quadlet_dir=dict(type='path'),
     quadlet_filename=dict(type='str'),
     quadlet_options=dict(type='list', elements='str'),
+    security_opt=dict(type='list', elements='str', required=False),
     share=dict(type='str', required=False),
+    share_parent=dict(type='bool', required=False),
+    shm_size=dict(type='str', required=False),
+    shm_size_systemd=dict(type='str', required=False),
     subgidname=dict(type='str', required=False),
     subuidname=dict(type='str', required=False),
+    sysctl=dict(type='dict', required=False),
     uidmap=dict(type='list', elements='str', required=False),
     userns=dict(type='str', required=False),
+    uts=dict(type='str', required=False),
     volume=dict(type='list', elements='str', aliases=['volumes'],
                 required=False),
+    volumes_from=dict(type='list', elements='str', required=False),
     executable=dict(type='str', required=False, default='podman'),
     debug=dict(type='bool', default=False),
 )
@@ -213,6 +222,9 @@ class PodmanPodModuleParams:
             c += ['--gidmap', gidmap]
         return c
 
+    def addparam_gpus(self, c):
+        return c + ['--gpus', self.params['gpus']]
+
     def addparam_hostname(self, c):
         return c + ['--hostname', self.params['hostname']]
 
@@ -235,6 +247,9 @@ class PodmanPodModuleParams:
 
     def addparam_ip(self, c):
         return c + ['--ip', self.params['ip']]
+
+    def addparam_ip6(self, c):
+        return c + ['--ip6', self.params['ip6']]
 
     def addparam_label(self, c):
         for label in self.params['label'].items():
@@ -285,14 +300,35 @@ class PodmanPodModuleParams:
             c += ['--publish', g]
         return c
 
+    def addparam_security_opt(self, c):
+        for g in self.params['security_opt']:
+            c += ['--security-opt', g]
+        return c
+
     def addparam_share(self, c):
         return c + ['--share', self.params['share']]
+
+    def addparam_share_parent(self, c):
+        if self.params['share_parent'] is not None:
+            return c + ['--share-parent=%s' % self.params['share_parent']]
+        return c
+
+    def addparam_shm_size(self, c):
+        return c + ['--shm-size=%s' % self.params['shm_size']]
+
+    def addparam_shm_size_systemd(self, c):
+        return c + ['--shm-size-systemd=%s' % self.params['shm_size_systemd']]
 
     def addparam_subgidname(self, c):
         return c + ['--subgidname', self.params['subgidname']]
 
     def addparam_subuidname(self, c):
         return c + ['--subuidname', self.params['subuidname']]
+
+    def addparam_sysctl(self, c):
+        for k, v in self.params['sysctl'].items():
+            c += ['--sysctl', "%s=%s" % (k, v)]
+        return c
 
     def addparam_uidmap(self, c):
         for uidmap in self.params['uidmap']:
@@ -302,10 +338,18 @@ class PodmanPodModuleParams:
     def addparam_userns(self, c):
         return c + ['--userns', self.params['userns']]
 
+    def addparam_uts(self, c):
+        return c + ['--uts', self.params['uts']]
+
     def addparam_volume(self, c):
         for vol in self.params['volume']:
             if vol:
                 c += ['--volume', vol]
+        return c
+
+    def addparam_volumes_from(self, c):
+        for vol in self.params['volumes_from']:
+            c += ['--volumes-from', vol]
         return c
 
 

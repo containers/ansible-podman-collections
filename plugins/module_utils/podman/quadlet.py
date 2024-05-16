@@ -416,6 +416,8 @@ class PodQuadlet(Quadlet):
         if params["gidmap"]:
             for gidmap in params["gidmap"]:
                 params["podman_args"].append(f"--gidmap {gidmap}")
+        if params["gpus"]:
+            params["podman_args"].append(f"--gpus {params['gpus']}")
         if params["hostname"]:
             params["podman_args"].append(f"--hostname {params['hostname']}")
         if params["infra"]:
@@ -430,6 +432,8 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--infra-name {params['infra_name']}")
         if params["ip"]:
             params["podman_args"].append(f"--ip {params['ip']}")
+        if params["ip6"]:
+            params["podman_args"].append(f"--ip6 {params['ip6']}")
         if params["label"]:
             for label, label_v in params["label"].items():
                 params["podman_args"].append(f"--label {label}={label_v}")
@@ -447,17 +451,34 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pod_id_file"]:
             params["podman_args"].append(f"--pod-id-file {params['pod_id_file']}")
+        if params["security_opt"]:
+            for security_opt in params["security_opt"]:
+                params["podman_args"].append(f"--security-opt {security_opt}")
         if params["share"]:
             params["podman_args"].append(f"--share {params['share']}")
+        if params["share_parent"] is not None:
+            params["podman_args"].append(f"--share-parent={str(params['share_parent']).lower()}")
+        if params["shm_size"]:
+            params["podman_args"].append(f"--shm-size {params['shm_size']}")
+        if params["shm_size_systemd"]:
+            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["subgidname"]:
             params["podman_args"].append(f"--subgidname {params['subgidname']}")
         if params["subuidname"]:
             params["podman_args"].append(f"--subuidname {params['subuidname']}")
+        if params["sysctl"]:
+            for k, v in params["sysctl"].items():
+                params["podman_args"].append(f"--sysctl {k}={v}")
         if params["uidmap"]:
             for uidmap in params["uidmap"]:
                 params["podman_args"].append(f"--uidmap {uidmap}")
         if params["userns"]:
             params["podman_args"].append(f"--userns {params['userns']}")
+        if params["uts"]:
+            params["podman_args"].append(f"--uts {params['uts']}")
+        if params["volumes_from"]:
+            for volume in params["volumes_from"]:
+                params["podman_args"].append(f"--volumes-from {volume}")
         if params["debug"]:
             params["global_args"].append("--log-level debug")
 
