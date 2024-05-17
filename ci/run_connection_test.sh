@@ -21,7 +21,7 @@ if [[ "$CON_TYPE" == "podman" ]]; then
     ${SUDO} $PODMAN_EXE ps | grep -q "${CON_TYPE}-container" || \
         ${SUDO} $PODMAN_EXE run -d --name "${CON_TYPE}-container" python:3.10-alpine sleep 1d
 elif [[ "$CON_TYPE" == "buildah" ]]; then
-    ${SUDO} buildah from --name=buildah-container python:2
+    ${SUDO} buildah from --name=buildah-container python:3.10-alpine
 fi
 
 pushd "tests/integration/targets/connection_${CON_TYPE}"
