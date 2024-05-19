@@ -10,6 +10,7 @@ on:
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'
       - 'plugins/module_utils/podman/common.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'plugins/modules/podman_container_info.py'
       - 'tests/integration/targets/podman_container/**'
     branches:
@@ -23,6 +24,7 @@ on:
       - 'plugins/modules/podman_container.py'
       - 'plugins/module_utils/podman/podman_container_lib.py'
       - 'plugins/module_utils/podman/common.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'plugins/modules/podman_container_info.py'
       - 'tests/integration/targets/podman_container/**'
   schedule:

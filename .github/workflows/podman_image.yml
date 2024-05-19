@@ -9,6 +9,7 @@ on:
       - 'ci/playbooks/containers/podman_image.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'tests/integration/targets/podman_image/**'
     branches:
       - master
@@ -20,6 +21,7 @@ on:
       - 'ci/playbooks/containers/podman_image.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'tests/integration/targets/podman_image/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC

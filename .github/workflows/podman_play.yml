@@ -8,6 +8,7 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_play.yml'
       - 'plugins/modules/podman_play.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'tests/integration/targets/podman_play/**'
     branches:
       - master
@@ -18,6 +19,7 @@ on:
       - 'ci/run_containers_tests.sh'
       - 'ci/playbooks/containers/podman_play.yml'
       - 'plugins/modules/podman_play.py'
+      - 'plugins/module_utils/podman/quadlet.py'
       - 'tests/integration/targets/podman_play/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC
