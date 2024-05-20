@@ -337,3 +337,38 @@ def get_podman_version(module, fail=True):
                              (executable, err))
         return None
     return out.split("version")[1].strip()
+
+
+def generate_port_range_list(port_range):
+    ports = []
+    host_ip = ""
+    host_port_range_start = 0
+    host_port_range = ""
+    colon_if_host_port = ""
+    colon_if_host_ip = ""
+
+    if port_range.count(":") >= 2:
+        # host_ip could be ipv4 or ipv6, thus only rsplit the last two ":"
+        [host_ip, host_port_range, port_range] = port_range.rsplit(":", 2)
+        colon_if_host_ip = ":"
+    elif port_range.count(":") == 1:
+        [host_port_range, port_range] = port_range.split(":")
+    # need to honor that host_port_range is optional
+    if len(host_port_range) > 0:
+        host_port_range_start = int(host_port_range.split("-")[0])
+        colon_if_host_port = ":"
+    udp = ""
+    if "/udp" in port_range:
+        udp = "/udp"
+    port_range = port_range.split('/')[0]
+    container_port_range = [int(x) for x in port_range.split("-")]
+    for port in range(container_port_range[0], container_port_range[1]+1):
+        ports.append("{host_ip}{colon_if_host_ip}{host_port}{colon_if_host_port}{port}{udp}".format(
+            host_ip=host_ip,
+            colon_if_host_ip=colon_if_host_ip,
+            host_port="" if host_port_range_start == 0 else host_port_range_start + (port - container_port_range[0]),
+            colon_if_host_port=colon_if_host_port,
+            port=port,
+            udp=udp)
+        )
+    return ports

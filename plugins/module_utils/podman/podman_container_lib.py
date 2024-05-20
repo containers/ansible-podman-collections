@@ -10,6 +10,7 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import normalize_signal
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import ARGUMENTS_OPTS_DICT
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_port_range_list
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import ContainerQuadlet
 
@@ -1246,7 +1247,6 @@ class PodmanContainerDiff:
             after = "container:" + get_container_id_by_name(after.split(":")[1])
         return self._diff_update_and_compare('pid', before, after)
 
-    # TODO(sshnaidm) Need to add port ranges support
     def diffparam_publish(self):
         def compose(p, h):
             s = ":".join(
@@ -1272,10 +1272,10 @@ class PodmanContainerDiff:
         after = [
             i.replace("/tcp", "").replace("[", "").replace("]", "").replace("0.0.0.0:", "")
             for i in after]
-        # No support for port ranges yet
-        for ports in after:
-            if "-" in ports:
-                return self._diff_update_and_compare('publish', '', '')
+        after_ranges = [port_range for port_range in after if "-" in port_range]
+        for port_range in after_ranges:
+            after.remove(port_range)
+            after.extend(generate_port_range_list(port_range))
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare('publish', before, after)
 
