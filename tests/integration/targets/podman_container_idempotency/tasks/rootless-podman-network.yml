@@ -109,7 +109,7 @@
         that:
           - info5 is changed
 
-    - when: podman_version < 5
+    - when: podman_version | int < 5
       name: Run container tasks with slirp4netns options before v5
       block:
         - name: Run container with slirp4netns options
@@ -161,7 +161,7 @@
               - info8 is changed
 
 
-    - when: podman_version >= 5
+    - when: podman_version | int >= 5
       name: Run container tasks with pasta options for v5 and later
       block:
         - name: Run container with pasta options

@@ -34,7 +34,20 @@
 
 - name: check test2
   assert:
-    that: test2 is not changed
+    that: test2 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    stop_signal: 9
+    command: 1h
+  register: test2a
+
+- name: check test2a
+  assert:
+    that: test2a is not changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -46,7 +59,7 @@
 
 - name: check test3
   assert:
-    that: test3 is not changed
+    that: test3 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -122,7 +135,7 @@
 
 - name: check test9
   assert:
-    that: test9 is not changed
+    that: test9 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -184,7 +197,7 @@
 
 - name: check test11
   assert:
-    that: test11 is not changed
+    that: test11 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"

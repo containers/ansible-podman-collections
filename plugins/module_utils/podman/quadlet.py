@@ -94,19 +94,15 @@ class ContainerQuadlet(Quadlet):
         'healthcheck_retries': 'HealthRetries',
         'healthcheck_start_period': 'HealthStartPeriod',
         'healthcheck_timeout': 'HealthTimeout',
-        # the following are not implemented yet in Podman module
-        'HealthStartupCmd': 'HealthStartupCmd',
-        'HealthStartupInterval': 'HealthStartupInterval',
-        'HealthStartupRetries': 'HealthStartupRetries',
-        'HealthStartupSuccess': 'HealthStartupSuccess',
-        'HealthStartupTimeout': 'HealthStartupTimeout',
-        # end of not implemented yet
+        'health_startup_cmd': 'HealthStartupCmd',
+        'health_startup_interval': 'HealthStartupInterval',
+        'health_startup_retries': 'HealthStartupRetries',
+        'health_startup_success': 'HealthStartupSuccess',
+        'health_startup_timeout': 'HealthStartupTimeout',
         'hostname': 'HostName',
         'image': 'Image',
         'ip': 'IP',
-        # the following are not implemented yet in Podman module
-        'IP6': 'IP6',
-        # end of not implemented yet
+        'ip6': 'IP6',
         'label': 'Label',
         'log_driver': 'LogDriver',
         "Mask": "Mask",  # add it in security_opt
@@ -117,9 +113,7 @@ class ContainerQuadlet(Quadlet):
         'pids_limit': 'PidsLimit',
         'pod': 'Pod',
         'publish': 'PublishPort',
-        # the following are not implemented yet in Podman module
-        "Pull": "Pull",
-        # end of not implemented yet
+        "pull": "Pull",
         'read_only': 'ReadOnly',
         'read_only_tmpfs': 'ReadOnlyTmpfs',
         'rootfs': 'Rootfs',
@@ -194,6 +188,8 @@ class ContainerQuadlet(Quadlet):
 
         # Work on params which are not in the param_map and add them to PodmanArgs
         params["podman_args"] = []
+        if params["arch"]:
+            params["podman_args"].append(f"--arch {params['arch']}")
         if params["authfile"]:
             params["podman_args"].append(f"--authfile {params['authfile']}")
         if params["attach"]:
@@ -206,8 +202,13 @@ class ContainerQuadlet(Quadlet):
                 f"--blkio-weight-device {':'.join(blkio)}" for blkio in params["blkio_weight_device"].items()]))
         if params["cgroupns"]:
             params["podman_args"].append(f"--cgroupns {params['cgroupns']}")
+        if params["cgroup_conf"]:
+            for k, v in params["cgroup_conf"].items():
+                params["podman_args"].append(f"--cgroup-conf {k}={v}")
         if params["cgroup_parent"]:
             params["podman_args"].append(f"--cgroup-parent {params['cgroup_parent']}")
+        if params["chrootdirs"]:
+            params["podman_args"].append(f"--chrootdirs {params['chrootdirs']}")
         if params["cidfile"]:
             params["podman_args"].append(f"--cidfile {params['cidfile']}")
         if params["conmon_pidfile"]:
@@ -226,6 +227,10 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--cpu-rt-runtime {params['cpu_rt_runtime']}")
         if params["cpu_shares"]:
             params["podman_args"].append(f"--cpu-shares {params['cpu_shares']}")
+        if params["decryption_key"]:
+            params["podman_args"].append(f"--decryption-key {params['decryption_key']}")
+        if params["device_cgroup_rule"]:
+            params["podman_args"].append(f"--device-cgroup-rule {params['device_cgroup_rule']}")
         if params["device_read_bps"]:
             for i in params["device_read_bps"]:
                 params["podman_args"].append(f"--device-read-bps {i}")
@@ -241,6 +246,15 @@ class ContainerQuadlet(Quadlet):
         if params["etc_hosts"]:
             for host_ip in params['etc_hosts'].items():
                 params["podman_args"].append(f"--add-host {':'.join(host_ip)}")
+        if params["env_merge"]:
+            for k, v in params["env_merge"].items():
+                params["podman_args"].append(f"--env {k}={v}")
+        if params["gpus"]:
+            params["podman_args"].append(f"--gpus {params['gpus']}")
+        if params["group_entry"]:
+            params["podman_args"].append(f"--group-entry {params['group_entry']}")
+        if params["hostuser"]:
+            params["podman_args"].append(f"--hostuser {params['hostuser']}")
         if params["hooks_dir"]:
             for hook in params["hooks_dir"]:
                 params["podman_args"].append(f"--hooks-dir {hook}")
@@ -248,6 +262,8 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--http-proxy {params['http_proxy']}")
         if params["image_volume"]:
             params["podman_args"].append(f"--image-volume {params['image_volume']}")
+        if params["init_ctr"]:
+            params["podman_args"].append(f"--init-ctr {params['init_ctr']}")
         if params["init_path"]:
             params["podman_args"].append(f"--init-path {params['init_path']}")
         if params["interactive"]:
@@ -274,37 +290,79 @@ class ContainerQuadlet(Quadlet):
         if params["network_aliases"]:
             for alias in params["network_aliases"]:
                 params["podman_args"].append(f"--network-alias {alias}")
+        if params["no_healthcheck"]:
+            params["podman_args"].append("--no-healthcheck")
         if params["no_hosts"] is not None:
             params["podman_args"].append(f"--no-hosts={params['no_hosts']}")
         if params["oom_kill_disable"]:
             params["podman_args"].append(f"--oom-kill-disable={params['oom_kill_disable']}")
         if params["oom_score_adj"]:
             params["podman_args"].append(f"--oom-score-adj {params['oom_score_adj']}")
+        if params["os"]:
+            params["podman_args"].append(f"--os {params['os']}")
+        if params["passwd"]:
+            params["podman_args"].append("--passwd")
+        if params["passwd_entry"]:
+            params["podman_args"].append(f"--passwd-entry {params['passwd_entry']}")
+        if params["personality"]:
+            params["podman_args"].append(f"--personality {params['personality']}")
         if params["pid"]:
             params["podman_args"].append(f"--pid {params['pid']}")
+        if params["pid_file"]:
+            params["podman_args"].append(f"--pid-file {params['pid_file']}")
+        if params["preserve_fd"]:
+            for pres in params["preserve_fd"]:
+                params["podman_args"].append(f"--preserve-fd {pres}")
+        if params["preserve_fds"]:
+            params["podman_args"].append(f"--preserve-fds {params['preserve_fds']}")
         if params["privileged"]:
             params["podman_args"].append("--privileged")
         if params["publish_all"]:
             params["podman_args"].append("--publish-all")
+        if params["rdt_class"]:
+            params["podman_args"].append(f"--rdt-class {params['rdt_class']}")
         if params["requires"]:
             params["podman_args"].append(f"--requires {','.join(params['requires'])}")
         if params["restart_policy"]:
             params["podman_args"].append(f"--restart-policy {params['restart_policy']}")
+        if params["retry"]:
+            params["podman_args"].append(f"--retry {params['retry']}")
+        if params["retry_delay"]:
+            params["podman_args"].append(f"--retry-delay {params['retry_delay']}")
         if params["rm"]:
             params["podman_args"].append("--rm")
+        if params["rmi"]:
+            params["podman_args"].append("--rmi")
+        if params["seccomp_policy"]:
+            params["podman_args"].append(f"--seccomp-policy {params['seccomp_policy']}")
         if params["security_opt"]:
             for security_opt in params["security_opt"]:
                 params["podman_args"].append(f"--security-opt {security_opt}")
+        if params["shm_size_systemd"]:
+            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["sig_proxy"]:
             params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
         if params["stop_signal"]:
             params["podman_args"].append(f"--stop-signal {params['stop_signal']}")
         if params["systemd"]:
             params["podman_args"].append(f"--systemd={str(params['systemd']).lower()}")
+        if params["timeout"]:
+            params["podman_args"].append(f"--timeout {params['timeout']}")
+        if params["tls_verify"]:
+            params["podman_args"].append(f"--tls-verify={str(params['tls_verify']).lower()}")
         if params["tty"]:
             params["podman_args"].append("--tty")
+        if params["umask"]:
+            params["podman_args"].append(f"--umask {params['umask']}")
+        if params["unsetenv"]:
+            for unset in params["unsetenv"]:
+                params["podman_args"].append(f"--unsetenv {unset}")
+        if params["unsetenv_all"]:
+            params["podman_args"].append("--unsetenv-all")
         if params["uts"]:
             params["podman_args"].append(f"--uts {params['uts']}")
+        if params["variant"]:
+            params["podman_args"].append(f"--variant {params['variant']}")
         if params["volumes_from"]:
             for volume in params["volumes_from"]:
                 params["podman_args"].append(f"--volumes-from {volume}")

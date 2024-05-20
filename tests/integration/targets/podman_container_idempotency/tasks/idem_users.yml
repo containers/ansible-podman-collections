@@ -34,7 +34,7 @@
 
 - name: check test2
   assert:
-    that: test2 is not changed
+    that: test2 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -46,7 +46,7 @@
 
 - name: check test3
   assert:
-    that: test3 is not changed
+    that: test3 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -122,7 +122,7 @@
 
 - name: check test9
   assert:
-    that: test9 is not changed
+    that: test9 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
