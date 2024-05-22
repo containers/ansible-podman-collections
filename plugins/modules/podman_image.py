@@ -176,6 +176,10 @@ DOCUMENTATION = r'''
             - docker-daemon
             - oci-archive
             - ostree
+        extra_args:
+          description:
+            - Extra args to pass to push, if executed. Does not idempotently check for new push args.
+          type: str
     quadlet_dir:
       description:
         - Path to the directory to write quadlet file in.
@@ -760,6 +764,10 @@ class PodmanImageManager(object):
         if sign_by_key:
             args.extend(['--sign-by', sign_by_key])
 
+        push_extra_args = self.push_args.get('extra_args')
+        if push_extra_args:
+            args.extend(shlex.split(push_extra_args))
+
         args.append(self.image_name)
 
         # Build the destination argument
@@ -889,6 +897,7 @@ def main():
                     remove_signatures=dict(type='bool'),
                     sign_by=dict(type='str'),
                     dest=dict(type='str', aliases=['destination'],),
+                    extra_args=dict(type='str'),
                     transport=dict(
                         type='str',
                         choices=[
