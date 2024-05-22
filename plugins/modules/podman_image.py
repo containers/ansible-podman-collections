@@ -781,12 +781,19 @@ class PodmanImageManager(object):
         # Build the destination argument
         dest = self.push_args.get('dest')
         dest_format_string = '{dest}/{image_name}'
+        regexp = re.compile(r'/{name}(:{tag})?'.format(name=self.name, tag=self.tag))
         if not dest:
             if '/' not in self.name:
                 self.module.fail_json(msg="'push_args['dest']' is required when pushing images that do not have the remote registry in the image name")
 
-        if dest:
-            dest = dest.rstrip('/')
+        # If the push destination contains the image name and/or the tag
+        # remove it and warn since it's not needed.
+        elif regexp.search(dest):
+            dest = regexp.sub('', dest)
+            self.module.warn("Image name and tag are automatically added to push_args['dest']. Destination changed to {dest}".format(dest=dest))
+
+        if dest and dest.endswith('/'):
+            dest = dest[:-1]
 
         transport = self.push_args.get('transport')
         if transport:
@@ -799,20 +806,19 @@ class PodmanImageManager(object):
             else:
                 dest_format_string = '{transport}:{dest}'
 
-            dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest, image_name=self.image_name,)
-        else:
-            if len(dest.split('/')) < 3:
-                dest_string = f'{dest}/{self.image_name}'
-            else:
-                dest_string = dest
+        dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest, image_name=self.image_name,)
 
-        args.append(dest_string)
-        self.module.log("PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(image_name=self.image_name, dest_string=dest_string))
+        # Only append the destination argument if the image name is not a URL
+        if '/' not in self.name:
+            args.append(dest_string)
 
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             self.module.fail_json(msg="Failed to push image {image_name}: {err}".format(image_name=self.image_name, err=err))
-        return self.inspect_image(self.image_name), out + err
+        last_id = self._get_id_from_output(
+            out + err, contains=':', split_on=':')
+
+        return self.inspect_image(last_id), out + err
 
     def remove_image(self, image_name=None):
         if image_name is None:
