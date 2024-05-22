@@ -1217,6 +1217,9 @@ class PodmanContainerDiff:
     def diffparam_healthcheck_timeout(self):
         return self._diff_generic('healthcheck_timeout', '--healthcheck-timeout')
 
+    def diffparam_hooks_dir(self):
+        return self._diff_generic('hooks_dir', '--hooks-dir')
+
     def diffparam_hostname(self):
         return self._diff_generic('hostname', '--hostname')
 
@@ -1307,6 +1310,9 @@ class PodmanContainerDiff:
 
     def diffparam_memory_swappiness(self):
         return self._diff_generic('memory_swappiness', '--memory-swappiness')
+
+    def diffparam_mount(self):
+        return self._diff_generic('mount', '--mount')
 
     def diffparam_network(self):
         net_mode_before = self.info['hostconfig']['networkmode']
@@ -1529,32 +1535,22 @@ class PodmanContainerDiff:
                 return "/"
             return x.replace("//", "/").rstrip("/")
 
-        before = self.info['mounts']
-        before_local_vols = []
-        if before:
-            volumes = []
-            local_vols = []
-            for m in before:
-                if m['type'] != 'volume':
-                    volumes.append(
-                        [
-                            clean_volume(m['source']),
-                            clean_volume(m['destination'])
-                        ])
-                elif m['type'] == 'volume':
-                    local_vols.append(
-                        [m['name'], clean_volume(m['destination'])])
-            before = [":".join(v) for v in volumes]
-            before_local_vols = [":".join(v) for v in local_vols]
-        if self.params['volume'] is not None:
+        before = self._createcommand('--volume')
+        if before == []:
+            before = None
+        after = self.params['volume']
+        if after is not None:
             after = [":".join(
-                [clean_volume(i) for i in v.split(":")[:2]]
-            ) for v in self.params['volume']]
-        else:
-            after = []
-        if before_local_vols:
-            after = list(set(after).difference(before_local_vols))
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
+                [clean_volume(i) for i in v.split(":")[:2]]) for v in self.params['volume']]
+        if before is not None:
+            before = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before]
+        self.module.log("PODMAN Before: %s and After: %s" % (before, after))
+        if before is None and after is None:
+            return self._diff_update_and_compare('volume', before, after)
+        if after is not None:
+            after = ",".join(sorted([str(i).lower() for i in after]))
+            if before:
+                before = ",".join(sorted([str(i).lower() for i in before]))
         return self._diff_update_and_compare('volume', before, after)
 
     def diffparam_volumes_from(self):

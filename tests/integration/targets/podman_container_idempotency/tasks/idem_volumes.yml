@@ -126,7 +126,7 @@
 
 - name: check test9
   assert:
-    that: test9 is not changed
+    that: test9 is changed
 
 - name: Create volumes
   shell: |
@@ -190,7 +190,7 @@
 
 - name: check test13
   assert:
-    that: test13 is not changed
+    that: test13 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
@@ -253,3 +253,99 @@
 - name: check test17
   assert:
     that: test17 is not changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+  register: test18
+
+- name: check test18
+  assert:
+    that: test18 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+  register: test19
+
+- name: check test19
+  assert:
+    that: test19 is not changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+      - "type=bind,source=/var,destination=/var"
+    volumes:
+      - /opt:/data
+      - "local_volume2:/data2"
+  register: test20
+
+- name: check test20
+  assert:
+    that: test20 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+      - "type=bind,source=/var,destination=/var"
+    volumes:
+      - /opt:/data
+      - "local_volume2:/data2"
+  register: test21
+
+- name: check test21
+  assert:
+    that: test21 is not changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+    volumes:
+      - /opt:/data
+  register: test22
+
+- name: check test22
+  assert:
+    that: test22 is changed
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: alpine
+    name: idempotency1
+    state: present
+    command: sleep 1h
+    mounts:
+      - "type=bind,source=/tmp,destination=/tmp"
+    volumes:
+      - /opt:/data
+  register: test23
+
+- name: check test23
+  assert:
+    that: test23 is not changed
