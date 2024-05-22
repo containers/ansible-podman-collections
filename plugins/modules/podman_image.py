@@ -42,6 +42,10 @@ DOCUMENTATION = r'''
       description: Whether or not to pull the image.
       default: True
       type: bool
+    pull_extra_args:
+      description:
+        - Extra arguments to pass to the pull command.
+      type: str
     push:
       description: Whether or not to push an image.
       default: False
@@ -460,6 +464,7 @@ class PodmanImageManager(object):
         self.executable = self.module.get_bin_path(module.params.get('executable'), required=True)
         self.tag = self.module.params.get('tag')
         self.pull = self.module.params.get('pull')
+        self.pull_extra_args = self.module.params.get('pull_extra_args')
         self.push = self.module.params.get('push')
         self.path = self.module.params.get('path')
         self.force = self.module.params.get('force')
@@ -658,6 +663,9 @@ class PodmanImageManager(object):
         if self.ca_cert_dir:
             args.extend(['--cert-dir', self.ca_cert_dir])
 
+        if self.pull_extra_args:
+            args.extend(shlex.split(self.pull_extra_args))
+
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             if not self.pull:
@@ -855,6 +863,7 @@ def main():
             arch=dict(type='str'),
             tag=dict(type='str', default='latest'),
             pull=dict(type='bool', default=True),
+            pull_extra_args=dict(type='str'),
             push=dict(type='bool', default=False),
             path=dict(type='str'),
             force=dict(type='bool', default=False),
