@@ -1522,40 +1522,220 @@ class PodmanContainerDiff:
     def diffparam_variant(self):
         return self._diff_generic('variant', '--variant')
 
-    def diffparam_volume(self):
-        def clean_volume(x):
-            '''Remove trailing and double slashes from volumes.'''
+    def diffparam_volumes_all(self):
+        '''check for difference between old and new uses of --mount, --tmpfs, --volume and
+           Containerfile's VOLUME.'''
+
+        def clean_path(x):
+            '''Remove trailing and multiple consecutive slashes from path. Collapse '/./' to '/'.'''
             if not x.rstrip("/"):
                 return "/"
-            return x.replace("//", "/").rstrip("/")
+            b = x.rstrip("/")
+            while True:
+                a = b.replace("//", "/")
+                a = a.replace("/./", "/")
+                if a == b:
+                    break
+                b = a
+            return a
 
-        before = self.info['mounts']
-        before_local_vols = []
-        if before:
-            volumes = []
-            local_vols = []
-            for m in before:
-                if m['type'] != 'volume':
-                    volumes.append(
-                        [
-                            clean_volume(m['source']),
-                            clean_volume(m['destination'])
-                        ])
-                elif m['type'] == 'volume':
-                    local_vols.append(
-                        [m['name'], clean_volume(m['destination'])])
-            before = [":".join(v) for v in volumes]
-            before_local_vols = [":".join(v) for v in local_vols]
-        if self.params['volume'] is not None:
-            after = [":".join(
-                [clean_volume(i) for i in v.split(":")[:2]]
-            ) for v in self.params['volume']]
-        else:
-            after = []
-        if before_local_vols:
-            after = list(set(after).difference(before_local_vols))
+        def prep_mount_args_for_comp(mounts, mtype=None):
+            '''Parse a mount string, using clean_path() on any known path
+               values. Sort the resulting mount string as a defense against
+               order changing as the return is likely used for comparisons.'''
+
+            # check the code where defaults below are used if changing. unfortunately things
+            # are not cleanly separated and their handling requires some encoding. :(
+            # the 'fake' mount options are there to allow for matching with tmpfs/volume/etc
+            # options whilst keeping them separate from real options.
+            # all args are assumed to be item[=val] format and comma separated in-code.
+            default_mount_args = {
+                'volume': 'readonly=false,chown=false,idmap=false',
+                'bind': 'readonly=false,chown=false,idmap=false,bind-propagation=rprivate',
+                'tmpfs': 'readonly=false,chown=false,tmpfs-mode=1777',
+                'devpts': 'uid=0,gid=0,mode=600,max=1048576',
+                'image': 'readwrite=false',
+            }
+            noargs_tmpfs_args = 'rw,noexec,nosuid,nodev'
+            default_tmpfs_args = 'rw,suid,dev,exec,size=50%'
+            default_volume_args = 'rw,rprivate,nosuid,nodev'  # manpage says "private" but podman inspect says "rprivate"
+
+            mfin = []
+            wants_str = isinstance(mounts, str)
+            for mstr in [mounts] if wants_str else mounts:
+                mstype = mtype
+                msparsed = {
+                    'type': mtype,
+                }
+                for mitem in sorted(mstr.split(',')):
+                    nv = mitem.split('=', maxsplit=1)
+                    miname = nv[0]
+                    mival = nv[1] if len(nv) > 1 else None
+                    if miname == 'type':
+                        mstype = mival
+                        msparsed['type'] = mstype
+                        break
+                if mstype == 'tmpfs':
+                    if not mstr:
+                        mstr = noargs_tmpfs_args
+                    mstr = ','.join([default_mount_args[mstype], default_tmpfs_args, mstr]).strip(',')
+                elif mstype == 'volume':
+                    mstr = ','.join([default_mount_args[mstype], default_volume_args, mstr]).strip(',')
+                else:
+                    mstr = ','.join([default_mount_args[mstype], mstr]).strip(',')
+                if not mstype:
+                    raise ValueError("mount type not set/found for '{0}'.".format(mstr))
+                for mitem in mstr.split(','):
+                    nv = mitem.split('=', maxsplit=1)
+                    miname = nv[0]
+                    mival = nv[1] if len(nv) > 1 else None
+                    if miname in ['source', 'src']:
+                        miname = 'src'
+                        if mival:
+                            mival = clean_path(mival)
+                    elif miname in ['destination', 'dest', 'target', 'dst']:
+                        miname = 'dst'
+                        if mival:
+                            mival = clean_path(mival)
+                    elif miname in ['ro', 'readonly']:
+                        miname = 'readonly'
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['rw', 'readwrite']:
+                        miname = 'readonly'
+                        if not mival:
+                            mival = 'false'
+                        elif mival == 'true':
+                            mival = 'false'
+                        elif mival == 'false':
+                            mival = 'true'
+                    elif miname in ['U', 'chown']:
+                        miname = 'chown'
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['z']:
+                        miname = 'relabel'
+                        mival = 'shared'
+                    elif miname in ['Z']:
+                        miname = 'relabel'
+                        mival = 'private'
+                    elif miname in ['exec', 'dev', 'suid', 'sync']:
+                        if not mival:
+                            mival = 'true'
+                    elif miname in ['noexec', 'nodev', 'nosuid']:
+                        miname = miname[2:]
+                        mival = 'false'
+                    elif miname in ['shared', 'slave', 'private', 'unbindable', 'rshared', 'rslave', 'runbindable', 'rprivate']:
+                        mival = miname
+                        miname = 'bind-propagation'
+                    elif miname in ['idmap']:
+                        if not mival:
+                            mival = 'true'
+                    elif mstype == 'tmpfs' and miname in ['size', 'mode'] and mival:
+                        miname = 'tmpfs-{0}'.format(miname)
+                    elif miname in ['type', 'tmpfs-size', 'tmpfs-mode', 'bind-propagation', 'relabel']:
+                        pass
+                    elif miname.startswith('_unparsed_'):
+                        pass
+                    else:
+                        miname = '_unparsed_{0}'.format(miname)
+                    # source can be optional and can be specified as empty. If it is empty
+                    # remove it altogether so that comparisons can be made simply.
+                    if miname == 'src' and not mival:
+                        miname = None
+                    if miname:
+                        msparsed[miname] = mival
+                msfin = []
+                for miname, mival in msparsed.items():
+                    if mival is None:
+                        msfin.append(miname)
+                    else:
+                        msfin.append("{0}={1}".format(miname, mival))
+                mfin.append(','.join(sorted(list(set(msfin)))))
+            return mfin[0] if wants_str else mfin
+
+        def clean_image_vols(iv_type):
+            '''cleans a list or string of Containerfile VOLUME config(s).'''
+            if iv_type == 'bind':
+                return prep_volume_for_comp(image_volumes)
+            elif iv_type == 'tmpfs':
+                return prep_tmpfs_for_comp(image_volumes)
+            raise ValueError("invalid image volume type: {0}.".format(iv_type))
+
+        def prep_tmpfs_for_comp(all_ms):
+            res = []
+            wants_str = isinstance(all_ms, str)
+            is_dict = isinstance(all_ms, dict)
+            for ms in [all_ms] if wants_str else all_ms:
+                if is_dict:
+                    dm = [ms, all_ms[ms]]
+                else:
+                    dm = ms.split(':', maxsplit=1)
+                if len(dm) == 1:
+                    res.append('dst={0}'.format(dm[0]))
+                else:
+                    res.append('dst={0},{1}'.format(dm[0], dm[1]))
+            return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='tmpfs')
+
+        def prep_volume_for_comp(all_ms):
+            res = []
+            wants_str = isinstance(all_ms, str)
+            for ms in [all_ms] if wants_str else all_ms:
+                dm = ms.split(':', maxsplit=2)
+                mtype = 'volume'
+                if len(dm) == 1:
+                    # ms is <contdir>, mtype is volume
+                    dm.append(dm[0])    # <contdir>
+                    dm.append('')       # <opt>
+                    dm[0] = ''          # <srcvol>
+                else:
+                    # ms is <srcvol|hostdir>:<contdir>:<opt>
+                    if dm[0].startswith('/'):
+                        mtype = 'bind'
+                    if len(dm) == 2:
+                        # ms is <srcvol|hostdir>:<contdir>
+                        dm.append('')       # <opt>
+                dm[2] = prep_mount_args_for_comp(dm[2], mtype=mtype)
+                res.append('src={0},dst={1},{2}'.format(dm[0], dm[1], dm[2]).strip(','))
+            return prep_mount_args_for_comp(res[0] if wants_str else res, mtype='volume')
+
+        before = []
+        iv_type = 'bind'  # documented default
+        image_volumes = list(map(clean_path, self.image_info.get('config', {}).get('volumes', {}).keys()))
+        if self.info['config'].get('createcommand'):
+            cr_com = self.info['config']['createcommand']
+            for i, v in enumerate(cr_com):
+                if v == '--image-volume':
+                    if cr_com[i + 1]:
+                        iv_type = cr_com[i + 1]
+                elif v == '--mount':
+                    f = prep_mount_args_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+                elif v == '--tmpfs':
+                    f = prep_tmpfs_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+                elif v == '--volume':
+                    f = prep_volume_for_comp(cr_com[i + 1])
+                    if f:
+                        before.append(f)
+        before.extend(clean_image_vols(iv_type))
+
+        after = list(self.params.get('mount') or set())
+        after_iv_type = self.params.get('image_volume', 'bind') or 'bind'
+        after.extend(clean_image_vols(after_iv_type))
+
+        tvols = self.params.get('tmpfs')
+        if tvols:
+            after.extend(prep_tmpfs_for_comp(tvols))
+        tvols = self.params.get('volume')
+        if tvols:
+            after.extend(prep_volume_for_comp(tvols))
+        after = prep_mount_args_for_comp(after)
+
         before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('volume', before, after)
+        return self._diff_update_and_compare('volumes_all', before, after)
 
     def diffparam_volumes_from(self):
         return self._diff_generic('volumes_from', '--volumes-from')
