@@ -1,0 +1,468 @@
+- name: Remove container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    state: absent
+
+- name:  Run container with boolean key-value type - 1
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultx1
+
+- name:  Run container with boolean key-value type - 2
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultx2
+
+- name:  Run container with boolean key-value type - 3
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: false
+  register: resultx3
+
+- name:  Run container with boolean key-value type - 4
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: false
+  register: resultx4
+
+- name:  Run container with boolean key-value type - 5
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: true
+  register: resultx5
+
+- name:  Run container with boolean key-value type - 6
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: true
+  register: resultx6
+
+- name:  Run container with boolean key-value type - 7
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: false
+  register: resultx7
+
+- name:  Run container with boolean key-value type - 8
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    # tls_verify: false
+  register: resultx8
+
+- name:  Run container with boolean key-value type - 9
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    tls_verify: true
+  register: resultx9
+
+- name:  Run container with boolean key-value type - 10
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    # tls_verify: true
+  register: resultx10
+
+- name: Assert checks
+  assert:
+    that:
+      - resultx1.changed == true
+      - resultx2.changed == false
+      - resultx3.changed == true
+      - resultx4.changed == false
+      - resultx5.changed == true
+      - resultx6.changed == false
+      - resultx7.changed == true
+      - resultx8.changed == true
+      - resultx9.changed == true
+      - resultx10.changed == true
+
+- name: Remove container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    state: absent
+
+- name: Run container with list type - 1
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - HOME
+      - TERM
+      - USER
+  register: resultq1
+
+- name: Run container with list type - 2
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - HOME
+      - TERM
+      - USER
+  register: resultq2
+
+- name: Run container with list type - 3
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - HOME
+  register: resultq3
+
+- name: Run container with list type - 4
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - HOME
+  register: resultq4
+
+- name: Run container with list type - 5
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultq5
+
+- name: Run container with list type - 6
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultq6
+
+- name: Run container with list type - 7
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - USER
+  register: resultq7
+
+- name: Run container with list type - 8
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    unsetenv:
+      - USER
+  register: resultq8
+
+- name: Run container with list type - 9
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultq9
+
+- name: Assert checks
+  assert:
+    that:
+      - resultq1.changed == true
+      - resultq2.changed == false
+      - resultq3.changed == true
+      - resultq4.changed == false
+      - resultq5.changed == true
+      - resultq6.changed == false
+      - resultq7.changed == true
+      - resultq8.changed == false
+      - resultq9.changed == true
+
+- name: Remove container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    state: absent
+
+- name: Run container with boolean trigger type - 1
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resulty1
+
+- name: Run container with boolean trigger type - 2
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resulty2
+
+- name: Run container with boolean trigger type - 3
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: false
+  register: resulty3
+
+- name: Run container with boolean trigger type - 4
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: false
+  register: resulty4
+
+- name: Run container with boolean trigger type - 5
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: true
+  register: resulty5
+
+- name: Run container with boolean trigger type - 6
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: true
+  register: resulty6
+
+- name: Run container with boolean trigger type - 7
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: false
+  register: resulty7
+
+- name: Run container with boolean trigger type - 8
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    # no_healthcheck: false
+  register: resulty8
+
+- name: Run container with boolean trigger type - 9
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    no_healthcheck: true
+  register: resulty9
+
+- name: Run container with boolean trigger type - 10
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    # no_healthcheck: true
+  register: resulty10
+
+- name: Assert checks
+  assert:
+    that:
+      - resulty1.changed == true
+      - resulty2.changed == false
+      - resulty3.changed == false
+      - resulty4.changed == false
+      - resulty5.changed == true
+      - resulty6.changed == false
+      - resulty7.changed == true
+      - resulty8.changed == false
+      - resulty9.changed == true
+      - resulty10.changed == true
+
+
+- name: Remove container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    state: absent
+
+- name: Run container with dict type - 1
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      max_size: 10m
+      tag: test
+      path: /var/log
+  register: resultv1
+
+- name: Run container with dict type - 2
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      max_size: 10m
+      tag: test
+      path: /var/log
+  register: resultv2
+
+- name: Run container with dict type - 3
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      max_size: 10m
+  register: resultv3
+
+- name: Run container with dict type - 4
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      max_size: 10m
+  register: resultv4
+
+- name: Run container with dict type - 5
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultv5
+
+- name: Run container with dict type - 6
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultv6
+
+- name: Run container with dict type - 7
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      tag: test
+  register: resultv7
+
+- name: Run container with dict type - 8
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+    log_opt:
+      tag: test
+  register: resultv8
+
+- name: Run container with dict type - 9
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "idempotency"
+    image: "{{ idem_image }}"
+    state: present
+    command: 1h
+  register: resultv9
+
+- name: Assert checks
+  assert:
+    that:
+      - resultq1.changed == true
+      - resultq2.changed == false
+      - resultq3.changed == true
+      - resultq4.changed == false
+      - resultq5.changed == true
+      - resultq6.changed == false
+      - resultq7.changed == true
+      - resultq8.changed == false
+      - resultq9.changed == true

@@ -162,7 +162,7 @@
 - name: Check that it is recreated
   assert:
     that:
-      - info7 is not changed
+      - info7 is changed
 
 - name: Run container with publishing ports and ipv6
   containers.podman.podman_container:
@@ -178,6 +178,7 @@
       - "127.0.0.1:7671:7676/udp"
       - "127.0.0.3:43423:8872"
       - "[::1]:34523:35425"
+      - "40001-40010"
   register: info8
 
 - name: Check that it is recreated
@@ -199,6 +200,7 @@
       - "127.0.0.1:7671:7676/udp"
       - "127.0.0.3:43423:8872"
       - "[::1]:34523:35425"
+      - "40001-40010"
   register: info9
 
 - name: Check that it is recreated

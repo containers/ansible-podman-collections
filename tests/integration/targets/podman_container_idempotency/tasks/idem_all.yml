@@ -162,10 +162,9 @@
     command: 1h
   register: test14
 
-# We can't guess the default log path
 - name: Check info with default log opt path
   assert:
-    that: test14 is not changed
+    that: test14 is changed
 
 - name: Run container with all log-opts
   containers.podman.podman_container:
@@ -238,8 +237,8 @@
     that:
       - test15 is changed
       - test16 is not changed
-      - test17 is not changed
-      - test18 is not changed
+      - test17 is changed
+      - test18 is changed
       - test19 is changed
 
 - name: Run container with etc_hosts
@@ -381,7 +380,7 @@
 
 - name: Check info of second container with PID of container ID again
   assert:
-    that: test29 is not changed
+    that: test29 is changed
 
 - name: Remove dependent test container
   containers.podman.podman_container:

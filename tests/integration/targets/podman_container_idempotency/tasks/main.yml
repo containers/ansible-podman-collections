@@ -45,6 +45,7 @@
 
 - name: Test idempotency of systemd generation
   include_tasks: idem_systemd.yml
+  when: podman_version | int > 3
 
 - name: Test idempotency of other settings
   include_tasks: idem_all.yml
