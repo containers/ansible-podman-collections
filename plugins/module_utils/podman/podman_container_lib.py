@@ -885,10 +885,6 @@ class PodmanDefaults:
         if (LooseVersion(self.version) >= LooseVersion('1.8.0')
                 and LooseVersion(self.version) < LooseVersion('1.9.0')):
             self.defaults['cpu_shares'] = 1024
-        if (LooseVersion(self.version) >= LooseVersion('2.0.0')):
-            self.defaults['network'] = ["slirp4netns"]
-        if (LooseVersion(self.version) >= LooseVersion('5.0.0')):
-            self.defaults['network'] = ["pasta"]
         if (LooseVersion(self.version) >= LooseVersion('3.0.0')):
             self.defaults['log_level'] = "warning"
         return self.defaults
@@ -1315,49 +1311,7 @@ class PodmanContainerDiff:
         return self._diff_generic('mount', '--mount')
 
     def diffparam_network(self):
-        net_mode_before = self.info['hostconfig']['networkmode']
-        net_mode_after = ''
-        before = list(self.info['networksettings'].get('networks', {}))
-        # Remove default 'podman' network in v3 for comparison
-        if before == ['podman']:
-            before = []
-        # Special case for options for slirp4netns rootless networking from v2
-        if net_mode_before == 'slirp4netns' and 'createcommand' in self.info['config']:
-            cr_net = [i.lower() for i in self._createcommand('--network')]
-            for cr_net_opt in cr_net:
-                if 'slirp4netns:' in cr_net_opt:
-                    before = [cr_net_opt]
-        if net_mode_before == 'pasta':
-            cr_net = [i.lower() for i in self._createcommand('--network')]
-            for cr_net_opt in cr_net:
-                if 'pasta:' in cr_net_opt:
-                    before = [cr_net_opt]
-        after = self.params['network'] or []
-        after = [i.lower() for i in after]
-        # If container is in pod and no networks are provided
-        if not self.module_params['network'] and self.params['pod']:
-            after = before
-            return self._diff_update_and_compare('network', before, after)
-        # Check special network modes
-        if after in [['bridge'], ['host'], ['slirp4netns'], ['none'], ['pasta']]:
-            net_mode_after = after[0]
-        # If changes are only for network mode and container has no networks
-        if net_mode_after and not before:
-            # Remove differences between v1 and v2
-            net_mode_after = net_mode_after.replace('bridge', 'default')
-            net_mode_after = net_mode_after.replace('slirp4netns', 'default')
-            net_mode_after = net_mode_after.replace('pasta', 'default')
-            net_mode_before = net_mode_before.replace('bridge', 'default')
-            net_mode_before = net_mode_before.replace('slirp4netns', 'default')
-            net_mode_before = net_mode_before.replace('pasta', 'default')
-            return self._diff_update_and_compare('network', net_mode_before, net_mode_after)
-        # If container is attached to network of a different container
-        if "container" in net_mode_before:
-            for netw in after:
-                if "container" in netw:
-                    before = after = netw
-        before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('network', before, after)
+        return self._diff_generic('network', '--network')
 
     def diffparam_network_aliases(self):
         return self._diff_generic('network_aliases', '--network-alias')
