@@ -443,6 +443,7 @@ RETURN = r"""
 """
 
 import json
+import os
 import re
 import shlex
 
@@ -529,9 +530,15 @@ class PodmanImageManager(object):
             digest_before = None
 
         if not image or self.force:
-            if self.path:
+            if self.state == 'build' or self.path:
                 # Build the image
-                self.results['actions'].append('Built image {image_name} from {path}'.format(image_name=self.image_name, path=self.path))
+                build_file = self.build.get('file') if self.build else None
+                if not self.path and build_file:
+                    self.path = os.path.dirname(build_file)
+                elif not self.path and not build_file:
+                    self.module.fail_json(msg='Path to build context or file is required when building an image')
+                self.results['actions'].append('Built image {image_name} from {path}'.format(
+                    image_name=self.image_name, path=self.path))
                 if not self.module.check_mode:
                     self.results['image'], self.results['stdout'] = self.build_image()
                     image = self.results['image']
