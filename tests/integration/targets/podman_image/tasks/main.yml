@@ -209,14 +209,33 @@
       register: oci_build3
       ignore_errors: true
 
-    - name: Build OCI image, point to location of Containerfile
+    - name: Build OCI image, point to location of Containerfile without path
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: testimage2
-        path: /var/tmp/build/subdir
+        state: build
         build:
           file: /var/tmp/build/Dockerfile
       register: oci_build4
+
+    - name: Build OCI image, point to location of Containerfile and path
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage3
+        path: /var/tmp/build
+        build:
+          file: /var/tmp/build/Dockerfile
+      register: oci_build5
+
+    - name: Build OCI image, point to location of Containerfile and path
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage5x
+        state: build
+        build:
+          format: oci
+      register: oci_build6
+      ignore_errors: true
 
     - name: Inspect first image
       containers.podman.podman_image_info:
@@ -237,7 +256,9 @@
           - oci_build2 is not changed
           - oci_build3 is not changed
           - oci_build3 is failed
-          - oci_build4 is changed
+          - oci_build4 is success
+          - oci_build5 is success
+          - oci_build6 is failed
           - "'localhost/testimage:latest' in testimage_info.images[0]['RepoTags'][0]"
           - "'localhost/testimage2:latest' in testimage2_info.images[0]['RepoTags'][0]"
           - "'no such file or directory' in oci_build3.msg"
