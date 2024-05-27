@@ -905,11 +905,11 @@ class PodmanPodManager:
         process_action()
         return self.results
 
-    def _create_or_recreate_pod(self):
+    def _create_or_recreate_pod(self, ignore_diff=False):
         """Ensure pod exists and is exactly as it should be by input params."""
         changed = False
         if self.pod.exists:
-            if self.pod.different or self.recreate:
+            if (self.pod.different and not ignore_diff) or self.recreate:
                 self.pod.recreate()
                 self.results['actions'].append('recreated %s' % self.pod.name)
                 changed = True
@@ -929,14 +929,14 @@ class PodmanPodManager:
 
     def make_killed(self):
         """Run actions if desired state is 'killed'."""
-        self._create_or_recreate_pod()
+        self._create_or_recreate_pod(ignore_diff=True)
         self.pod.kill()
         self.results['actions'].append('killed %s' % self.pod.name)
         self.update_pod_result()
 
     def make_paused(self):
         """Run actions if desired state is 'paused'."""
-        changed = self._create_or_recreate_pod()
+        changed = self._create_or_recreate_pod(ignore_diff=True)
         if self.pod.paused:
             self.update_pod_result(changed=changed)
             return
@@ -946,7 +946,7 @@ class PodmanPodManager:
 
     def make_unpaused(self):
         """Run actions if desired state is 'unpaused'."""
-        changed = self._create_or_recreate_pod()
+        changed = self._create_or_recreate_pod(ignore_diff=True)
         if not self.pod.paused:
             self.update_pod_result(changed=changed)
             return
@@ -956,7 +956,7 @@ class PodmanPodManager:
 
     def make_started(self):
         """Run actions if desired state is 'started'."""
-        changed = self._create_or_recreate_pod()
+        changed = self._create_or_recreate_pod(ignore_diff=True)
         if not changed and self.pod.running:
             self.update_pod_result(changed=changed)
             return

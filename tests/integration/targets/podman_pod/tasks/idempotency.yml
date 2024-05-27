@@ -262,6 +262,131 @@
         that:
           - podidem2_info4 is not changed
 
+    # Test new Pod logic
+    - name: Create pod with multiple options and containers
+      containers.testpodman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem3
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod3
+        dns:
+          - 1.1.1.1
+        volumes:
+          - /tmp:/tmp/:ro
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem3_info
+
+    - name: Check info
+      assert:
+        that:
+          - podidem3_info is changed
+
+    - name: Create containers
+      containers.testpodman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "container1"
+        image: alpine
+        state: present
+        command: sleep 1h
+        pod: podidem3
+
+    - name: Create containers
+      containers.testpodman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "container2"
+        image: alpine
+        state: present
+        command: sleep 1h
+        pod: podidem3
+
+    - name: Start the pod with containers
+      containers.testpodman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem3
+        state: started
+      register: podidem3_info2
+
+    - name: Check info
+      assert:
+        that:
+          - podidem3_info2 is changed
+
+    - name: Create pod with multiple options and containers - again
+      containers.testpodman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem3
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod3
+        dns:
+          - 1.1.1.1
+        volumes:
+          - /tmp:/tmp/:ro
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem3_info
+
+    - name: Check info
+      assert:
+        that:
+          - podidem3_info is not changed
+
+    - name: Create containers
+      containers.testpodman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "container1"
+        image: alpine
+        state: present
+        command: sleep 1h
+        pod: podidem3
+      register: container1_info
+
+    - name: Create containers
+      containers.testpodman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "container2"
+        image: alpine
+        state: present
+        command: sleep 1h
+        pod: podidem3
+      register: container2_info
+
+    - name: Start the pod with containers
+      containers.testpodman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem3
+        state: started
+      register: podidem3_info2
+
+    - name: Check info
+      assert:
+        that:
+          - podidem3_info2 is not changed
+          - container1_info is not changed
+          - container2_info is not changed
+
   always:
 
     - name: Delete all pods leftovers from tests
