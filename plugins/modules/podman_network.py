@@ -33,6 +33,12 @@ options:
     description:
       - disable dns plugin (default "false")
     type: bool
+  dns:
+    description:
+      - Set network-scoped DNS resolver/nameserver for containers in this network.
+        If not set, the host servers from /etc/resolv.conf is used.
+    type: list
+    elements: str
   driver:
     description:
       - Driver to manage the network (default "bridge")
@@ -61,11 +67,26 @@ options:
     description:
       - Allocate container IP from range
     type: str
+  ipam_driver:
+    description:
+      - Set the ipam driver (IP Address Management Driver) for the network.
+        When unset podman chooses an ipam driver automatically based on the network driver
+    type: str
+    choices:
+      - host-local
+      - dhcp
+      - none
   ipv6:
     description:
       - Enable IPv6 (Dual Stack) networking. You must pass a IPv6 subnet.
         The subnet option must be used with the ipv6 option.
     type: bool
+  route:
+    description:
+      - A static route in the format <destination in CIDR notation>,<gateway>,<route metric (optional)>.
+        This route will be added to every container in this network.
+    type: list
+    elements: str
   subnet:
     description:
       - Subnet in CIDR format
@@ -297,6 +318,11 @@ class PodmanNetworkModuleParams:
     def addparam_gateway(self, c):
         return c + ['--gateway', self.params['gateway']]
 
+    def addparam_dns(self, c):
+        for dns in self.params['dns']:
+            c += ['--dns', dns]
+        return c
+
     def addparam_driver(self, c):
         return c + ['--driver', self.params['driver']]
 
@@ -325,6 +351,14 @@ class PodmanNetworkModuleParams:
                       b"=".join([to_bytes(k, errors='surrogate_or_strict')
                                  for k in opt])]
         return c
+
+    def addparam_route(self, c):
+        for route in self.params['route']:
+            c += ['--route', route]
+        return c
+
+    def addparam_ipam_driver(self, c):
+        return c + ['--ipam-driver=%s' % self.params['ipam_driver']]
 
     def addparam_disable_dns(self, c):
         return c + ['--disable-dns=%s' % self.params['disable_dns']]
@@ -385,6 +419,11 @@ class PodmanNetworkDiff:
         before = after = self.params['disable_dns']
         return self._diff_update_and_compare('disable_dns', before, after)
 
+    def diffparam_dns(self):
+        before = self.info.get('network_dns_servers', [])
+        after = self.params['dns'] or []
+        return self._diff_update_and_compare('dns', sorted(before), sorted(after))
+
     def diffparam_driver(self):
         # Currently only bridge is supported
         before = after = 'bridge'
@@ -428,6 +467,23 @@ class PodmanNetworkDiff:
         # TODO(sshnaidm): implement IP to CIDR convert and vice versa
         before = after = ''
         return self._diff_update_and_compare('ip_range', before, after)
+
+    def diffparam_ipam_driver(self):
+        before = self.info.get("ipam_options", {}).get("driver", "")
+        after = self.params['ipam_driver']
+        if not after:
+            after = before
+        return self._diff_update_and_compare('ipam_driver', before, after)
+
+    def diffparam_route(self):
+        routes = self.info.get('routes', [])
+        if routes:
+            before = [",".join([
+                r['destination'], r['gateway'], str(r.get('metric', ''))]).rstrip(",") for r in routes]
+        else:
+            before = []
+        after = self.params['route'] or []
+        return self._diff_update_and_compare('route', sorted(before), sorted(after))
 
     def diffparam_subnet(self):
         # Disable idempotency of subnet for v4, subnets are added automatically
@@ -694,12 +750,15 @@ def main():
                        choices=['present', 'absent', 'quadlet']),
             name=dict(type='str', required=True),
             disable_dns=dict(type='bool', required=False),
+            dns=dict(type='list', elements='str', required=False),
             driver=dict(type='str', required=False),
             force=dict(type='bool', default=False),
             gateway=dict(type='str', required=False),
             interface_name=dict(type='str', required=False),
             internal=dict(type='bool', required=False),
             ip_range=dict(type='str', required=False),
+            ipam_driver=dict(type='str', required=False,
+                             choices=['host-local', 'dhcp', 'none']),
             ipv6=dict(type='bool', required=False),
             subnet=dict(type='str', required=False),
             macvlan=dict(type='str', required=False),
@@ -715,6 +774,7 @@ def main():
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
             recreate=dict(type='bool', default=False),
+            route=dict(type='list', elements='str', required=False),
             quadlet_dir=dict(type='path', required=False),
             quadlet_filename=dict(type='str', required=False),
             quadlet_options=dict(type='list', elements='str', required=False),
