@@ -1153,6 +1153,9 @@
         - "container1"
         - "container2"
 
+- name: Test idempotency rootless pods
+  include_tasks: idempotency.yml
+
 - name: Test idempotency for root pods
   include_tasks: root-pod.yml
   vars:

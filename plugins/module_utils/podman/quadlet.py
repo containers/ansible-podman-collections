@@ -474,6 +474,8 @@ class PodQuadlet(Quadlet):
         if params["gidmap"]:
             for gidmap in params["gidmap"]:
                 params["podman_args"].append(f"--gidmap {gidmap}")
+        if params["exit_policy"]:
+            params["podman_args"].append(f"--exit-policy={params['gpus']}")
         if params["gpus"]:
             params["podman_args"].append(f"--gpus {params['gpus']}")
         if params["hostname"]:
@@ -509,6 +511,8 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pod_id_file"]:
             params["podman_args"].append(f"--pod-id-file {params['pod_id_file']}")
+        if params["restart_policy"]:
+            params["podman_args"].append(f"--restart={params['restart_policy']}")
         if params["security_opt"]:
             for security_opt in params["security_opt"]:
                 params["podman_args"].append(f"--security-opt {security_opt}")

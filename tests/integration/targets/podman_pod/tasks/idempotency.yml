@@ -1,0 +1,283 @@
+- name: Test podman pod idempotency
+  block:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "podidem1"
+        - "podidem2"
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "container1"
+        - "container2"
+
+    - name: Create pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: created
+      register: podidem1_info
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info is changed
+          - >-
+             (podidem1_info.pod['State']['status'] is defined and
+             podidem1_info.pod['State']['status'] == 'Created') or
+             (podidem1_info.pod['State']['status'] is not defined and
+             podidem1_info.pod['State'] == 'Created')
+
+    - name: Create pod again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: created
+      register: podidem1_info2
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info2 is not changed
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: started
+      register: podidem1_info3
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info3 is changed
+          - >-
+             (podidem1_info3.pod['State']['status'] is defined and
+             podidem1_info3.pod['State']['status'] == 'Running') or
+             (podidem1_info3.pod['State']['status'] is not defined and
+             podidem1_info3.pod['State'] == 'Running')
+
+    - name: Start pod again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: started
+      register: podidem1_info4
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info4 is not changed
+
+    - name: Stop pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: stopped
+      register: podidem1_info5
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info5 is changed
+
+    - name: Stop pod again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: stopped
+      register: podidem1_info6
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info6 is not changed
+
+    - name: Create stopped pod again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem1
+        state: created
+      register: podidem1_info7
+
+    - name: Check info
+      assert:
+        that:
+          - podidem1_info7 is not changed
+
+    - name: Create pod with multiple options and containers
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.1
+        volumes:
+          - /tmp:/tmp/:ro
+          - /var/run/://var/run
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem2_info
+
+    - name: Check info
+      assert:
+        that:
+          - podidem2_info is changed
+
+    - name: Create same pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.1
+        volumes:
+          - /tmp:/tmp/:ro
+          - /var/run/://var/run
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem2_info2
+
+    - name: Check info
+      assert:
+        that:
+          - podidem2_info2 is not changed
+
+    - name: Change the pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.2
+        volumes:
+          - /tmp:/tmp/:ro
+          - /var/run/://var/run
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem2_info3
+
+    - name: Check info
+      assert:
+        that:
+          - podidem2_info3 is changed
+
+    - name: Start the pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: started
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.2
+        volumes:
+          - /tmp:/tmp/:ro
+          - /var/run/://var/run
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+
+    - name: Configure and start the pod again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: started
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.2
+        volumes:
+          - /tmp:/tmp/:ro
+          - /var/run/://var/run
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: podidem2_info4
+
+    - name: Check info
+      assert:
+        that:
+          - podidem2_info4 is not changed
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "podidem1"
+        - "podidem1"
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "container1"
+        - "container2"

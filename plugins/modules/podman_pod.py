@@ -117,6 +117,8 @@ options:
       all containers in the pod.
     type: list
     elements: str
+    aliases:
+      - dns_option
     required: false
   dns_search:
     description:
@@ -124,6 +126,14 @@ options:
       between all containers in the pod.
     type: list
     elements: str
+    required: false
+  exit_policy:
+    description:
+      - Set the exit policy of the pod when the last container exits. Supported policies are stop and continue
+    choices:
+      - stop
+      - continue
+    type: str
     required: false
   generate_systemd:
     description:
@@ -367,6 +377,10 @@ options:
         options as a list of lines to add.
     type: list
     elements: str
+  restart_policy:
+    description:
+      - Restart policy to follow when containers exit.
+    type: str
   security_opt:
     description:
     - Security options for the pod.
