@@ -337,3 +337,88 @@ def get_podman_version(module, fail=True):
                              (executable, err))
         return None
     return out.split("version")[1].strip()
+
+
+def createcommand(argument, info_config, boolean_type=False):
+    """Returns list of values for given argument from CreateCommand
+    from Podman container inspect output.
+
+    Args:
+        argument (str): argument name
+        info_config (dict): dictionary with container info
+        boolean_type (bool): if True, then argument is boolean type
+
+    Returns:
+
+        all_values: list of values for given argument from createcommand
+    """
+    if "createcommand" not in info_config:
+        return []
+    cr_com = info_config["createcommand"]
+    argument_values = ARGUMENTS_OPTS_DICT.get(argument, [argument])
+    all_values = []
+    for arg in argument_values:
+        for ind, cr_opt in enumerate(cr_com):
+            if arg == cr_opt:
+                if boolean_type:
+                    # This is a boolean argument and doesn't have value
+                    return [True]
+                if not cr_com[ind + 1].startswith("-"):
+                    # This is a key=value argument
+                    all_values.append(cr_com[ind + 1])
+                else:
+                    # This is also a false/true switching argument
+                    return [True]
+            if cr_opt.startswith("%s=" % arg):
+                all_values.append(cr_opt.split("=", 1)[1])
+    return all_values
+
+
+def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
+    """
+    Generic diff function for module arguments from CreateCommand
+    in Podman inspection output.
+
+    Args:
+        params (dict): module parameters
+        info_config (dict): dictionary with container info
+        module_arg (str): module argument name
+        cmd_arg (str): command line argument name
+        boolean_type (bool): if True, then argument is boolean type
+
+    Returns:
+        bool: True if there is a difference, False otherwise
+
+    """
+    before = createcommand(cmd_arg, info_config, boolean_type=boolean_type)
+    if before == []:
+        before = None
+    after = params[module_arg]
+    if boolean_type and (before, after) in [(None, False), (False, None)]:
+        before, after = False, False
+        return before, after
+    if before is None and after is None:
+        return before, after
+    if after is not None:
+        if isinstance(after, list):
+            after = ",".join(sorted([str(i).lower() for i in after]))
+            if before:
+                before = ",".join(sorted([str(i).lower() for i in before]))
+        elif isinstance(after, dict):
+            after = ",".join(sorted(
+                [str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
+            if before:
+                before = ",".join(sorted([j.lower() for j in before]))
+        elif isinstance(after, bool):
+            after = str(after).capitalize()
+            if before is not None:
+                before = str(before[0]).capitalize()
+        elif isinstance(after, int):
+            after = str(after)
+            if before is not None:
+                before = str(before[0])
+        else:
+            before = before[0] if before else None
+    else:
+        before = ",".join(sorted(before)) if len(before) > 1 else before[0]
+    return before, after

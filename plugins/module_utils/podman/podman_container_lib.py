@@ -8,7 +8,8 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import ARGUMENTS_OPTS_DICT
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import diff_generic
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import createcommand
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
 from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import ContainerQuadlet
 
@@ -913,39 +914,6 @@ class PodmanContainerDiff:
                 params_with_defaults[p] = self.module_params[p]
         return params_with_defaults
 
-    def _createcommand(self, argument, boolean_type=False):
-        """Returns list of values for given argument from CreateCommand
-        from Podman container inspect output.
-
-        Args:
-            argument (str): argument name
-            boolean_type (bool): if True, then argument is boolean type
-
-        Returns:
-
-            all_values: list of values for given argument from createcommand
-        """
-        if "createcommand" not in self.info["config"]:
-            return []
-        cr_com = self.info["config"]["createcommand"]
-        argument_values = ARGUMENTS_OPTS_DICT.get(argument, [argument])
-        all_values = []
-        for arg in argument_values:
-            for ind, cr_opt in enumerate(cr_com):
-                if arg == cr_opt:
-                    if boolean_type:
-                        # This is a boolean argument and doesn't have value
-                        return [True]
-                    if not cr_com[ind + 1].startswith("-"):
-                        # This is a key=value argument
-                        all_values.append(cr_com[ind + 1])
-                    else:
-                        # This is also a false/true switching argument
-                        return [True]
-                if cr_opt.startswith("%s=" % arg):
-                    all_values.append(cr_opt.split("=", 1)[1])
-        return all_values
-
     def _diff_update_and_compare(self, param_name, before, after):
         if before != after:
             self.diff['before'].update({param_name: before})
@@ -967,37 +935,8 @@ class PodmanContainerDiff:
             bool: True if there is a difference, False otherwise
 
         """
-        before = self._createcommand(cmd_arg, boolean_type=boolean_type)
-        if before == []:
-            before = None
-        after = self.params[module_arg]
-        if boolean_type and (before, after) in [(None, False), (False, None)]:
-            before, after = False, False
-            return self._diff_update_and_compare(module_arg, before, after)
-        if before is None and after is None:
-            return self._diff_update_and_compare(module_arg, before, after)
-        if after is not None:
-            if isinstance(after, list):
-                after = ",".join(sorted([str(i).lower() for i in after]))
-                if before:
-                    before = ",".join(sorted([str(i).lower() for i in before]))
-            elif isinstance(after, dict):
-                after = ",".join(sorted(
-                    [str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
-                if before:
-                    before = ",".join(sorted([j.lower() for j in before]))
-            elif isinstance(after, bool):
-                after = str(after).capitalize()
-                if before is not None:
-                    before = str(before[0]).capitalize()
-            elif isinstance(after, int):
-                after = str(after)
-                if before is not None:
-                    before = str(before[0])
-            else:
-                before = before[0] if before else None
-        else:
-            before = ",".join(sorted(before)) if len(before) > 1 else before[0]
+        info_config = self.info["config"]
+        before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
         return self._diff_update_and_compare(module_arg, before, after)
 
     def diffparam_annotation(self):
@@ -1489,7 +1428,7 @@ class PodmanContainerDiff:
                 return "/"
             return x.replace("//", "/").rstrip("/")
 
-        before = self._createcommand('--volume')
+        before = createcommand('--volume', self.info['config'])
         if before == []:
             before = None
         after = self.params['volume']
