@@ -350,6 +350,154 @@
         that:
           - info17 is not changed
 
+    - name: Create network with DNS
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+      register: resultn2
+
+    - name: Check output - Create network with DNS
+      assert:
+        that:
+          - resultn2 is changed
+
+    - name: Create network with DNS again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+      register: resultn3
+
+    - name: Check output - Create network with DNS again
+      assert:
+        that:
+          - resultn3 is not changed
+
+    - name: Create network with DNS - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+      register: resultn4
+
+    - name: Check output - Create network with DNS - different
+      assert:
+        that:
+          - resultn4 is changed
+
+    - name: Create network with routes
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,240
+          - 7.7.0.0/16,9.9.9.9,100
+      register: resultn5
+
+    - name: Check output - Create network with routes
+      assert:
+        that:
+          - resultn5 is changed
+
+    - name: Create network with routes again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,240
+          - 7.7.0.0/16,9.9.9.9,100
+      register: resultn6
+
+    - name: Check output - Create network with routes again
+      assert:
+        that:
+          - resultn6 is not changed
+
+    - name: Create network with routes - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,280
+      register: resultn7
+
+    - name: Check output - Create network with routes - different
+      assert:
+        that:
+          - resultn7 is changed
+
+    - name: Create network with IPAM driver none
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: none
+      register: resultn8
+
+    - name: Check output - Create network with IPAM driver none
+      assert:
+        that:
+          - resultn8 is changed
+
+    - name: Create network with IPAM driver none again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: none
+      register: resultn9
+
+    - name: Check output - Create network with IPAM driver none again
+      assert:
+        that:
+          - resultn9 is not changed
+
+    - name: Create network without IPAM driver
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+      register: resultn10
+
+    - name: Check output - Create network without IPAM driver
+      assert:
+        that:
+          - resultn10 is not changed
+
+    - name: Create network with IPAM driver host-local
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: "host-local"
+      register: resultn11
+
+    - name: Check output - Create network with IPAM driver host-local
+      assert:
+        that:
+          - resultn11 is changed
+
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
     - name: Create a Quadlet for network with filename
       containers.podman.podman_network:
         executable: "{{ test_executable | default('podman') }}"
