@@ -25,6 +25,7 @@ options:
     description:
       - The search term to look for. Will search all default registries unless a registry is defined in the search term.
     type: str
+    required: True
   limit:
     description:
       - Limit the number of image results returned from the search (per image registry)
@@ -36,7 +37,7 @@ options:
       - Whether or not to return the list of tags associated with each image
     required: False
     default: False
-    type: boolean
+    type: bool
 
 '''
 
@@ -64,7 +65,7 @@ images:
     sample: [
         {
             "Automated": "",
-            "Description": "Red Hat Enterprise Linux Atomic Image is a minimal, fully supported base image where several of the traditional operating system components such as python an systemd have been removed. The Atomic Image also includes a simple package manager called microdnf which can add/update packages as needed.",
+            "Description": "Red Hat Enterprise Linux Atomic Image is a minimal, fully supported base image.",
             "Index": "registry.access.redhat.com",
             "Name": "registry.access.redhat.com/rhel7-atomic",
             "Official": "",
@@ -97,7 +98,7 @@ def main():
         argument_spec=dict(
             executable=dict(type='str', default='podman'),
             term=dict(type='str', required=True),
-            limit=dict(type='int', required=False, default=100),
+            limit=dict(type='int', required=False, default=25),
             listtags=dict(type='bool', required=False, default=False)
         ),
         supports_check_mode=True,
