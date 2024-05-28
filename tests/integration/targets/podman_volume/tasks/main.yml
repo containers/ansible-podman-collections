@@ -161,6 +161,79 @@
           - info10 is failed
           - delete.volume == {}
 
+    - name: Mount non existing volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: nonexistent
+        state: mounted
+      register: mount1
+
+    - name: Check results
+      assert:
+        that:
+          - mount1 is success
+          - "'mount_point' in mount1"
+
+    - name: Create volume for mount
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: present
+
+    - name: Mount existing volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: mounted
+      register: mount2
+
+    - name: Check results
+      assert:
+        that:
+          - mount2 is success
+          - "'mount_point' in mount2"
+
+    - name: Unmount volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: unmounted
+      register: unmount
+
+    - name: Check results
+      assert:
+        that:
+          - unmount is success
+          - "'mount_point' not in unmount"
+
+    - name: Mount as root
+      become: true
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: rootmount
+        state: mounted
+      register: mount3
+
+    - name: Check results
+      assert:
+        that:
+          - mount3 is success
+          - "'mount_point' in mount3"
+
+    - name: Unmount as root
+      become: true
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: rootmount
+        state: unmounted
+      register: unmount2
+
+    - name: Check results
+      assert:
+        that:
+          - unmount2 is success
+          - "'mount_point' not in unmount2"
+
     - name: Create a Quadlet for volume with filename
       containers.podman.podman_volume:
         executable: "{{ test_executable | default('podman') }}"

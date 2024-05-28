@@ -24,6 +24,8 @@ options:
     choices:
       - present
       - absent
+      - mounted
+      - unmounted
       - quadlet
   recreate:
     description:
@@ -131,6 +133,7 @@ EXAMPLES = '''
 '''
 # noqa: F402
 import json  # noqa: F402
+import os  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
@@ -160,7 +163,7 @@ class PodmanVolumeModuleParams:
         Returns:
            list -- list of byte strings for Popen command
         """
-        if self.action in ['delete']:
+        if self.action in ['delete', 'mount', 'unmount']:
             return self._simple_action()
         if self.action in ['create']:
             return self._create_action()
@@ -168,6 +171,12 @@ class PodmanVolumeModuleParams:
     def _simple_action(self):
         if self.action == 'delete':
             cmd = ['rm', '-f', self.params['name']]
+            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        if self.action == 'mount':
+            cmd = ['mount', self.params['name']]
+            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        if self.action == 'unmount':
+            cmd = ['unmount', self.params['name']]
             return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
 
     def _create_action(self):
@@ -326,6 +335,7 @@ class PodmanVolume:
         self.module = module
         self.name = name
         self.stdout, self.stderr = '', ''
+        self.mount_point = None
         self.info = self.get_info()
         self.version = self._get_podman_version()
         self.diff = {}
@@ -380,7 +390,7 @@ class PodmanVolume:
         """Perform action with volume.
 
         Arguments:
-            action {str} -- action to perform - create, stop, delete
+            action {str} -- action to perform - create, delete, mount, unmout
         """
         b_command = PodmanVolumeModuleParams(action,
                                              self.module.params,
@@ -389,11 +399,14 @@ class PodmanVolume:
                                              ).construct_command_from_params()
         full_cmd = " ".join([self.module.params['executable'], 'volume']
                             + [to_native(i) for i in b_command])
+        # check if running not from root
+        if os.getuid() != 0 and action == 'mount':
+            full_cmd = f"{self.module.params['executable']} unshare {full_cmd}"
         self.module.log("PODMAN-VOLUME-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
             rc, out, err = self.module.run_command(
-                [self.module.params['executable'], b'volume'] + b_command,
+                full_cmd,
                 expand_user_and_vars=False)
             self.stdout = out
             self.stderr = err
@@ -401,6 +414,9 @@ class PodmanVolume:
                 self.module.fail_json(
                     msg="Can't %s volume %s" % (action, self.name),
                     stdout=out, stderr=err)
+            # in case of mount/unmount, return path to the volume from stdout
+            if action in ['mount']:
+                self.mount_point = out.strip()
 
     def delete(self):
         """Delete the volume."""
@@ -409,6 +425,14 @@ class PodmanVolume:
     def create(self):
         """Create the volume."""
         self._perform_action('create')
+
+    def mount(self):
+        """Delete the volume."""
+        self._perform_action('mount')
+
+    def unmount(self):
+        """Create the volume."""
+        self._perform_action('unmount')
 
     def recreate(self):
         """Recreate the volume."""
@@ -468,6 +492,8 @@ class PodmanVolumeManager:
         states_map = {
             'present': self.make_present,
             'absent': self.make_absent,
+            'mounted': self.make_mount,
+            'unmounted': self.make_unmount,
             'quadlet': self.make_quadlet,
         }
         process_action = states_map[self.state]
@@ -501,6 +527,26 @@ class PodmanVolumeManager:
                              'podman_actions': self.volume.actions})
         self.module.exit_json(**self.results)
 
+    def make_mount(self):
+        """Run actions if desired state is 'mounted'."""
+        if not self.volume.exists:
+            self.volume.create()
+            self.results['actions'].append('created %s' % self.volume.name)
+        self.volume.mount()
+        self.results['actions'].append('mounted %s' % self.volume.name)
+        if self.volume.mount_point:
+            self.results.update({'mount_point': self.volume.mount_point})
+        self.update_volume_result()
+
+    def make_unmount(self):
+        """Run actions if desired state is 'unmounted'."""
+        if self.volume.exists:
+            self.volume.unmount()
+            self.results['actions'].append('unmounted %s' % self.volume.name)
+            self.update_volume_result()
+        else:
+            self.module.fail_json(msg="Volume %s does not exist!" % self.name)
+
     def make_quadlet(self):
         results_update = create_quadlet_state(self.module, "volume")
         self.results.update(results_update)
@@ -511,7 +557,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type='str', default="present",
-                       choices=['present', 'absent', 'quadlet']),
+                       choices=['present', 'absent', 'mounted', 'unmounted', 'quadlet']),
             name=dict(type='str', required=True),
             label=dict(type='dict', required=False),
             driver=dict(type='str', required=False),
