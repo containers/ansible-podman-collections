@@ -17,7 +17,10 @@
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"
         state: absent
-        name: mysecret
+        name: "{{ item }}"
+      loop:
+        - mysecret
+        - mysecret2
 
     - name: Create secret
       containers.podman.podman_secret:
@@ -283,7 +286,10 @@
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"
         state: absent
-        name: mysecret
+        name: "{{ item }}"
+      loop:
+        - mysecret
+        - mysecret2
 
     - name: Create secret if not exists and skip existing
       containers.podman.podman_secret:
@@ -322,6 +328,116 @@
         executable: "{{ test_executable | default('podman') }}"
         state: absent
         name: mysecret2
+
+
+    - when: podman_version_gt470
+      block:
+
+        - name: Create a file with secret data
+          copy:
+            content: "secret content 1"
+            dest: ~/mysecret-1
+
+        - name: Create secret from file
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret2
+            path: ~/mysecret-1
+            state: present
+          register: secret1
+
+        - name: Create secret again
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret2
+            path: ~/mysecret-1
+            state: present
+          register: secret2
+
+        - name: Check outputs
+          assert:
+            that:
+              - secret1 is changed
+              - secret2 is not changed
+
+        - name: Create another secret in other file
+          copy:
+            content: "secret content 2"
+            dest: ~/mysecret-2
+
+        - name: Create secret from other file
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret3
+            path: ~/mysecret-2
+            state: present
+            debug: true
+          register: secret3
+
+        - name: Check outputs
+          assert:
+            that:
+              - secret3 is changed
+
+        - name: Create a secret from non existing file
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret4
+            path: ~/mysecret-3
+            state: present
+            debug: true
+          register: secret4
+          ignore_errors: true
+
+        - name: Check outputs
+          assert:
+            that:
+              - secret4 is failed
+
+        - name: Create a secret from non-existing environment variable
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret5
+            env: NON_EXISTING_ENV
+            state: present
+          register: secret5
+          ignore_errors: true
+
+        - name: Check outputs
+          assert:
+            that:
+              - secret5 is failed
+              - "'Environment variable NON_EXISTING_ENV is not set' in secret5.msg"
+
+        - name: Create a secret from existing environment variable
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret5
+            env: EXISTING_ENV
+            state: present
+          environment:
+            EXISTING_ENV: "secret env content"
+          register: secret6
+
+        - name: Show secret6
+          containers.podman.podman_secret_info:
+            executable: "{{ test_executable | default('podman') }}"
+            name: mysecret5
+            showsecret: true
+          register: secret6_info
+
+        - name: Check outputs
+          assert:
+            that:
+              - secret6 is changed
+              - secret6_info is success
+              - secret6_info.secrets.0.SecretData == "secret env content"
+
+    - name: Remove secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        state: absent
+        name: mysecret5
 
   always:
     - name: Remove container that uses secret
