@@ -520,7 +520,7 @@ pod:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # What modules does for example
 - containers.podman.podman_pod:
     name: pod1
@@ -534,6 +534,62 @@ EXAMPLES = '''
     name: pod2
     state: started
     publish: "127.0.0.1::80"
+
+# Full workflow example with pod and containers
+- name: Create a pod with parameters
+  containers.podman.podman_pod:
+    name: mypod
+    state: created
+    network: host
+    share: net
+    userns: auto
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    hostname: mypod
+    dns:
+      - 1.1.1.1
+    volumes:
+      - /tmp:/tmp/:ro
+    label:
+      key: cval
+      otherkey: kddkdk
+      somekey: someval
+    add_host:
+      - "google:5.5.5.5"
+
+- name: Create containers attached to the pod
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: created
+    pod: mypod
+    image: alpine
+    command: sleep 1h
+    loop:
+      - "container1"
+      - "container2"
+
+- name: Start pod
+  containers.podman.podman_pod:
+    name: mypod
+    state: started
+    network: host
+    share: net
+    userns: auto
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    hostname: mypod
+    dns:
+      - 1.1.1.1
+    volumes:
+      - /tmp:/tmp/:ro
+    label:
+      key: cval
+      otherkey: kddkdk
+      somekey: someval
+    add_host:
+      - "google:5.5.5.5"
 
 # Create a Quadlet file for a pod
 - containers.podman.podman_pod:
