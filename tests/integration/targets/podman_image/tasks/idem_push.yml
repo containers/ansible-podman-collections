@@ -1,0 +1,488 @@
+---
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+  ignore_errors: true
+  register: img_result1
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result1 is failed
+      - "'Destination must be a full URL or path to a directory' in img_result1.msg"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+  ignore_errors: true
+  register: img_result2
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result2.stderr"
+      - "'push quay.io/testing/testimage:latest quay.io/testing/testimage:latest' in img_result2.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage:draft
+    pull: false
+    push: true
+  ignore_errors: true
+  register: img_result2a
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result2a.stderr"
+      - "'push quay.io/testing/testimage:draft quay.io/testing/testimage:draft' in img_result2a.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage
+  ignore_errors: true
+  register: img_result3
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result3.stderr"
+      - "'push quay.io/testing/testimage:latest quay.io/testing/testimage' in img_result3.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage:draft
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage
+  ignore_errors: true
+  register: img_result3a
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result3a.stderr"
+      - "'push quay.io/testing/testimage:draft quay.io/testing/testimage' in img_result3a.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage:draft
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage:nodraft
+  ignore_errors: true
+  register: img_result3b
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result3b.stderr"
+      - "'push quay.io/testing/testimage:draft quay.io/testing/testimage:nodraft' in img_result3b.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    tag: testtag
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage
+  ignore_errors: true
+  register: img_result4
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result4.stderr"
+      - "'push testimage2:testtag quay.io/testing/testimage' in img_result4.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/testimage-dir
+      transport: dir
+  ignore_errors: true
+  register: img_result5
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result5 is changed
+      - "'push testimage2:latest dir:/tmp/testimage-dir' in img_result5.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: dir:/tmp/testimage-dir1
+  ignore_errors: true
+  register: img_result6
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result6 is changed
+      - "'push testimage2:latest dir:/tmp/testimage-dir1' in img_result6.actions"
+
+- name: Remove directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/test-docker-arch
+    - /tmp/test-docker-arch1
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/test-docker-arch
+      transport: docker-archive
+  ignore_errors: true
+  register: img_result7
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result7 is changed
+      - "'push testimage2:latest docker-archive:/tmp/test-docker-arch' in img_result7.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: docker-archive:/tmp/test-docker-arch1
+  ignore_errors: true
+  register: img_result8
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result8 is changed
+      - "'push testimage2:latest docker-archive:/tmp/test-docker-arch1' in img_result8.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/test-oci-arch
+      transport: oci-archive
+  ignore_errors: true
+  register: img_result9
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result9 is changed
+      - "'push testimage2:latest oci-archive:/tmp/test-oci-arch' in img_result9.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: oci-archive:/tmp/test-oci-arch1
+  ignore_errors: true
+  register: img_result10
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result10 is changed
+      - "'push testimage2:latest oci-archive:/tmp/test-oci-arch1' in img_result10.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage1
+      transport: docker
+  ignore_errors: true
+  register: img_result11
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result11.stderr"
+      - "'push testimage2:latest docker://quay.io/testing/testimage1' in img_result11.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: docker://quay.io/testing/testimage22
+  ignore_errors: true
+  register: img_result12
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result12.stderr"
+      - "'push testimage2:latest docker://quay.io/testing/testimage22' in img_result12.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: dockerimage
+      transport: docker-daemon
+  ignore_errors: true
+  register: img_result13
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result13 is changed
+      - "'push testimage2:latest docker-daemon:dockerimage:latest' in img_result13.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: docker-daemon:dockerimage2
+  ignore_errors: true
+  register: img_result14
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result14 is failure
+      - "'push testimage2:latest docker-daemon:dockerimage2' in img_result14.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: dockerimage:tagged1
+      transport: docker-daemon
+  ignore_errors: true
+  register: img_result15
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result15 is success
+      - "'push testimage2:latest docker-daemon:dockerimage:tagged1' in img_result15.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: docker-daemon:dockerimage:tagged
+  ignore_errors: true
+  register: img_result16
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result16 is success
+      - "'push testimage2:latest docker-daemon:dockerimage:tagged' in img_result16.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/testimage-dir25
+      transport: dir
+  ignore_errors: true
+  register: img_result17
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result17 is success
+      - "'push quay.io/testing/testimage:latest dir:/tmp/testimage-dir25' in img_result17.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: dir:/tmp/testimage-dir15
+  ignore_errors: true
+  register: img_result18
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result18 is success
+      - "'push quay.io/testing/testimage:latest dir:/tmp/testimage-dir15' in img_result18.actions"
+
+- name: Remove directories for docker-archive
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/test-docker-arch5
+    - /tmp/test-docker-arch15
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/test-docker-arch5
+      transport: docker-archive
+  ignore_errors: true
+  register: img_result19
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result19 is success
+      - "'push quay.io/testing/testimage:latest docker-archive:/tmp/test-docker-arch5' in img_result19.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: docker-archive:/tmp/test-docker-arch15
+  ignore_errors: true
+  register: img_result20
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result20 is success
+      - "'push quay.io/testing/testimage:latest docker-archive:/tmp/test-docker-arch15' in img_result20.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: /tmp/test-oci-arch5
+      transport: oci-archive
+  ignore_errors: true
+  register: img_result21
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result21 is success
+      - "'push quay.io/testing/testimage:latest oci-archive:/tmp/test-oci-arch5' in img_result21.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: oci-archive:/tmp/test-oci-arch15
+  ignore_errors: true
+  register: img_result22
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result22 is success
+      - "'push quay.io/testing/testimage:latest oci-archive:/tmp/test-oci-arch15' in img_result22.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/testimage5
+      transport: docker
+  ignore_errors: true
+  register: img_result23
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result23.stderr"
+      - "'push quay.io/testing/testimage:latest docker://quay.io/testing/testimage5' in img_result23.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: docker://quay.io/testing/testimage22
+  ignore_errors: true
+  register: img_result24
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result24.stderr"
+      - "'push quay.io/testing/testimage:latest docker://quay.io/testing/testimage22' in img_result24.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: dockerimage5
+      transport: docker-daemon
+  ignore_errors: true
+  register: img_result25
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result25 is success
+      - "'push quay.io/testing/testimage:latest docker-daemon:dockerimage5:latest' in img_result25.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: docker-daemon:dockerimage25
+  ignore_errors: true
+  register: img_result26
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result26 is failed
+      - "'push quay.io/testing/testimage:latest docker-daemon:dockerimage25' in img_result26.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: dockerimage:tagged15
+      transport: docker-daemon
+  ignore_errors: true
+  register: img_result27
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result27 is success
+      - "'push quay.io/testing/testimage:latest docker-daemon:dockerimage:tagged15' in img_result27.actions"
+
+- containers.podman.podman_image:
+    name: quay.io/testing/testimage
+    pull: false
+    push: true
+    push_args:
+      dest: docker-daemon:dockerimage:tagged5
+  ignore_errors: true
+  register: img_result28
+
+- name: Check outputs
+  assert:
+    that:
+      - img_result28 is success
+      - "'push quay.io/testing/testimage:latest docker-daemon:dockerimage:tagged5' in img_result28.actions"

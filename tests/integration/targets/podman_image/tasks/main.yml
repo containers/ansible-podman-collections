@@ -227,7 +227,7 @@
           file: /var/tmp/build/Dockerfile
       register: oci_build5
 
-    - name: Build OCI image, point to location of Containerfile and path
+    - name: Build OCI image with no Containerfile and path
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: testimage5x
@@ -349,6 +349,28 @@
         that:
           - item.Architecture == "arm"
       loop: "{{ imageinfo_arch.images }}"
+
+    - name: Build Docker image
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/testing/testimage
+        path: /var/tmp/build
+      register: build_image1
+
+    - name: Build Docker image - 2
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/testing/testimage:draft
+        path: /var/tmp/build
+
+    - name: Build Docker image
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2:testtag
+        path: /var/tmp/build
+      register: build_image2
+
+    - include_tasks: idem_push.yml
 
     - name: Create a Quadlet for image with filename
       containers.podman.podman_image:
@@ -490,4 +512,8 @@
         - quay.io/coreos/etcd:v3.3.11
         - localhost/testimage
         - localhost/testimage2
+        - localhost/testimage2:testtag
+        - localhost/testimage3
         - localhost/dockerimage
+        - quay.io/testing/testimage
+        - quay.io/testing/testimage:draft
