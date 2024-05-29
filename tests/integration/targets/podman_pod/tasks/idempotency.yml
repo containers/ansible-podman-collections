@@ -262,6 +262,86 @@
         that:
           - podidem2_info4 is not changed
 
+    - name: Remove pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: absent
+
+    - name: Create a pod with parameters - created
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: created
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.2
+        volumes:
+          - /tmp:/tmp/:ro
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: pod1_set
+
+    - name: Create containers
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: created
+        pod: podidem2
+        image: alpine
+        command: sleep 1h
+      loop:
+        - "container1"
+        - "container2"
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podidem2
+        state: started
+        infra: true
+        network: host
+        share: net
+        userns: auto
+        security_opt:
+          - seccomp=unconfined
+          - apparmor=unconfined
+        hostname: mypod
+        dns:
+          - 1.1.1.2
+        volumes:
+          - /tmp:/tmp/:ro
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+        add_host:
+          - "google:5.5.5.5"
+      register: pod2_set
+
+    - name: Check info for pod creation
+      assert:
+        that:
+          - pod1_set is changed
+          - pod2_set is changed
+          - pod1_set.pod['State'] == 'Created'
+          - pod1_set.pod['Containers'][0]['State'] == 'created'
+          - pod2_set.pod['State'] == 'Running'
+          - pod2_set.pod['Containers'][0]['State'] == 'running'
+          - pod2_set.pod['Containers'][1]['State'] == 'running'
+          - pod2_set.pod['Containers'][2]['State'] == 'running'
+
   always:
 
     - name: Delete all pods leftovers from tests
