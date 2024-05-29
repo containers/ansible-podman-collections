@@ -21,7 +21,6 @@ options:
   data:
     description:
       - The value of the secret. Required when C(state) is C(present).
-        Mutually exclusive with C(env) and C(path).
     type: str
   driver:
     description:
@@ -32,11 +31,6 @@ options:
     description:
       - Driver-specific key-value options.
     type: dict
-  env:
-    description:
-      - The name of the environment variable that contains the secret.
-        Mutually exclusive with C(data) and C(path).
-    type: str
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -59,11 +53,6 @@ options:
       - The name of the secret.
     required: True
     type: str
-  path:
-    description:
-      - Path to the file that contains the secret.
-        Mutually exclusive with C(data) and C(env).
-    type: path
   state:
     description:
       - Whether to create or remove the named secret.
@@ -78,7 +67,7 @@ options:
     type: dict
   debug:
     description:
-      - Enable debug mode for module. It prints secrets diff.
+      - Enable debug mode for module.
     type: bool
     default: False
 '''
@@ -110,8 +99,6 @@ EXAMPLES = r"""
     name: mysecret
     """
 
-import os
-
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import get_podman_version
@@ -129,7 +116,7 @@ def podman_secret_exists(module, executable, name, version):
     return rc == 0
 
 
-def need_update(module, executable, name, data, path, env, skip, driver, driver_opts, debug, labels):
+def need_update(module, executable, name, data, skip, driver, driver_opts, debug, labels):
     cmd = [executable, 'secret', 'inspect', '--showsecret', name]
     rc, out, err = module.run_command(cmd)
     if rc != 0:
@@ -145,37 +132,10 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
             if debug:
                 module.log("PODMAN-SECRET-DEBUG: Idempotency of driver %s is not supported" % driver)
             return True
-        if data:
-            if secret['SecretData'] != data:
-                if debug:
-                    diff['after'] = data
-                    diff['before'] = secret['SecretData']
-                else:
-                    diff['after'] = "<different-secret>"
-                    diff['before'] = "<secret>"
-                return True
-        if path:
-            with open(path, 'rb') as f:
-                text = f.read().decode('utf-8')
-            if secret['SecretData'] != text:
-                if debug:
-                    diff['after'] = text
-                    diff['before'] = secret['SecretData']
-                else:
-                    diff['after'] = "<different-secret>"
-                    diff['before'] = "<secret>"
-                return True
-        if env:
-            env_data = os.environ.get(env)
-            if secret['SecretData'] != env_data:
-                if debug:
-                    diff['after'] = env_data
-                    diff['before'] = secret['SecretData']
-                else:
-                    diff['after'] = "<different-secret>"
-                    diff['before'] = "<secret>"
-                return True
-
+        if secret['SecretData'] != data:
+            diff['after'] = "<different-secret>"
+            diff['before'] = "<secret>"
+            return True
         if driver_opts:
             for k, v in driver_opts.items():
                 if secret['Spec']['Driver']['Options'].get(k) != v:
@@ -195,13 +155,13 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
     return False
 
 
-def podman_secret_create(module, executable, name, data, path, env, force, skip,
+def podman_secret_create(module, executable, name, data, force, skip,
                          driver, driver_opts, debug, labels):
     podman_version = get_podman_version(module, fail=False)
     if (podman_version is not None and
         LooseVersion(podman_version) >= LooseVersion('4.7.0')
             and (driver is None or driver == 'file')):
-        if need_update(module, executable, name, data, path, env, skip, driver, driver_opts, debug, labels):
+        if need_update(module, executable, name, data, skip, driver, driver_opts, debug, labels):
             podman_secret_remove(module, executable, name)
         else:
             return {"changed": False}
@@ -223,20 +183,9 @@ def podman_secret_create(module, executable, name, data, path, env, force, skip,
             cmd.append('--label')
             cmd.append("=".join([k, v]))
     cmd.append(name)
-    if data:
-        cmd.append('-')
-    elif path:
-        cmd.append(path)
-    elif env:
-        if os.environ.get(env) is None:
-            module.fail_json(msg="Environment variable %s is not set" % env)
-        cmd.append("--env")
-        cmd.append(env)
+    cmd.append('-')
 
-    if data:
-        rc, out, err = module.run_command(cmd, data=data, binary_data=True)
-    else:
-        rc, out, err = module.run_command(cmd)
+    rc, out, err = module.run_command(cmd, data=data, binary_data=True)
     if rc != 0:
         module.fail_json(msg="Unable to create secret: %s" % err)
 
@@ -271,8 +220,6 @@ def main():
             state=dict(type='str', default='present', choices=['absent', 'present']),
             name=dict(type='str', required=True),
             data=dict(type='str', no_log=True),
-            env=dict(type='str'),
-            path=dict(type='path'),
             force=dict(type='bool', default=False),
             skip_existing=dict(type='bool', default=False),
             driver=dict(type='str'),
@@ -280,8 +227,6 @@ def main():
             labels=dict(type='dict'),
             debug=dict(type='bool', default=False),
         ),
-        required_if=[('state', 'present', ['path', 'env', 'data'], True)],
-        mutually_exclusive=[['path', 'env', 'data']],
     )
 
     state = module.params['state']
@@ -290,16 +235,16 @@ def main():
 
     if state == 'present':
         data = module.params['data']
+        if data is None:
+            raise Exception("'data' is required when 'state' is 'present'")
         force = module.params['force']
         skip = module.params['skip_existing']
         driver = module.params['driver']
         driver_opts = module.params['driver_opts']
         debug = module.params['debug']
         labels = module.params['labels']
-        path = module.params['path']
-        env = module.params['env']
         results = podman_secret_create(module, executable,
-                                       name, data, path, env, force, skip,
+                                       name, data, force, skip,
                                        driver, driver_opts, debug, labels)
     else:
         results = podman_secret_remove(module, executable, name)
