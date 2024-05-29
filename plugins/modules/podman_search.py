@@ -70,7 +70,7 @@ images:
             "Name": "registry.access.redhat.com/rhel7-atomic",
             "Official": "",
             "Stars": 0,
-            "Tag": ""
+            "Tags": ["1.0", "1.1", "1.1.1-devel"]
         }
     ]
 """
