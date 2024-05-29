@@ -110,7 +110,14 @@ def main():
     listtags = module.params.get('listtags')
     executable = module.get_bin_path(executable, required=True)
 
-    results = json.loads(search_images(module, executable, term, limit, listtags))
+    result_str = search_images(module, executable, term, limit, listtags)
+    if result_str == "":
+      results = []
+    else:
+      try:
+        results = json.loads(result_str)
+      except json.decoder.JSONDecodeError:
+        module.fail_json(msg='Failed to parse JSON output from podman search: {out}'.format(out=result_str))
 
     results = dict(
         changed=False,
