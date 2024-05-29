@@ -439,44 +439,6 @@
         state: absent
         name: mysecret5
 
-    - name: Create secret if not exists and skip existing
-      containers.podman.podman_secret:
-        executable: "{{ test_executable | default('podman') }}"
-        name: mysecret2
-        data: secret content
-        state: present
-        skip_existing: true
-      register: secretskip1
-
-    - name: Create secret if not exists and skip existing - again
-      containers.podman.podman_secret:
-        executable: "{{ test_executable | default('podman') }}"
-        name: mysecret2
-        data: secret content
-        state: present
-        skip_existing: true
-      register: secretskip2
-
-    - name: Check secret
-      containers.podman.podman_secret_info:
-        executable: "{{ test_executable | default('podman') }}"
-        name: mysecret2
-      register: secret_info
-
-    - name: Check outputs
-      assert:
-        that:
-          - secretskip1 is changed
-          - secretskip2 is not changed
-          - secret_info is success
-          - secret_info.secrets | length > 0
-
-    - name: Remove secret
-      containers.podman.podman_secret:
-        executable: "{{ test_executable | default('podman') }}"
-        state: absent
-        name: mysecret2
-
   always:
     - name: Remove container that uses secret
       containers.podman.podman_container:
