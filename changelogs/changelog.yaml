@@ -290,6 +290,30 @@ releases:
       - Add quadlet support for Podman modules
       release_summary: Quadlet support for Podman
     release_date: '2024-04-22'
+  1.14.0:
+    changes:
+      bugfixes:
+      - Fix idempotency for pod with 0.0.0.0
+      - Fix transports issues in podman_image
+      - fix(#747) set correct HealthCmd
+      major_changes:
+      - Add mount and unmount for volumes
+      - Add multiple subnets for networks
+      - Add new options for podman_container
+      - Add new options to pod module
+      - Improve idempotency for networking in podman_container
+      - Redesign idempotency for Podman Pod module
+      minor_changes:
+      - Add autodiscovery for build context in podman_image
+      - Add docs, tests and more examples for podman_pod
+      - Add extra_args for podman_image push and pull
+      - Add idempotency for mounts and volumes in podman_container
+      - Add new functionality tests for podman_secret
+      - Add path and env options for podman_secret
+      - Add route, dns and ipam_driver to podman_network
+      - Create podman secret when skip_existing=True and it does not exist
+      release_summary: Idempotency redesign and a lot of new options
+    release_date: '2024-05-30'
   1.2.0:
     changes:
       minor_changes:
