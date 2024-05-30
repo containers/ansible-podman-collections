@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_pod module – Manage Podman pods<a class="headerlink" href="#containers-podman-podman-pod-module-manage-podman-pods" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.13.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.14.0).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -175,8 +175,10 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-dns_opt"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-dns-opt"><strong>dns_opt</strong></p>
-<a class="ansibleOptionLink" href="#parameter-dns_opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-dns_opt"></div>
+<div class="ansibleOptionAnchor" id="parameter-dns_option"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-dns-option"><span id="ansible-collections-containers-podman-podman-pod-module-parameter-dns-opt"></span><strong>dns_opt</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dns_opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: dns_option</span></p>
+<p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set custom DNS options in the /etc/resolv.conf file that will be shared between all containers in the pod.</p>
 </div></td>
@@ -197,6 +199,18 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-exit_policy"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-exit-policy"><strong>exit_policy</strong></p>
+<a class="ansibleOptionLink" href="#parameter-exit_policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set the exit policy of the pod when the last container exits. Supported policies are stop and continue</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;stop&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;continue&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd"><strong>generate_systemd</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -204,21 +218,21 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/after"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-after"><strong>after</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/after" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Add the systemd unit after (After=) option, that ordering dependencies between the list of dependencies and this service.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/container_prefix"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-container-prefix"><strong>container_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/container_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the systemd unit name prefix for containers. The default is “container”.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/names"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-names"><strong>names</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/names" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -230,7 +244,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/new"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-new"><strong>new</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/new" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -242,7 +256,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/no_header"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-no-header"><strong>no_header</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/no_header" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -254,28 +268,28 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/path"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify a path to the directory where unit files will be generated. Required for this option. If it doesn’t exist, the directory will be created.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/pod_prefix"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-pod-prefix"><strong>pod_prefix</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/pod_prefix" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the systemd unit name prefix for pods. The default is “pod”.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/requires"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-requires"><strong>requires</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/requires" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the systemd unit requires (Requires=) option. Similar to wants, but declares a stronger requirement dependency.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/restart_policy"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-restart-policy"><strong>restart_policy</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/restart_policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -292,28 +306,28 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/restart_sec"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-restart-sec"><strong>restart_sec</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/restart_sec" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the systemd service restartsec value.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/separator"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-separator"><strong>separator</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/separator" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the systemd unit name separator between the name/id of a container/pod and the prefix. The default is “-” (dash).</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/start_timeout"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-start-timeout"><strong>start_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/start_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Override the default start timeout for the container with the given value.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/stop_timeout"></div>
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/time"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-time"><span id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-stop-timeout"></span><strong>stop_timeout</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/stop_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: time</span></p>
@@ -322,18 +336,25 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Override the default stop timeout for the container with the given value. Called `time` before version 4.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-generate_systemd/wants"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-generate-systemd-wants"><strong>wants</strong></p>
 <a class="ansibleOptionLink" href="#parameter-generate_systemd/wants" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Add the systemd unit wants (Wants=) option, that this service is (weak) dependent on.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-gidmap"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-gidmap"><strong>gidmap</strong></p>
 <a class="ansibleOptionLink" href="#parameter-gidmap" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>GID map for the user namespace. Using this flag will run the container with user namespace enabled. It conflicts with the `userns` and `subgidname` flags.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-gpus"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-gpus"><strong>gpus</strong></p>
+<a class="ansibleOptionLink" href="#parameter-gpus" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>GPU devices to add to the container (‘all’ to pass all GPUs).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -391,27 +412,34 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ip6"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-ip6"><strong>ip6</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ip6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set a static IPv6 for the pod’s shared network.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-label"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-label"><strong>label</strong></p>
 <a class="ansibleOptionLink" href="#parameter-label" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Add metadata to a pod, pass dictionary of label keys and values.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-label_file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-label-file"><strong>label_file</strong></p>
 <a class="ansibleOptionLink" href="#parameter-label_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Read in a line delimited file of labels.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-mac_address"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-mac-address"><strong>mac_address</strong></p>
 <a class="ansibleOptionLink" href="#parameter-mac_address" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set a static MAC address for the pod’s shared network.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-memory"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-memory"><strong>memory</strong></p>
 <a class="ansibleOptionLink" href="#parameter-memory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -419,7 +447,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p>A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes).</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-memory_swap"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-memory-swap"><strong>memory_swap</strong></p>
 <a class="ansibleOptionLink" href="#parameter-memory_swap" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -427,21 +455,21 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p>A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes).</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Assign a name to the pod.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-network"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-network"><strong>network</strong></p>
 <a class="ansibleOptionLink" href="#parameter-network" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set network mode for the pod. Supported values are bridge (the default), host (do not create a network namespace, all containers in the pod will use the host’s network), or a list of names of CNI networks to join.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-network_alias"></div>
 <div class="ansibleOptionAnchor" id="parameter-network_aliases"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-network-aliases"><span id="ansible-collections-containers-podman-podman-pod-module-parameter-network-alias"></span><strong>network_alias</strong></p>
 <a class="ansibleOptionLink" href="#parameter-network_alias" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: network_aliases</span></p>
@@ -450,7 +478,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-cell"><p>Add a network-scoped alias for the pod, setting the alias for all networks that the pod joins. To set a name only for a specific network, use the alias option as described under the -`network` option. Network aliases work only with the bridge networking mode. This option can be specified multiple times.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-no_hosts"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-no-hosts"><strong>no_hosts</strong></p>
 <a class="ansibleOptionLink" href="#parameter-no_hosts" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -462,21 +490,21 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-pid"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-pid"><strong>pid</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pid" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set the PID mode for the pod. The default is to create a private PID namespace for the pod. Requires the PID namespace to be shared via `share` option.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-pod_id_file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-pod-id-file"><strong>pod_id_file</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pod_id_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Write the pod ID to the file.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-publish"></div>
 <div class="ansibleOptionAnchor" id="parameter-ports"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-publish"><span id="ansible-collections-containers-podman-podman-pod-module-parameter-ports"></span><strong>publish</strong></p>
 <a class="ansibleOptionLink" href="#parameter-publish" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: ports</span></p>
@@ -485,28 +513,28 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-cell"><p>Publish a port or range of ports from the pod to the host.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_filename"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-filename"><strong>quadlet_filename</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_filename" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of quadlet file to write. By default it takes <em>name</em> value.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-quadlet-options"><strong>quadlet_options</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Options for the quadlet file. Provide missing in usual container args options as a list of lines to add.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-recreate"><strong>recreate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -518,11 +546,51 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-restart_policy"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-restart-policy"><strong>restart_policy</strong></p>
+<a class="ansibleOptionLink" href="#parameter-restart_policy" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Restart policy to follow when containers exit.</p>
+</div></td>
+</tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-security_opt"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-security-opt"><strong>security_opt</strong></p>
+<a class="ansibleOptionLink" href="#parameter-security_opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Security options for the pod.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-share"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-share"><strong>share</strong></p>
 <a class="ansibleOptionLink" href="#parameter-share" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>A comma delimited list of kernel namespaces to share. If none or “” is specified, no namespaces will be shared. The namespaces to choose from are ipc, net, pid, user, uts.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-share_parent"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-share-parent"><strong>share_parent</strong></p>
+<a class="ansibleOptionLink" href="#parameter-share_parent" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>This boolean determines whether or not all containers entering the pod use the pod as their cgroup parent. The default value of this option in Podman is true.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-shm_size"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-shm-size"><strong>shm_size</strong></p>
+<a class="ansibleOptionLink" href="#parameter-shm_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set the size of the /dev/shm shared memory space. A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes). If the unit is omitted, the system uses bytes. If the size is omitted, the default is 64m. When size is 0, there is no limit on the amount of memory used for IPC by the pod.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-shm_size_systemd"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-shm-size-systemd"><strong>shm_size_systemd</strong></p>
+<a class="ansibleOptionLink" href="#parameter-shm_size_systemd" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Size of systemd-specific tmpfs mounts such as /run, /run/lock, /var/log/journal and /tmp. A unit can be b (bytes), k (kibibytes), m (mebibytes), or g (gibibytes). If the unit is omitted, the system uses bytes. If the size is omitted, the default is 64m. When size is 0, the usage is limited to 50 percents of the host’s available memory.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -559,17 +627,31 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-sysctl"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-sysctl"><strong>sysctl</strong></p>
+<a class="ansibleOptionLink" href="#parameter-sysctl" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set kernel parameters for the pod.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-uidmap"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-uidmap"><strong>uidmap</strong></p>
 <a class="ansibleOptionLink" href="#parameter-uidmap" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Run the container in a new user namespace using the supplied mapping. This option conflicts with the `userns` and `subuidname` options. This option provides a way to map host UIDs to container UIDs. It can be passed several times to map different ranges.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-userns"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-userns"><strong>userns</strong></p>
 <a class="ansibleOptionLink" href="#parameter-userns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set the user namespace mode for all the containers in a pod. It defaults to the PODMAN_USERNS environment variable. An empty value (“”) means user namespaces are disabled.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-uts"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-uts"><strong>uts</strong></p>
+<a class="ansibleOptionLink" href="#parameter-uts" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set the UTS namespace mode for the pod.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -579,6 +661,13 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Create a bind mount.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-volumes_from"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-pod-module-parameter-volumes-from"><strong>volumes_from</strong></p>
+<a class="ansibleOptionLink" href="#parameter-volumes_from" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Mount volumes from the specified container.</p>
 </div></td>
 </tr>
 </tbody>
@@ -599,6 +688,62 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pod2</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
 <span class="w">    </span><span class="nt">publish</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;127.0.0.1::80&quot;</span>
+
+<span class="c1"># Full workflow example with pod and containers</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a pod with parameters</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_pod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypod</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span>
+<span class="w">    </span><span class="nt">share</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net</span>
+<span class="w">    </span><span class="nt">userns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
+<span class="w">    </span><span class="nt">security_opt</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seccomp=unconfined</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apparmor=unconfined</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypod</span>
+<span class="w">    </span><span class="nt">dns</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1.1</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp:/tmp/:ro</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cval</span>
+<span class="w">      </span><span class="nt">otherkey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kddkdk</span>
+<span class="w">      </span><span class="nt">somekey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">someval</span>
+<span class="w">    </span><span class="nt">add_host</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;google:5.5.5.5&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create containers attached to the pod</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_container</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created</span>
+<span class="w">    </span><span class="nt">pod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypod</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alpine</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sleep 1h</span>
+<span class="w">    </span><span class="nt">loop</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;container1&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;container2&quot;</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Start pod</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_pod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypod</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">started</span>
+<span class="w">    </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span>
+<span class="w">    </span><span class="nt">share</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net</span>
+<span class="w">    </span><span class="nt">userns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
+<span class="w">    </span><span class="nt">security_opt</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seccomp=unconfined</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apparmor=unconfined</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypod</span>
+<span class="w">    </span><span class="nt">dns</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1.1</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp:/tmp/:ro</span>
+<span class="w">    </span><span class="nt">label</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cval</span>
+<span class="w">      </span><span class="nt">otherkey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kddkdk</span>
+<span class="w">      </span><span class="nt">somekey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">someval</span>
+<span class="w">    </span><span class="nt">add_host</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;google:5.5.5.5&quot;</span>
 
 <span class="c1"># Create a Quadlet file for a pod</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containers.podman.podman_pod</span><span class="p">:</span>

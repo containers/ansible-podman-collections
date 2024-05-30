@@ -5,6 +5,43 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.14.0
+=======
+
+Release Summary
+---------------
+
+Idempotency redesign and a lot of new options
+
+Major Changes
+-------------
+
+- Add mount and unmount for volumes
+- Add multiple subnets for networks
+- Add new options for podman_container
+- Add new options to pod module
+- Improve idempotency for networking in podman_container
+- Redesign idempotency for Podman Pod module
+
+Minor Changes
+-------------
+
+- Add autodiscovery for build context in podman_image
+- Add docs, tests and more examples for podman_pod
+- Add extra_args for podman_image push and pull
+- Add idempotency for mounts and volumes in podman_container
+- Add new functionality tests for podman_secret
+- Add path and env options for podman_secret
+- Add route, dns and ipam_driver to podman_network
+- Create podman secret when skip_existing=True and it does not exist
+
+Bugfixes
+--------
+
+- Fix idempotency for pod with 0.0.0.0
+- Fix transports issues in podman_image
+- fix(#747) set correct HealthCmd
+
 v1.13.0
 =======
 
