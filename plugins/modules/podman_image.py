@@ -785,6 +785,12 @@ class PodmanImageManager(object):
         if dest is None:
             dest = self.image_name
 
+        # Append container name and tag to dest
+        if '/' not in self.image_name:
+            dest = f'{dest}/{self.name}:{self.tag}'
+        else:
+            dest = f'{dest}/{self.image_name}'
+
         if transport:
             if transport == 'docker':
                 dest_format_string = '{transport}://{dest}'
