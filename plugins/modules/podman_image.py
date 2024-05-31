@@ -802,11 +802,20 @@ class PodmanImageManager(object):
             self.module.fail_json(msg="Destination must be a full URL or path to a directory.")
 
         args.append(dest_string)
+
+        # Detailed logging of the push operation
+        if '/' in self.image_name:
+            push_format_string = 'Pushed image {image_name}'
+        else:
+            push_format_string = 'Pushed image {image_name} to {dest}'
+        self.results['actions'].append(push_format_string.format(image_name=self.image_name, dest=self.push_args['dest']))
+        self.results['changed'] = True
+
         self.module.log("PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(
             image_name=self.image_name, dest_string=dest_string))
-        self.results['actions'].append(" ".join(args))
         self.results['podman_actions'].append(" ".join([self.executable] + args))
-        self.results['changed'] = True
+
+        # Execute the push operation
         out, err = '', ''
         if not self.module.check_mode:
             rc, out, err = self._run(args, ignore_errors=True)
