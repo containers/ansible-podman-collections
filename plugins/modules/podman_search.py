@@ -112,12 +112,12 @@ def main():
 
     result_str = search_images(module, executable, term, limit, listtags)
     if result_str == "":
-      results = []
+        results = []
     else:
-      try:
-        results = json.loads(result_str)
-      except json.decoder.JSONDecodeError:
-        module.fail_json(msg='Failed to parse JSON output from podman search: {out}'.format(out=result_str))
+        try:
+            results = json.loads(result_str)
+        except json.decoder.JSONDecodeError:
+            module.fail_json(msg='Failed to parse JSON output from podman search: {out}'.format(out=result_str))
 
     results = dict(
         changed=False,
