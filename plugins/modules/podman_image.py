@@ -797,6 +797,9 @@ class PodmanImageManager(object):
             dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest)
         else:
             dest_string = dest
+            # In case of dest as a repository with org name only, append image name to it
+            if ":" not in dest and "@" not in dest and len(dest.rstrip("/").split("/")) == 2:
+                dest_string = dest.rstrip("/") + "/" + self.image_name
 
         if "/" not in dest_string and "@" not in dest_string and "docker-daemon" not in dest_string:
             self.module.fail_json(msg="Destination must be a full URL or path to a directory.")

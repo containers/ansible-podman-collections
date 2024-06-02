@@ -101,6 +101,52 @@
 
 - containers.podman.podman_image:
     name: testimage2
+    tag: testtag
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing
+  ignore_errors: true
+  register: img_result4a
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result4a.stderr"
+      - "'push testimage2:testtag quay.io/testing/testimage2:testtag' in img_result4a.actions"
+
+- containers.podman.podman_image:
+    name: testimage2:testtag
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/
+  ignore_errors: true
+  register: img_result4b
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result4b.stderr"
+      - "'push testimage2:testtag quay.io/testing/testimage2:testtag' in img_result4b.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
+    pull: false
+    push: true
+    push_args:
+      dest: quay.io/testing/
+  ignore_errors: true
+  register: img_result4c
+
+- name: Check outputs
+  assert:
+    that:
+      - "'authentication required' in img_result4c.stderr"
+      - "'push testimage2:latest quay.io/testing/testimage2:latest' in img_result4c.actions"
+
+- containers.podman.podman_image:
+    name: testimage2
     pull: false
     push: true
     push_args:
