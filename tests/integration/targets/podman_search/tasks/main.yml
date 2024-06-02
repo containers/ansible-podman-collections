@@ -39,7 +39,7 @@
     - name: Search for specific image tags
       containers.podman.podman_search:
         term: registry.access.redhat.com/rhel7/rsyslog
-        listtags: true
+        list_tags: true
         executable: "{{ test_executable | default('podman') }}"
       register: info_3
 

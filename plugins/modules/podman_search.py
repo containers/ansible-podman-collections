@@ -32,7 +32,7 @@ options:
     required: False
     default: 25
     type: int
-  listtags:
+  list_tags:
     description:
       - Whether or not to return the list of tags associated with each image
     required: False
@@ -54,7 +54,7 @@ EXAMPLES = r"""
 - name: Gather tag info on a known remote image
   containers.podman.podman_search:
     term: "myimageregistry.com/ansible-automation-platform/ee-minimal-rhel8"
-    listtags: True
+    list_tags: True
 """
 
 RETURN = r"""
@@ -80,10 +80,10 @@ import json
 from ansible.module_utils.basic import AnsibleModule
 
 
-def search_images(module, executable, term, limit, listtags):
+def search_images(module, executable, term, limit, list_tags):
     command = [executable, 'search', term, '--format', 'json']
     command.extend(['--limit', "{0}".format(limit)])
-    if listtags:
+    if list_tags:
         command.extend(['--list-tags'])
 
     rc, out, err = module.run_command(command)
@@ -99,7 +99,7 @@ def main():
             executable=dict(type='str', default='podman'),
             term=dict(type='str', required=True),
             limit=dict(type='int', required=False, default=25),
-            listtags=dict(type='bool', required=False, default=False)
+            list_tags=dict(type='bool', required=False, default=False)
         ),
         supports_check_mode=True,
     )
@@ -107,10 +107,10 @@ def main():
     executable = module.params['executable']
     term = module.params.get('term')
     limit = module.params.get('limit')
-    listtags = module.params.get('listtags')
+    list_tags = module.params.get('list_tags')
     executable = module.get_bin_path(executable, required=True)
 
-    result_str = search_images(module, executable, term, limit, listtags)
+    result_str = search_images(module, executable, term, limit, list_tags)
     if result_str == "":
         results = []
     else:
