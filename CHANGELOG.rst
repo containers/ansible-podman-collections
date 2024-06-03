@@ -5,6 +5,29 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.15.0
+=======
+
+Release Summary
+---------------
+
+Podman search module and bugfixes for Podman image
+
+Major Changes
+-------------
+
+- Add podman search
+
+Bugfixes
+--------
+
+- Fix issue with pushing podman image to repo name and org
+
+New Modules
+-----------
+
+- containers.podman.podman_search - Search for remote images using podman
+
 v1.14.0
 =======
 
