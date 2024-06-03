@@ -1,0 +1,50 @@
+- name: Test podman_search
+  block:
+
+    - name: Search for an invalid image
+      containers.podman.podman_search:
+        term: invalidtermnope
+        executable: "{{ test_executable | default('podman') }}"
+      register: info_0
+
+    - name: Check results for no matching images
+      assert:
+        that:
+          - info_0.images | length == 0
+
+    - name: Search for matching images
+      containers.podman.podman_search:
+        term: etcd
+        executable: "{{ test_executable | default('podman') }}"
+      register: info_1
+
+    - name: Check results for matching images
+      assert:
+        that:
+          - info_1.images | length > 0
+
+    - name: Search for a specific image
+      containers.podman.podman_search:
+        term: registry.access.redhat.com/rhel7/rsyslog
+        executable: "{{ test_executable | default('podman') }}"
+      register: info_2
+
+    - name: Check result for matching image
+      assert:
+        that:
+          - info_2.images | length == 1
+          - info_2.images[0].Index == "registry.access.redhat.com"
+          - info_2.images[0].Name == "registry.access.redhat.com/rhel7/rsyslog"
+
+    - name: Search for specific image tags
+      containers.podman.podman_search:
+        term: registry.access.redhat.com/rhel7/rsyslog
+        list_tags: true
+        executable: "{{ test_executable | default('podman') }}"
+      register: info_3
+
+    - name: Check result for image tags
+      assert:
+        that:
+          - info_3.images | length == 1
+          - info_3.images[0].Tags | length > 0
