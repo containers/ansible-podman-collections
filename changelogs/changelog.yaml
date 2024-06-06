@@ -326,6 +326,13 @@ releases:
       name: podman_search
       namespace: ''
     release_date: '2024-06-03'
+  1.15.1:
+    changes:
+      bugfixes:
+      - Fix idempotency for pods in case of systemd generation
+      - Fix idempotency for systemd generations
+      release_summary: Bugfixes for systemd generation
+    release_date: '2024-06-07'
   1.2.0:
     changes:
       minor_changes:
