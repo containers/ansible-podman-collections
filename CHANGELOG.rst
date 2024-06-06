@@ -5,6 +5,20 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.15.1
+=======
+
+Release Summary
+---------------
+
+Bugfixes for systemd generation
+
+Bugfixes
+--------
+
+- Fix idempotency for pods in case of systemd generation
+- Fix idempotency for systemd generations
+
 v1.15.0
 =======
 
