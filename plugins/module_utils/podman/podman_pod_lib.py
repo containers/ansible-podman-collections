@@ -471,8 +471,10 @@ class PodmanPodDiff:
     def diffparam_dns_search(self):
         return self._diff_generic('dns_search', '--dns-search')
 
-    def diffparam_exit_policy(self):
-        return self._diff_generic('exit_policy', '--exit-policy')
+    # Disabling idemotency check for exit policy as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/774
+    # def diffparam_exit_policy(self):
+    #     return self._diff_generic('exit_policy', '--exit-policy')
 
     def diffparam_gidmap(self):
         return self._diff_generic('gidmap', '--gidmap')
@@ -496,8 +498,10 @@ class PodmanPodDiff:
     def diffparam_infra_command(self):
         return self._diff_generic('infra_command', '--infra-command')
 
-    def diffparam_infra_conmon_pidfile(self):
-        return self._diff_generic('infra_conmon_pidfile', '--infra-conmon-pidfile')
+    # Disabling idemotency check for infra_conmon_pidfile as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/774
+    # def diffparam_infra_conmon_pidfile(self):
+    #     return self._diff_generic('infra_conmon_pidfile', '--infra-conmon-pidfile')
 
     def diffparam_infra_image(self):
         return self._diff_generic('infra_image', '--infra-image')
@@ -548,8 +552,10 @@ class PodmanPodDiff:
     def diffparam_pid(self):
         return self._diff_generic('pid', '--pid')
 
-    def diffparam_pod_id_file(self):
-        return self._diff_generic('pod_id_file', '--pod-id-file')
+    # Disabling idemotency check for pod id file as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/774
+    # def diffparam_pod_id_file(self):
+    #     return self._diff_generic('pod_id_file', '--pod-id-file')
 
     def diffparam_publish(self):
         return self._diff_generic('publish', '--publish')
