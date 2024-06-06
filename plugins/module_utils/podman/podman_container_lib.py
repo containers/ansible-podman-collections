@@ -876,7 +876,6 @@ class PodmanDefaults:
         self.defaults = {
             "detach": True,
             "log_level": "error",
-            "rm": False,
             "tty": False,
         }
 
@@ -993,14 +992,18 @@ class PodmanContainerDiff:
     def diffparam_cgroupns(self):
         return self._diff_generic('cgroupns', '--cgroupns')
 
-    def diffparam_cgroups(self):
-        return self._diff_generic('cgroups', '--cgroups')
+    # Disabling idemotency check for cgroups as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/775
+    # def diffparam_cgroups(self):
+    #     return self._diff_generic('cgroups', '--cgroups')
 
     def diffparam_chrootdirs(self):
         return self._diff_generic('chrootdirs', '--chrootdirs')
 
-    def diffparam_cidfile(self):
-        return self._diff_generic('cidfile', '--cidfile')
+    # Disabling idemotency check for cidfile as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/775
+    # def diffparam_cidfile(self):
+    #     return self._diff_generic('cidfile', '--cidfile')
 
     def diffparam_command(self):
         # TODO(sshnaidm): to inspect image to get the default command
@@ -1333,12 +1336,16 @@ class PodmanContainerDiff:
     def diffparam_rootfs(self):
         return self._diff_generic('rootfs', '--rootfs')
 
-    def diffparam_sdnotify(self):
-        return self._diff_generic('sdnotify', '--sdnotify')
+    # Disabling idemotency check for sdnotify as it's added by systemd generator
+    # https://github.com/containers/ansible-podman-collections/issues/775
+    # def diffparam_sdnotify(self):
+    #     return self._diff_generic('sdnotify', '--sdnotify')
 
     def diffparam_rm(self):
         before = self.info['hostconfig']['autoremove']
         after = self.params['rm']
+        if after is None:
+            return self._diff_update_and_compare('rm', '', '')
         return self._diff_update_and_compare('rm', before, after)
 
     def diffparam_rmi(self):
