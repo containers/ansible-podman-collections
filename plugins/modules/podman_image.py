@@ -71,7 +71,8 @@ DOCUMENTATION = r'''
         - quadlet
     validate_certs:
       description:
-        - Require HTTPS and validate certificates when pulling or pushing. Also used during build if a pull or push is necessary.
+        - Require HTTPS and validate certificates when pulling or pushing.
+          Also used during build if a pull or push is necessary.
       type: bool
       aliases:
         - tlsverify
@@ -98,9 +99,15 @@ DOCUMENTATION = r'''
         - build_args
         - buildargs
       suboptions:
+        container_file:
+          description:
+            - Content of the Containerfile to use for building the image.
+              Mutually exclusive with the C(file) option which is path to the existing Containerfile.
+          type: str
         file:
           description:
             - Path to the Containerfile if it is not in the build context directory.
+              Mutually exclusive with the C(container_file) option.
           type: path
         volume:
           description:
@@ -109,7 +116,8 @@ DOCUMENTATION = r'''
           elements: str
         annotation:
           description:
-            - Dictionary of key=value pairs to add to the image. Only works with OCI images. Ignored for Docker containers.
+            - Dictionary of key=value pairs to add to the image. Only works with OCI images.
+              Ignored for Docker containers.
           type: dict
         force_rm:
           description:
@@ -152,7 +160,7 @@ DOCUMENTATION = r'''
           type: bool
         format:
           description:
-            - Manifest type to use when pushing an image using the 'dir' transport (default is manifest type of source).
+            - Manifest type to use when pushing an image using the 'dir' transport (default is manifest type of source)
           type: str
           choices:
             - oci
@@ -172,7 +180,7 @@ DOCUMENTATION = r'''
             - destination
         transport:
           description:
-            - Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry.
+            - Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry
           type: str
           choices:
             - dir
@@ -309,6 +317,15 @@ EXAMPLES = r"""
     name: nginx
     arch: amd64
 
+- name: Build a container from file inline
+  containers.podman.podman_image:
+    name: mycustom_image
+    state: build
+    build:
+      container_file: |-
+        FROM alpine:latest
+        CMD echo "Hello, World!"
+
 - name: Create a quadlet file for an image
   containers.podman.podman_image:
     name: docker.io/library/alpine:latest
@@ -342,7 +359,7 @@ RETURN = r"""
             "/app-entrypoint.sh"
           ],
           "Env": [
-            "PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:...",
             "IMAGE_OS=debian-9",
             "NAMI_VERSION=1.0.0-1",
             "GPG_KEY_SERVERS_LIST=ha.pool.sks-keyservers.net",
@@ -382,10 +399,10 @@ RETURN = r"""
         "Digest": "sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b",
         "GraphDriver": {
           "Data": {
-            "LowerDir": "/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465ec98c9dca3256638220450efb4214727d0d0680e/diff:/var/lib/containers/s",
-            "MergedDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/merged",
-            "UpperDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/diff",
-            "WorkDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/work"
+            "LowerDir": "/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465e..../diff:/var/lib/containers/s",
+            "MergedDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/merged",
+            "UpperDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/diff",
+            "WorkDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/work"
           },
           "Name": "overlay"
         },
@@ -443,10 +460,12 @@ RETURN = r"""
     ]
 """
 
-import json
-import os
-import re
-import shlex
+import json  # noqa: E402
+import os  # noqa: E402
+import re  # noqa: E402
+import shlex  # noqa: E402
+import tempfile  # noqa: E402
+import time  # noqa: E402
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
@@ -520,7 +539,7 @@ class PodmanImageManager(object):
         if not layer_ids:
             layer_ids = lines.splitlines()
 
-        return (layer_ids[-1])
+        return layer_ids[-1]
 
     def present(self):
         image = self.find_image()
@@ -534,12 +553,15 @@ class PodmanImageManager(object):
             if self.state == 'build' or self.path:
                 # Build the image
                 build_file = self.build.get('file') if self.build else None
+                container_file_txt = self.build.get('container_file') if self.build else None
+                if build_file and container_file_txt:
+                    self.module.fail_json(msg='Cannot specify both build file and container file content!')
                 if not self.path and build_file:
                     self.path = os.path.dirname(build_file)
-                elif not self.path and not build_file:
+                elif not self.path and not build_file and not container_file_txt:
                     self.module.fail_json(msg='Path to build context or file is required when building an image')
                 self.results['actions'].append('Built image {image_name} from {path}'.format(
-                    image_name=self.image_name, path=self.path))
+                    image_name=self.image_name, path=self.path or 'default context'))
                 if not self.module.check_mode:
                     self.results['image'], self.results['stdout'] = self.build_image()
                     image = self.results['image']
@@ -669,10 +691,12 @@ class PodmanImageManager(object):
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             if not self.pull:
-                self.module.fail_json(msg='Failed to find image {image_name} locally, image pull set to {pull_bool}'.format(
-                    pull_bool=self.pull, image_name=image_name))
+                self.module.fail_json(
+                    msg='Failed to find image {image_name} locally, image pull set to {pull_bool}'.format(
+                        pull_bool=self.pull, image_name=image_name))
             else:
-                self.module.fail_json(msg='Failed to pull image {image_name}'.format(image_name=image_name))
+                self.module.fail_json(
+                    msg='Failed to pull image {image_name}'.format(image_name=image_name))
         return self.inspect_image(out.strip())
 
     def build_image(self):
@@ -709,6 +733,17 @@ class PodmanImageManager(object):
         containerfile = self.build.get('file')
         if containerfile:
             args.extend(['--file', containerfile])
+        container_file_txt = self.build.get('container_file')
+        if container_file_txt:
+            # create a temporarly file with the content of the Containerfile
+            if self.path:
+                container_file_path = os.path.join(self.path, 'Containerfile.generated_by_ansible_%s' % time.time())
+            else:
+                container_file_path = os.path.join(
+                    tempfile.gettempdir(), 'Containerfile.generated_by_ansible_%s' % time.time())
+            with open(container_file_path, 'w') as f:
+                f.write(container_file_txt)
+            args.extend(['--file', container_file_path])
 
         volume = self.build.get('volume')
         if volume:
@@ -729,13 +764,16 @@ class PodmanImageManager(object):
         target = self.build.get('target')
         if target:
             args.extend(['--target', target])
-
-        args.append(self.path)
+        if self.path:
+            args.append(self.path)
 
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg="Failed to build image {image}: {out} {err}".format(image=self.image_name, out=out, err=err))
-
+            self.module.fail_json(msg="Failed to build image {image}: {out} {err}".format(
+                image=self.image_name, out=out, err=err))
+        # remove the temporary file if it was created
+        if container_file_txt:
+            os.remove(container_file_path)
         last_id = self._get_id_from_output(out, startswith='-->')
         return self.inspect_image(last_id), out + err
 
@@ -831,7 +869,8 @@ class PodmanImageManager(object):
             args.append('--force')
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg='Failed to remove image {image_name}. {err}'.format(image_name=image_name, err=err))
+            self.module.fail_json(msg='Failed to remove image {image_name}. {err}'.format(
+                image_name=image_name, err=err))
         return out
 
     def remove_image_id(self, image_id=None):
@@ -887,6 +926,7 @@ def main():
                     annotation=dict(type='dict'),
                     force_rm=dict(type='bool', default=False),
                     file=dict(type='path'),
+                    container_file=dict(type='str'),
                     format=dict(
                         type='str',
                         choices=['oci', 'docker'],

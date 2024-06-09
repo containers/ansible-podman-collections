@@ -370,6 +370,50 @@
         path: /var/tmp/build
       register: build_image2
 
+    - name: Build image from a given Containerfile
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2:customfile
+        path: "{{ playbook_dir }}"
+        build:
+          container_file: |-
+            FROM quay.io/coreos/alpine-sh
+            RUN echo "Hello World" > /tmp/hello.txt
+      register: build_custom1
+
+    - name: Build image from a given Containerfile w/o path
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2:customfile2
+        state: build
+        build:
+          container_file: |-
+            FROM quay.io/coreos/alpine-sh
+            RUN echo "Hello2 World" > /tmp/hello2.txt
+        force: true
+      register: build_custom2
+
+    - name: Build image from a given Containerfile and file (fail)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage2:failme
+        state: build
+        build:
+          container_file: |-
+            FROM quay.io/coreos/alpine-sh
+            RUN echo "Hello2 World" > /tmp/hello2.txt
+          file: /var/tmp/build/Dockerfile
+        force: true
+      register: fail_custom_image
+      ignore_errors: true
+
+    - name: Check if image was built properly
+      assert:
+        that:
+          - build_custom1 is changed
+          - build_custom2 is changed
+          - fail_custom_image is failed
+
     - include_tasks: idem_push.yml
 
     - name: Create a Quadlet for image with filename
