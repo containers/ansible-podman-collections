@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_image module – Pull images for use by podman<a class="headerlink" href="#containers-podman-podman-image-module-pull-images-for-use-by-podman" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.15.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.15.2).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
@@ -117,6 +117,15 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-build/container_file"></div>
+<div class="ansibleOptionAnchor" id="parameter-build_args/container_file"></div>
+<div class="ansibleOptionAnchor" id="parameter-buildargs/container_file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-container-file"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-container-file"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-container-file"></span><strong>container_file</strong></p>
+<a class="ansibleOptionLink" href="#parameter-build/container_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Content of the Containerfile to use for building the image. Mutually exclusive with the <code class="docutils literal notranslate"><span class="pre">file</span></code> option which is path to the existing Containerfile.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/extra_args"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/extra_args"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/extra_args"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-extra-args"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-extra-args"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-extra-args"></span><strong>extra_args</strong></p>
@@ -125,16 +134,16 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Extra args to pass to build, if executed. Does not idempotently check for new build args.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/file"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/file"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-file"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-file"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-file"></span><strong>file</strong></p>
 <a class="ansibleOptionLink" href="#parameter-build/file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Path to the Containerfile if it is not in the build context directory.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Path to the Containerfile if it is not in the build context directory. Mutually exclusive with the <code class="docutils literal notranslate"><span class="pre">container_file</span></code> option.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/force_rm"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/force_rm"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/force_rm"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-force-rm"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-force-rm"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-force-rm"></span><strong>force_rm</strong></p>
@@ -148,7 +157,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/format"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/format"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/format"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-format"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-format"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-format"></span><strong>format</strong></p>
@@ -162,7 +171,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/rm"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/rm"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/rm"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-rm"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-rm"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-rm"></span><strong>rm</strong></p>
@@ -176,7 +185,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/target"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/target"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/target"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-target"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-target"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-target"></span><strong>target</strong></p>
@@ -185,7 +194,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify the target build stage to build.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-build/volume"></div>
 <div class="ansibleOptionAnchor" id="parameter-build_args/volume"></div>
 <div class="ansibleOptionAnchor" id="parameter-buildargs/volume"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-buildargs-volume"><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-args-volume"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-build-volume"></span><strong>volume</strong></p>
@@ -194,14 +203,14 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify multiple volume / mount options to mount one or more mounts to a container.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-ca_cert_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-ca-cert-dir"><strong>ca_cert_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-ca_cert_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to directory containing TLS certificates and keys to use.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-executable"><strong>executable</strong></p>
 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -209,7 +218,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;podman&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-force"><strong>force</strong></p>
 <a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -222,28 +231,28 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-name"><strong>name</strong></p>
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of the image to pull, push, or delete. It may contain a tag using the format <code class="docutils literal notranslate"><span class="pre">image:tag</span></code>.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-password"><strong>password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Password to use when authenticating to remote registries.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-path"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-path"><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#parameter-path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to the build context directory.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-pull"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-pull"><strong>pull</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pull" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -255,14 +264,14 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-pull_extra_args"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-pull-extra-args"><strong>pull_extra_args</strong></p>
 <a class="ansibleOptionLink" href="#parameter-pull_extra_args" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Extra arguments to pass to the pull command.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push"><strong>push</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -274,7 +283,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args"><strong>push_args</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
@@ -282,7 +291,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/compress"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-compress"><strong>compress</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/compress" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -294,7 +303,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/dest"></div>
 <div class="ansibleOptionAnchor" id="parameter-push_args/destination"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-destination"><span id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-dest"></span><strong>dest</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/dest" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: destination</span></p>
@@ -303,18 +312,18 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Path or URL where image will be pushed.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/extra_args"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-extra-args"><strong>extra_args</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/extra_args" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Extra args to pass to push, if executed. Does not idempotently check for new push args.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/format"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-format"><strong>format</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/format" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Manifest type to use when pushing an image using the ‘dir’ transport (default is manifest type of source).</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Manifest type to use when pushing an image using the ‘dir’ transport (default is manifest type of source)</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;oci&quot;</span></code></p></li>
@@ -323,7 +332,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/remove_signatures"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-remove-signatures"><strong>remove_signatures</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/remove_signatures" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -335,18 +344,18 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/sign_by"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-sign-by"><strong>sign_by</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/sign_by" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Path to a key file to use to sign the image.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-push_args/transport"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-push-args-transport"><strong>transport</strong></p>
 <a class="ansibleOptionLink" href="#parameter-push_args/transport" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry.</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Transport to use when pushing in image. If no transport is set, will attempt to push to a remote registry</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;dir&quot;</span></code></p></li>
@@ -358,28 +367,28 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_filename"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-quadlet-filename"><strong>quadlet_filename</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_filename" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of quadlet file to write. By default it takes image name without prefixes and tags.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-quadlet-options"><strong>quadlet_options</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Options for the quadlet file. Provide missing in usual network args options as a list of lines to add.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -393,7 +402,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-tag"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-tag"><strong>tag</strong></p>
 <a class="ansibleOptionLink" href="#parameter-tag" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -401,14 +410,14 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;latest&quot;</span></code></p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-username"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-username"><strong>username</strong></p>
 <a class="ansibleOptionLink" href="#parameter-username" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>username to use when authenticating to remote registries.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div>
 <div class="ansibleOptionAnchor" id="parameter-tlsverify"></div>
 <div class="ansibleOptionAnchor" id="parameter-tls_verify"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-image-module-parameter-validate-certs"><span id="ansible-collections-containers-podman-podman-image-module-parameter-tlsverify"></span><span id="ansible-collections-containers-podman-podman-image-module-parameter-tls-verify"></span><strong>validate_certs</strong></p>
@@ -531,6 +540,15 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
 <span class="w">    </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amd64</span>
 
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build a container from file inline</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mycustom_image</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">container_file</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|-</span>
+<span class="w">        </span><span class="no">FROM alpine:latest</span>
+<span class="w">        </span><span class="no">CMD echo &quot;Hello, World!&quot;</span>
+
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a quadlet file for an image</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/library/alpine:latest</span>
@@ -561,7 +579,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div></td>
 <td><div class="ansible-option-cell"><p>Image inspection results for the image that was pulled, pushed, or built.</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
-<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;Annotations&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;Architecture&quot;:</span> <span class="pre">&quot;amd64&quot;,</span> <span class="pre">&quot;Author&quot;:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;Comment&quot;:</span> <span class="pre">&quot;from</span> <span class="pre">Bitnami</span> <span class="pre">with</span> <span class="pre">love&quot;,</span> <span class="pre">&quot;ContainerConfig&quot;:</span> <span class="pre">{&quot;Cmd&quot;:</span> <span class="pre">[&quot;/run.sh&quot;],</span> <span class="pre">&quot;Entrypoint&quot;:</span> <span class="pre">[&quot;/app-entrypoint.sh&quot;],</span> <span class="pre">&quot;Env&quot;:</span> <span class="pre">[&quot;PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;,</span> <span class="pre">&quot;IMAGE_OS=debian-9&quot;,</span> <span class="pre">&quot;NAMI_VERSION=1.0.0-1&quot;,</span> <span class="pre">&quot;GPG_KEY_SERVERS_LIST=ha.pool.sks-keyservers.net&quot;,</span> <span class="pre">&quot;TINI_VERSION=v0.13.2&quot;,</span> <span class="pre">&quot;TINI_GPG_KEY=595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7&quot;,</span> <span class="pre">&quot;GOSU_VERSION=1.10&quot;,</span> <span class="pre">&quot;GOSU_GPG_KEY=B42F6819007F00F88E364FD4036A9C25BF357DD4&quot;,</span> <span class="pre">&quot;BITNAMI_IMAGE_VERSION=16.0.0-debian-9-r27&quot;,</span> <span class="pre">&quot;BITNAMI_PKG_CHMOD=-R</span> <span class="pre">g+rwX&quot;,</span> <span class="pre">&quot;BITNAMI_PKG_EXTRA_DIRS=/home/wildfly&quot;,</span> <span class="pre">&quot;HOME=/&quot;,</span> <span class="pre">&quot;BITNAMI_APP_NAME=wildfly&quot;,</span> <span class="pre">&quot;NAMI_PREFIX=/.nami&quot;,</span> <span class="pre">&quot;WILDFLY_HOME=/home/wildfly&quot;,</span> <span class="pre">&quot;WILDFLY_JAVA_HOME=&quot;,</span> <span class="pre">&quot;WILDFLY_JAVA_OPTS=&quot;,</span> <span class="pre">&quot;WILDFLY_MANAGEMENT_HTTP_PORT_NUMBER=9990&quot;,</span> <span class="pre">&quot;WILDFLY_PASSWORD=bitnami&quot;,</span> <span class="pre">&quot;WILDFLY_PUBLIC_CONSOLE=true&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_AJP_PORT_NUMBER=8009&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_HTTP_PORT_NUMBER=8080&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_INTERFACE=0.0.0.0&quot;,</span> <span class="pre">&quot;WILDFLY_USERNAME=user&quot;,</span> <span class="pre">&quot;WILDFLY_WILDFLY_HOME=/home/wildfly&quot;,</span> <span class="pre">&quot;WILDFLY_WILDFLY_OPTS=-Dwildfly.as.deployment.ondemand=false&quot;],</span> <span class="pre">&quot;ExposedPorts&quot;:</span> <span class="pre">{&quot;8080/tcp&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;9990/tcp&quot;:</span> <span class="pre">{}},</span> <span class="pre">&quot;Labels&quot;:</span> <span class="pre">{&quot;maintainer&quot;:</span> <span class="pre">&quot;Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;},</span> <span class="pre">&quot;User&quot;:</span> <span class="pre">&quot;1001&quot;},</span> <span class="pre">&quot;Created&quot;:</span> <span class="pre">&quot;2019-04-10T05:48:03.553887623Z&quot;,</span> <span class="pre">&quot;Digest&quot;:</span> <span class="pre">&quot;sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&quot;,</span> <span class="pre">&quot;GraphDriver&quot;:</span> <span class="pre">{&quot;Data&quot;:</span> <span class="pre">{&quot;LowerDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465ec98c9dca3256638220450efb4214727d0d0680e/diff:/var/lib/containers/s&quot;,</span> <span class="pre">&quot;MergedDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/merged&quot;,</span> <span class="pre">&quot;UpperDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/diff&quot;,</span> <span class="pre">&quot;WorkDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99723ed787878dbfea/work&quot;},</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;overlay&quot;},</span> <span class="pre">&quot;History&quot;:</span> <span class="pre">[{&quot;comment&quot;:</span> <span class="pre">&quot;from</span> <span class="pre">Bitnami</span> <span class="pre">with</span> <span class="pre">love&quot;,</span> <span class="pre">&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:27:40.659377677Z&quot;},</span> <span class="pre">{&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:38:53.86336555Z&quot;,</span> <span class="pre">&quot;created_by&quot;:</span> <span class="pre">&quot;/bin/sh</span> <span class="pre">-c</span> <span class="pre">#(nop)</span>&#160; <span class="pre">LABEL</span> <span class="pre">maintainer=Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;,</span> <span class="pre">&quot;empty_layer&quot;:</span> <span class="pre">true},</span> <span class="pre">{&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:38:54.022778765Z&quot;,</span> <span class="pre">&quot;created_by&quot;:</span> <span class="pre">&quot;/bin/sh</span> <span class="pre">-c</span> <span class="pre">#(nop)</span>&#160; <span class="pre">ENV</span> <span class="pre">IMAGE_OS=debian-9&quot;,</span> <span class="pre">&quot;empty_layer&quot;:</span> <span class="pre">true}],</span> <span class="pre">&quot;Id&quot;:</span> <span class="pre">&quot;ace34da54e4af2145e1ad277005adb235a214e4dfe1114c2db9ab460b840f785&quot;,</span> <span class="pre">&quot;Labels&quot;:</span> <span class="pre">{&quot;maintainer&quot;:</span> <span class="pre">&quot;Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;},</span> <span class="pre">&quot;ManifestType&quot;:</span> <span class="pre">&quot;application/vnd.docker.distribution.manifest.v1+prettyjws&quot;,</span> <span class="pre">&quot;Os&quot;:</span> <span class="pre">&quot;linux&quot;,</span> <span class="pre">&quot;Parent&quot;:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;RepoDigests&quot;:</span> <span class="pre">[&quot;quay.io/bitnami/wildfly&#64;sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&quot;],</span> <span class="pre">&quot;RepoTags&quot;:</span> <span class="pre">[&quot;quay.io/bitnami/wildfly:latest&quot;],</span> <span class="pre">&quot;RootFS&quot;:</span> <span class="pre">{&quot;Layers&quot;:</span> <span class="pre">[&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;],</span> <span class="pre">&quot;Type&quot;:</span> <span class="pre">&quot;layers&quot;},</span> <span class="pre">&quot;Size&quot;:</span> <span class="pre">466180019,</span> <span class="pre">&quot;User&quot;:</span> <span class="pre">&quot;1001&quot;,</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;18.09.3&quot;,</span> <span class="pre">&quot;VirtualSize&quot;:</span> <span class="pre">466180019}]</span></code></p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;Annotations&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;Architecture&quot;:</span> <span class="pre">&quot;amd64&quot;,</span> <span class="pre">&quot;Author&quot;:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;Comment&quot;:</span> <span class="pre">&quot;from</span> <span class="pre">Bitnami</span> <span class="pre">with</span> <span class="pre">love&quot;,</span> <span class="pre">&quot;ContainerConfig&quot;:</span> <span class="pre">{&quot;Cmd&quot;:</span> <span class="pre">[&quot;/run.sh&quot;],</span> <span class="pre">&quot;Entrypoint&quot;:</span> <span class="pre">[&quot;/app-entrypoint.sh&quot;],</span> <span class="pre">&quot;Env&quot;:</span> <span class="pre">[&quot;PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:...&quot;,</span> <span class="pre">&quot;IMAGE_OS=debian-9&quot;,</span> <span class="pre">&quot;NAMI_VERSION=1.0.0-1&quot;,</span> <span class="pre">&quot;GPG_KEY_SERVERS_LIST=ha.pool.sks-keyservers.net&quot;,</span> <span class="pre">&quot;TINI_VERSION=v0.13.2&quot;,</span> <span class="pre">&quot;TINI_GPG_KEY=595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7&quot;,</span> <span class="pre">&quot;GOSU_VERSION=1.10&quot;,</span> <span class="pre">&quot;GOSU_GPG_KEY=B42F6819007F00F88E364FD4036A9C25BF357DD4&quot;,</span> <span class="pre">&quot;BITNAMI_IMAGE_VERSION=16.0.0-debian-9-r27&quot;,</span> <span class="pre">&quot;BITNAMI_PKG_CHMOD=-R</span> <span class="pre">g+rwX&quot;,</span> <span class="pre">&quot;BITNAMI_PKG_EXTRA_DIRS=/home/wildfly&quot;,</span> <span class="pre">&quot;HOME=/&quot;,</span> <span class="pre">&quot;BITNAMI_APP_NAME=wildfly&quot;,</span> <span class="pre">&quot;NAMI_PREFIX=/.nami&quot;,</span> <span class="pre">&quot;WILDFLY_HOME=/home/wildfly&quot;,</span> <span class="pre">&quot;WILDFLY_JAVA_HOME=&quot;,</span> <span class="pre">&quot;WILDFLY_JAVA_OPTS=&quot;,</span> <span class="pre">&quot;WILDFLY_MANAGEMENT_HTTP_PORT_NUMBER=9990&quot;,</span> <span class="pre">&quot;WILDFLY_PASSWORD=bitnami&quot;,</span> <span class="pre">&quot;WILDFLY_PUBLIC_CONSOLE=true&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_AJP_PORT_NUMBER=8009&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_HTTP_PORT_NUMBER=8080&quot;,</span> <span class="pre">&quot;WILDFLY_SERVER_INTERFACE=0.0.0.0&quot;,</span> <span class="pre">&quot;WILDFLY_USERNAME=user&quot;,</span> <span class="pre">&quot;WILDFLY_WILDFLY_HOME=/home/wildfly&quot;,</span> <span class="pre">&quot;WILDFLY_WILDFLY_OPTS=-Dwildfly.as.deployment.ondemand=false&quot;],</span> <span class="pre">&quot;ExposedPorts&quot;:</span> <span class="pre">{&quot;8080/tcp&quot;:</span> <span class="pre">{},</span> <span class="pre">&quot;9990/tcp&quot;:</span> <span class="pre">{}},</span> <span class="pre">&quot;Labels&quot;:</span> <span class="pre">{&quot;maintainer&quot;:</span> <span class="pre">&quot;Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;},</span> <span class="pre">&quot;User&quot;:</span> <span class="pre">&quot;1001&quot;},</span> <span class="pre">&quot;Created&quot;:</span> <span class="pre">&quot;2019-04-10T05:48:03.553887623Z&quot;,</span> <span class="pre">&quot;Digest&quot;:</span> <span class="pre">&quot;sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&quot;,</span> <span class="pre">&quot;GraphDriver&quot;:</span> <span class="pre">{&quot;Data&quot;:</span> <span class="pre">{&quot;LowerDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465e..../diff:/var/lib/containers/s&quot;,</span> <span class="pre">&quot;MergedDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/merged&quot;,</span> <span class="pre">&quot;UpperDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/diff&quot;,</span> <span class="pre">&quot;WorkDir&quot;:</span> <span class="pre">&quot;/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/work&quot;},</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;overlay&quot;},</span> <span class="pre">&quot;History&quot;:</span> <span class="pre">[{&quot;comment&quot;:</span> <span class="pre">&quot;from</span> <span class="pre">Bitnami</span> <span class="pre">with</span> <span class="pre">love&quot;,</span> <span class="pre">&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:27:40.659377677Z&quot;},</span> <span class="pre">{&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:38:53.86336555Z&quot;,</span> <span class="pre">&quot;created_by&quot;:</span> <span class="pre">&quot;/bin/sh</span> <span class="pre">-c</span> <span class="pre">#(nop)</span>&#160; <span class="pre">LABEL</span> <span class="pre">maintainer=Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;,</span> <span class="pre">&quot;empty_layer&quot;:</span> <span class="pre">true},</span> <span class="pre">{&quot;created&quot;:</span> <span class="pre">&quot;2019-04-09T22:38:54.022778765Z&quot;,</span> <span class="pre">&quot;created_by&quot;:</span> <span class="pre">&quot;/bin/sh</span> <span class="pre">-c</span> <span class="pre">#(nop)</span>&#160; <span class="pre">ENV</span> <span class="pre">IMAGE_OS=debian-9&quot;,</span> <span class="pre">&quot;empty_layer&quot;:</span> <span class="pre">true}],</span> <span class="pre">&quot;Id&quot;:</span> <span class="pre">&quot;ace34da54e4af2145e1ad277005adb235a214e4dfe1114c2db9ab460b840f785&quot;,</span> <span class="pre">&quot;Labels&quot;:</span> <span class="pre">{&quot;maintainer&quot;:</span> <span class="pre">&quot;Bitnami</span> <span class="pre">&lt;containers&#64;bitnami.com&gt;&quot;},</span> <span class="pre">&quot;ManifestType&quot;:</span> <span class="pre">&quot;application/vnd.docker.distribution.manifest.v1+prettyjws&quot;,</span> <span class="pre">&quot;Os&quot;:</span> <span class="pre">&quot;linux&quot;,</span> <span class="pre">&quot;Parent&quot;:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;RepoDigests&quot;:</span> <span class="pre">[&quot;quay.io/bitnami/wildfly&#64;sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b&quot;],</span> <span class="pre">&quot;RepoTags&quot;:</span> <span class="pre">[&quot;quay.io/bitnami/wildfly:latest&quot;],</span> <span class="pre">&quot;RootFS&quot;:</span> <span class="pre">{&quot;Layers&quot;:</span> <span class="pre">[&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;&quot;],</span> <span class="pre">&quot;Type&quot;:</span> <span class="pre">&quot;layers&quot;},</span> <span class="pre">&quot;Size&quot;:</span> <span class="pre">466180019,</span> <span class="pre">&quot;User&quot;:</span> <span class="pre">&quot;1001&quot;,</span> <span class="pre">&quot;Version&quot;:</span> <span class="pre">&quot;18.09.3&quot;,</span> <span class="pre">&quot;VirtualSize&quot;:</span> <span class="pre">466180019}]</span></code></p>
 </div></td>
 </tr>
 </tbody>

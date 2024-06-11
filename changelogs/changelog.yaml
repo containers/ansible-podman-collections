@@ -333,6 +333,12 @@ releases:
       - Fix idempotency for systemd generations
       release_summary: Bugfixes for systemd generation
     release_date: '2024-06-07'
+  1.15.2:
+    changes:
+      minor_changes:
+      - Add option for inline Containerfile in podman_image
+      release_summary: Inline Containerfile option for podman_image
+    release_date: '2024-06-11'
   1.2.0:
     changes:
       minor_changes:
