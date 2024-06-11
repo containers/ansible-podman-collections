@@ -5,6 +5,19 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.15.2
+=======
+
+Release Summary
+---------------
+
+Inline Containerfile option for podman_image
+
+Minor Changes
+-------------
+
+- Add option for inline Containerfile in podman_image
+
 v1.15.1
 =======
 
