@@ -226,7 +226,6 @@ API_TRANSLATION = {
     'published_ports': 'portmappings',
     'ports': 'portmappings',
     'pids_mode': 'pidns',
-    'pid': 'pidns',
     'ipc_mode': 'ipcns',
     'ipc': 'ipcns',
     'uts': 'utsns',
@@ -414,26 +413,35 @@ class PodmanModuleParamsAPI:
                 if len(parts) == 1:
                     c_port, protocol = (parts[0].split("/") + ["tcp"])[:2]
                     total_ports.append({
-                        "container_port": int(p),
+                        "container_port": int(p) if "-" not in p else int(p.split("-")[0]),
                         "protocol": protocol if 'udp' not in p else 'udp',
-                        # "host_port": int(parts[0].split("/")[0])
+                        # "host_port": int(parts[0].split("/")[0]),
+                        "range": 0 if "-" not in p else int(p.split("-")[1]) - int(p.split("-")[0])
                     })
                 elif len(parts) == 2:
                     c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    cport = int(c_port) if "-" not in c_port else int(c_port.split("-")[0])
+                    hport = int(parts[0].split("/")[0]) if "-" not in parts[0] else int(
+                        parts[0].split("/")[0].split("-")[0])
                     total_ports.append(
                         {
-                            "container_port": int(c_port),
-                            "host_port": int(parts[0].split("/")[0]),
+                            "container_port": cport,
+                            "host_port": hport,
                             "protocol": protocol if 'udp' not in p else 'udp',
+                            "range": 0 if "-" not in c_port else int(c_port.split("-")[1]) - int(c_port.split("-")[0])
                         })
                 elif len(parts) == 3:
                     c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    hport = int(c_port) if "-" not in c_port else int(c_port.split("-")[0])
+                    cport = int(parts[2].split("/")[0]) if "-" not in parts[2] else int(
+                        parts[2].split("/")[0].split("-")[0])
                     total_ports.append(
                         {
-                            "host_port": int(c_port),
-                            "container_port": int(parts[2].split("/")[0]),
+                            "host_port": hport,
+                            "container_port": cport,
                             "protocol": protocol if 'udp' not in p else 'udp',
                             "host_ip": parts[0],
+                            "range": 0 if "-" not in c_port else int(c_port.split("-")[1]) - int(c_port.split("-")[0])
                         })
             transformed['portmappings'] = total_ports
         if transformed.get('pod'):
@@ -1233,7 +1241,6 @@ class PodmanContainerDiff:
             cmd = self._get_create_command_annotation()
             if cmd:
                 params = self.clean_aliases(self.params)
-                self.module.log("PODMAN-DEBUG: cmd_arg = %s and param arg = %s" % (cmd.get(module_arg), params.get(module_arg)))
                 return self._diff_update_and_compare(module_arg, cmd.get(module_arg), params.get(module_arg))
             return self._diff_update_and_compare(module_arg, None, None)
 
