@@ -475,7 +475,7 @@ class PodQuadlet(Quadlet):
             for gidmap in params["gidmap"]:
                 params["podman_args"].append(f"--gidmap {gidmap}")
         if params["exit_policy"]:
-            params["podman_args"].append(f"--exit-policy={params['gpus']}")
+            params["podman_args"].append(f"--exit-policy={params['exit_policy']}")
         if params["gpus"]:
             params["podman_args"].append(f"--gpus {params['gpus']}")
         if params["hostname"]:
