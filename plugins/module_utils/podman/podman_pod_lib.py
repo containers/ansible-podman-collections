@@ -638,7 +638,6 @@ class PodmanPodDiff:
             after = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in self.params["volume"]]
         if before is not None:
             before = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before]
-        self.module.log("PODMAN Before: %s and After: %s" % (before, after))
         if before is None and after is None:
             return self._diff_update_and_compare("volume", before, after)
         if after is not None:
