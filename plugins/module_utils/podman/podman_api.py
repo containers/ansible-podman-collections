@@ -37,6 +37,10 @@ __metaclass__ = type
 DEFAULT_SCHEME = 'http+unix://'
 
 
+class PodmanAPIError(Exception):
+    pass
+
+
 # The following was adapted from some code from docker-py
 # https://github.com/docker/docker-py/blob/master/docker/transport/unixconn.py
 class UnixHTTPConnection(httplib.HTTPConnection, object):
@@ -80,7 +84,7 @@ if HAS_URLLIB3:
 if HAS_REQUESTS:
     class UnixAdapter(HTTPAdapter):
 
-        def __init__(self, timeout=60, pool_connections=25, *args, **kwargs):
+        def __init__(self, *args, timeout=60, pool_connections=25, **kwargs):
             super(UnixAdapter, self).__init__(*args, **kwargs)
             self.timeout = timeout
             self.pools = urllib3._collections.RecentlyUsedContainer(
@@ -114,16 +118,18 @@ if HAS_REQUESTS:
 
 if HAS_REQUESTS:
     class APISession(requests.Session):
-        def __init__(self, url_scheme=DEFAULT_SCHEME, *args, **kwargs):
+        def __init__(self, *args, url_scheme=DEFAULT_SCHEME, **kwargs):
             super(APISession, self).__init__(*args, **kwargs)
             self.mount(url_scheme, UnixAdapter())
 
 
 class PodmanAPIHTTP:
-    def __init__(self, base_url):
-        self.api_url = "".join((DEFAULT_SCHEME,
+    def __init__(self, base_url, scheme=DEFAULT_SCHEME):
+        self.api_url = "".join((scheme,
                                 quote(base_url, safe=""),
                                 "/v2.0.0/libpod"))
+        if scheme == "http://":
+            self.api_url = "".join((scheme, base_url, "/v2.0.0/libpod"))
         self.session = APISession()
 
     def request(self, method, url, **kwargs):
@@ -157,14 +163,17 @@ class PodmanAPIHTTP:
 class PodmanAPIClient:
     def __init__(self, base_url):
         if not HAS_REQUESTS:
-            raise Exception("requests package is required for podman API")
+            raise PodmanAPIError("requests package is required for podman API")
         socket_opt = urlparse(base_url)
-        if socket_opt.scheme != "unix":
-            raise Exception("Scheme %s is not supported! Use %s" % (
+        if socket_opt.scheme not in ("unix", "http"):
+            raise PodmanAPIError("Scheme %s is not supported! Use %s" % (
                 socket_opt.scheme,
                 DEFAULT_SCHEME
             ))
-        self.api = PodmanAPIHTTP(socket_opt.path)
+        if socket_opt.scheme == "http":
+            self.api = PodmanAPIHTTP(socket_opt.netloc, "http://")
+        else:
+            self.api = PodmanAPIHTTP(socket_opt.path)
         self.containers = PodmanAPIContainers(self.api)
         self.images = PodmanAPIImages(api=self.api)
 
@@ -204,8 +213,8 @@ class PodmanAPIContainers:
         )
         if response.ok:
             return response.json()
-        raise Exception("Container %s failed to create! Error: %s" %
-                        (container_data.get('name'), response.text))
+        raise PodmanAPIError("Container %s failed to create! Error: %s" %
+                             (container_data.get('name'), response.text))
 
     def get(self, name):
         response = self.api.get(
