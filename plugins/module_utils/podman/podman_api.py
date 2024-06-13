@@ -1,24 +1,27 @@
-
 # The follwing code is taken from
 # https://github.com/msabramo/requests-unixsocket/blob/master/
 # requests_unixsocket/adapters.py
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
 import socket
+
 try:
     import requests
     from requests.adapters import HTTPAdapter
     from requests.compat import urlparse, unquote, quote
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
 
 try:
     from requests.packages import urllib3
+
     HAS_URLLIB3 = True
 except ImportError:
     try:
         import urllib3
+
         HAS_URLLIB3 = True
     except ImportError:
         HAS_URLLIB3 = False
@@ -34,7 +37,7 @@ import json
 __metaclass__ = type
 
 
-DEFAULT_SCHEME = 'http+unix://'
+DEFAULT_SCHEME = "http+unix://"
 
 
 class PodmanAPIError(Exception):
@@ -51,7 +54,7 @@ class UnixHTTPConnection(httplib.HTTPConnection, object):
         netloc is a percent-encoded path to a unix domain socket. E.g.:
         'http+unix://%2Ftmp%2Fprofilesvc.sock/status/pid'
         """
-        super(UnixHTTPConnection, self).__init__('localhost', timeout=timeout)
+        super(UnixHTTPConnection, self).__init__("localhost", timeout=timeout)
         self.unix_socket_url = unix_socket_url
         self.timeout = timeout
         self.sock = None
@@ -69,11 +72,11 @@ class UnixHTTPConnection(httplib.HTTPConnection, object):
 
 
 if HAS_URLLIB3:
+
     class UnixHTTPConnectionPool(urllib3.connectionpool.HTTPConnectionPool):
 
         def __init__(self, socket_path, timeout=60):
-            super(UnixHTTPConnectionPool, self).__init__(
-                'localhost', timeout=timeout)
+            super(UnixHTTPConnectionPool, self).__init__("localhost", timeout=timeout)
             self.socket_path = socket_path
             self.timeout = timeout
 
@@ -82,22 +85,20 @@ if HAS_URLLIB3:
 
 
 if HAS_REQUESTS:
+
     class UnixAdapter(HTTPAdapter):
 
         def __init__(self, *args, timeout=60, pool_connections=25, **kwargs):
             super(UnixAdapter, self).__init__(*args, **kwargs)
             self.timeout = timeout
-            self.pools = urllib3._collections.RecentlyUsedContainer(
-                pool_connections, dispose_func=lambda p: p.close()
-            )
+            self.pools = urllib3._collections.RecentlyUsedContainer(pool_connections, dispose_func=lambda p: p.close())
 
         def get_connection(self, url, proxies=None):
             proxies = proxies or {}
             proxy = proxies.get(urlparse(url.lower()).scheme)
 
             if proxy:
-                raise ValueError('%s does not support specifying proxies'
-                                 % self.__class__.__name__)
+                raise ValueError("%s does not support specifying proxies" % self.__class__.__name__)
 
             with self.pools.lock:
                 pool = self.pools.get(url)
@@ -117,6 +118,7 @@ if HAS_REQUESTS:
 
 
 if HAS_REQUESTS:
+
     class APISession(requests.Session):
         def __init__(self, *args, url_scheme=DEFAULT_SCHEME, **kwargs):
             super(APISession, self).__init__(*args, **kwargs)
@@ -125,9 +127,7 @@ if HAS_REQUESTS:
 
 class PodmanAPIHTTP:
     def __init__(self, base_url, scheme=DEFAULT_SCHEME):
-        self.api_url = "".join((scheme,
-                                quote(base_url, safe=""),
-                                "/v2.0.0/libpod"))
+        self.api_url = "".join((scheme, quote(base_url, safe=""), "/v2.0.0/libpod"))
         if scheme == "http://":
             self.api_url = "".join((scheme, base_url, "/v2.0.0/libpod"))
         self.session = APISession()
@@ -136,28 +136,28 @@ class PodmanAPIHTTP:
         return self.session.request(method=method, url=self.api_url + url, **kwargs)
 
     def get(self, url, **kwargs):
-        kwargs.setdefault('allow_redirects', True)
-        return self.request('get', url, **kwargs)
+        kwargs.setdefault("allow_redirects", True)
+        return self.request("get", url, **kwargs)
 
     def head(self, url, **kwargs):
-        kwargs.setdefault('allow_redirects', False)
-        return self.request('head', url, **kwargs)
+        kwargs.setdefault("allow_redirects", False)
+        return self.request("head", url, **kwargs)
 
     def post(self, url, data=None, json=None, **kwargs):
-        return self.request('post', url, data=data, json=json, **kwargs)
+        return self.request("post", url, data=data, json=json, **kwargs)
 
     def patch(self, url, data=None, **kwargs):
-        return self.request('patch', url, data=data, **kwargs)
+        return self.request("patch", url, data=data, **kwargs)
 
     def put(self, url, data=None, **kwargs):
-        return self.request('put', url, data=data, **kwargs)
+        return self.request("put", url, data=data, **kwargs)
 
     def delete(self, url, **kwargs):
-        return self.request('delete', url, **kwargs)
+        return self.request("delete", url, **kwargs)
 
     def options(self, url, **kwargs):
-        kwargs.setdefault('allow_redirects', True)
-        return self.request('options', url, **kwargs)
+        kwargs.setdefault("allow_redirects", True)
+        return self.request("options", url, **kwargs)
 
 
 class PodmanAPIClient:
@@ -166,10 +166,7 @@ class PodmanAPIClient:
             raise PodmanAPIError("requests package is required for podman API")
         socket_opt = urlparse(base_url)
         if socket_opt.scheme not in ("unix", "http"):
-            raise PodmanAPIError("Scheme %s is not supported! Use %s" % (
-                socket_opt.scheme,
-                DEFAULT_SCHEME
-            ))
+            raise PodmanAPIError("Scheme %s is not supported! Use %s" % (socket_opt.scheme, DEFAULT_SCHEME))
         if socket_opt.scheme == "http":
             self.api = PodmanAPIHTTP(socket_opt.netloc, "http://")
         else:
@@ -178,8 +175,7 @@ class PodmanAPIClient:
         self.images = PodmanAPIImages(api=self.api)
 
     def version(self):
-        response = self.api.get(
-            '/version')
+        response = self.api.get("/version")
         return response.json()
 
 
@@ -188,8 +184,7 @@ class PodmanAPIContainers:
         self.api = api
         self.quote = quote
 
-    def list(
-            self, all_=None, filters=None, limit=None, size=None, sync=None):
+    def list(self, all_=None, filters=None, limit=None, size=None, sync=None):
         """List all images for a Podman service."""
         query = {}
         if all_ is not None:
@@ -213,14 +208,12 @@ class PodmanAPIContainers:
         )
         if response.ok:
             return response.json()
-        raise PodmanAPIError("Container %s failed to create! Error: %s" %
-                             (container_data.get('name'), response.text))
+        raise PodmanAPIError("Container %s failed to create! Error: %s" % (container_data.get("name"), response.text))
 
     def get(self, name):
-        response = self.api.get(
-            '/containers/{0}/json'.format(self.quote(name)))
+        response = self.api.get("/containers/{0}/json".format(self.quote(name)))
         data = response.json()
-        if data.get('response') == 404:
+        if data.get("response") == 404:
             data = {}
             # raise Exception("Container %s not found!" % name)
         return data
@@ -253,8 +246,7 @@ class PodmanAPIContainers:
 
     def remove(self, name, force=False):
         _ = self.api.delete(  # pylint: disable=blacklisted-name
-            "/containers/{0}".format(self.quote(name)),
-            params={"force": force}
+            "/containers/{0}".format(self.quote(name)), params={"force": force}
         )
         return
 
@@ -266,31 +258,26 @@ class PodmanAPIImages:
         self.inspect = self.get
 
     def exists(self, name):
-        response = self.api.get(
-            '/images/{0}/exists'.format(self.quote(name)))
+        response = self.api.get("/images/{0}/exists".format(self.quote(name)))
         return response.status_code == 204
 
     def pull(self, reference):
-        response = self.api.post(
-            '/images/pull',
-            params={'reference': reference}
-        )
+        response = self.api.post("/images/pull", params={"reference": reference})
         if response.ok:
-            correct_response = {'stream': '', 'text': response.text}
+            correct_response = {"stream": "", "text": response.text}
             for i in response.text.splitlines():
                 if '"images"' in i:
-                    correct_response['images'] = json.loads(i)['images']
+                    correct_response["images"] = json.loads(i)["images"]
                 if '"id"' in i:
-                    correct_response['id'] = json.loads(i)['id']
+                    correct_response["id"] = json.loads(i)["id"]
                 elif '"stream"' in i:
-                    correct_response['stream'] += json.loads(i)['stream']
+                    correct_response["stream"] += json.loads(i)["stream"]
                 elif '"error"' in i:
-                    correct_response['error'] = json.loads(i)['error']
-            correct_response['code'] = response.status_code
+                    correct_response["error"] = json.loads(i)["error"]
+            correct_response["code"] = response.status_code
             return correct_response
-        return {"error": "HTTP %s Error: %s" % (response.json()['message'])}
+        return {"error": "HTTP %s Error: %s" % (response.json()["message"])}
 
     def get(self, name):
-        response = self.api.get(
-            '/images/{0}/json'.format(self.quote(name)))
+        response = self.api.get("/images/{0}/json".format(self.quote(name)))
         return response.json()
