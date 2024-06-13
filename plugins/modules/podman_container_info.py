@@ -347,14 +347,14 @@ def get_containers_facts(module, executable, name):
     """
     retry = 0
     retry_limit = 4
-    if module.params['podman_socket']:
+    if module.params["podman_socket"]:
         global USE_API
         USE_API = True
         api = PodmanAPI(module, module.params)
         client = api.client
         all_names = client.containers.list(all_=True)
         all_data = []
-        cycle = name or [j['Id'] for j in all_names]
+        cycle = name or [j["Id"] for j in all_names]
         for c in cycle:
             try:
                 container_attrs = client.containers.get(c)
@@ -364,7 +364,7 @@ def get_containers_facts(module, executable, name):
                 if name:
                     module.fail_json(msg="Container %s can't be found!" % c)
                 continue
-        return all_data, '', ''
+        return all_data, "", ""
     if not name:
         all_names = [executable, "container", "ls", "-q", "-a"]
         rc, out, err = module.run_command(all_names)
@@ -424,18 +424,17 @@ def cycle_over(module, executable, name):
 def main():
     module = AnsibleModule(
         argument_spec={
-            'executable': {'type': 'str', 'default': 'podman'},
-            'name': {'type': 'list', 'elements': 'str'},
-            'podman_socket': {'type': 'str'}
+            "executable": {"type": "str", "default": "podman"},
+            "name": {"type": "list", "elements": "str"},
+            "podman_socket": {"type": "str"},
         },
         supports_check_mode=True,
     )
 
-    name = module.params['name']
+    name = module.params["name"]
     executable = None
-    if not module.params['podman_socket']:
-        executable = module.get_bin_path(
-            module.params['executable'], required=True)
+    if not module.params["podman_socket"]:
+        executable = module.get_bin_path(module.params["executable"], required=True)
     # pylint: disable=unused-variable
     inspect_results, out, err = get_containers_facts(module, executable, name)
 

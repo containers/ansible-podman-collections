@@ -17,12 +17,18 @@ except ImportError:
     try:
         from distutils.version import LooseVersion  # noqa: F401
     except ImportError as exc:
-        raise_from(ImportError('To use this plugin or module with ansible-core'
-                               ' < 2.11, you need to use Python < 3.12 with '
-                               'distutils.version present'), exc)
+        raise_from(
+            ImportError(
+                "To use this plugin or module with ansible-core"
+                " < 2.11, you need to use Python < 3.12 with "
+                "distutils.version present"
+            ),
+            exc,
+        )
 try:
     import requests  # pylint: disable=unused-import
     from .podman_api import PodmanAPIClient
+
     HAS_REQUESTS = True
 except ImportError:
     PodmanAPIClient = object
@@ -380,8 +386,8 @@ def createcommand(argument, info_config, boolean_type=False):
     all_values = []
     # Remove command args from the list
     container_cmd = info_config.get("cmd")
-    if container_cmd and container_cmd == cr_com[-len(container_cmd):]:
-        cr_com = cr_com[:-len(container_cmd)]
+    if container_cmd and container_cmd == cr_com[-len(container_cmd) :]:
+        cr_com = cr_com[: -len(container_cmd)]
     for arg in argument_values:
         for ind, cr_opt in enumerate(cr_com):
             if arg == cr_opt:
@@ -456,10 +462,9 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
 
 class PodmanAPI:
     def __init__(self, module, module_params):
-        if module_params.get('podman_socket') and not HAS_REQUESTS:
-            module.fail_json(
-                msg="Requests module is not installed while socket was provided!")
-        self.client = PodmanAPIClient(module_params.get('podman_socket'))
+        if module_params.get("podman_socket") and not HAS_REQUESTS:
+            module.fail_json(msg="Requests module is not installed while socket was provided!")
+        self.client = PodmanAPIClient(module_params.get("podman_socket"))
         try:
             self.client.version()
         except Exception as api_error:

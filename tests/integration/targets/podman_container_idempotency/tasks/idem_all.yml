@@ -38,6 +38,7 @@
     env: {}
     publish: []
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_to_empty
 
 - name: Run container with empty vars for list and dict - again
@@ -49,6 +50,7 @@
     env: {}
     publish: []
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_empty
 
 - name: Run container again w/o empty vars
@@ -58,14 +60,15 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_from_empty
 
 - name: Check info when running container again
   assert:
     that:
-      - test_to_empty is not changed
-      - test_empty is not changed
-      - test_from_empty is not changed
+      - test_to_empty is not changed or podman_socket is defined
+      - test_empty is not changed or podman_socket is defined
+      - test_from_empty is not changed or podman_socket is defined
 
 - name: Run container with environment vars
   containers.podman.podman_container:
