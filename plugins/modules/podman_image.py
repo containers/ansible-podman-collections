@@ -846,7 +846,6 @@ class PodmanImageManager(object):
         self.module.log("PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(
             image_name=self.image_name, dest_string=dest_string))
         self.results['actions'].append(" ".join(args))
-        self.results['podman_actions'].append(" ".join([self.executable] + args))
         self.results['changed'] = True
         out, err = '', ''
         if not self.module.check_mode:

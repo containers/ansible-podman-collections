@@ -561,3 +561,7 @@
         - localhost/dockerimage
         - quay.io/testing/testimage
         - quay.io/testing/testimage:draft
+        - testimage2:customfile
+        - testimage2:customfile2
+        - testimage2:failme
+        - testimage5x
