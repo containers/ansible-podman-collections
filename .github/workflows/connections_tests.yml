@@ -77,7 +77,7 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.15
+          - git+https://github.com/ansible/ansible.git@stable-2.17
           - git+https://github.com/ansible/ansible.git@devel
         os:
           - ubuntu-22.04
@@ -90,6 +90,14 @@ jobs:
           #- 3.6
           #- 3.5
           #- 2.7
+        include:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: "3.11"
+        exclude:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: "3.10"
 
     steps:
 
@@ -167,7 +175,7 @@ jobs:
       matrix:
         ansible-version:
           - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.15
+          - git+https://github.com/ansible/ansible.git@stable-2.17
           - git+https://github.com/ansible/ansible.git@devel
         os:
           - ubuntu-22.04
@@ -180,6 +188,14 @@ jobs:
           #- 3.6
           #- 3.5
           #- 2.7
+        include:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: "3.11"
+        exclude:
+          - os: ubuntu-22.04
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: "3.10"
 
     steps:
 
