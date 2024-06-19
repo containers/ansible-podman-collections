@@ -17,7 +17,7 @@ jobs:
         # ansible-version:
         #   - git+https://github.com/ansible/ansible.git@stable-2.15
         runner-python-version:
-          - 3.9
+          - '3.11'
     steps:
 
       - name: Check out ${{ github.repository }} on disk
