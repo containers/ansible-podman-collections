@@ -339,6 +339,15 @@ releases:
       - Add option for inline Containerfile in podman_image
       release_summary: Inline Containerfile option for podman_image
     release_date: '2024-06-11'
+  1.15.3:
+    changes:
+      bugfixes:
+      - Fix idempotency for empty values
+      - params gpus should be exit_policy
+      minor_changes:
+      - CI Update python for latest Ansible to 3.11 in CI
+      release_summary: Bugfixes
+    release_date: '2024-06-20'
   1.2.0:
     changes:
       minor_changes:

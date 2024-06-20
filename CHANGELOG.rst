@@ -5,6 +5,25 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.15.3
+=======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Minor Changes
+-------------
+
+- CI Update python for latest Ansible to 3.11 in CI
+
+Bugfixes
+--------
+
+- Fix idempotency for empty values
+- params gpus should be exit_policy
+
 v1.15.2
 =======
 
