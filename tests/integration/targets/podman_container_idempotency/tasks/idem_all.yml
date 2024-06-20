@@ -26,6 +26,44 @@
   assert:
     that: test1 is not changed
 
+- name: Run container with empty vars for list and dict
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env: {}
+    publish: []
+    command: 1h
+  register: test_to_empty
+
+- name: Run container with empty vars for list and dict - again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env: {}
+    publish: []
+    command: 1h
+  register: test_empty
+
+- name: Run container again w/o empty vars
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test_from_empty
+
+- name: Check info when running container again
+  assert:
+    that:
+      - test_to_empty is not changed
+      - test_empty is not changed
+      - test_from_empty is not changed
+
 - name: Run container with environment vars
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"

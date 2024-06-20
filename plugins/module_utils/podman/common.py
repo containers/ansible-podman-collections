@@ -404,11 +404,15 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
             after = ",".join(sorted([str(i).lower() for i in after]))
             if before:
                 before = ",".join(sorted([str(i).lower() for i in before]))
+            else:
+                before = ''
         elif isinstance(after, dict):
             after = ",".join(sorted(
                 [str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
+            else:
+                before = ''
         elif isinstance(after, bool):
             after = str(after).capitalize()
             if before is not None:
