@@ -386,8 +386,8 @@ class NetworkQuadlet(Quadlet):
         "opt": "Options",
         # Add more parameter mappings specific to networks
         'ContainersConfModule': 'ContainersConfModule',
-        "DNS": "DNS",
-        "IPAMDriver": "IPAMDriver",
+        "dns": "DNS",
+        "ipam_driver": "IPAMDriver",
         "Label": "Label",
         "global_args": "GlobalArgs",
         "podman_args": "PodmanArgs",
