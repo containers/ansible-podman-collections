@@ -8,7 +8,7 @@ on:
       - 'contrib/publish-requirements.txt'
       - 'contrib/publish.sh'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/collection-publish.yml'
