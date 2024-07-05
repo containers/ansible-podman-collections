@@ -459,7 +459,7 @@ class PodmanModuleParams:
         return c + ['--dns-search', self.params['dns_search']]
 
     def addparam_entrypoint(self, c):
-        return c + ['--entrypoint', self.params['entrypoint']]
+        return c + ['--entrypoint=%s' % self.params['entrypoint']]
 
     def addparam_env(self, c):
         for env_value in self.params['env'].items():
@@ -1010,6 +1010,8 @@ class PodmanContainerDiff:
         if self.module_params['command'] is not None:
             before = self.info['config']['cmd']
             after = self.params['command']
+            if isinstance(after, list):
+                after = [str(i) for i in after]
             if isinstance(after, str):
                 after = shlex.split(after)
             return self._diff_update_and_compare('command', before, after)

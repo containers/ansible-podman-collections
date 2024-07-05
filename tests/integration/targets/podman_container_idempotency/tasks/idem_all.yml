@@ -420,6 +420,69 @@
   assert:
     that: test29 is changed
 
+- name: Run container with complex command
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8012
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test30
+
+- name: Run container with complex command again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8012
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test31
+
+- name: Run container with different complex command
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8015
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test32
+
+- name: Check info of container with complex command
+  assert:
+    that: test30 is changed
+
+- name: Check info of container with complex command again
+  assert:
+    that: test31 is not changed
+
+- name: Check info of container with complex command
+  assert:
+    that: test32 is changed
+
 - name: Remove dependent test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
