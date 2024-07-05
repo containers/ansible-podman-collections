@@ -1006,10 +1006,34 @@ class PodmanContainerDiff:
     #     return self._diff_generic('cidfile', '--cidfile')
 
     def diffparam_command(self):
+        def _join_quotes(com_list):
+            result = []
+            buffer = []
+            in_quotes = False
+
+            for item in com_list:
+                if item.startswith('"') and not in_quotes:
+                    buffer.append(item)
+                    in_quotes = True
+                elif item.endswith('"') and in_quotes:
+                    buffer.append(item)
+                    result.append(' '.join(buffer).strip('"'))
+                    buffer = []
+                    in_quotes = False
+                elif in_quotes:
+                    buffer.append(item)
+                else:
+                    result.append(item)
+            if in_quotes:
+                result.extend(buffer)
+
+            return result
+
         # TODO(sshnaidm): to inspect image to get the default command
         if self.module_params['command'] is not None:
             before = self.info['config']['cmd']
             after = self.params['command']
+            before = _join_quotes(before)
             if isinstance(after, list):
                 after = [str(i) for i in after]
             if isinstance(after, str):
@@ -1446,7 +1470,6 @@ class PodmanContainerDiff:
                 [clean_volume(i) for i in v.split(":")[:2]]) for v in self.params['volume']]
         if before is not None:
             before = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before]
-        self.module.log("PODMAN Before: %s and After: %s" % (before, after))
         if before is None and after is None:
             return self._diff_update_and_compare('volume', before, after)
         if after is not None:
