@@ -159,7 +159,7 @@ class ContainerQuadlet(Quadlet):
         if params["cap_drop"]:
             params["cap_drop"] = " ".join(params["cap_drop"])
         if params["command"]:
-            params["command"] = (" ".join(params["command"])
+            params["command"] = (" ".join([str(j) for j in params["command"]])
                                  if isinstance(params["command"], list)
                                  else params["command"])
         if params["label"]:
