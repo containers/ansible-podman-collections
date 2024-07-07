@@ -357,6 +357,10 @@ def createcommand(argument, info_config, boolean_type=False):
     cr_com = info_config["createcommand"]
     argument_values = ARGUMENTS_OPTS_DICT.get(argument, [argument])
     all_values = []
+    # Remove command args from the list
+    container_cmd = info_config.get("cmd")
+    if container_cmd and container_cmd == cr_com[-len(container_cmd):]:
+        cr_com = cr_com[:-len(container_cmd)]
     for arg in argument_values:
         for ind, cr_opt in enumerate(cr_com):
             if arg == cr_opt:
