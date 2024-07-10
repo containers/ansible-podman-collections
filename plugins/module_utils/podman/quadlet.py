@@ -324,7 +324,7 @@ class ContainerQuadlet(Quadlet):
         if params["requires"]:
             params["podman_args"].append(f"--requires {','.join(params['requires'])}")
         if params["restart_policy"]:
-            params["podman_args"].append(f"--restart-policy {params['restart_policy']}")
+            params["podman_args"].append(f"--restart {params['restart_policy']}")
         if params["retry"]:
             params["podman_args"].append(f"--retry {params['retry']}")
         if params["retry_delay"]:
