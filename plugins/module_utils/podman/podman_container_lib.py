@@ -477,6 +477,7 @@ class PodmanModuleParams:
         self.check_version('--env-host', minv='1.5.0')
         return c + ['--env-host=%s' % self.params['env_host']]
 
+    # Exception for etc_hosts and add-host
     def addparam_etc_hosts(self, c):
         for host_ip in self.params['etc_hosts'].items():
             c += ['--add-host', ':'.join(host_ip)]
@@ -510,6 +511,7 @@ class PodmanModuleParams:
     def addparam_group_entry(self, c):
         return c + ['--group-entry', self.params['group_entry']]
 
+    # Exception for healthcheck and healthcheck-command
     def addparam_healthcheck(self, c):
         return c + ['--healthcheck-command', self.params['healthcheck']]
 
@@ -644,6 +646,7 @@ class PodmanModuleParams:
             return c
         return c + ['--network', ",".join(self.params['network'])]
 
+    # Exception for network_aliases and network-alias
     def addparam_network_aliases(self, c):
         for alias in self.params['network_aliases']:
             c += ['--network-alias', alias]
@@ -729,6 +732,7 @@ class PodmanModuleParams:
     def addparam_requires(self, c):
         return c + ['--requires', ",".join(self.params['requires'])]
 
+    # Exception for restart_policy and restart
     def addparam_restart_policy(self, c):
         return c + ['--restart=%s' % self.params['restart_policy']]
 
@@ -757,6 +761,7 @@ class PodmanModuleParams:
     def addparam_seccomp_policy(self, c):
         return c + ['--seccomp-policy', self.params['seccomp_policy']]
 
+    # Exception for secrets and secret
     def addparam_secrets(self, c):
         for secret in self.params['secrets']:
             c += ['--secret', secret]
@@ -801,6 +806,7 @@ class PodmanModuleParams:
     def addparam_timeout(self, c):
         return c + ['--timeout', self.params['timeout']]
 
+    # Exception for timezone and tz
     def addparam_timezone(self, c):
         return c + ['--tz=%s' % self.params['timezone']]
 
