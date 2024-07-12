@@ -348,6 +348,14 @@ releases:
       - CI Update python for latest Ansible to 3.11 in CI
       release_summary: Bugfixes
     release_date: '2024-06-20'
+  1.15.4:
+    changes:
+      bugfixes:
+      - Fix missing entries in network quadlet generated file
+      - Fix quadlet parameters for restart policy
+      - Idempotency improvements
+      release_summary: Bugfixes
+    release_date: '2024-07-12'
   1.2.0:
     changes:
       minor_changes:

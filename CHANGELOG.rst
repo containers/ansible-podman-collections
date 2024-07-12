@@ -5,6 +5,21 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.15.4
+=======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Bugfixes
+--------
+
+- Fix missing entries in network quadlet generated file
+- Fix quadlet parameters for restart policy
+- Idempotency improvements
+
 v1.15.3
 =======
 
