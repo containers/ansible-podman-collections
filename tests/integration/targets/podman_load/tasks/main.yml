@@ -65,8 +65,8 @@
     executable: "{{ test_executable | default('podman') }}"
     name: '{{ item }}'
   loop:
-    - k8s.gcr.io/coredns:1.7.0
-    - k8s.gcr.io/echoserver:1.10
+    - registry.k8s.io/coredns/coredns:v1.9.3
+    - gcr.io/kubernetes-e2e-test-images/echoserver:2.2
 
 - name: Clean up multifile
   ansible.builtin.file:
@@ -75,7 +75,7 @@
 
 - name: Create multi image file
   shell: >-
-    podman save k8s.gcr.io/coredns:1.7.0 k8s.gcr.io/echoserver:1.10 -o /tmp/multi.tar
+    podman save registry.k8s.io/coredns/coredns:v1.9.3 gcr.io/kubernetes-e2e-test-images/echoserver:2.2 -o /tmp/multi.tar
 
 - name: Load image from oci-dir multi image archive
   containers.podman.podman_load:
@@ -87,5 +87,5 @@
   assert:
     that:
       - image.image != {}
-      - '"k8s.gcr.io/coredns:1.7.0" in image.image.NamesHistory'
-      - '"k8s.gcr.io/echoserver:1.10" in image.image.NamesHistory'
+      - '"registry.k8s.io/coredns/coredns:v1.9.3" in image.image.NamesHistory'
+      - '"gcr.io/kubernetes-e2e-test-images/echoserver:2.2" in image.image.NamesHistory'
