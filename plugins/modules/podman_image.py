@@ -724,6 +724,9 @@ class PodmanImageManager(object):
         if image_format:
             args.extend(['--format', image_format])
 
+        if self.arch:
+            args.extend(['--arch', self.arch])
+
         if not self.build.get('cache'):
             args.append('--no-cache')
 
