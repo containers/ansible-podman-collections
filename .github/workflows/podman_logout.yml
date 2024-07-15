@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_logout.py'
       - 'tests/integration/targets/podman_logout/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_logout.yml'

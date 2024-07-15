@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_login_info.py'
       - 'tests/integration/targets/podman_login_info/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_login_info.yml'

@@ -12,7 +12,7 @@ on:
       - 'plugins/module_utils/podman/common.py'
       - 'tests/integration/targets/podman_container_idempotency/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_container_idem.yml'

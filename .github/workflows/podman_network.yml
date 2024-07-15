@@ -11,7 +11,7 @@ on:
       - 'plugins/module_utils/podman/quadlet.py'
       - 'tests/integration/targets/podman_network/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_network.yml'

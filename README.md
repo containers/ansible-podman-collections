@@ -1,4 +1,4 @@
-[![GitHub Actions CI/CD build status — Collection test suite](https://github.com/containers/ansible-podman-collections/workflows/Collection%20build%20and%20tests/badge.svg?branch=master)](https://github.com/containers/ansible-podman-collections/actions?query=workflow%3A%22Collection%20build%20and%20tests)
+[![GitHub Actions CI/CD build status — Collection test suite](https://github.com/containers/ansible-podman-collections/workflows/Collection%20build%20and%20tests/badge.svg?branch=main)](https://github.com/containers/ansible-podman-collections/actions?query=workflow%3A%22Collection%20build%20and%20tests)
 
 # Ansible Collection: containers.podman
 
