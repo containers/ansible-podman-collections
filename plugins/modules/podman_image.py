@@ -416,6 +416,7 @@ import re  # noqa: E402
 import shlex  # noqa: E402
 import tempfile  # noqa: E402
 import time  # noqa: E402
+import hashlib  # noqa: E402
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
@@ -491,15 +492,99 @@ class PodmanImageManager(object):
 
         return layer_ids[-1]
 
+    def _find_containerfile_from_context(self):
+        """
+        Find a Containerfile/Dockerfile path inside a podman build context.
+        Return an empty string if none exist.
+        """
+
+        containerfile_path = ""
+        for filename in [os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]]:
+            if os.path.exists(filename):
+                containerfile_path = filename
+                break
+        return containerfile_path
+
+    def _get_containerfile_contents(self):
+        """
+        Get the path to the Containerfile for an invocation
+        of the module, and return its contents.
+
+        See if either `file` or `container_file` in build args are populated,
+        fetch their contents if so. If not, return the contents of the Containerfile
+        or Dockerfile from inside the build context.
+        """
+
+        build_file_arg = self.build.get('file') if self.build else None
+        containerfile_contents = self.build.get('container_file') if self.build else None
+
+        container_filename = ""
+        if build_file_arg:
+            container_filename = build_file_arg
+        elif self.path and not build_file_arg:
+            container_filename = self._find_containerfile_from_context()
+
+        if not containerfile_contents:
+            with open(container_filename) as f:
+                containerfile_contents = f.read()
+
+        return containerfile_contents
+
+    def _hash_containerfile_contents(self, containerfile_contents):
+        """
+        When given the contents of a Containerfile/Dockerfile,
+        return a sha256 hash of these contents.
+        """
+        return hashlib.sha256(
+            containerfile_contents.encode(),
+            usedforsecurity=False
+        ).hexdigest()
+
+    def _get_args_containerfile_hash(self):
+        """
+        If we can find a Containerfile in any of the module args
+        or inside the build context, hash its contents.
+
+        If we don't have this, return an empty string.
+        """
+
+        args_containerfile_hash = ""
+
+        context_has_containerfile = self.path and self._find_containerfile_from_context() != ""
+
+        should_hash_args_containerfile = (
+            context_has_containerfile or
+            self.build.get('file') is not None or
+            self.build.get('container_file') is not None
+        )
+
+        if should_hash_args_containerfile:
+            args_containerfile_hash = self._hash_containerfile_contents(
+                self._get_containerfile_contents()
+            )
+        return args_containerfile_hash
+
     def present(self):
         image = self.find_image()
 
+        existing_image_containerfile_hash = ""
+        args_containerfile_hash = self._get_args_containerfile_hash()
+
         if image:
             digest_before = image[0].get('Digest', image[0].get('digest'))
+            labels = image[0].get('Labels') or {}
+            if "containerfile.hash" in labels:
+                existing_image_containerfile_hash = labels["containerfile.hash"]
         else:
             digest_before = None
 
-        if not image or self.force:
+        both_hashes_exist_and_differ = (
+            args_containerfile_hash != "" and
+            existing_image_containerfile_hash != "" and
+            args_containerfile_hash != existing_image_containerfile_hash
+        )
+
+        if not image or self.force or both_hashes_exist_and_differ:
             if self.state == 'build' or self.path:
                 # Build the image
                 build_file = self.build.get('file') if self.build else None
@@ -513,7 +598,7 @@ class PodmanImageManager(object):
                 self.results['actions'].append('Built image {image_name} from {path}'.format(
                     image_name=self.image_name, path=self.path or 'default context'))
                 if not self.module.check_mode:
-                    self.results['image'], self.results['stdout'] = self.build_image()
+                    self.results['image'], self.results['stdout'] = self.build_image(args_containerfile_hash)
                     image = self.results['image']
             else:
                 # Pull the image
@@ -649,7 +734,7 @@ class PodmanImageManager(object):
                     msg='Failed to pull image {image_name}'.format(image_name=image_name))
         return self.inspect_image(out.strip())
 
-    def build_image(self):
+    def build_image(self, containerfile_hash):
         args = ['build']
         args.extend(['-t', self.image_name])
 
@@ -697,6 +782,9 @@ class PodmanImageManager(object):
             with open(container_file_path, 'w') as f:
                 f.write(container_file_txt)
             args.extend(['--file', container_file_path])
+
+        if containerfile_hash != "":
+            args.extend(['--label', f"containerfile.hash={containerfile_hash}"])
 
         volume = self.build.get('volume')
         if volume:
