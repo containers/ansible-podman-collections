@@ -528,7 +528,7 @@ class PodmanModuleParams:
                     self.params['healthcheck_start_period']]
 
     def addparam_health_startup_cmd(self, c):
-        return c + ['--health-startup-command', self.params['health_startup_cmd']]
+        return c + ['--health-startup-cmd', self.params['health_startup_cmd']]
 
     def addparam_health_startup_interval(self, c):
         return c + ['--health-startup-interval', self.params['health_startup_interval']]
