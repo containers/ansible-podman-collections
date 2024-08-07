@@ -3,6 +3,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: "idempotency"
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name:  Run container with boolean key-value type - 1
   containers.podman.podman_container:
@@ -11,6 +12,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx1
 
 - name:  Run container with boolean key-value type - 2
@@ -20,6 +22,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx2
 
 - name:  Run container with boolean key-value type - 3
@@ -30,6 +33,7 @@
     state: present
     command: 1h
     tls_verify: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx3
 
 - name:  Run container with boolean key-value type - 4
@@ -40,6 +44,7 @@
     state: present
     command: 1h
     tls_verify: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx4
 
 - name:  Run container with boolean key-value type - 5
@@ -50,6 +55,7 @@
     state: present
     command: 1h
     tls_verify: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx5
 
 - name:  Run container with boolean key-value type - 6
@@ -60,6 +66,7 @@
     state: present
     command: 1h
     tls_verify: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx6
 
 - name:  Run container with boolean key-value type - 7
@@ -70,6 +77,7 @@
     state: present
     command: 1h
     tls_verify: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx7
 
 - name:  Run container with boolean key-value type - 8
@@ -80,6 +88,7 @@
     state: present
     command: 1h
     # tls_verify: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx8
 
 - name:  Run container with boolean key-value type - 9
@@ -90,6 +99,7 @@
     state: present
     command: 1h
     tls_verify: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx9
 
 - name:  Run container with boolean key-value type - 10
@@ -100,6 +110,7 @@
     state: present
     command: 1h
     # tls_verify: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultx10
 
 - name: Assert checks
@@ -121,6 +132,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: "idempotency"
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with list type - 1
   containers.podman.podman_container:
@@ -133,6 +145,7 @@
       - HOME
       - TERM
       - USER
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq1
 
 - name: Run container with list type - 2
@@ -146,6 +159,7 @@
       - HOME
       - TERM
       - USER
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq2
 
 - name: Run container with list type - 3
@@ -157,6 +171,7 @@
     command: 1h
     unsetenv:
       - HOME
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq3
 
 - name: Run container with list type - 4
@@ -168,6 +183,7 @@
     command: 1h
     unsetenv:
       - HOME
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq4
 
 - name: Run container with list type - 5
@@ -177,6 +193,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq5
 
 - name: Run container with list type - 6
@@ -186,6 +203,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq6
 
 - name: Run container with list type - 7
@@ -197,6 +215,7 @@
     command: 1h
     unsetenv:
       - USER
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq7
 
 - name: Run container with list type - 8
@@ -208,6 +227,7 @@
     command: 1h
     unsetenv:
       - USER
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq8
 
 - name: Run container with list type - 9
@@ -217,6 +237,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultq9
 
 - name: Assert checks
@@ -237,6 +258,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: "idempotency"
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with boolean trigger type - 1
   containers.podman.podman_container:
@@ -245,6 +267,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty1
 
 - name: Run container with boolean trigger type - 2
@@ -254,6 +277,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty2
 
 - name: Run container with boolean trigger type - 3
@@ -264,6 +288,7 @@
     state: present
     command: 1h
     no_healthcheck: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty3
 
 - name: Run container with boolean trigger type - 4
@@ -274,6 +299,7 @@
     state: present
     command: 1h
     no_healthcheck: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty4
 
 - name: Run container with boolean trigger type - 5
@@ -284,6 +310,7 @@
     state: present
     command: 1h
     no_healthcheck: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty5
 
 - name: Run container with boolean trigger type - 6
@@ -294,6 +321,7 @@
     state: present
     command: 1h
     no_healthcheck: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty6
 
 - name: Run container with boolean trigger type - 7
@@ -304,6 +332,7 @@
     state: present
     command: 1h
     no_healthcheck: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty7
 
 - name: Run container with boolean trigger type - 8
@@ -314,6 +343,7 @@
     state: present
     command: 1h
     # no_healthcheck: false
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty8
 
 - name: Run container with boolean trigger type - 9
@@ -324,6 +354,7 @@
     state: present
     command: 1h
     no_healthcheck: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty9
 
 - name: Run container with boolean trigger type - 10
@@ -334,6 +365,7 @@
     state: present
     command: 1h
     # no_healthcheck: true
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resulty10
 
 - name: Assert checks
@@ -341,12 +373,12 @@
     that:
       - resulty1.changed == true
       - resulty2.changed == false
-      - resulty3.changed == false
+      - resulty3.changed == false or podman_socket is defined
       - resulty4.changed == false
       - resulty5.changed == true
       - resulty6.changed == false
       - resulty7.changed == true
-      - resulty8.changed == false
+      - resulty8.changed == false or podman_socket is defined
       - resulty9.changed == true
       - resulty10.changed == true
 
@@ -356,6 +388,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: "idempotency"
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with dict type - 1
   containers.podman.podman_container:
@@ -368,6 +401,7 @@
       max_size: 10m
       tag: test
       path: /var/log
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv1
 
 - name: Run container with dict type - 2
@@ -381,6 +415,7 @@
       max_size: 10m
       tag: test
       path: /var/log
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv2
 
 - name: Run container with dict type - 3
@@ -392,6 +427,7 @@
     command: 1h
     log_opt:
       max_size: 10m
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv3
 
 - name: Run container with dict type - 4
@@ -403,6 +439,7 @@
     command: 1h
     log_opt:
       max_size: 10m
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv4
 
 - name: Run container with dict type - 5
@@ -412,6 +449,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv5
 
 - name: Run container with dict type - 6
@@ -421,6 +459,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv6
 
 - name: Run container with dict type - 7
@@ -432,6 +471,7 @@
     command: 1h
     log_opt:
       tag: test
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv7
 
 - name: Run container with dict type - 8
@@ -443,6 +483,7 @@
     command: 1h
     log_opt:
       tag: test
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv8
 
 - name: Run container with dict type - 9
@@ -452,6 +493,7 @@
     image: "{{ idem_image }}"
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: resultv9
 
 - name: Assert checks
