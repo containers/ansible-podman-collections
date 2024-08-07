@@ -237,6 +237,29 @@
       register: oci_build6
       ignore_errors: true
 
+    - name: Build OCI image testimage6 twice with the same Containerfile
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage6
+        state: build
+        build:
+          format: oci
+          container_file: |-
+            FROM quay.io/coreos/alpine-sh
+      register: oci_build7
+      loop: [0, 1]
+
+    - name: Build OCI image testimage6 with a different Containerfile
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage6
+        state: build
+        build:
+          format: oci
+          container_file: |-
+            FROM docker.io/alpine
+      register: oci_build8
+
     - name: Inspect first image
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
@@ -259,6 +282,13 @@
           - oci_build4 is success
           - oci_build5 is success
           - oci_build6 is failed
+          # The following line tests that building an image twice with
+          # the same Containerfile doesn't rebuild the image.
+          - oci_build7.results[1] is not changed
+          # oci_build8 tests that building an image with the same name
+          # but a different Containerfile results in a new image being
+          # built.
+          - oci_build8 is changed
           - "'localhost/testimage:latest' in testimage_info.images[0]['RepoTags'][0]"
           - "'localhost/testimage2:latest' in testimage2_info.images[0]['RepoTags'][0]"
           - "'no such file or directory' in oci_build3.msg"
