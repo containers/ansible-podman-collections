@@ -3,7 +3,7 @@
 
     - name: Search for an invalid image
       containers.podman.podman_search:
-        term: invalidtermnope
+        term: registry.fedoraproject.org/invalidtermnope
         executable: "{{ test_executable | default('podman') }}"
       register: info_0
 
