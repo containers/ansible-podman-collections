@@ -1,0 +1,104 @@
+---
+- name: Test podman container copy host-container
+  block:
+    - name: Generate random value for container name
+      ansible.builtin.set_fact:
+        container_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+        file_name: sample_file
+
+    - name: Start container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+
+    - name: Create local file to copy
+      ansible.builtin.copy:
+        content: |
+          This file tests if host -> container copy is working
+        dest: "{{ playbook_dir }}/{{ file_name }}"
+        mode: "0755"
+
+    - name: Copy local file to containers root folder
+      containers.podman.podman_container_copy:
+        executable: "{{ test_executable | default('podman') }}"
+        src: "{{ playbook_dir }}/{{ file_name }}"
+        dest: "/{{ file_name }}"
+        container: "{{ container_name }}"
+
+    - name: Verify that the file exists in the container
+      containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        command: "cat /{{ file_name }}"
+
+  always:
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Remove local file
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/{{ file_name }}"
+        state: absent
+
+- name: Test podman container copy container-host
+  block:
+    - name: Generate random value for container name
+      ansible.builtin.set_fact:
+        container_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+        file_name: sample_file
+
+    - name: Start container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+
+    - name: Create file in the container for further copy
+      containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        command: sh -c 'echo "This file tests if container -> host copy is working" > /{{ file_name }}'
+
+    - name: Verify that the file exists in the container
+      containers.podman.podman_container_exec:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        command: "cat /{{ file_name }}"
+
+    - name: Copy local file to containers root folder
+      containers.podman.podman_container_copy:
+        executable: "{{ test_executable | default('podman') }}"
+        src: "/{{ file_name }}"
+        dest: "{{ playbook_dir }}/{{ file_name }}"
+        container: "{{ container_name }}"
+        from_container: true
+
+    - name: Check file
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/{{ file_name }}"
+      register: copied_file
+
+    - name: Check it's present
+      ansible.builtin.assert:
+        that:
+          - copied_file.stat.exists
+
+  always:
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Remove local file
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/{{ file_name }}"
+        state: absent
