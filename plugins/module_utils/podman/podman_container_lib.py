@@ -1529,10 +1529,14 @@ def ensure_image_exists(module, image, module_params):
         return image_actions
     if not image:
         return image_actions
-    rc, out, err = module.run_command([module_exec, 'image', 'exists', image])
+    image_exists_cmd = [module_exec, 'image', 'exists', image]
+    rc, out, err = module.run_command(image_exists_cmd)
     if rc == 0:
         return image_actions
-    rc, out, err = module.run_command([module_exec, 'image', 'pull', image])
+    image_pull_cmd = [module_exec, 'image', 'pull', image]
+    if module_params['tls_verify'] is False:
+        image_pull_cmd.append('--tls-verify=false')
+    rc, out, err = module.run_command(image_pull_cmd)
     if rc != 0:
         module.fail_json(msg="Can't pull image %s" % image, stdout=out,
                          stderr=err)

@@ -108,6 +108,53 @@
         fail_msg: Pulling image test failed!
         success_msg: Pulling image test passed!
 
+    - name: Ensure image doesn't exist - TLS verify OFF
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: alpine:3.20
+        state: absent
+
+    - name: Check pulling image - TLS verify OFF
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container_tls
+        image: alpine:3.20
+        state: started
+        command: sleep 1d
+        tls_verify: false
+      register: image_tls
+
+    - name: Check output is correct - TLS verify OFF
+      assert:
+        that:
+          - image_tls.podman_actions | select('search', '--tls-verify=False') | list | length > 0
+
+    - name: Check using already pulled image - TLS verify OFF
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container2_tls
+        image: alpine:3.20
+        state: started
+        command: sleep 1d
+        tls_verify: false
+      register: image2_tls
+
+    - name: Check output is correct - TLS verify OFF
+      assert:
+        that:
+          - image_tls is changed
+          - image_tls.container is defined
+          - image_tls.container['State']['Running']
+          - "'pulled image alpine:3.20' in image_tls.actions"
+          - "'started container_tls' in image_tls.actions"
+          - image2_tls is changed
+          - image2_tls.container is defined
+          - image2_tls.container['State']['Running']
+          - "'pulled image alpine:3.20' not in image2_tls.actions"
+          - "'started container2_tls' in image2_tls.actions"
+        fail_msg: Pulling image test failed!
+        success_msg: Pulling image test passed!
+
     - name: Check failed image pull
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"
@@ -1368,6 +1415,7 @@
         - "container2"
         - "container3"
         - "testidem-pod"
+        - "container_tls"
 
     - name: Remove pod
       shell: podman pod rm -f testidempod
