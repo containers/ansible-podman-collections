@@ -95,13 +95,15 @@ volume:
   returned: always
   type: dict
   sample:
-    CreatedAt: '2020-06-05T16:38:55.277628769+03:00'
+    CreatedAt: '2023-11-30T16:41:31.310865559+02:00'
     Driver: local
-    Labels:
-      key.com: value
-      key.org: value2
-    Mountpoint: /home/user/.local/share/containers/storage/volumes/test/_data
-    Name: test
+    Labels: {}
+    LockNumber: 18
+    MountCount: 0
+    Mountpoint: /home/user/.local/share/containers/storage/volumes/volname/_data
+    Name: volname
+    NeedsChown: true
+    NeedsCopyUp: true
     Options: {}
     Scope: local
 

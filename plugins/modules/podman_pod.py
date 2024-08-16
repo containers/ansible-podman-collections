@@ -488,36 +488,115 @@ requirements:
 
 '''
 
-RETURN = '''
+RETURN = r'''
 pod:
   description: Pod inspection results for the given pod
     built.
   returned: always
   type: dict
   sample:
-    Config:
-      cgroupParent: /libpod_parent
-      created: '2020-06-14T15:16:12.230818767+03:00'
-      hostname: newpod
-      id: a5a5c6cdf8c72272fc5c33f787e8d7501e2fa0c1e92b2b602860defdafeeec58
-      infraConfig:
-        infraPortBindings: null
-        makeInfraContainer: true
-      labels: {}
-      lockID: 515
-      name: newpod
-      sharesCgroup: true
-      sharesIpc: true
-      sharesNet: true
-      sharesUts: true
-    Containers:
-    - id: dc70a947c7ae15198ec38b3c817587584085dee3919cbeb9969e3ab77ba10fd2
-      state: configured
-    State:
-      cgroupPath: /libpod_parent/a5a5c6cdf8c72272fc5c33f787e8d7501e2fa0c1e92b2b602860defdafeeec58
-      infraContainerID: dc70a947c7ae15198ec38b3c817587584085dee3919cbeb9969e3ab77ba10fd2
-      status: Created
-
+        {
+            "Id": "a99a41b8fa77d8c7ff1c432a7a21bc0c2afd8c13b94a9d9b9b19b66ae97920c1",
+            "Name": "pod_name",
+            "Created": "2024-05-28T20:41:09.946926613+03:00",
+            "CreateCommand": [
+                "podman",
+                "pod",
+                "create",
+                "--name",
+                "pod_name",
+                "--infra=True",
+                "--userns",
+                "auto",
+                "--security-opt",
+                "seccomp=unconfined",
+                "--security-opt",
+                "apparmor=unconfined",
+                "--hostname",
+                "mypod",
+                "--dns",
+                "1.1.1.2",
+                "--label",
+                "key=cval",
+                "--label",
+                "otherkey=kddkdk",
+                "--label",
+                "somekey=someval",
+                "--add-host",
+                "google:5.5.5.5",
+                "--volume",
+                "/tmp/test//:/data2"
+            ],
+            "ExitPolicy": "continue",
+            "State": "Created",
+            "Hostname": "mypod",
+            "Labels": {
+                "key": "cval",
+                "otherkey": "kddkdk",
+                "somekey": "someval"
+            },
+            "CreateCgroup": true,
+            "CgroupParent": "user.slice",
+            "CgroupPath": "user.slice/user-1000.slice/user@1000.service/user.slice/....slice",
+            "CreateInfra": true,
+            "InfraContainerID": "37f960e6c8accc6b5b41945b1dcf03a28d3a366f7f37049748f18b21c44f577e",
+            "InfraConfig": {
+                "PortBindings": {},
+                "HostNetwork": false,
+                "StaticIP": "",
+                "StaticMAC": "",
+                "NoManageResolvConf": false,
+                "DNSServer": [
+                    "1.1.1.2"
+                ],
+                "DNSSearch": null,
+                "DNSOption": null,
+                "NoManageHosts": false,
+                "HostAdd": [
+                    "google:5.5.5.5"
+                ],
+                "Networks": null,
+                "NetworkOptions": null,
+                "pid_ns": "private",
+                "userns": "host",
+                "uts_ns": "private"
+            },
+            "SharedNamespaces": [
+                "user",
+                "uts",
+                "ipc",
+                "net"
+            ],
+            "NumContainers": 1,
+            "Containers": [
+                {
+                    "Id": "37f960e6c8accc6b5b41945b1dcf03a28d3a366f7f37049748f18b21c44f577e",
+                    "Name": "a99a49b8fa77-infra",
+                    "State": "created"
+                }
+            ],
+            "mounts": [
+                {
+                    "Type": "bind",
+                    "Source": "/tmp/test",
+                    "Destination": "/data2",
+                    "Driver": "",
+                    "Mode": "",
+                    "Options": [
+                            "nosuid",
+                            "nodev",
+                            "rbind"
+                    ],
+                    "RW": true,
+                    "Propagation": "rprivate"
+                }
+            ],
+            "security_opt": [
+                "seccomp=unconfined",
+                "apparmor=unconfined"
+            ],
+            "LockNumber": 1
+        }
 '''
 
 EXAMPLES = r'''

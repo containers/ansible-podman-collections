@@ -9,7 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 module: podman_container_info
 author:
-    - Sagi Shnaidman (@sshnaidm)
+    - Sagi Shnaidman (@podman)
     - Emilien Macchi (@EmilienM)
 short_description: Gather facts about containers using podman
 notes:
@@ -56,262 +56,267 @@ containers:
     elements: dict
     sample: [
                 {
-                "Id": "c5c39f9b80a6ea2ad665aa9946435934e478a0c5322da835f3883872f",
-                "Created": "2019-10-01T12:51:00.233106443Z",
-                "Path": "dumb-init",
-                "Args": [
-                    "--single-child",
-                    "--",
-                    "kolla_start"
-                ],
-                "State": {
-                    "OciVersion": "1.0.1-dev",
-                    "Status": "configured",
-                    "Running": false,
-                    "Paused": false,
-                    "Restarting": false,
-                    "OOMKilled": false,
-                    "Dead": false,
-                    "Pid": 0,
-                    "ExitCode": 0,
-                    "Error": "",
-                    "StartedAt": "0001-01-01T00:00:00Z",
-                    "FinishedAt": "0001-01-01T00:00:00Z",
-                    "Healthcheck": {
-                        "Status": "",
-                        "FailingStreak": 0,
-                        "Log": null
-                    }
-                },
-                "Image": "0e267acda67d0ebd643e900d820a91b961d859743039e620191ca1",
-                "ImageName": "docker.io/tripleomaster/centos-haproxy:latest",
-                "Rootfs": "",
-                "Pod": "",
-                "ResolvConfPath": "",
-                "HostnamePath": "",
-                "HostsPath": "",
-                "OCIRuntime": "runc",
-                "Name": "haproxy",
-                "RestartCount": 0,
-                "Driver": "overlay",
-                "MountLabel": "system_u:object_r:svirt_sandbox_file_t:s0:c78,c866",
-                "ProcessLabel": "system_u:system_r:svirt_lxc_net_t:s0:c785,c866",
-                "AppArmorProfile": "",
-                "EffectiveCaps": [
-                    "CAP_CHOWN",
-                    "CAP_DAC_OVERRIDE",
-                    "CAP_FSETID",
-                    "CAP_FOWNER",
-                    "CAP_MKNOD",
-                    "CAP_NET_RAW",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETFCAP",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_SYS_CHROOT",
-                    "CAP_KILL",
-                    "CAP_AUDIT_WRITE"
-                ],
-                "BoundingCaps": [
-                    "CAP_CHOWN",
-                    "CAP_DAC_OVERRIDE",
-                    "CAP_FSETID",
-                    "CAP_FOWNER",
-                    "CAP_MKNOD",
-                    "CAP_NET_RAW",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETFCAP",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_SYS_CHROOT",
-                    "CAP_KILL",
-                    "CAP_AUDIT_WRITE"
-                ],
-                "ExecIDs": [],
-                "GraphDriver": {
-                    "Name": "overlay"
-                },
-                "Mounts": [],
-                "Dependencies": [],
-                "NetworkSettings": {
-                    "Bridge": "",
-                    "SandboxID": "",
-                    "HairpinMode": false,
-                    "LinkLocalIPv6Address": "",
-                    "LinkLocalIPv6PrefixLen": 0,
-                    "Ports": [],
-                    "SandboxKey": "",
-                    "SecondaryIPAddresses": null,
-                    "SecondaryIPv6Addresses": null,
-                    "EndpointID": "",
-                    "Gateway": "",
-                    "GlobalIPv6Address": "",
-                    "GlobalIPv6PrefixLen": 0,
-                    "IPAddress": "",
-                    "IPPrefixLen": 0,
-                    "IPv6Gateway": "",
-                    "MacAddress": ""
-                },
-                "ExitCommand": [
-                    "/usr/bin/podman",
-                    "--root",
-                    "/var/lib/containers/storage",
-                    "--runroot",
-                    "/var/run/containers/storage",
-                    "--log-level",
-                    "error",
-                    "--cgroup-manager",
-                    "systemd",
-                    "--tmpdir",
-                    "/var/run/libpod",
-                    "--runtime",
-                    "runc",
-                    "--storage-driver",
-                    "overlay",
-                    "--events-backend",
-                    "journald",
-                    "container",
-                    "cleanup",
-                    "c9e813703f9b80a6ea2ad665aa9946435934e478a0c5322da835f3883872f"
-                ],
-                "Namespace": "",
-                "IsInfra": false,
-                "Config": {
-                    "Hostname": "c5c39e813703",
-                    "Domainname": "",
-                    "User": "",
-                    "AttachStdin": false,
-                    "AttachStdout": false,
-                    "AttachStderr": false,
-                    "Tty": false,
-                    "OpenStdin": false,
-                    "StdinOnce": false,
-                    "Env": [
-                        "PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-                        "TERM=xterm",
-                        "HOSTNAME=",
-                        "container=oci",
-                        "KOLLA_INSTALL_METATYPE=rdo",
-                        "KOLLA_BASE_DISTRO=centos",
-                        "KOLLA_INSTALL_TYPE=binary",
-                        "KOLLA_DISTRO_PYTHON_VERSION=2.7",
-                        "KOLLA_BASE_ARCH=x86_64"
+                    "Id": "d38a8fcd61ab7e0754355e8fb3acc201e07770f3d1fd8fed36556941ac458ce",
+                    "Created": "2024-08-14T00:04:33.127266655+03:00",
+                    "Path": "/entrypoint.sh",
+                    "Args": [
+                        "/entrypoint.sh"
                     ],
-                    "Cmd": [
-                        "kolla_start"
-                    ],
-                    "Image": "docker.io/tripleomaster/centos-haproxy:latest",
-                    "Volumes": null,
-                    "WorkingDir": "/",
-                    "Entrypoint": "dumb-init --single-child --",
-                    "OnBuild": null,
-                    "Labels": {
-                        "build-date": "20190919",
-                        "kolla_version": "8.1.0",
-                        "name": "haproxy",
-                        "org.label-schema.build-date": "20190801",
-                        "org.label-schema.license": "GPLv2",
-                        "org.label-schema.name": "CentOS Base Image",
-                        "org.label-schema.schema-version": "1.0",
-                        "org.label-schema.vendor": "CentOS"
-                    },
-                    "Annotations": {
-                        "io.kubernetes.cri-o.ContainerType": "sandbox",
-                        "io.kubernetes.cri-o.TTY": "false",
-                        "io.podman.annotations.autoremove": "FALSE",
-                        "io.podman.annotations.init": "FALSE",
-                        "io.podman.annotations.privileged": "FALSE",
-                        "io.podman.annotations.publish-all": "FALSE"
-                    },
-                    "StopSignal": 15
-                },
-                "HostConfig": {
-                    "Binds": [],
-                    "ContainerIDFile": "",
-                    "LogConfig": {
-                        "Type": "k8s-file",
-                        "Config": null
-                    },
-                    "NetworkMode": "default",
-                    "PortBindings": {},
-                    "RestartPolicy": {
-                        "Name": "",
-                        "MaximumRetryCount": 0
-                    },
-                    "AutoRemove": false,
-                    "VolumeDriver": "",
-                    "VolumesFrom": null,
-                    "CapAdd": [],
-                    "CapDrop": [],
-                    "Dns": [],
-                    "DnsOptions": [],
-                    "DnsSearch": [],
-                    "ExtraHosts": [],
-                    "GroupAdd": [],
-                    "IpcMode": "",
-                    "Cgroup": "",
-                    "Links": null,
-                    "OomScoreAdj": 0,
-                    "PidMode": "",
-                    "Privileged": false,
-                    "PublishAllPorts": false,
-                    "ReadonlyRootfs": false,
-                    "SecurityOpt": [],
-                    "Tmpfs": {},
-                    "UTSMode": "",
-                    "UsernsMode": "",
-                    "ShmSize": 65536000,
-                    "Runtime": "oci",
-                    "ConsoleSize": [
-                        0,
-                        0
-                    ],
-                    "Isolation": "",
-                    "CpuShares": 0,
-                    "Memory": 0,
-                    "NanoCpus": 0,
-                    "CgroupParent": "",
-                    "BlkioWeight": 0,
-                    "BlkioWeightDevice": null,
-                    "BlkioDeviceReadBps": null,
-                    "BlkioDeviceWriteBps": null,
-                    "BlkioDeviceReadIOps": null,
-                    "BlkioDeviceWriteIOps": null,
-                    "CpuPeriod": 0,
-                    "CpuQuota": 0,
-                    "CpuRealtimePeriod": 0,
-                    "CpuRealtimeRuntime": 0,
-                    "CpusetCpus": "",
-                    "CpusetMems": "",
-                    "Devices": [],
-                    "DiskQuota": 0,
-                    "KernelMemory": 0,
-                    "MemoryReservation": 0,
-                    "MemorySwap": 0,
-                    "MemorySwappiness": -1,
-                    "OomKillDisable": false,
-                    "PidsLimit": 0,
-                    "Ulimits": [
-                        {
-                            "Name": "RLIMIT_NOFILE",
-                            "Soft": 1048576,
-                            "Hard": 1048576
+                    "State": {
+                        "OciVersion": "1.1.0+dev",
+                        "Status": "running",
+                        "Running": true,
+                        "Paused": false,
+                        "Restarting": false,
+                        "OOMKilled": false,
+                        "Dead": false,
+                        "Pid": 2434164,
+                        "ConmonPid": 2434162,
+                        "ExitCode": 0,
+                        "Error": "",
+                        "StartedAt": "2024-08-14T00:04:33.237286439+03:00",
+                        "FinishedAt": "0001-01-01T00:00:00Z",
+                        "Health": {
+                                "Status": "",
+                                "FailingStreak": 0,
+                                "Log": null
                         },
-                        {
-                            "Name": "RLIMIT_NPROC",
-                            "Soft": 1048576,
-                            "Hard": 1048576
-                        }
+                        "CgroupPath": "/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-d38a....scope",
+                        "CheckpointedAt": "0001-01-01T00:00:00Z",
+                        "RestoredAt": "0001-01-01T00:00:00Z"
+                    },
+                    "Image": "fe2ba3a8ede60e5938e666b483c3a812ba902dac2303341930fbadc0482592b7",
+                    "ImageDigest": "sha256:1222865ed7489298ee28414ddedb63a0c6405938c3a38adf21c8656d7f532271",
+                    "ImageName": "registry/org/image:latest",
+                    "Rootfs": "",
+                    "Pod": "",
+                    "ResolvConfPath": "/run/user/1000/containers/overlay-containers/d38a.../userdata/resolv.conf",
+                    "HostnamePath": "/run/user/1000/containers/overlay-containers/d38a.../userdata/hostname",
+                    "HostsPath": "/run/user/1000/containers/overlay-containers/d38a.../userdata/hosts",
+                    "StaticDir": "/home/podman/.local/share/containers/storage/overlay-containers/d38a.../userdata",
+                    "OCIConfigPath": "/home/podman/.local/share/containers/....json",
+                    "OCIRuntime": "crun",
+                    "ConmonPidFile": "/run/user/1000/containers/overlay-containers/d38a.../userdata/conmon.pid",
+                    "PidFile": "/run/user/1000/containers/overlay-containers/d38a.../userdata/pidfile",
+                    "Name": "costapp",
+                    "RestartCount": 0,
+                    "Driver": "overlay",
+                    "MountLabel": "system_u:object_r:container_file_t:s0:c493,c986",
+                    "ProcessLabel": "system_u:system_r:container_t:s0:c493,c986",
+                    "AppArmorProfile": "",
+                    "EffectiveCaps": [
+                        "CAP_CHOWN",
+                        "CAP_DAC_OVERRIDE",
+                        "CAP_FOWNER",
+                        "CAP_FSETID",
+                        "CAP_KILL",
+                        "CAP_NET_BIND_SERVICE",
+                        "CAP_SETFCAP",
+                        "CAP_SETGID",
+                        "CAP_SETPCAP",
+                        "CAP_SETUID",
+                        "CAP_SYS_CHROOT"
                     ],
-                    "CpuCount": 0,
-                    "CpuPercent": 0,
-                    "IOMaximumIOps": 0,
-                    "IOMaximumBandwidth": 0
+                    "BoundingCaps": [
+                        "CAP_CHOWN",
+                        "CAP_DAC_OVERRIDE",
+                        "CAP_FOWNER",
+                        "CAP_FSETID",
+                        "CAP_KILL",
+                        "CAP_NET_BIND_SERVICE",
+                        "CAP_SETFCAP",
+                        "CAP_SETGID",
+                        "CAP_SETPCAP",
+                        "CAP_SETUID",
+                        "CAP_SYS_CHROOT"
+                    ],
+                    "ExecIDs": [],
+                    "GraphDriver": {
+                        "Name": "overlay",
+                        "Data": {
+                                "LowerDir": "/home/podman/.local/share/containers/storage/overlay/29e2.../diff:...",
+                                "MergedDir": "/home/podman/.local/share/containers/storage/overlay/865909.../merged",
+                                "UpperDir": "/home/podman/.local/share/containers/storage/overlay/865909.../diff",
+                                "WorkDir": "/home/podman/.local/share/containers/storage/overlay/865909.../work"
+                        }
+                    },
+                    "Mounts": [],
+                    "Dependencies": [],
+                    "NetworkSettings": {
+                        "EndpointID": "",
+                        "Gateway": "",
+                        "IPAddress": "",
+                        "IPPrefixLen": 0,
+                        "IPv6Gateway": "",
+                        "GlobalIPv6Address": "",
+                        "GlobalIPv6PrefixLen": 0,
+                        "MacAddress": "",
+                        "Bridge": "",
+                        "SandboxID": "",
+                        "HairpinMode": false,
+                        "LinkLocalIPv6Address": "",
+                        "LinkLocalIPv6PrefixLen": 0,
+                        "Ports": {
+                                "80/tcp": [
+                                    {
+                                        "HostIp": "",
+                                        "HostPort": "8888"
+                                    }
+                                ]
+                        },
+                        "SandboxKey": "/run/user/1000/netns/netns-2343321-795a-8289-14c0-77ee2556ebf1"
+                    },
+                    "Namespace": "",
+                    "IsInfra": false,
+                    "IsService": false,
+                    "KubeExitCodePropagation": "invalid",
+                    "lockNumber": 1417,
+                    "Config": {
+                        "Hostname": "444a8274863a",
+                        "Domainname": "",
+                        "User": "",
+                        "AttachStdin": false,
+                        "AttachStdout": false,
+                        "AttachStderr": false,
+                        "Tty": false,
+                        "OpenStdin": false,
+                        "StdinOnce": false,
+                        "Env": [
+                                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                                "container=podman",
+                                "HOME=/root",
+                                "HOSTNAME=444a8274863a"
+                        ],
+                        "Cmd": null,
+                        "Image": "registry/org/image:latest",
+                        "Volumes": null,
+                        "WorkingDir": "/",
+                        "Entrypoint": "/entrypoint.sh",
+                        "OnBuild": null,
+                        "Labels": {
+                                "io.buildah.version": "1.31.2"
+                        },
+                        "Annotations": {
+                                "io.container.manager": "libpod",
+                                "org.opencontainers.image.stopSignal": "15"
+                        },
+                        "StopSignal": 15,
+                        "HealthcheckOnFailureAction": "none",
+                        "CreateCommand": [
+                                "podman",
+                                "run",
+                                "-d",
+                                "--name",
+                                "test",
+                                "-p",
+                                "8888:80",
+                                "registry/org/image:latest"
+                        ],
+                        "Umask": "0022",
+                        "Timeout": 0,
+                        "StopTimeout": 10,
+                        "Passwd": true,
+                        "sdNotifyMode": "container"
+                    },
+                    "HostConfig": {
+                        "Binds": [],
+                        "CgroupManager": "systemd",
+                        "CgroupMode": "private",
+                        "ContainerIDFile": "",
+                        "LogConfig": {
+                                "Type": "journald",
+                                "Config": null,
+                                "Path": "",
+                                "Tag": "",
+                                "Size": "0B"
+                        },
+                        "NetworkMode": "slirp4netns",
+                        "PortBindings": {
+                                "80/tcp": [
+                                    {
+                                        "HostIp": "",
+                                        "HostPort": "8888"
+                                    }
+                                ]
+                        },
+                        "RestartPolicy": {
+                                "Name": "",
+                                "MaximumRetryCount": 0
+                        },
+                        "AutoRemove": false,
+                        "VolumeDriver": "",
+                        "VolumesFrom": null,
+                        "CapAdd": [],
+                        "CapDrop": [],
+                        "Dns": [],
+                        "DnsOptions": [],
+                        "DnsSearch": [],
+                        "ExtraHosts": [],
+                        "GroupAdd": [],
+                        "IpcMode": "shareable",
+                        "Cgroup": "",
+                        "Cgroups": "default",
+                        "Links": null,
+                        "OomScoreAdj": 0,
+                        "PidMode": "private",
+                        "Privileged": false,
+                        "PublishAllPorts": false,
+                        "ReadonlyRootfs": false,
+                        "SecurityOpt": [],
+                        "Tmpfs": {},
+                        "UTSMode": "private",
+                        "UsernsMode": "",
+                        "ShmSize": 65536000,
+                        "Runtime": "oci",
+                        "ConsoleSize": [
+                                0,
+                                0
+                        ],
+                        "Isolation": "",
+                        "CpuShares": 0,
+                        "Memory": 0,
+                        "NanoCpus": 0,
+                        "CgroupParent": "user.slice",
+                        "BlkioWeight": 0,
+                        "BlkioWeightDevice": null,
+                        "BlkioDeviceReadBps": null,
+                        "BlkioDeviceWriteBps": null,
+                        "BlkioDeviceReadIOps": null,
+                        "BlkioDeviceWriteIOps": null,
+                        "CpuPeriod": 0,
+                        "CpuQuota": 0,
+                        "CpuRealtimePeriod": 0,
+                        "CpuRealtimeRuntime": 0,
+                        "CpusetCpus": "",
+                        "CpusetMems": "",
+                        "Devices": [],
+                        "DiskQuota": 0,
+                        "KernelMemory": 0,
+                        "MemoryReservation": 0,
+                        "MemorySwap": 0,
+                        "MemorySwappiness": 0,
+                        "OomKillDisable": false,
+                        "PidsLimit": 2048,
+                        "Ulimits": [
+                                {
+                                    "Name": "RLIMIT_NOFILE",
+                                    "Soft": 524288,
+                                    "Hard": 524288
+                                },
+                                {
+                                    "Name": "RLIMIT_NPROC",
+                                    "Soft": 256018,
+                                    "Hard": 256018
+                                }
+                        ],
+                        "CpuCount": 0,
+                        "CpuPercent": 0,
+                        "IOMaximumIOps": 0,
+                        "IOMaximumBandwidth": 0,
+                        "CgroupConf": null,
+                    }
                 }
-                }
-        ]
+            ]
 """
 
 import json

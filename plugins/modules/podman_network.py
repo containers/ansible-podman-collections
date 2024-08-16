@@ -229,42 +229,23 @@ network:
     type: list
     sample: [
               {
-                "cniVersion": "0.4.0",
-                "name": "podman",
-                "plugins": [
+                "name": "virtuals",
+                "id": "3f46dc2626fe082b1ec703bc74d048765c1110c9eab7d61e33344e212279402c",
+                "driver": "bridge",
+                "network_interface": "podman2",
+                "created": "2024-07-13T15:43:36.548472483+03:00",
+                "subnets": [
                     {
-                        "bridge": "cni-podman0",
-                        "ipMasq": true,
-                        "ipam": {
-                            "ranges": [
-                                [
-                                    {
-                                        "gateway": "10.88.0.1",
-                                        "subnet": "10.88.0.0/16"
-                                    }
-                                ]
-                            ],
-                            "routes": [
-                                {
-                                    "dst": "0.0.0.0/0"
-                                }
-                            ],
-                            "type": "host-local"
-                        },
-                        "isGateway": true,
-                        "type": "bridge"
-                    },
-                    {
-                        "capabilities": {
-                            "portMappings": true
-                        },
-                        "type": "portmap"
-                    },
-                    {
-                        "backend": "iptables",
-                        "type": "firewall"
+                            "subnet": "10.99.99.0/24",
+                            "gateway": "10.99.99.1"
                     }
-                ]
+                ],
+                "ipv6_enabled": false,
+                "internal": false,
+                "dns_enabled": true,
+                "ipam_options": {
+                    "driver": "host-local"
+                }
             }
         ]
 """

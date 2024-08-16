@@ -346,118 +346,68 @@ RETURN = r"""
     returned: success
     type: dict
     sample: [
-      {
-        "Annotations": {},
-        "Architecture": "amd64",
-        "Author": "",
-        "Comment": "from Bitnami with love",
-        "ContainerConfig": {
-          "Cmd": [
-            "/run.sh"
-          ],
-          "Entrypoint": [
-            "/app-entrypoint.sh"
-          ],
-          "Env": [
-            "PATH=/opt/bitnami/java/bin:/opt/bitnami/wildfly/bin:/opt/bitnami/nami/bin:...",
-            "IMAGE_OS=debian-9",
-            "NAMI_VERSION=1.0.0-1",
-            "GPG_KEY_SERVERS_LIST=ha.pool.sks-keyservers.net",
-            "TINI_VERSION=v0.13.2",
-            "TINI_GPG_KEY=595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7",
-            "GOSU_VERSION=1.10",
-            "GOSU_GPG_KEY=B42F6819007F00F88E364FD4036A9C25BF357DD4",
-            "BITNAMI_IMAGE_VERSION=16.0.0-debian-9-r27",
-            "BITNAMI_PKG_CHMOD=-R g+rwX",
-            "BITNAMI_PKG_EXTRA_DIRS=/home/wildfly",
-            "HOME=/",
-            "BITNAMI_APP_NAME=wildfly",
-            "NAMI_PREFIX=/.nami",
-            "WILDFLY_HOME=/home/wildfly",
-            "WILDFLY_JAVA_HOME=",
-            "WILDFLY_JAVA_OPTS=",
-            "WILDFLY_MANAGEMENT_HTTP_PORT_NUMBER=9990",
-            "WILDFLY_PASSWORD=bitnami",
-            "WILDFLY_PUBLIC_CONSOLE=true",
-            "WILDFLY_SERVER_AJP_PORT_NUMBER=8009",
-            "WILDFLY_SERVER_HTTP_PORT_NUMBER=8080",
-            "WILDFLY_SERVER_INTERFACE=0.0.0.0",
-            "WILDFLY_USERNAME=user",
-            "WILDFLY_WILDFLY_HOME=/home/wildfly",
-            "WILDFLY_WILDFLY_OPTS=-Dwildfly.as.deployment.ondemand=false"
-          ],
-          "ExposedPorts": {
-            "8080/tcp": {},
-            "9990/tcp": {}
-          },
-          "Labels": {
-            "maintainer": "Bitnami <containers@bitnami.com>"
-          },
-          "User": "1001"
-        },
-        "Created": "2019-04-10T05:48:03.553887623Z",
-        "Digest": "sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b",
-        "GraphDriver": {
-          "Data": {
-            "LowerDir": "/var/lib/containers/storage/overlay/142c1beadf1bb09fbd929465e..../diff:/var/lib/containers/s",
-            "MergedDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/merged",
-            "UpperDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/diff",
-            "WorkDir": "/var/lib/containers/storage/overlay/9aa10191f5bddb59e28508e721fdeb43505e5b395845fa99/work"
-          },
-          "Name": "overlay"
-        },
-        "History": [
-          {
-            "comment": "from Bitnami with love",
-            "created": "2019-04-09T22:27:40.659377677Z"
-          },
-          {
-            "created": "2019-04-09T22:38:53.86336555Z",
-            "created_by": "/bin/sh -c #(nop)  LABEL maintainer=Bitnami <containers@bitnami.com>",
-            "empty_layer": true
-          },
-          {
-            "created": "2019-04-09T22:38:54.022778765Z",
-            "created_by": "/bin/sh -c #(nop)  ENV IMAGE_OS=debian-9",
-            "empty_layer": true
-          },
-        ],
-        "Id": "ace34da54e4af2145e1ad277005adb235a214e4dfe1114c2db9ab460b840f785",
-        "Labels": {
-          "maintainer": "Bitnami <containers@bitnami.com>"
-        },
-        "ManifestType": "application/vnd.docker.distribution.manifest.v1+prettyjws",
-        "Os": "linux",
-        "Parent": "",
-        "RepoDigests": [
-          "quay.io/bitnami/wildfly@sha256:5a8ab28e314c2222de3feaf6dac94a0436a37fc08979d2722c99d2bef2619a9b"
-        ],
-        "RepoTags": [
-          "quay.io/bitnami/wildfly:latest"
-        ],
-        "RootFS": {
-          "Layers": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ],
-          "Type": "layers"
-        },
-        "Size": 466180019,
-        "User": "1001",
-        "Version": "18.09.3",
-        "VirtualSize": 466180019
-      }
-    ]
+                {
+                    "Id": "6d1ef012b5674ad8a127ecfa9b5e6f5178d171b90ee462846974177fd9bdd39f",
+                    "Digest": "sha256:8421d9a84432575381bfabd248f1eb56f3aa21d9d7cd2511583c68c9b7511d10",
+                    "RepoTags": [
+                        "docker.io/library/alpine:3.7"
+                    ],
+                    "RepoDigests": [
+                        "docker.io/library/alpine@sha256:8421...",
+                        "docker.io/library/alpine@sha256:9225..."
+                    ],
+                    "Parent": "",
+                    "Comment": "",
+                    "Created": "2019-03-07T22:19:53.447205048Z",
+                    "Config": {
+                        "Env": [
+                                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+                        ],
+                        "Cmd": [
+                                "/bin/sh"
+                        ],
+                        "ArgsEscaped": true
+                    },
+                    "Version": "18.06.1-ce",
+                    "Author": "",
+                    "Architecture": "amd64",
+                    "Os": "linux",
+                    "Size": 4467084,
+                    "VirtualSize": 4467084,
+                    "GraphDriver": {
+                        "Name": "overlay",
+                        "Data": {
+                                "UpperDir": "/home/user/.local/share/containers/storage/overlay/3fc6.../diff",
+                                "WorkDir": "/home/user/.local/share/containers/storage/overlay/3fc6.../work"
+                        }
+                    },
+                    "RootFS": {
+                        "Type": "layers",
+                        "Layers": [
+                                "sha256:3fc6..."
+                        ]
+                    },
+                    "Labels": null,
+                    "Annotations": {},
+                    "ManifestType": "application/vnd.docker.distribution.manifest.v2+json",
+                    "User": "",
+                    "History": [
+                        {
+                                "created": "2019-03-07T22:19:53.313789681Z",
+                                "created_by": "/bin/sh -c #(nop) ADD file:aa17928... in / "
+                        },
+                        {
+                                "created": "2019-03-07T22:19:53.447205048Z",
+                                "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/sh\"]",
+                                "empty_layer": true
+                        }
+                    ],
+                    "NamesHistory": [
+                        "docker.io/library/alpine:3.7"
+                    ]
+                }
+            ]
+
 """
 
 import json  # noqa: E402
