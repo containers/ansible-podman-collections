@@ -1416,10 +1416,23 @@
         - "container3"
         - "testidem-pod"
         - "container_tls"
+        - "container2_tls"
 
     - name: Remove pod
-      shell: podman pod rm -f testidempod
-      ignore_errors: true
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidempod
+        state: absent
+
+    - name: Remove podman images
+      containers.podman.podman_image:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - alpine:3.7
+        - alpine
+        - alpine:3.20
+        - alpine:3.12
 
     - name: Remove temporary rootfs directory
       ansible.builtin.file:
