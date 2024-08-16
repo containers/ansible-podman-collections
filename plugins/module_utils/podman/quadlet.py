@@ -698,13 +698,15 @@ def create_quadlet_state(module, issuer):
     filename = quad_file_name or f"{name}.{issuer}"
     quadlet_file_path = os.path.join(quadlet_dir, filename)
     # Check if the directory exists and is writable
-    check_quadlet_directory(module, quadlet_dir)
+    if not module.check_mode:
+        check_quadlet_directory(module, quadlet_dir)
     # Check if file already exists and if it's different
     quadlet = class_map[issuer](module.params)
     quadlet_content = quadlet.create_quadlet_content()
     file_diff = compare_systemd_file_content(quadlet_file_path, quadlet_content)
     if bool(file_diff):
-        quadlet.write_to_file(quadlet_file_path)
+        if not module.check_mode:
+            quadlet.write_to_file(quadlet_file_path)
         results_update = {
             'changed': True,
             "diff": {
