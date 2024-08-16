@@ -46,42 +46,33 @@ networks:
     type: list
     sample: [
               {
-                "cniVersion": "0.4.0",
-                "name": "podman",
-                "plugins": [
+                "name": "dmz",
+                "id": "3227f9785ae4657c022c8da7b0e04d2d124199e66da10a9130437e3c3f0e0e42",
+                "driver": "macvlan",
+                "created": "2024-05-27T21:09:03.486699659+03:00",
+                "subnets": [
                     {
-                        "bridge": "cni-podman0",
-                        "ipMasq": true,
-                        "ipam": {
-                            "ranges": [
-                                [
-                                    {
-                                        "gateway": "10.88.0.1",
-                                        "subnet": "10.88.0.0/16"
-                                    }
-                                ]
-                            ],
-                            "routes": [
-                                {
-                                    "dst": "0.0.0.0/0"
-                                }
-                            ],
-                            "type": "host-local"
-                        },
-                        "isGateway": true,
-                        "type": "bridge"
+                            "subnet": "10.10.0.0/24",
+                            "gateway": "10.10.0.1",
+                            "lease_range": {
+                                "start_ip": "10.10.0.249",
+                                "end_ip": "10.10.0.255"
+                            }
                     },
                     {
-                        "capabilities": {
-                            "portMappings": true
-                        },
-                        "type": "portmap"
-                    },
-                    {
-                        "backend": "iptables",
-                        "type": "firewall"
+                            "subnet": "2001:db8:abcd:10::/64",
+                            "gateway": "2001:db8:abcd:10::1"
                     }
-                ]
+                ],
+                "ipv6_enabled": true,
+                "internal": false,
+                "dns_enabled": false,
+                "options": {
+                    "no_default_route": "true"
+                },
+                "ipam_options": {
+                    "driver": "host-local"
+                }
             }
         ]
 """

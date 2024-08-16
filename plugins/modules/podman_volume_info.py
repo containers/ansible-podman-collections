@@ -45,12 +45,17 @@ volumes:
     type: list
     sample: [
                 {
-                "name": "testvolume",
-                "labels": {},
-                "mountPoint": "/home/ansible/.local/share/testvolume/_data",
-                "driver": "local",
-                "options": {},
-                "scope": "local"
+                    "Name": "postgres9",
+                    "Driver": "local",
+                    "Mountpoint": "/home/user/.local/share/containers/storage/volumes/postgres9/_data",
+                    "CreatedAt": "2023-11-30T16:41:31.310865559+02:00",
+                    "Labels": {},
+                    "Scope": "local",
+                    "Options": {},
+                    "MountCount": 0,
+                    "NeedsCopyUp": true,
+                    "NeedsChown": true,
+                    "LockNumber": 18
                 }
         ]
 """
