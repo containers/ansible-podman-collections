@@ -251,6 +251,9 @@ class ContainerQuadlet(Quadlet):
                 params["podman_args"].append(f"--env {k}={v}")
         if params["gpus"]:
             params["podman_args"].append(f"--gpus {params['gpus']}")
+        if params["group_add"]:
+            for group in params["group_add"]:
+                params["podman_args"].append(f"--group_add {group}")
         if params["group_entry"]:
             params["podman_args"].append(f"--group-entry {params['group_entry']}")
         if params["hostuser"]:
