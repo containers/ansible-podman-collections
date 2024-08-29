@@ -701,7 +701,8 @@ class PodmanImageManager(object):
         volume = self.build.get('volume')
         if volume:
             for v in volume:
-                args.extend(['--volume', v])
+                if v:
+                    args.extend(['--volume', v])
 
         if self.auth_file:
             args.extend(['--authfile', self.auth_file])
