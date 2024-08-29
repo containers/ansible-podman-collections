@@ -166,6 +166,9 @@ class ContainerQuadlet(Quadlet):
             params["label"] = ["%s=%s" % (k, v) for k, v in params["label"].items()]
         if params["env"]:
             params["env"] = ["%s=%s" % (k, v) for k, v in params["env"].items()]
+        if params["rootfs"]:
+            params["rootfs"] = params["image"]
+            params["image"] = None
         if params["sysctl"]:
             params["sysctl"] = ["%s=%s" % (k, v) for k, v in params["sysctl"].items()]
         if params["tmpfs"]:
