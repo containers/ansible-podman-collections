@@ -101,9 +101,9 @@ def save(module, executable):
     for img in module.params['image']:
         command.append(img)
     if module.params['force']:
+        changed = True
         dest = module.params['dest']
         if os.path.exists(dest):
-            changed = True
             if module.check_mode:
                 return changed, '', ''
             try:

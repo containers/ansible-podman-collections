@@ -12,6 +12,8 @@
     executable: "{{ test_executable | default('podman') }}"
     image: registry.k8s.io/pause
     dest: /tmp/image.tar
+    force: false
+  register: saved_docker
 
 - name: Check file
   stat:
@@ -23,12 +25,13 @@
     that:
       - img.stat.exists
 
-- name: Save image
+- name: Save Force image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
     image: registry.k8s.io/pause
     dest: /tmp/image.tar
     force: true
+  register: saved_forced
 
 - name: Check file
   stat:
@@ -46,6 +49,7 @@
     image: registry.k8s.io/pause
     dest: /tmp/imagedir
     format: oci-dir
+  register: saved_oci_dir
 
 - name: Check file
   stat:
@@ -65,6 +69,7 @@
     force: true
     format: docker-dir
     compress: true
+  register: saved_docker_dir
 
 - name: Save image
   containers.podman.podman_save:
@@ -73,6 +78,7 @@
     dest: /tmp/imagedir
     force: true
     format: oci-dir
+  register: saved_oci_dir2
 
 - name: Check file
   stat:
@@ -90,6 +96,7 @@
     image: registry.k8s.io/pause
     dest: /tmp/image2.tar
     multi_image_archive: true
+  register: saved_multi
 
 - name: Check file
   stat:
@@ -109,6 +116,7 @@
       - registry.k8s.io/coredns/coredns:v1.9.3
     dest: /tmp/image-multi.tar
     multi_image_archive: true
+  register: saved_multi2
 
 - name: Check mult image file
   stat:
@@ -119,3 +127,14 @@
   assert:
     that:
       - img.stat.exists
+
+- name: Check results changed
+  assert:
+    that:
+      - saved_docker is changed
+      - saved_forced is changed
+      - saved_oci_dir is changed
+      - saved_docker_dir is changed
+      - saved_oci_dir2 is changed
+      - saved_multi is changed
+      - saved_multi2 is changed
