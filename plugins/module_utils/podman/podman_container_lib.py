@@ -1329,8 +1329,9 @@ class PodmanContainerDiff:
     # def diffparam_pod(self):
     #     return self._diff_generic('pod', '--pod')
 
-    def diffparam_pod_id_file(self):
-        return self._diff_generic('pod_id_file', '--pod-id-file')
+    # https://github.com/containers/ansible-podman-collections/issues/828
+    # def diffparam_pod_id_file(self):
+    #     return self._diff_generic('pod_id_file', '--pod-id-file')
 
     def diffparam_privileged(self):
         return self._diff_generic('privileged', '--privileged')
