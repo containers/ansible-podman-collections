@@ -41,7 +41,7 @@ jobs:
           ~/.local/bin/ansible-galaxy collection build --output-path
           "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
       - name: Store migrated collection artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: collection
           path: .cache/collection-tarballs
@@ -100,7 +100,7 @@ jobs:
         run: >-
           python -m pip install --user '${{ matrix.ansible-version }}'
       - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: collection
           path: .cache/collection-tarballs
