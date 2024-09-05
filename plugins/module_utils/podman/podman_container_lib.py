@@ -1039,7 +1039,8 @@ class PodmanContainerDiff:
         if self.module_params['command'] is not None:
             before = self.info['config']['cmd']
             after = self.params['command']
-            before = _join_quotes(before)
+            if before:
+                before = _join_quotes(before)
             if isinstance(after, list):
                 after = [str(i) for i in after]
             if isinstance(after, str):
