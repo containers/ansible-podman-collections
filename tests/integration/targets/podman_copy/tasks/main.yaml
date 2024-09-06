@@ -1,0 +1,214 @@
+---
+- name: Test podman copy
+  block:
+  - name: run container
+    containers.podman.podman_container:
+      name: container
+      image: alpine:3.7
+      user: 999:999
+      state: started 
+      command: sleep 1d
+
+  - name: Create test file
+    file:
+      path: /tmp/podman_copy.txt
+      state: touch
+
+  - name: Get container info
+    containers.podman.podman_container_info:
+      name: container
+    register: cntr_info
+
+  - name: Copy into container
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      into_container: true
+    register: copy1
+
+  - name: Check first copy
+    assert:
+      that: 
+        - copy1 is success
+        - copy1 is changed
+
+  - name: Stat file in container 
+    stat:
+      path: "{{ cntr_info['containers'][0]['GraphDriver']['Data']['MergedDir'] }}/podman_copy.txt"
+    register: file_check
+
+  - name: check file is in container with container perms
+    assert:
+      that: 
+        - file_check.stat.islnk is defined
+        - file_check.stat.islnk == False
+        - file_check.stat.uid == 999
+        - file_check.stat.gid == 999
+
+  - name: Copy into container without force
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      into_container: true
+    register: copy2
+
+  - name: Check second copy
+    assert:
+      that: 
+        - copy2 is success
+        - copy2 is not changed
+
+  - name: Copy into container (forced)
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      force: true
+      into_container: true
+    register: copy3
+
+  - name: Check third copy
+    assert:
+      that: 
+        - copy3 is success
+        - copy3 is changed
+
+  - name: Copy into container without archive (forced)
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      force: true
+      archive: false
+      into_container: true
+    register: copy4
+
+  - name: Check third copy
+    assert:
+      that: 
+        - copy4 is success
+        - copy4 is changed
+
+  - name: Stat file in container for archive test
+    stat:
+      path: "{{ cntr_info['containers'][0]['GraphDriver']['Data']['MergedDir'] }}/podman_copy.txt"
+    register: file_check
+
+  - name: check file is in container and has root perms
+    assert:
+      that: 
+        - file_check.stat.islnk is defined
+        - file_check.stat.uid == 0
+        - file_check.stat.gid == 0
+
+  - name: Create overwrite file
+    file:
+      path: "/tmp/overwrite_obj"
+      state: touch
+
+  - name: Create file to overwrite in container
+    containers.podman.podman_container_exec:
+      name: container
+      command: "mkdir /tmp/overwrite_obj"
+
+  - name: Copy file on dir in container with overwrite
+    containers.podman.podman_copy:
+      path: '/tmp/overwrite_obj'
+      container_path: '/tmp/'
+      container: container
+      overwrite: true
+      force: true
+      into_container: true
+    register: copy5
+
+  - name: Check fifth copy
+    assert:
+      that: 
+        - copy5 is success
+        - copy5 is changed
+
+  - name: Stat dir in container 
+    stat:
+      path: "{{ cntr_info['containers'][0]['GraphDriver']['Data']['MergedDir'] }}/tmp/overwrite_obj"
+    register: file_check
+
+  - name: check file is in container and has root perms
+    assert:
+      that: 
+        - file_check.stat.islnk is defined
+        - file_check.stat.islnk == False
+        - file_check.stat.isdir == False
+
+  - name: Copy from container
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy_from.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      from_container: true
+    register: copy6
+
+  - name: Stat file in /tmp 
+    stat:
+      path: "/tmp/podman_copy_from.txt"
+    register: file_check
+
+  - name: Check sixth copy
+    assert:
+      that: 
+        - copy6 is success
+        - copy6 is changed
+
+  - name: Check file is in container
+    assert:
+      that: 
+        - file_check.stat.islnk is defined
+        - file_check.stat.islnk == False
+
+  - name: Copy from container without force
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy_from.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      from_container: true
+    register: copy7
+
+  - name: Check seventh copy
+    assert:
+      that: 
+        - copy7 is success
+        - copy7 is not changed
+
+  - name: Copy from container (forced)
+    containers.podman.podman_copy:
+      path: '/tmp/podman_copy_from.txt'
+      container_path: '/podman_copy.txt'
+      container: container
+      force: true
+      from_container: true
+    register: copy8
+
+  - name: Check eighth copy
+    assert:
+      that: 
+        - copy8 is success
+        - copy8 is changed
+
+  always:
+    - name: stop container
+      containers.podman.podman_container:
+        state: absent
+        name: container
+    - name: Clean up test file
+      file:
+        path: /tmp/podman_copy.txt
+        state: absent
+    - name: Clean up test file
+      file:
+        path: /tmp/podman_copy_from.txt
+        state: absent
+    - name: Clean up test dir
+      file:
+        path: /tmp/overwrite_dir
+        state: absent
