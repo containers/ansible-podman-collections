@@ -2,12 +2,12 @@
 - name: Pull image
   containers.podman.podman_image:
     executable: "{{ test_executable | default('podman') }}"
-    name: k8s.gcr.io/pause
+    name: registry.k8s.io/pause
 
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/image.tar
 
 - name: Load image
@@ -20,12 +20,12 @@
   assert:
     that:
       - image.image != {}
-      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+      - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"
 
 - name: Save image
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/imagedir
     format: oci-dir
 
@@ -44,7 +44,7 @@
 - name: Save image with multi image archive
   containers.podman.podman_save:
     executable: "{{ test_executable | default('podman') }}"
-    image: k8s.gcr.io/pause
+    image: registry.k8s.io/pause
     dest: /tmp/image2.tar
     multi_image_archive: true
 
@@ -58,7 +58,7 @@
   assert:
     that:
       - image.image != {}
-      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+      - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"
 
 - name: Pull images
   containers.podman.podman_image:
