@@ -1275,7 +1275,7 @@
         - "SecurityLabelFileType=usr_t"
         - "Environment=BOOL=False"
         - "PublishPort=9001:8000"
-        - "PodmanArgs=--add-host host2:127.0.0.1"
+        - "AddHost=host2:127.0.0.1"
         - "Label=somelabel=labelvalue"
         - "WantedBy=default.target"
         - "GroupAdd=admin"

@@ -84,6 +84,7 @@ class ContainerQuadlet(Quadlet):
         'env': 'Environment',
         'env_file': 'EnvironmentFile',
         'env_host': 'EnvironmentHost',
+        'etc_hosts': 'AddHost',
         'command': 'Exec',
         'expose': 'ExposeHostPort',
         'gidmap': 'GIDMap',
@@ -249,8 +250,7 @@ class ContainerQuadlet(Quadlet):
             for i in params["device_write_iops"]:
                 params["podman_args"].append(f"--device-write-iops {i}")
         if params["etc_hosts"]:
-            for host_ip in params['etc_hosts'].items():
-                params["podman_args"].append(f"--add-host {':'.join(host_ip)}")
+            params['etc_hosts'] = ["%s:%s" % (k, v) for k, v in params['etc_hosts'].items()]
         if params["env_merge"]:
             for k, v in params["env_merge"].items():
                 params["podman_args"].append(f"--env {k}={v}")
