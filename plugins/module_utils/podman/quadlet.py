@@ -79,6 +79,7 @@ class ContainerQuadlet(Quadlet):
         'dns_option': 'DNSOption',
         'dns_search': 'DNSSearch',
         'cap_drop': 'DropCapability',
+        'cgroups': 'CgroupsMode',
         'entrypoint': 'Entrypoint',
         'env': 'Environment',
         'env_file': 'EnvironmentFile',

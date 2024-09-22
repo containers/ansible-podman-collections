@@ -1229,6 +1229,7 @@
           otheralbe: othervalue
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:
@@ -1267,6 +1268,7 @@
         - "Image=alpine:3.12"
         - "Exec=sleep 1d"
         - "Volume=/tmp:/data"
+        - "CgroupsMode=no-conmon"
         - "Mount=type=devpts,destination=/dev/pts"
         - "WorkingDir=/bin"
         - "Unmask=ALL"
@@ -1327,6 +1329,7 @@
           otheralbe: othervalue
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:
@@ -1383,6 +1386,7 @@
           otheralbe: othervalue
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:
