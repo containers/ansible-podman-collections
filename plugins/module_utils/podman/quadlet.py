@@ -111,6 +111,7 @@ class ContainerQuadlet(Quadlet):
         "Mask": "Mask",  # add it in security_opt
         'mount': 'Mount',
         'network': 'Network',
+        'network_aliases': 'NetworkAlias',
         'no_new_privileges': 'NoNewPrivileges',
         'sdnotify': 'Notify',
         'pids_limit': 'PidsLimit',
@@ -292,9 +293,6 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--memory-swap {params['memory_swap']}")
         if params["memory_swappiness"]:
             params["podman_args"].append(f"--memory-swappiness {params['memory_swappiness']}")
-        if params["network_aliases"]:
-            for alias in params["network_aliases"]:
-                params["podman_args"].append(f"--network-alias {alias}")
         if params["no_healthcheck"]:
             params["podman_args"].append("--no-healthcheck")
         if params["no_hosts"] is not None:

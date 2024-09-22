@@ -1206,6 +1206,9 @@
         etc_hosts:
           host1: 127.0.0.1
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
         annotation:
           this: "annotation_value"
         dns:
@@ -1280,6 +1283,8 @@
         - "WantedBy=default.target"
         - "GroupAdd=admin"
         - "GroupAdd=users"
+        - "NetworkAlias=web"
+        - "NetworkAlias=db"
       loop_control:
         label: "{{ item }}"
 
@@ -1306,6 +1311,9 @@
         etc_hosts:
           host1: 127.0.0.1
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
         annotation:
           this: "annotation_value"
         dns:
@@ -1363,6 +1371,9 @@
         etc_hosts:
           host1: 127.0.0.45
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
         annotation:
           this: "annotation_value"
         dns:
