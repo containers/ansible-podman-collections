@@ -1200,6 +1200,7 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
         group_add:
           - admin
           - users
@@ -1285,6 +1286,7 @@
         - "GroupAdd=users"
         - "NetworkAlias=web"
         - "NetworkAlias=db"
+        - "StopSignal=9"
       loop_control:
         label: "{{ item }}"
 
@@ -1305,6 +1307,7 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
         group_add:
           - admin
           - users
@@ -1365,6 +1368,7 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
         group_add:
           - admin
           - users

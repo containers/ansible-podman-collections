@@ -131,6 +131,7 @@ class ContainerQuadlet(Quadlet):
         'SecurityLabelNested': 'SecurityLabelNested',
         'SecurityLabelType': 'SecurityLabelType',
         'shm_size': 'ShmSize',
+        'stop_signal': 'StopSignal',
         'stop_timeout': 'StopTimeout',
         'subgidname': 'SubGIDMap',
         'subuidname': 'SubUIDMap',
@@ -345,8 +346,6 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["sig_proxy"]:
             params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
-        if params["stop_signal"]:
-            params["podman_args"].append(f"--stop-signal {params['stop_signal']}")
         if params["systemd"]:
             params["podman_args"].append(f"--systemd={str(params['systemd']).lower()}")
         if params["timeout"]:
