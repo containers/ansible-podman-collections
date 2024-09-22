@@ -316,6 +316,8 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pid_file"]:
             params["podman_args"].append(f"--pid-file {params['pid_file']}")
+        if params['platform']:
+            params["podman_args"].append(f"--platform {params['platform']}")
         if params["preserve_fd"]:
             for pres in params["preserve_fd"]:
                 params["podman_args"].append(f"--preserve-fd {pres}")

@@ -1211,6 +1211,7 @@
           - web
           - db
         cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
@@ -1289,6 +1290,7 @@
         - "NetworkAlias=db"
         - "StopSignal=9"
         - "PodmanArgs=--cpus 0.5"
+        - "PodmanArgs=--platform linux/amd64"
       loop_control:
         label: "{{ item }}"
 
@@ -1320,6 +1322,7 @@
           - web
           - db
         cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
@@ -1382,6 +1385,7 @@
           - web
           - db
         cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
