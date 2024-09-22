@@ -88,6 +88,7 @@ class ContainerQuadlet(Quadlet):
         'gidmap': 'GIDMap',
         'global_args': 'GlobalArgs',
         'group': 'Group',  # Does not exist in module parameters
+        'group_add': 'GroupAdd',
         'healthcheck': 'HealthCmd',
         'healthcheck_interval': 'HealthInterval',
         'healthcheck_failure_action': 'HealthOnFailure',
