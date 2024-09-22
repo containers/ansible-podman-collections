@@ -1210,6 +1210,7 @@
         network_aliases:
           - web
           - db
+        cpus: 0.5
         annotation:
           this: "annotation_value"
         dns:
@@ -1287,6 +1288,7 @@
         - "NetworkAlias=web"
         - "NetworkAlias=db"
         - "StopSignal=9"
+        - "PodmanArgs=--cpus 0.5"
       loop_control:
         label: "{{ item }}"
 
@@ -1317,6 +1319,7 @@
         network_aliases:
           - web
           - db
+        cpus: 0.5
         annotation:
           this: "annotation_value"
         dns:
@@ -1378,6 +1381,7 @@
         network_aliases:
           - web
           - db
+        cpus: 0.5
         annotation:
           this: "annotation_value"
         dns:

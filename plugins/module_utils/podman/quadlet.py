@@ -221,6 +221,8 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--cidfile {params['cidfile']}")
         if params["conmon_pidfile"]:
             params["podman_args"].append(f"--conmon-pidfile {params['conmon_pidfile']}")
+        if params['cpus']:
+            params["podman_args"].append(f"--cpus {params['cpus']}")
         if params["cpuset_cpus"]:
             params["podman_args"].append(f"--cpuset-cpus {params['cpuset_cpus']}")
         if params["cpuset_mems"]:
