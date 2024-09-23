@@ -495,10 +495,10 @@ class PodmanImageManager(object):
     def _find_containerfile_from_context(self):
         """
         Find a Containerfile/Dockerfile path inside a podman build context.
-        Return an empty string if none exist.
+        Return 'None' if none exist.
         """
 
-        containerfile_path = ""
+        containerfile_path = None
         for filename in [os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]]:
             if os.path.exists(filename):
                 containerfile_path = filename
@@ -512,13 +512,16 @@ class PodmanImageManager(object):
 
         See if either `file` or `container_file` in build args are populated,
         fetch their contents if so. If not, return the contents of the Containerfile
-        or Dockerfile from inside the build context.
+        or Dockerfile from inside the build context, if present.
+
+        If we don't find a Containerfile/Dockerfile in any of the above
+        locations, return 'None'.
         """
 
         build_file_arg = self.build.get('file') if self.build else None
         containerfile_contents = self.build.get('container_file') if self.build else None
 
-        container_filename = ""
+        container_filename = None
         if build_file_arg:
             container_filename = build_file_arg
         elif self.path and not build_file_arg:
@@ -550,7 +553,7 @@ class PodmanImageManager(object):
 
         args_containerfile_hash = ""
 
-        context_has_containerfile = self.path and self._find_containerfile_from_context() != ""
+        context_has_containerfile = self.path and self._find_containerfile_from_context()
 
         should_hash_args_containerfile = (
             context_has_containerfile or
@@ -783,7 +786,7 @@ class PodmanImageManager(object):
                 f.write(container_file_txt)
             args.extend(['--file', container_file_path])
 
-        if containerfile_hash != "":
+        if containerfile_hash:
             args.extend(['--label', f"containerfile.hash={containerfile_hash}"])
 
         volume = self.build.get('volume')
