@@ -885,7 +885,7 @@ class PodmanImageManager(object):
                 dest_string = dest.rstrip("/") + "/" + self.image_name
 
         if "/" not in dest_string and "@" not in dest_string and "docker-daemon" not in dest_string:
-            self.module.fail_json(msg="Destination must be a full URL or path to a directory.")
+            self.module.fail_json(msg="Destination must be a full URL or path to a directory with image name and tag.")
 
         args.append(dest_string)
         self.module.log("PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(

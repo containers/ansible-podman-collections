@@ -488,7 +488,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/build/dir</span>
 <span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">push_args</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image using an auth file</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
@@ -496,7 +496,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">    </span><span class="nt">push</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">auth_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/containers/auth.json</span>
 <span class="w">    </span><span class="nt">push_args</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image using username and password</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
@@ -505,7 +505,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bugs</span>
 <span class="w">    </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vault_registry_password</span> <span class="cp">}}</span><span class="s">&quot;</span>
 <span class="w">    </span><span class="nt">push_args</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme</span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/acme/nginx</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build and push an image to multiple registries</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
@@ -529,11 +529,11 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">    </span><span class="nt">loop</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
 <span class="w">      </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
-<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme/nginx:4</span>
 
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
 <span class="w">      </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme</span>
+<span class="w">      </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/acme/nginx:3</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pull an image for a specific CPU architecture</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_image</span><span class="p">:</span>
