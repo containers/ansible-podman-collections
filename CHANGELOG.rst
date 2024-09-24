@@ -5,6 +5,47 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.16.0
+=======
+
+Release Summary
+---------------
+
+New features, podman copy module and bugfixes
+
+Minor Changes
+-------------
+
+- Add arch to podman build command explicitly
+- Add group_add parameter for podman quadlet
+- Add support for check_mode in Quadlet
+- Trigger a new image build when we detect that the Containerfile has changed.
+- Update inspection info about objects in modules
+
+Bugfixes
+--------
+
+- CI - Add images removal for tests
+- CI - Fix podman CI test container images
+- CI - add ignore list for Ansible sanity for 2.19
+- CI - bump artifacts versions for GHactions
+- CI - change k8s.gcr.io to registry.k8s.io in tests
+- CI - fix Podman search of invalid image
+- Disable idempotency for pod_id_file
+- Fix command idempotency with quotes
+- Fix health-startup-cmd
+- Fix logic in Podman images
+- Fix quadlet parameters when container uses rootfs
+- fix for tls_verify being ignored
+- fix(podman_image) - skip empty volume items
+- fix(podman_save) - always changed when force
+- modify error and docs
+
+New Modules
+-----------
+
+- containers.podman.podman_container_copy - Copy file to or from a container
+
 v1.15.4
 =======
 
