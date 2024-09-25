@@ -56,7 +56,6 @@ options:
         'created' state. If configuration doesn't match or 'recreate' option is
         set, the container will be recreated
       - I(quadlet) - Write a quadlet file with the specified configuration.
-        Requires the C(quadlet_dir) option to be set.
     type: str
     default: started
     choices:
