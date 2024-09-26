@@ -4,45 +4,59 @@
     path: /tmp/usr_img
     state: directory
 
-- name: Copy Dockerfile to container build directory
-  copy:
-    src: "{{ item }}"
-    dest: "/tmp/usr_img/{{ item }}"
-    mode: 755
-  loop:
-    - Dockerfile
-    - testinstall.sh
+- block:
 
-- name: Build test docker image for regular user
-  containers.podman.podman_image:
-    executable: "{{ test_executable | default('podman') }}"
-    name: "{{ runlabel_image }}"
-    path: /tmp/usr_img
-    build:
-      format: docker
-      extra_args: --cgroup-manager=cgroupfs
+    - name: Copy Dockerfile to container build directory
+      copy:
+        src: "{{ item }}"
+        dest: "/tmp/usr_img/{{ item }}"
+        mode: 755
+      loop:
+        - Dockerfile
+        - testinstall.sh
 
-- name: Run container label install
-  containers.podman.podman_runlabel:
-    image: "{{ runlabel_image }}"
-    label: install
-  register: install_runlabel
+    - name: Build test docker image for regular user
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ runlabel_image }}"
+        path: /tmp/usr_img
+        build:
+          format: docker
+          extra_args: --cgroup-manager=cgroupfs
 
-- name: Run container label run
-  containers.podman.podman_runlabel:
-    image: "{{ runlabel_image }}"
-    label: run
+    - name: Run container label install
+      containers.podman.podman_runlabel:
+        image: "{{ runlabel_image }}"
+        label: install
+      register: install_runlabel
 
-- name: Check file for run exists
-  stat:
-    path: /tmp/testedrunfortests
-  register: testedrunfortests
+    - name: Run container label run
+      containers.podman.podman_runlabel:
+        image: "{{ runlabel_image }}"
+        label: run
 
-- name: Make sure files exist
-  assert:
-    that:
-      - testedrunfortests.stat.exists
+    - name: Check file for run exists
+      stat:
+        path: /tmp/testedrunfortests
+      register: testedrunfortests
 
-- name: Make sure install label exited with 128
-  assert:
-    that: install_runlabel.stdout == 'Installed.'
+    - name: Make sure files exist
+      assert:
+        that:
+          - testedrunfortests.stat.exists
+
+    - name: Make sure install label exited with 128
+      assert:
+        that: install_runlabel.stdout == 'Installed.'
+  always:
+
+    - name: Remove the directory
+      file:
+        path: /tmp/usr_img
+        state: absent
+
+    - name: Remove the image
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ runlabel_image }}"
+        state: absent

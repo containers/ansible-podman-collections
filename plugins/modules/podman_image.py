@@ -527,7 +527,7 @@ class PodmanImageManager(object):
         elif self.path and not build_file_arg:
             container_filename = self._find_containerfile_from_context()
 
-        if not containerfile_contents:
+        if not containerfile_contents and os.access(container_filename, os.R_OK):
             with open(container_filename) as f:
                 containerfile_contents = f.read()
 
@@ -538,6 +538,8 @@ class PodmanImageManager(object):
         When given the contents of a Containerfile/Dockerfile,
         return a sha256 hash of these contents.
         """
+        if not containerfile_contents:
+            return None
         return hashlib.sha256(
             containerfile_contents.encode(),
             usedforsecurity=False
@@ -551,7 +553,7 @@ class PodmanImageManager(object):
         If we don't have this, return an empty string.
         """
 
-        args_containerfile_hash = ""
+        args_containerfile_hash = None
 
         context_has_containerfile = self.path and self._find_containerfile_from_context()
 
@@ -581,11 +583,9 @@ class PodmanImageManager(object):
         else:
             digest_before = None
 
-        both_hashes_exist_and_differ = (
-            args_containerfile_hash != "" and
-            existing_image_containerfile_hash != "" and
-            args_containerfile_hash != existing_image_containerfile_hash
-        )
+        both_hashes_exist_and_differ = (args_containerfile_hash and existing_image_containerfile_hash and
+                                        args_containerfile_hash != existing_image_containerfile_hash
+                                        )
 
         if not image or self.force or both_hashes_exist_and_differ:
             if self.state == 'build' or self.path:
