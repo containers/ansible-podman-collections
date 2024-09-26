@@ -5,6 +5,20 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.16.1
+=======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Bugfixes
+--------
+
+- Fix podman image permissions issue and runlable test
+- don't document quadlet_dir as required when setting state=quadlet
+
 v1.16.0
 =======
 
