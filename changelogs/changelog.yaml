@@ -386,6 +386,13 @@ releases:
       name: podman_container_copy
       namespace: ''
     release_date: '2024-09-24'
+  1.16.1:
+    changes:
+      bugfixes:
+      - Fix podman image permissions issue and runlable test
+      - don't document quadlet_dir as required when setting state=quadlet
+      release_summary: Bugfixes
+    release_date: '2024-09-26'
   1.2.0:
     changes:
       minor_changes:

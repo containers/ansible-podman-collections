@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_container module – Manage podman containers<a class="headerlink" href="#containers-podman-podman-container-module-manage-podman-containers" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.1).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -1423,7 +1423,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <p><em>started</em> - Asserts there is a running container matching the name and any provided configuration. If no container matches the name, a container will be created and started. Use recreate to always re-create a matching container, even if it is running. Use force_restart to force a matching container to be stopped and restarted.</p>
 <p><em>stopped</em> - Asserts that the container is first <em>present</em>, and then if the container is running moves it to a stopped state.</p>
 <p><em>created</em> - Asserts that the container exists with given configuration. If container doesn’t exist, the module creates it and leaves it in ‘created’ state. If configuration doesn’t match or ‘recreate’ option is set, the container will be recreated</p>
-<p><em>quadlet</em> - Write a quadlet file with the specified configuration. Requires the <code class="docutils literal notranslate"><span class="pre">quadlet_dir</span></code> option to be set.</p>
+<p><em>quadlet</em> - Write a quadlet file with the specified configuration.</p>
 <p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
 <ul class="simple">
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
