@@ -1233,6 +1233,10 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
         cgroups: no-conmon
@@ -1291,6 +1295,9 @@
         - "StopSignal=9"
         - "PodmanArgs=--cpus 0.5"
         - "PodmanArgs=--platform linux/amd64"
+        - "LogOpt=max-size=10mb"
+        - "LogOpt=path=/var/log/container/mycontainer.json"
+        - "LogOpt=tag=TestTag"
       loop_control:
         label: "{{ item }}"
 
@@ -1344,6 +1351,10 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
         cgroups: no-conmon
@@ -1407,6 +1418,10 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
         cgroups: no-conmon

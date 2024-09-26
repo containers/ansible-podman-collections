@@ -108,6 +108,7 @@ class ContainerQuadlet(Quadlet):
         'ip6': 'IP6',
         'label': 'Label',
         'log_driver': 'LogDriver',
+        'log_opt': 'LogOpt',
         "Mask": "Mask",  # add it in security_opt
         'mount': 'Mount',
         'network': 'Network',
@@ -284,8 +285,7 @@ class ContainerQuadlet(Quadlet):
         if params["label_file"]:
             params["podman_args"].append(f"--label-file {params['label_file']}")
         if params["log_opt"]:
-            for k, v in params['log_opt'].items():
-                params["podman_args"].append(f"--log-opt {k.replace('max_size', 'max-size')}={v}")
+            params["log_opt"] = ["%s=%s" % (k.replace('max_size', 'max-size'), v) for k, v in params['log_opt'].items()]
         if params["mac_address"]:
             params["podman_args"].append(f"--mac-address {params['mac_address']}")
         if params["memory"]:
