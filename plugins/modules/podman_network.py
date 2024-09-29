@@ -124,6 +124,24 @@ options:
       - Add network options. Currently 'vlan' and 'mtu' are supported.
     type: dict
     suboptions:
+      bclim:
+        description:
+          - Set the threshold for broadcast queueing. Must be a 32 bit integer.
+            Setting this value to -1 disables broadcast queueing altogether.
+        type: int
+        required: false
+      bridge_name:
+        description:
+          - This option assigns the given name to the created Linux Bridge.
+            Sets 'com.docker.network.bridge.name' option.
+        type: str
+        required: false
+      driver_mtu:
+        description:
+          - Sets the Maximum Transmission Unit (MTU) and takes an integer value.
+            Sets 'com.docker.network.driver.mtu' option.
+        type: str
+        required: false
       isolate:
         description:
           - This option isolates networks by blocking traffic between those
@@ -147,6 +165,11 @@ options:
           - MTU size for bridge network interface.
         type: int
         required: false
+      no_default_route:
+        description:
+          - If set to 1, Podman will NOT automatically add a default route to subnets.
+        type: str
+        required: false
       parent:
         description:
           - The host device which should be used for the macvlan interface
@@ -158,6 +181,13 @@ options:
         description:
           - VLAN tag for bridge which enables vlan_filtering.
         type: int
+        required: false
+      vrf:
+        description:
+          - This option assigns a VRF to the bridge interface.
+            It accepts the name of the VRF and defaults to none.
+            Can only be used with the Netavark network backend.
+        type: str
         required: false
   debug:
     description:
@@ -359,6 +389,10 @@ class PodmanNetworkModuleParams:
     def addparam_opt(self, c):
         for opt in self.params['opt'].items():
             if opt[1] is not None:
+                if opt[0] == 'bridge_name':
+                    opt = ('com.docker.network.bridge.name', opt[1])
+                if opt[0] == 'driver_mtu':
+                    opt = ('com.docker.network.driver.mtu', opt[1])
                 c += ['--opt',
                       b"=".join([to_bytes(k, errors='surrogate_or_strict')
                                  for k in opt])]
@@ -813,6 +847,11 @@ def main():
                          mode=dict(type='str', required=False),
                          parent=dict(type='str', required=False),
                          vlan=dict(type='int', required=False),
+                         bclim=dict(type='int', required=False),
+                         no_default_route=dict(type='str', required=False),
+                         vrf=dict(type='str', required=False),
+                         bridge_name=dict(type='str', required=False),
+                         driver_mtu=dict(type='str', required=False),
                      )),
             executable=dict(type='str', required=False, default='podman'),
             debug=dict(type='bool', default=False),
