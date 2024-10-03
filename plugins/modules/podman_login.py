@@ -39,7 +39,6 @@ options:
   password:
     description:
       - Password for the registry server.
-    required: True
     type: str
   registry:
     description:
@@ -59,13 +58,17 @@ options:
   username:
     description:
       - Username for the registry server.
-    required: True
     type: str
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
         machine running C(podman)
     default: 'podman'
+    type: str
+  secret:
+    description:
+      - Name of an existing C(podman) secret to use for authentication
+        to target registry
     type: str
 '''
 
@@ -81,16 +84,24 @@ EXAMPLES = r"""
     password: 'p4ssw0rd'
     registry: quay.io
 
+- name: Login to quay.io using existing secret called password
+  containers.podman.podman_login:
+    username: user
+    secret: password
+    registry: quay.io
+
 """
 # noqa: F402
 
 import hashlib
 import os
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import get_podman_version
 
 
 def login(module, executable, registry, authfile,
-          certdir, tlsverify, username, password):
+          certdir, tlsverify, username, password, secret):
 
     command = [executable, 'login']
     changed = False
@@ -99,6 +110,8 @@ def login(module, executable, registry, authfile,
         command.extend(['--username', username])
     if password:
         command.extend(['--password', password])
+    if secret:
+        command.extend(['--secret', secret])
     if authfile:
         command.extend(['--authfile', authfile])
         authfile = os.path.expandvars(authfile)
@@ -146,15 +159,19 @@ def main():
             executable=dict(type='str', default='podman'),
             registry=dict(type='str'),
             authfile=dict(type='path'),
-            username=dict(type='str', required=True),
-            password=dict(type='str', required=True, no_log=True),
+            username=dict(type='str'),
+            password=dict(type='str', no_log=True),
             certdir=dict(type='path'),
             tlsverify=dict(type='bool'),
+            secret=dict(type='str', no_log=False),
         ),
         supports_check_mode=True,
-        required_together=(
-            ['username', 'password'],
-        )
+        required_by={
+            'password': 'username',
+        },
+        mutually_exclusive=[
+            ['password', 'secret'],
+        ],
     )
 
     registry = module.params['registry']
@@ -163,10 +180,23 @@ def main():
     password = module.params['password']
     certdir = module.params['certdir']
     tlsverify = module.params['tlsverify']
+    secret = module.params['secret']
     executable = module.get_bin_path(module.params['executable'], required=True)
 
+    podman_version = get_podman_version(module, fail=False)
+
+    if (
+        (podman_version is not None) and
+        (LooseVersion(podman_version) < LooseVersion('4.7.0')) and
+        secret
+    ):
+        module.fail_json(msg="secret option may not be used with podman < 4.7.0")
+
+    if username and ((not password) and (not secret)):
+        module.fail_json(msg="Must pass either password or secret with username")
+
     changed, out, err = login(module, executable, registry, authfile,
-                              certdir, tlsverify, username, password)
+                              certdir, tlsverify, username, password, secret)
 
     results = {
         "changed": changed,
