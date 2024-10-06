@@ -1200,9 +1200,18 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
+        group_add:
+          - admin
+          - users
         etc_hosts:
           host1: 127.0.0.1
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
+        cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
@@ -1224,8 +1233,13 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:
@@ -1264,15 +1278,26 @@
         - "Image=alpine:3.12"
         - "Exec=sleep 1d"
         - "Volume=/tmp:/data"
+        - "CgroupsMode=no-conmon"
         - "Mount=type=devpts,destination=/dev/pts"
         - "WorkingDir=/bin"
         - "Unmask=ALL"
         - "SecurityLabelFileType=usr_t"
         - "Environment=BOOL=False"
         - "PublishPort=9001:8000"
-        - "PodmanArgs=--add-host host2:127.0.0.1"
+        - "AddHost=host2:127.0.0.1"
         - "Label=somelabel=labelvalue"
         - "WantedBy=default.target"
+        - "GroupAdd=admin"
+        - "GroupAdd=users"
+        - "NetworkAlias=web"
+        - "NetworkAlias=db"
+        - "StopSignal=9"
+        - "PodmanArgs=--cpus 0.5"
+        - "PodmanArgs=--platform linux/amd64"
+        - "LogOpt=max-size=10mb"
+        - "LogOpt=path=/var/log/container/mycontainer.json"
+        - "LogOpt=tag=TestTag"
       loop_control:
         label: "{{ item }}"
 
@@ -1293,9 +1318,18 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
+        group_add:
+          - admin
+          - users
         etc_hosts:
           host1: 127.0.0.1
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
+        cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
@@ -1317,8 +1351,13 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:
@@ -1346,9 +1385,18 @@
         quadlet_dir: /tmp
         command: sleep 1d
         recreate: true
+        stop_signal: 9 #SIGKILL
+        group_add:
+          - admin
+          - users
         etc_hosts:
           host1: 127.0.0.45
           host2: 127.0.0.1
+        network_aliases:
+          - web
+          - db
+        cpus: 0.5
+        platform: linux/amd64
         annotation:
           this: "annotation_value"
         dns:
@@ -1370,8 +1418,13 @@
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+        log_opt:
+          max_size: 10mb
+          path: /var/log/container/mycontainer.json
+          tag: TestTag
         volumes:
           - /tmp:/data
+        cgroups: no-conmon
         mounts:
           - type=devpts,destination=/dev/pts
         quadlet_options:

@@ -79,15 +79,18 @@ class ContainerQuadlet(Quadlet):
         'dns_option': 'DNSOption',
         'dns_search': 'DNSSearch',
         'cap_drop': 'DropCapability',
+        'cgroups': 'CgroupsMode',
         'entrypoint': 'Entrypoint',
         'env': 'Environment',
         'env_file': 'EnvironmentFile',
         'env_host': 'EnvironmentHost',
+        'etc_hosts': 'AddHost',
         'command': 'Exec',
         'expose': 'ExposeHostPort',
         'gidmap': 'GIDMap',
         'global_args': 'GlobalArgs',
         'group': 'Group',  # Does not exist in module parameters
+        'group_add': 'GroupAdd',
         'healthcheck': 'HealthCmd',
         'healthcheck_interval': 'HealthInterval',
         'healthcheck_failure_action': 'HealthOnFailure',
@@ -105,9 +108,11 @@ class ContainerQuadlet(Quadlet):
         'ip6': 'IP6',
         'label': 'Label',
         'log_driver': 'LogDriver',
+        'log_opt': 'LogOpt',
         "Mask": "Mask",  # add it in security_opt
         'mount': 'Mount',
         'network': 'Network',
+        'network_aliases': 'NetworkAlias',
         'no_new_privileges': 'NoNewPrivileges',
         'sdnotify': 'Notify',
         'pids_limit': 'PidsLimit',
@@ -127,6 +132,7 @@ class ContainerQuadlet(Quadlet):
         'SecurityLabelNested': 'SecurityLabelNested',
         'SecurityLabelType': 'SecurityLabelType',
         'shm_size': 'ShmSize',
+        'stop_signal': 'StopSignal',
         'stop_timeout': 'StopTimeout',
         'subgidname': 'SubGIDMap',
         'subuidname': 'SubUIDMap',
@@ -216,6 +222,8 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--cidfile {params['cidfile']}")
         if params["conmon_pidfile"]:
             params["podman_args"].append(f"--conmon-pidfile {params['conmon_pidfile']}")
+        if params['cpus']:
+            params["podman_args"].append(f"--cpus {params['cpus']}")
         if params["cpuset_cpus"]:
             params["podman_args"].append(f"--cpuset-cpus {params['cpuset_cpus']}")
         if params["cpuset_mems"]:
@@ -247,16 +255,12 @@ class ContainerQuadlet(Quadlet):
             for i in params["device_write_iops"]:
                 params["podman_args"].append(f"--device-write-iops {i}")
         if params["etc_hosts"]:
-            for host_ip in params['etc_hosts'].items():
-                params["podman_args"].append(f"--add-host {':'.join(host_ip)}")
+            params['etc_hosts'] = ["%s:%s" % (k, v) for k, v in params['etc_hosts'].items()]
         if params["env_merge"]:
             for k, v in params["env_merge"].items():
                 params["podman_args"].append(f"--env {k}={v}")
         if params["gpus"]:
             params["podman_args"].append(f"--gpus {params['gpus']}")
-        if params["group_add"]:
-            for group in params["group_add"]:
-                params["podman_args"].append(f"--group-add {group}")
         if params["group_entry"]:
             params["podman_args"].append(f"--group-entry {params['group_entry']}")
         if params["hostuser"]:
@@ -281,8 +285,7 @@ class ContainerQuadlet(Quadlet):
         if params["label_file"]:
             params["podman_args"].append(f"--label-file {params['label_file']}")
         if params["log_opt"]:
-            for k, v in params['log_opt'].items():
-                params["podman_args"].append(f"--log-opt {k.replace('max_size', 'max-size')}={v}")
+            params["log_opt"] = ["%s=%s" % (k.replace('max_size', 'max-size'), v) for k, v in params['log_opt'].items()]
         if params["mac_address"]:
             params["podman_args"].append(f"--mac-address {params['mac_address']}")
         if params["memory"]:
@@ -293,9 +296,6 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--memory-swap {params['memory_swap']}")
         if params["memory_swappiness"]:
             params["podman_args"].append(f"--memory-swappiness {params['memory_swappiness']}")
-        if params["network_aliases"]:
-            for alias in params["network_aliases"]:
-                params["podman_args"].append(f"--network-alias {alias}")
         if params["no_healthcheck"]:
             params["podman_args"].append("--no-healthcheck")
         if params["no_hosts"] is not None:
@@ -316,6 +316,8 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pid_file"]:
             params["podman_args"].append(f"--pid-file {params['pid_file']}")
+        if params['platform']:
+            params["podman_args"].append(f"--platform {params['platform']}")
         if params["preserve_fd"]:
             for pres in params["preserve_fd"]:
                 params["podman_args"].append(f"--preserve-fd {pres}")
@@ -348,8 +350,6 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["sig_proxy"]:
             params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
-        if params["stop_signal"]:
-            params["podman_args"].append(f"--stop-signal {params['stop_signal']}")
         if params["systemd"]:
             params["podman_args"].append(f"--systemd={str(params['systemd']).lower()}")
         if params["timeout"]:
