@@ -1,8 +1,19 @@
 - name: Test podman_login
   block:
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version fact
+      set_fact:
+        podman_version: "{{ podman_v.stdout | string }}"
+
+    - name: Set podman version fact to gt than 4.7.0 if so
+      set_fact:
+        podman_version_gt470: "{{ podman_version is version('4.7.0', '>=') }}"
 
     - name: Print podman version
-      command: podman version
+      debug: var=podman_v.stdout
 
     - name: Logout from docker if it exists
       command: docker logout
@@ -35,6 +46,19 @@
         that:
           - loginf is failed
 
+    - name: Ensure we catch exception from not specifying password or secret
+      containers.podman.podman_login:
+        executable: "{{ test_executable | default('podman') }}"
+        username: foo
+        registry: docker.io
+      register: loginf2
+      ignore_errors: true
+
+    - name: Check login from just username
+      assert:
+        that:
+          - loginf2 is failed
+
     - name: Login to registry.fedoraproject.org
       containers.podman.podman_login:
         executable: "{{ test_executable | default('podman') }}"
@@ -48,3 +72,65 @@
       assert:
         that:
           - login is not failed
+
+    - name: Create a secret to login with
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: foo
+        data: bar
+      when: podman_version_gt470
+
+    - name: Login using secret foo
+      containers.podman.podman_login:
+        executable: "{{ test_executable | default('podman') }}"
+        username: foo
+        secret: foo
+        registry: registry.fedoraproject.org
+      when: podman_version_gt470
+      register: loginsecret
+      ignore_errors: true
+
+    - name: Check login with secret
+      assert:
+        that:
+          - loginsecret is not failed
+      when: podman_version_gt470
+
+    - name: Login just using secret foo - implies username foo
+      containers.podman.podman_login:
+        executable: "{{ test_executable | default('podman') }}"
+        secret: foo
+        registry: registry.fedoraproject.org
+      when: podman_version_gt470
+      register: loginsecret2
+      ignore_errors: true
+
+    - name: Check login with just secret
+      assert:
+        that:
+          - loginsecret2 is not failed
+      when: podman_version_gt470
+
+    - name: Login just using both secret and passsword - should fail
+      containers.podman.podman_login:
+        executable: "{{ test_executable | default('podman') }}"
+        username: foo
+        secret: foo
+        password: bar
+        registry: registry.fedoraproject.org
+      when: podman_version_gt470
+      register: loginsecret3
+      ignore_errors: true
+
+    - name: Ensure failure specifying both secret and password
+      assert:
+        that:
+          - loginsecret3 is failed
+      when: podman_version_gt470
+
+    - name: Remove the foo secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: foo
+        state: absent
+      when: podman_version_gt470
