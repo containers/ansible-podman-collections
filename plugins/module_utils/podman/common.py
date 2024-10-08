@@ -18,6 +18,13 @@ except ImportError:
         raise_from(ImportError('To use this plugin or module with ansible-core'
                                ' < 2.11, you need to use Python < 3.12 with '
                                'distutils.version present'), exc)
+try:
+    import requests  # pylint: disable=unused-import
+    from .podman_api import PodmanAPIClient
+    HAS_REQUESTS = True
+except ImportError:
+    PodmanAPIClient = object
+    HAS_REQUESTS = False
 
 ARGUMENTS_OPTS_DICT = {
     '--attach': ['--attach', '-a'],
@@ -430,3 +437,15 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
     else:
         before = ",".join(sorted(before)) if len(before) > 1 else before[0]
     return before, after
+
+
+class PodmanAPI:
+    def __init__(self, module, module_params):
+        if module_params.get('podman_socket') and not HAS_REQUESTS:
+            module.fail_json(
+                msg="Requests module is not installed while socket was provided!")
+        self.client = PodmanAPIClient(module_params.get('podman_socket'))
+        try:
+            self.client.version()
+        except Exception as api_error:
+            module.fail_json(msg="Podman API error: %s" % str(api_error))

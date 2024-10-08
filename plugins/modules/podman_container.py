@@ -32,6 +32,11 @@ options:
         machine running C(podman)
     default: 'podman'
     type: str
+  podman_socket:
+    description:
+      - Unix socket address for API connection. If API is not available, the
+        module will fail.
+    type: str
   state:
     description:
       - I(absent) - A container matching the specified name will be stopped and
@@ -297,7 +302,8 @@ options:
     description:
       - Set custom DNS search domains (Use dns_search with '' if you don't wish
         to set the search domain)
-    type: str
+    type: list
+    elements: str
     aliases:
       - dns_search_domains
   entrypoint:
@@ -1225,6 +1231,13 @@ EXAMPLES = r"""
       - |
         [Install]
         WantedBy=default.target
+
+- name: Run container with Podman API
+  containers.podman.podman_container:
+    name: my_api_container
+    image: docker.io/library/busybox:latest
+    state: started
+    podman_socket: /var/run/podman/podman.sock
 """
 
 RETURN = r"""
