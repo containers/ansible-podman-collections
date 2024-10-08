@@ -165,7 +165,7 @@ def main():
             tlsverify=dict(type='bool'),
             secret=dict(type='str', no_log=False),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
         required_by={
             'password': 'username',
         },
