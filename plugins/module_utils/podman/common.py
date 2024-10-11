@@ -412,7 +412,8 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
                 before = ''
         elif isinstance(after, dict):
             after = ",".join(sorted(
-                [str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
+                [str(k).lower().replace("max_size", "max-size") + "=" + str(v).lower()
+                 for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
             else:
