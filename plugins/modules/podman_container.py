@@ -876,6 +876,20 @@ options:
     description:
       - Name of quadlet file to write. By default it takes C(name) value.
     type: str
+  quadlet_file_mode:
+    description:
+      - The permissions of the quadlet file.
+      - The O(quadlet_file_mode) can be specied as octal numbers or as a symbolic mode (for example, V(u+rwx) or V(u=rw,g=r,o=r)).
+        For octal numbers format, you must either add a leading zero so that Ansible's YAML parser knows it is an
+        octal number (like V(0644) or V(01777)) or quote it (like V('644') or V('1777')) so Ansible receives a string
+        and can do its own conversion from string into number. Giving Ansible a number without following one of these
+        rules will end up with a decimal number which will have unexpected results.
+      - If O(quadlet_file_mode) is not specified and the quadlet file B(does not) exist, the default V('0640') mask will be used
+        when setting the mode for the newly created file.
+      - If O(quadlet_file_mode) is not specified and the quadlet file B(does) exist, the mode of the existing file will be used.
+      - Specifying O(quadlet_file_mode) is the best way to ensure files are created with the correct permissions.
+    type: raw
+    required: false
   quadlet_options:
     description:
       - Options for the quadlet file. Provide missing in usual container args
@@ -1214,6 +1228,7 @@ EXAMPLES = r"""
     image: nginx
     state: quadlet
     quadlet_filename: custome-container
+    quadlet_file_mode: '0640'
     device: "/dev/sda:/dev/xvda:rwm"
     ports:
       - "8080:80"

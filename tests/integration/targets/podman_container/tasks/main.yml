@@ -1191,6 +1191,68 @@
         that:
           - quadlet_file_custom3.stat.exists
 
+    - name: Fail if wrong default file mode
+      assert:
+        that:
+          - quadlet_file_custom3.stat.mode == '0640'
+
+    - name: Create a Quadlet for container with file mode
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet-mode
+        image: alpine
+        state: quadlet
+        quadlet_file_mode: '0644'
+
+    - name: Check file mode
+      stat:
+        path: ~/.config/containers/systemd/container-quadlet-mode.container
+      register: quadlet_file_mode1
+
+    - name: Fail if file is present and with cortect mode
+      assert:
+        that:
+          - quadlet_file_mode1.stat.exists
+          - quadlet_file_mode1.stat.mode == '0644'
+
+    - name: Create same Quadlet for container without file mode
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet-mode
+        image: alpine
+        state: quadlet
+      register: quad_mode2
+
+    - name: Check file mode
+      stat:
+        path: ~/.config/containers/systemd/container-quadlet-mode.container
+      register: quadlet_file_mode2
+
+    - name: Check if existing mode is preserve
+      assert:
+        that:
+          - quad_mode2 is not changed
+          - quadlet_file_mode2.stat.mode == '0644'
+
+    - name: Create same Quadlet for container with only file mode changed
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet-mode
+        image: alpine
+        state: quadlet
+      register: quad_mode3
+
+    - name: Check file mode
+      stat:
+        path: ~/.config/containers/systemd/container-quadlet-mode.container
+      register: quadlet_file_mode3
+
+    - name: Fail if file is present and with cortect mode
+      assert:
+        that:
+          - quad_mode3 is changed
+          - quadlet_file_mode3.stat.mode == '0640'
+
     - name: Create a Quadlet for container
       containers.podman.podman_container:
         executable: "{{ test_executable | default('podman') }}"

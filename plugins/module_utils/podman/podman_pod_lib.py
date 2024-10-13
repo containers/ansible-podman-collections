@@ -71,6 +71,7 @@ ARGUMENTS_SPEC_POD = dict(
                  elements='str', aliases=['ports']),
     quadlet_dir=dict(type='path'),
     quadlet_filename=dict(type='str'),
+    quadlet_file_mode=dict(type='raw', required=False),
     quadlet_options=dict(type='list', elements='str'),
     restart_policy=dict(type='str', required=False),
     security_opt=dict(type='list', elements='str', required=False),

@@ -148,6 +148,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     pull=dict(type='str', choices=['always', 'missing', 'never', 'newer']),
     quadlet_dir=dict(type='path'),
     quadlet_filename=dict(type='str'),
+    quadlet_file_mode=dict(type='raw'),
     quadlet_options=dict(type='list', elements='str'),
     rdt_class=dict(type='str'),
     read_only=dict(type='bool'),
