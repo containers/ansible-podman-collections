@@ -1221,7 +1221,7 @@ EXAMPLES = r"""
       - "/var/www:/usr/share/nginx/html"
     quadlet_options:
       - "AutoUpdate=registry"
-      - "Pull=true"
+      - "Pull=newer"
       - |
         [Install]
         WantedBy=default.target
