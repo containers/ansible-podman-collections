@@ -222,7 +222,7 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--cidfile {params['cidfile']}")
         if params["conmon_pidfile"]:
             params["podman_args"].append(f"--conmon-pidfile {params['conmon_pidfile']}")
-        if params['cpus']:
+        if params["cpus"]:
             params["podman_args"].append(f"--cpus {params['cpus']}")
         if params["cpuset_cpus"]:
             params["podman_args"].append(f"--cpuset-cpus {params['cpuset_cpus']}")
@@ -316,7 +316,7 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pid_file"]:
             params["podman_args"].append(f"--pid-file {params['pid_file']}")
-        if params['platform']:
+        if params["platform"]:
             params["podman_args"].append(f"--platform {params['platform']}")
         if params["preserve_fd"]:
             for pres in params["preserve_fd"]:
