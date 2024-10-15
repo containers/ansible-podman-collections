@@ -1209,7 +1209,7 @@
         path: ~/.config/containers/systemd/container-quadlet-mode.container
       register: quadlet_file_mode1
 
-    - name: Fail if file is present and with cortect mode
+    - name: Fail if file is present and with correct mode
       assert:
         that:
           - quadlet_file_mode1.stat.exists
@@ -1240,6 +1240,7 @@
         name: container-quadlet-mode
         image: alpine
         state: quadlet
+        quadlet_file_mode: '0640'
       register: quad_mode3
 
     - name: Check file mode
@@ -1247,7 +1248,7 @@
         path: ~/.config/containers/systemd/container-quadlet-mode.container
       register: quadlet_file_mode3
 
-    - name: Fail if file is present and with cortect mode
+    - name: Fail if file is present and with correct mode
       assert:
         that:
           - quad_mode3 is changed
