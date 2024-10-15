@@ -114,10 +114,18 @@
         state: absent
       register: remove_pod
 
+    - name: Remove pods created by kube play - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play3.yaml
+        state: absent
+      register: remove_pod2
+
     - name: Check if the pod was removed as expected
       assert:
         that:
           - remove_pod is changed
+          - remove_pod2 is not changed
 
     - name: Get deleted pod info
       containers.podman.podman_pod_info:
@@ -130,6 +138,177 @@
         that:
           - nonexist.pods == []
 
+    - name: Run with file content
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: started
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc1
+
+    - name: Get info about pods
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: infopods
+
+    - name: Check if the pod was created
+      assert:
+        that:
+          - "'contentpod' in (infopods.pods | map(attribute='Name') | list)"
+
+    - name: Run with file content - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: started
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc2
+
+    - name: Check info
+      assert:
+        that:
+          - playc1 is changed
+          - playc2 is not changed
+
+    - name: Remove with file content
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: absent
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc3
+
+    - name: Remove with file content - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: absent
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc4
+
+    - name: Check info
+      assert:
+        that:
+          - playc3 is changed
+          - playc4 is not changed
+
+    - name: Get info about pods
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: infopods2
+
+    - name: Check if the pod was created
+      assert:
+        that:
+          - "'contentpod' not in (infopods2.pods | map(attribute='Name') | list)"
 
     - name: Create a Quadlet for kube with filename
       containers.podman.podman_play:
@@ -294,6 +473,7 @@
         - web-deploy-pod-0
         - web-deploy-pod-1
         - web-deploy-pod-2
+        - contentpod
 
 - name: Test idempotency for root pods
   include_tasks: root-play.yml
