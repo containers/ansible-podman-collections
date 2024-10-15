@@ -706,6 +706,11 @@ def create_quadlet_state(module, issuer):
     # Check if the directory exists and is writable
     if not module.check_mode:
         check_quadlet_directory(module, quadlet_dir)
+    # Specify file permissions
+    mode = module.params.get('quadlet_file_mode', None)
+    if mode is None and not os.path.exists(quadlet_file_path):
+        # default mode for new quadlet file only
+        mode = '0640'
     # Check if file already exists and if it's different
     quadlet = class_map[issuer](module.params)
     quadlet_content = quadlet.create_quadlet_content()
@@ -713,6 +718,8 @@ def create_quadlet_state(module, issuer):
     if bool(file_diff):
         if not module.check_mode:
             quadlet.write_to_file(quadlet_file_path)
+            if mode is not None:
+                module.set_mode_if_different(quadlet_file_path, mode, False)
         results_update = {
             'changed': True,
             "diff": {
@@ -720,7 +727,15 @@ def create_quadlet_state(module, issuer):
                 "after": "\n".join(file_diff[1]) if isinstance(file_diff[1], list) else file_diff[1] + "\n",
             }}
     else:
-        results_update = {}
+        # adjust file permissions
+        diff = {}
+        if mode is not None and module.set_mode_if_different(quadlet_file_path, mode, False, diff):
+            results_update = {
+                'changed': True,
+                'diff': diff
+            }
+        else:
+            results_update = {}
     return results_update
 
 # Check with following command:

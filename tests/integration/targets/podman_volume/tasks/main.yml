@@ -241,16 +241,18 @@
         state: quadlet
         quadlet_dir: /tmp
         quadlet_filename: customfile
+        quadlet_file_mode: '0644'
 
     - name: Check if files exists
       stat:
         path: /tmp/customfile.volume
       register: quadlet_file_custom
 
-    - name: Fail if no file is present
+    - name: Fail if no file is present or wrong mode
       assert:
         that:
           - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0644'
 
     - name: Create quadlet volume file
       containers.podman.podman_volume:
