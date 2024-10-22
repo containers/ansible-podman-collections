@@ -204,6 +204,20 @@ DOCUMENTATION = r'''
       description:
         - Name of quadlet file to write. By default it takes image name without prefixes and tags.
       type: str
+    quadlet_file_mode:
+      description:
+        - The permissions of the quadlet file.
+        - The O(quadlet_file_mode) can be specied as octal numbers or as a symbolic mode (for example, V(u+rwx) or V(u=rw,g=r,o=r)).
+          For octal numbers format, you must either add a leading zero so that Ansible's YAML parser knows it is an
+          octal number (like V(0644) or V(01777)) or quote it (like V('644') or V('1777')) so Ansible receives a string
+          and can do its own conversion from string into number. Giving Ansible a number without following one of these
+          rules will end up with a decimal number which will have unexpected results.
+        - If O(quadlet_file_mode) is not specified and the quadlet file B(does not) exist, the default V('0640') mask will be used
+          when setting the mode for the newly created file.
+        - If O(quadlet_file_mode) is not specified and the quadlet file B(does) exist, the mode of the existing file will be used.
+        - Specifying O(quadlet_file_mode) is the best way to ensure files are created with the correct permissions.
+      type: raw
+      required: false
     quadlet_options:
       description:
         - Options for the quadlet file. Provide missing in usual network args
@@ -332,6 +346,7 @@ EXAMPLES = r"""
     state: quadlet
     quadlet_dir: /etc/containers/systemd
     quadlet_filename: alpine-latest
+    quadlet_file_mode: '0640'
     quadlet_options:
       - Variant=arm/v7
       - |
@@ -961,6 +976,7 @@ def main():
             ca_cert_dir=dict(type='path'),
             quadlet_dir=dict(type='path', required=False),
             quadlet_filename=dict(type='str'),
+            quadlet_file_mode=dict(type='raw', required=False),
             quadlet_options=dict(type='list', elements='str', required=False),
             build=dict(
                 type='dict',

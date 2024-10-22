@@ -460,10 +460,11 @@
         path: /tmp/customfile.image
       register: quadlet_file_custom
 
-    - name: Fail if no file is present
+    - name: Fail if no file is present or wrong mode
       assert:
         that:
           - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0640'
 
     - name: Create quadlet image file
       containers.podman.podman_image:
@@ -476,6 +477,7 @@
         password: pass
         validate_certs: false
         quadlet_dir: /tmp/
+        quadlet_file_mode: '0644'
         quadlet_options:
           - "ImageTag=quay.io/coreos/coreos-installer:12345"
           - "AllTags=true"
@@ -492,6 +494,11 @@
       assert:
         that:
           - quadlet_file.stat.exists
+
+    - name: Check quadlet file mode is correct
+      assert:
+        that:
+          - quadlet_file.stat.mode == '0644'
 
     - name: Check for the existence of lines in /tmp/coreos-installer.image
       lineinfile:
