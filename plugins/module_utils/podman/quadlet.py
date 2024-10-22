@@ -373,7 +373,7 @@ class ContainerQuadlet(Quadlet):
             for volume in params["volumes_from"]:
                 params["podman_args"].append(f"--volumes-from {volume}")
         if params["cmd_args"]:
-            params["podman_args"].append(params["cmd_args"])
+            params["podman_args"] += params["cmd_args"]
 
         # Return params with custom processing applied
         return params
