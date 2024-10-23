@@ -28,7 +28,10 @@ options:
     description:
       - Path to file with YAML configuration for a Pod.
     type: path
-    required: True
+  kube_file_content:
+    description:
+      - Content of the kube file.
+    type: str
   annotation:
     description:
       - Add an annotation to the container or pod.
@@ -283,10 +286,16 @@ class PodmanKubeManagement:
         }.items():
             if self.module.params[param] is not None:
                 self.command += ["%s=%s" % (arg, self.module.params[param])]
-        self.command += [self.module.params['kube_file']]
+        if self.module.params['kube_file']:
+            self.command += [self.module.params['kube_file']]
+        elif self.module.params['kube_file_content']:
+            self.command += ['-']
 
     def _command_run(self, cmd):
-        rc, out, err = self.module.run_command(cmd)
+        if self.module.params['kube_file_content']:
+            rc, out, err = self.module.run_command(cmd, data=self.module.params['kube_file_content'])
+        else:
+            rc, out, err = self.module.run_command(cmd)
         self.actions.append(" ".join(cmd))
         if self.module.params['debug']:
             self.module.log('PODMAN-PLAY-KUBE command: %s' % " ".join(cmd))
@@ -302,13 +311,23 @@ class PodmanKubeManagement:
         '''
         changed = False
         kube_file = self.module.params['kube_file']
-
-        rc, out, err = self._command_run([self.executable, "kube", "play", "--down", kube_file])
+        kube_file_content = self.module.params['kube_file_content']
+        if kube_file:
+            rc, out, err = self._command_run([self.executable, "kube", "play", "--down", kube_file])
+        elif kube_file_content:
+            rc, out, err = self._command_run([self.executable, "kube", "play", "--down", "-"])
+        if rc != 0 and "no such pod" in err:
+            changed = False
+            return changed, out, err
         if rc != 0:
-            self.module.fail_json(msg="Failed to delete Pod with %s" % (kube_file))
-        else:
-            changed = True
+            self.module.fail_json(msg="Failed to delete Pod with %s: %s %s" % (
+                kube_file if kube_file else "YAML content", out, err))
 
+        # hack to check if no resources are deleted
+        for line in out.splitlines():
+            if line and not line.endswith(':'):
+                changed = True
+                break
         return changed, out, err
 
     def discover_pods(self):
@@ -399,7 +418,8 @@ def main():
         argument_spec=dict(
             annotation=dict(type='dict', aliases=['annotations']),
             executable=dict(type='str', default='podman'),
-            kube_file=dict(type='path', required=True),
+            kube_file=dict(type='path'),
+            kube_file_content=dict(type='str'),
             authfile=dict(type='path'),
             build=dict(type='bool'),
             cert_dir=dict(type='path'),
@@ -435,11 +455,16 @@ def main():
         required_if=[
             ('state', 'quadlet', ['quadlet_filename']),
         ],
+        required_one_of=[
+            ('kube_file', 'kube_file_content'),
+        ],
     )
 
     executable = module.get_bin_path(
         module.params['executable'], required=True)
     manage = PodmanKubeManagement(module, executable)
+    changed = False
+    out = err = ''
     if module.params['state'] == 'absent':
         if manage.version is not None and LooseVersion(manage.version) > LooseVersion('3.4.0'):
             manage.module.log(msg="version: %s, kube file %s" % (manage.version, manage.module.params['kube_file']))
