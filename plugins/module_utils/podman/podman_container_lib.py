@@ -1731,10 +1731,11 @@ class PodmanManager:
             self.module.get_bin_path(self.module_params['executable'],
                                      required=True)
         self.image = self.module_params['image']
-        image_actions = ensure_image_exists(
-            self.module, self.image, self.module_params)
-        self.results['actions'] += image_actions
         self.state = self.module_params['state']
+        image_actions = ensure_image_exists(
+            self.module, self.image, self.module_params) if self.state != 'quadlet' else []
+        self.results['actions'] += image_actions
+
         self.restart = self.module_params['force_restart']
         self.recreate = self.module_params['recreate']
 
