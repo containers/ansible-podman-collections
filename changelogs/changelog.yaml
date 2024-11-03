@@ -393,6 +393,22 @@ releases:
       - don't document quadlet_dir as required when setting state=quadlet
       release_summary: Bugfixes
     release_date: '2024-09-26'
+  1.16.2:
+    changes:
+      bugfixes:
+      - Add missing parameters for podman container quadlet
+      - Add new options for podman_network
+      - Add option to specify kube file content in module
+      - Add quadlet file mode option to specify file permission
+      - Add secret to login module
+      - Don't check image availability in Quadlet
+      - Fix max_size idempotency issue
+      - Fix typo in quadlet generator
+      - Fix unsupported pull policy in example on podman_container.py
+      - fix quadlet cmd_args append mistake
+      - podman_login does not support check_mode
+      release_summary: Bugfixes and Quadlet improvements
+    release_date: '2024-11-03'
   1.2.0:
     changes:
       minor_changes:

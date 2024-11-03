@@ -5,6 +5,29 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.16.2
+=======
+
+Release Summary
+---------------
+
+Bugfixes and Quadlet improvements
+
+Bugfixes
+--------
+
+- Add missing parameters for podman container quadlet
+- Add new options for podman_network
+- Add option to specify kube file content in module
+- Add quadlet file mode option to specify file permission
+- Add secret to login module
+- Don't check image availability in Quadlet
+- Fix max_size idempotency issue
+- Fix typo in quadlet generator
+- Fix unsupported pull policy in example on podman_container.py
+- fix quadlet cmd_args append mistake
+- podman_login does not support check_mode
+
 v1.16.1
 =======
 
