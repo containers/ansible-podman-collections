@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_network module – Manage podman networks<a class="headerlink" href="#containers-podman-podman-network-module-manage-podman-networks" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.1).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.2).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -243,6 +243,27 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/bclim"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-bclim"><strong>bclim</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/bclim" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the threshold for broadcast queueing. Must be a 32 bit integer. Setting this value to -1 disables broadcast queueing altogether.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/bridge_name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-bridge-name"><strong>bridge_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/bridge_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option assigns the given name to the created Linux Bridge. Sets ‘com.docker.network.bridge.name’ option.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/driver_mtu"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-driver-mtu"><strong>driver_mtu</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/driver_mtu" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Sets the Maximum Transmission Unit (MTU) and takes an integer value. Sets ‘com.docker.network.driver.mtu’ option.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/isolate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-isolate"><strong>isolate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/isolate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -254,25 +275,32 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/metric"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-metric"><strong>metric</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/metric" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Sets the Route Metric for the default route created in every container joined to this network. Can only be used with the Netavark network backend.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option sets the specified ip/macvlan mode on the interface.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-opt/mtu"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mtu"><strong>mtu</strong></p>
 <a class="ansibleOptionLink" href="#parameter-opt/mtu" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
 </div></td>
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>MTU size for bridge network interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/no_default_route"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-no-default-route"><strong>no_default_route</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/no_default_route" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If set to 1, Podman will NOT automatically add a default route to subnets.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
@@ -289,11 +317,29 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VLAN tag for bridge which enables vlan_filtering.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/vrf"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-vrf"><strong>vrf</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/vrf" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option assigns a VRF to the bridge interface. It accepts the name of the VRF and defaults to none. Can only be used with the Netavark network backend.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_file_mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><strong>quadlet_file_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_file_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">any</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The permissions of the quadlet file.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> can be specied as octal numbers or as a symbolic mode (for example, <code class="ansible-value docutils literal notranslate"><span class="pre">u+rwx</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">u=rw,g=r,o=r</span></code>). For octal numbers format, you must either add a leading zero so that Ansible’s YAML parser knows it is an octal number (like <code class="ansible-value docutils literal notranslate"><span class="pre">0644</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">01777</span></code>) or quote it (like <code class="ansible-value docutils literal notranslate"><span class="pre">'644'</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">'1777'</span></code>) so Ansible receives a string and can do its own conversion from string into number. Giving Ansible a number without following one of these rules will end up with a decimal number which will have unexpected results.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does not</strong> exist, the default <code class="ansible-value docutils literal notranslate"><span class="pre">'0640'</span></code> mask will be used when setting the mode for the newly created file.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does</strong> exist, the mode of the existing file will be used.</p>
+<p>Specifying <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is the best way to ensure files are created with the correct permissions.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">

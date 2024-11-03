@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_play module – Play kubernetes YAML file using podman<a class="headerlink" href="#containers-podman-podman-play-module-play-kubernetes-yaml-file-using-podman" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.1).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.2).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -147,19 +147,26 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-kube_file"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-kube-file"><strong>kube_file</strong></p>
-<a class="ansibleOptionLink" href="#parameter-kube_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span> / <span class="ansible-option-required">required</span></p>
+<a class="ansibleOptionLink" href="#parameter-kube_file" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to file with YAML configuration for a Pod.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-kube_file_content"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-kube-file-content"><strong>kube_file_content</strong></p>
+<a class="ansibleOptionLink" href="#parameter-kube_file_content" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Content of the kube file.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_driver"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-driver"><strong>log_driver</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_driver" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Set logging driver for all created containers.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_level"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-level"><strong>log_level</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_level" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -175,7 +182,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_opt"></div>
 <div class="ansibleOptionAnchor" id="parameter-log_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt"></span><strong>log_opt</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: log_options</span></p>
@@ -184,7 +191,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-cell"><p>Logging driver specific options. Set custom logging configuration.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_opt/max_size"></div>
 <div class="ansibleOptionAnchor" id="parameter-log_options/max_size"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-max-size"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-max-size"></span><strong>max_size</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_opt/max_size" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
@@ -192,7 +199,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify a max size of the log file (e.g 10mb).</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_opt/path"></div>
 <div class="ansibleOptionAnchor" id="parameter-log_options/path"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-path"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-path"></span><strong>path</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_opt/path" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
@@ -200,7 +207,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>specify a path to the log file (e.g. /var/log/container/mycontainer.json).</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-log_opt/tag"></div>
 <div class="ansibleOptionAnchor" id="parameter-log_options/tag"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-log-options-tag"><span id="ansible-collections-containers-podman-podman-play-module-parameter-log-opt-tag"></span><strong>tag</strong></p>
 <a class="ansibleOptionLink" href="#parameter-log_opt/tag" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
@@ -208,25 +215,36 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Specify a custom log tag for the container. This option is currently supported only by the journald log driver in Podman.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-network"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-network"><strong>network</strong></p>
 <a class="ansibleOptionLink" href="#parameter-network" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>List of the names of CNI networks the pod should join.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-password"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-password"><strong>password</strong></p>
 <a class="ansibleOptionLink" href="#parameter-password" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>The username and password to use to authenticate with the registry if required.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_file_mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-play-module-parameter-quadlet-file-mode"><strong>quadlet_file_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_file_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">any</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The permissions of the quadlet file.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-play-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> can be specied as octal numbers or as a symbolic mode (for example, <code class="ansible-value docutils literal notranslate"><span class="pre">u+rwx</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">u=rw,g=r,o=r</span></code>). For octal numbers format, you must either add a leading zero so that Ansible’s YAML parser knows it is an octal number (like <code class="ansible-value docutils literal notranslate"><span class="pre">0644</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">01777</span></code>) or quote it (like <code class="ansible-value docutils literal notranslate"><span class="pre">'644'</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">'1777'</span></code>) so Ansible receives a string and can do its own conversion from string into number. Giving Ansible a number without following one of these rules will end up with a decimal number which will have unexpected results.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-play-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does not</strong> exist, the default <code class="ansible-value docutils literal notranslate"><span class="pre">'0640'</span></code> mask will be used when setting the mode for the newly created file.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-play-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does</strong> exist, the mode of the existing file will be used.</p>
+<p>Specifying <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-play-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is the best way to ensure files are created with the correct permissions.</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -346,6 +364,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">      </span><span class="nt">greet_to</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">world</span>
 <span class="w">    </span><span class="nt">userns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">host</span>
 <span class="w">    </span><span class="nt">quadlet_filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kube-pod</span>
+<span class="w">    </span><span class="nt">quadlet_file_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;0640&#39;</span>
 <span class="w">    </span><span class="nt">quadlet_options</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;SetWorkingDirectory=yaml&quot;</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;ExitCodePropagation=any&quot;</span>

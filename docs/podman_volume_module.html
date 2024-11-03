@@ -37,7 +37,7 @@
 <h1>containers.podman.podman_volume module – Manage Podman volumes<a class="headerlink" href="#containers-podman-podman-volume-module-manage-podman-volumes" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.1).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.16.2).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -133,20 +133,31 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_file_mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-file-mode"><strong>quadlet_file_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_file_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">any</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The permissions of the quadlet file.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> can be specied as octal numbers or as a symbolic mode (for example, <code class="ansible-value docutils literal notranslate"><span class="pre">u+rwx</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">u=rw,g=r,o=r</span></code>). For octal numbers format, you must either add a leading zero so that Ansible’s YAML parser knows it is an octal number (like <code class="ansible-value docutils literal notranslate"><span class="pre">0644</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">01777</span></code>) or quote it (like <code class="ansible-value docutils literal notranslate"><span class="pre">'644'</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">'1777'</span></code>) so Ansible receives a string and can do its own conversion from string into number. Giving Ansible a number without following one of these rules will end up with a decimal number which will have unexpected results.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does not</strong> exist, the default <code class="ansible-value docutils literal notranslate"><span class="pre">'0640'</span></code> mask will be used when setting the mode for the newly created file.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does</strong> exist, the mode of the existing file will be used.</p>
+<p>Specifying <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is the best way to ensure files are created with the correct permissions.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_filename"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-filename"><strong>quadlet_filename</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_filename" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name of quadlet file to write. By default it takes <em>name</em> value.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-quadlet_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-quadlet-options"><strong>quadlet_options</strong></p>
 <a class="ansibleOptionLink" href="#parameter-quadlet_options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Options for the quadlet file. Provide missing in usual network args options as a list of lines to add.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-recreate"><strong>recreate</strong></p>
 <a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -158,7 +169,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-volume-module-parameter-state"><strong>state</strong></p>
 <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
@@ -195,6 +206,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadlet</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadlet_volume</span>
 <span class="w">    </span><span class="nt">quadlet_filename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom-name</span>
+<span class="w">    </span><span class="nt">quadlet_file_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;0640&#39;</span>
 <span class="w">    </span><span class="nt">quadlet_options</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group=192</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Copy=true</span>
