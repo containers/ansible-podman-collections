@@ -12,6 +12,18 @@
         that:
           - info_0.images | length == 0
 
+    - name: Search for an invalid image with tags
+      containers.podman.podman_search:
+        term: registry.fedoraproject.org/invalidtermnope
+        executable: "{{ test_executable | default('podman') }}"
+        list_tags: true
+      register: info_0_1
+
+    - name: Check results for no matching images
+      assert:
+        that:
+          - info_0_1.images | length == 0
+
     - name: Search for matching images
       containers.podman.podman_search:
         term: etcd
