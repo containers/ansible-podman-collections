@@ -87,10 +87,11 @@ def search_images(module, executable, term, limit, list_tags):
         command.extend(['--list-tags'])
 
     rc, out, err = module.run_command(command)
-
+    if rc != 0 and list_tags and out == "" and "fetching tags list" in err:
+        return out, err
     if rc != 0:
         module.fail_json(msg="Unable to gather info for '{0}': {1}".format(term, err))
-    return out
+    return out, err
 
 
 def main():
@@ -110,7 +111,7 @@ def main():
     list_tags = module.params.get('list_tags')
     executable = module.get_bin_path(executable, required=True)
 
-    result_str = search_images(module, executable, term, limit, list_tags)
+    result_str, errors = search_images(module, executable, term, limit, list_tags)
     if result_str == "":
         results = []
     else:
@@ -121,7 +122,8 @@ def main():
 
     results = dict(
         changed=False,
-        images=results
+        images=results,
+        stderr=errors,
     )
 
     module.exit_json(**results)
