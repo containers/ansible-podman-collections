@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_container_exec.py'
       - 'tests/integration/targets/podman_container_exec/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_container_exec.yml'

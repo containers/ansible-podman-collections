@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_generate_systemd.py'
       - 'tests/integration/targets/podman_generate_systemd/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_generate_systemd.yml'

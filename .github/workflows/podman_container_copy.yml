@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_container_copy.py'
       - 'tests/integration/targets/podman_container_copy/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_container_copy.yml'

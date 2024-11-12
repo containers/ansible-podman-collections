@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_search.py'
       - 'tests/integration/targets/podman_search/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_search.yml'

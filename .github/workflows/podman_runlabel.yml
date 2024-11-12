@@ -10,7 +10,7 @@ on:
       - 'plugins/modules/podman_runlabel.py'
       - 'tests/integration/targets/podman_runlabel/**'
     branches:
-      - master
+      - main
   pull_request:
     paths:
       - '.github/workflows/podman_runlabel.yml'
