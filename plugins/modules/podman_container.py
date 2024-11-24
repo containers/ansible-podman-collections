@@ -736,15 +736,15 @@ options:
       - mounts
   network:
     description:
-      - Set the Network mode for the container
-        * bridge create a network stack on the default bridge
-        * none no networking
-        * container:<name|id> reuse another container's network stack
-        * host use the podman host network stack.
-        * <network-name>|<network-id> connect to a user-defined network
-        * ns:<path> path to a network namespace to join
-        * slirp4netns use slirp4netns to create a user network stack.
-          This is the default for rootless containers
+      - Set the Network mode for the container.
+      - I(bridge) - create a network stack on the default bridge.
+      - I(none) - no networking.
+      - I(container:<name|id>) - reuse another container's network stack.
+      - I(host) - use the podman host network stack.
+      - I(<network-name>|<network-id>) - connect to a user-defined network.
+      - I(ns:<path>) - path to a network namespace to join.
+      - I(slirp4netns) - use slirp4netns to create a user network stack.
+        This is the default for rootless containers.
     type: list
     elements: str
     aliases:
