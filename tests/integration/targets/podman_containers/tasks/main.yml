@@ -402,7 +402,8 @@
             dns_servers:
               - 1.1.1.1
               - 8.8.4.4
-            dns_search_domains: example.com
+            dns_search_domains:
+              - example.com
             capabilities:
               - SYS_TIME
               - NET_ADMIN
