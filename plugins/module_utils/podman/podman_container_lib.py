@@ -62,7 +62,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     device_write_iops=dict(type='list', elements='str'),
     dns=dict(type='list', elements='str', aliases=['dns_servers']),
     dns_option=dict(type='str', aliases=['dns_opts']),
-    dns_search=dict(type='str', aliases=['dns_search_domains']),
+    dns_search=dict(type='list', elements='str', aliases=['dns_search_domains']),
     entrypoint=dict(type='str'),
     env=dict(type='dict'),
     env_file=dict(type='list', elements='path', aliases=['env_files']),
@@ -457,7 +457,9 @@ class PodmanModuleParams:
         return c + ['--dns-option', self.params['dns_option']]
 
     def addparam_dns_search(self, c):
-        return c + ['--dns-search', self.params['dns_search']]
+        for search in self.params['dns_search']:
+            c += ['--dns-search', search]
+        return c
 
     def addparam_entrypoint(self, c):
         return c + ['--entrypoint=%s' % self.params['entrypoint']]

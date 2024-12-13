@@ -297,7 +297,8 @@ options:
     description:
       - Set custom DNS search domains (Use dns_search with '' if you don't wish
         to set the search domain)
-    type: str
+    type: list
+    elements: str
     aliases:
       - dns_search_domains
   entrypoint:
