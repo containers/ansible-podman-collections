@@ -58,12 +58,12 @@ options:
 
 EXAMPLES = r"""
 - name: Copy file "test.yml" on the host to the "apache" container's root folder
-  containers.podman.podman_search:
+  containers.podman.podman_container_copy:
     src: test.yml
     dest: /
     container: apache
 - name: Copy file "test.yml" in the "apache" container's root folder to the playbook's folder
-  containers.podman.podman_search:
+  containers.podman.podman_container_copy:
     src: /test.yml
     dest: ./
     container: apache
