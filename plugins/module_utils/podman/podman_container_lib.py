@@ -1732,8 +1732,9 @@ class PodmanManager:
                                      required=True)
         self.image = self.module_params['image']
         self.state = self.module_params['state']
+        disable_image_pull = self.state in ('quadlet', 'absent') or self.module_params['pull'] == 'never'
         image_actions = ensure_image_exists(
-            self.module, self.image, self.module_params) if self.state != 'quadlet' else []
+            self.module, self.image, self.module_params) if not disable_image_pull else []
         self.results['actions'] += image_actions
 
         self.restart = self.module_params['force_restart']
