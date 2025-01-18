@@ -411,9 +411,10 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
             else:
                 before = ''
         elif isinstance(after, dict):
+            if module_arg == "log_opt" and "max_size" in after:
+                after["max-size"] = after.pop("max_size")
             after = ",".join(sorted(
-                [str(k).lower().replace("max_size", "max-size") + "=" + str(v).lower()
-                 for k, v in after.items() if v is not None]))
+                [str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
             else:
