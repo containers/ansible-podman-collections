@@ -5,6 +5,23 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.16.3
+=======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Bugfixes
+--------
+
+- Don't pull image when state is absent or pull=never (#889)
+- Fix idempotency for containers with env vars containing MAX_SIZE (#893)
+- Fix list tags failure in podman_search (#875)
+- Fix podman_container_copy examples (#882)
+- docs(podman_container) - improve comments on network property (#878)
+
 v1.16.2
 =======
 
