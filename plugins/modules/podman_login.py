@@ -126,15 +126,19 @@ def login(module, executable, registry, authfile,
             command.append('--tls-verify')
         else:
             command.append('--tls-verify=False')
+    module.log('CUSTOM-DEBUG: Running command: %s' % ' '.join(command))
     # Use a checksum to check if the auth JSON has changed
     checksum = None
     docker_authfile = os.path.expandvars('$HOME/.docker/config.json')
     # podman falls back to ~/.docker/config.json if the default authfile doesn't exist
     check_file = authfile if os.path.exists(authfile) else docker_authfile
-    if os.path.exists(check_file):
+    module.log('CUSTOM-DEBUG: Checking file: %s' % check_file)
+    if os.path.exists(check_file) and os.access(check_file, os.R_OK):
         content = open(check_file, 'rb').read()
         checksum = hashlib.sha256(content).hexdigest()
+    module.log('CUSTOM-DEBUG: Checksum: %s' % checksum)
     rc, out, err = module.run_command(command)
+    module.log('CUSTOM-DEBUG: Return code: %s, out=%s, err=%s' % (rc, out, err))
     if rc != 0:
         if 'Error: Not logged into' not in err:
             module.fail_json(msg="Unable to gather info for %s: %s" % (registry, err))
@@ -145,7 +149,8 @@ def login(module, executable, registry, authfile,
             changed = False
         # If we have managed to calculate a checksum before, check if it has changed
         # due to the login
-        if checksum:
+        if checksum and os.path.exists(check_file) and os.access(check_file, os.R_OK):
+            module.log('CUSTOM-DEBUG: Checking file after execution: %s' % check_file)
             content = open(check_file, 'rb').read()
             new_checksum = hashlib.sha256(content).hexdigest()
             if new_checksum == checksum:
