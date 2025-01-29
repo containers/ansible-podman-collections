@@ -409,6 +409,16 @@ releases:
       - podman_login does not support check_mode
       release_summary: Bugfixes and Quadlet improvements
     release_date: '2024-11-03'
+  1.16.3:
+    changes:
+      bugfixes:
+      - Don't pull image when state is absent or pull=never (#889)
+      - Fix idempotency for containers with env vars containing MAX_SIZE (#893)
+      - Fix list tags failure in podman_search (#875)
+      - Fix podman_container_copy examples (#882)
+      - docs(podman_container) - improve comments on network property (#878)
+      release_summary: Bugfixes
+    release_date: '2025-01-29'
   1.2.0:
     changes:
       minor_changes:
