@@ -1619,7 +1619,11 @@ class PodmanContainer:
         if is_rootfs:
             return {'Id': self.module_params['image']}
         rc, out, err = self.module.run_command(
-            [self.module_params['executable'], b'image', b'inspect', self.module_params['image']])
+            [self.module_params['executable'],
+             b'image',
+             b'inspect',
+             self.module_params['image'].replace('docker://', '')])
+        self.module.log("PODMAN-CONTAINER-DEBUG: %s: %s" % (out, self.module_params['image']))
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
