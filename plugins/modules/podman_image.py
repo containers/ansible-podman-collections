@@ -304,7 +304,7 @@ EXAMPLES = r"""
     path: /path/to/build/dir
     push: true
     auth_file: /etc/containers/auth.json
-    loop:
+  loop:
     - quay.io/acme/nginx
     - docker.io/acme/nginx
 
@@ -317,7 +317,7 @@ EXAMPLES = r"""
     auth_file: /etc/containers/auth.json
     push_args:
       dest: "{{ item.dest }}"
-    loop:
+  loop:
     - name: nginx
       tag: 4
       dest: docker.io/acme
