@@ -98,7 +98,7 @@ EXAMPLES = r"""
       - mysecret
     detach: false
     command: cat /run/secrets/mysecret
-    register: container
+  register: container
 
 - name: Output secret data
   debug:
