@@ -1802,7 +1802,11 @@ class PodmanManager:
             self.update_container_result()
             return
         if self.container.exists and self.restart:
-            if self.container.running:
+            if self.container.different:
+                self.container.recreate_run()
+                self.results['actions'].append('recreated %s' %
+                                               self.container.name)
+            elif self.container.running:
                 self.container.restart()
                 self.results['actions'].append('restarted %s' %
                                                self.container.name)
@@ -1819,13 +1823,8 @@ class PodmanManager:
                                            self.container.name)
             self.update_container_result()
             return
-        elif self.container.running and not self.container.different:
-            if self.restart:
-                self.container.restart()
-                self.results['actions'].append('restarted %s' %
-                                               self.container.name)
-                self.update_container_result()
-                return
+        elif self.container.running and not self.container.different \
+                and not self.restart:
             self.update_container_result(changed=False)
             return
         elif not self.container.exists:
