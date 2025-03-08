@@ -591,6 +591,7 @@
         - docker.io/library/ubuntu
         - quay.io/coreos/alpine-sh
         - quay.io/coreos/etcd:v3.3.11
+        - quay.io/coreos/etcd:v3.5.19
         - localhost/testimage
         - localhost/testimage2
         - localhost/testimage2:testtag
