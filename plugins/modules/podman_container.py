@@ -970,6 +970,9 @@ options:
     description:
       - Determines how to use the NOTIFY_SOCKET, as passed with systemd and Type=notify.
         Can be container, conmon, ignore.
+        For quadlets it can also be healthy to use the built in health checks, see
+        L(documentation,https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html#notify-defaults-to-false)
+        for more details.
     type: str
   secrets:
     description:
