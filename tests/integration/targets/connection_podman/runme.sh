@@ -4,7 +4,7 @@ set -o pipefail
 set -eux
 
 function run_ansible {
-    ${SUDO:-} ${ANSIBLECMD:-ansible-playbook} ../connection/test_connection.yml -i "test_connection.inventory" \
+    ${SUDO:-} ${ANSIBLECMD:-ansible-playbook} -vv ../connection/test_connection.yml -i "test_connection.inventory" \
         -e target_hosts="podman" \
         -e action_prefix= \
         -e local_tmp=/tmp/ansible-local \
@@ -12,7 +12,7 @@ function run_ansible {
         "$@"
 
 }
-
+echo "test"
 run_ansible "$@"
 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 run_ansible "$@"
 ANSIBLE_VERBOSITY=4 ANSIBLE_REMOTE_TMP="/tmp" ANSIBLE_REMOTE_USER="1000" run_ansible "$@" | tee check_log

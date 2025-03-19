@@ -8,7 +8,7 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 
 function run_ansible {
-    ${SUDO:-} ${ANSIBLECMD:-ansible-playbook} ../connection/test_connection.yml -i "test_connection.inventory" \
+    ${SUDO:-} ${ANSIBLECMD:-ansible-playbook} -vv ../connection/test_connection.yml -i "test_connection.inventory" \
         -e target_hosts="buildah" \
         -e action_prefix= \
         -e local_tmp=/tmp/ansible-local \
@@ -16,7 +16,7 @@ function run_ansible {
         "$@"
 
 }
-
+echo "test"
 # Issue in buildah: https://github.com/containers/buildah/issues/3126
 # Hack is from: https://github.com/containers/buildah/issues/3120#issuecomment-815889314
 # PR is merged here: https://github.com/containers/storage/pull/871
