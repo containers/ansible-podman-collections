@@ -1,0 +1,3 @@
+- name: Get Podman system info
+  containers.podman.podman_system_info:
+  register: podman_info
