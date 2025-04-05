@@ -16,6 +16,10 @@ description: Runs "podman system info --format json" on host machine
 EXAMPLES = r'''
 - name: Get Podman system information
   containers.podman.podman_system_info:
+
+- name: Get Podman system information into a variable
+  containers.podman.podman_system_info:
+  register: podman_info
 '''
 
 RETURN = r'''
