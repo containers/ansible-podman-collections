@@ -189,6 +189,7 @@ def get_podman_system_info(module, executable):
     if out:
         return out
 
+    module.log(msg="Unable to get podman system info: %s" % err)
     return json.dumps([])
 
 def main():
