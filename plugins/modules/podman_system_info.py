@@ -20,6 +20,9 @@ EXAMPLES = r'''
 - name: Get Podman system information into a variable
   containers.podman.podman_system_info:
   register: podman_info
+- name: Printing Podman System info
+  debug:
+    msg: "{{ podman_info['podman_system_info'] }}
 '''
 
 RETURN = r'''
@@ -187,7 +190,7 @@ def get_podman_system_info(module, executable):
     rc, out, err = module.run_command(command)
     out = out.strip()
     if out:
-        return out
+        return json.loads(out)
 
     module.log(msg="Unable to get podman system info: %s" % err)
     return json.dumps([])
@@ -196,14 +199,11 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             executable=dict(type='str', default='podman'),
-            name=dict(type='list', elements='str')
         ),
         supports_check_mode=True,
     )
 
-    executable = module.params['executable']
-    name = module.params.get('name')
-    executable = module.get_bin_path(executable, required=True)
+    executable = module.get_bin_path(module.params['executable'], required=True)
 
     results = get_podman_system_info(module, executable)
 
