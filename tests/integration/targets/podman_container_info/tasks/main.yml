@@ -85,11 +85,11 @@
       assert:
         that:
           - "'containers' in existing_container"
-          - existing_container.containers
+          - existing_container.containers | length > 0
           # - "existing_container.containers == podman_inspect_result"
           # - all_containers.containers == existing_container.containers
           - "'containers' in mixed_existing_container"
-          - mixed_existing_container.containers
+          - mixed_existing_container.containers | length > 0
           # - existing_container.containers == mixed_existing_container.containers
 
   always:

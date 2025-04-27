@@ -53,7 +53,7 @@
       assert:
         that:
           - "'networks' in existing_network"
-          - existing_network.networks
+          - existing_network.networks | length > 0
           - "existing_network.networks == podman_inspect_result"
   always:
 
