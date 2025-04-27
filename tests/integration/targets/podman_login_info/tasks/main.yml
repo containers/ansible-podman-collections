@@ -37,7 +37,9 @@
       assert:
         that:
           - "'login' in non_existing_registry"
-          - non_existing_registry.login
+          - non_existing_registry.login is not none
+          - non_existing_registry.login != {}
+          - non_existing_registry.login | length > 0
           - "'registry' in non_existing_registry.login"
           - "'username' in non_existing_registry.login"
           - "'logged_in' in non_existing_registry.login"
@@ -57,7 +59,9 @@
       assert:
         that:
           - "'login' in non_existing_authfile"
-          - non_existing_authfile.login
+          - non_existing_authfile.login is not none
+          - non_existing_authfile.login != {}
+          - non_existing_authfile.login | length > 0
           - "'username' in non_existing_authfile.login"
           - "'logged_in' in non_existing_authfile.login"
           - "non_existing_authfile.login.username == ''"
