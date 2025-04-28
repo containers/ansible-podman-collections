@@ -1,0 +1,23 @@
+- name: Starting test something
+  containers.podman.podman_container:
+    name: blabla
+    image: alpine
+
+- name: Start using the tested module
+  containers.podman.podman_lovely_module:
+    name: blabla
+  register: info1
+
+- name: Check that all results as should be
+  assert:
+    that:
+      - info1 is succeeded
+      - info1.my_data == 'test'
+
+# ..................
+
+
+- name: Remove all test leftovers
+  containers.podman.podman_container:
+    name: blabla
+    state: absent
