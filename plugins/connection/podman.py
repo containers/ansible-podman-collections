@@ -22,8 +22,8 @@ DOCUMENTATION = '''
           - The ID of the container you want to access.
         default: inventory_hostname
         vars:
-          - name: ansible_host
           - name: inventory_hostname
+          - name: ansible_host
           - name: ansible_podman_host
       remote_user:
         description:
@@ -87,11 +87,11 @@ class Connection(ConnectionBase):
     def __init__(self, play_context, new_stdin, *args, **kwargs):
         super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
 
-        self._container_id = self._play_context.remote_addr
+        self._container_id = self.get_option('remote_addr') or self._play_context.remote_addr
         self._connected = False
         # container filesystem will be mounted here on host
         self._mount_point = None
-        self.user = self._play_context.remote_user
+        self.user = self.get_option('remote_user') or self._play_context.remote_user
         display.vvvv("Using podman connection from collection")
 
     def _podman(self, cmd, cmd_args=None, in_data=None, use_container_id=True):
