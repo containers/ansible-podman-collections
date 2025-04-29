@@ -16,7 +16,8 @@ requirements:
 options:
   executable:
     description:
-      - Path to C(podman) executable if it is not in the C($PATH) on the machine running C(podman)
+      - Path to C(podman) executable if it is not in the C($PATH) on the
+        machine running C(podman)
     default: 'podman'
     type: str
 '''
