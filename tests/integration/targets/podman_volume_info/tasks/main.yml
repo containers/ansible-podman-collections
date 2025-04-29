@@ -60,7 +60,7 @@
       assert:
         that:
           - "'volumes' in existing_volume"
-          - existing_volume.volumes
+          - existing_volume.volumes | length > 0
           - "existing_volume.volumes == podman_inspect_result"
   always:
 

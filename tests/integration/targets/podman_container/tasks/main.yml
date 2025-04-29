@@ -1293,9 +1293,11 @@
           BAR: foo
           TEST: 1
           BOOL: false
+          WITH_SPACES: "a nice string"
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+          spacelabel: "a nice label"
         log_opt:
           max_size: 10mb
           path: /var/log/container/mycontainer.json
@@ -1347,9 +1349,11 @@
         - "Unmask=ALL"
         - "SecurityLabelFileType=usr_t"
         - "Environment=BOOL=False"
+        - "Environment='WITH_SPACES=a nice string'"
         - "PublishPort=9001:8000"
         - "AddHost=host2:127.0.0.1"
         - "Label=somelabel=labelvalue"
+        - "Label='spacelabel=a nice label'"
         - "WantedBy=default.target"
         - "GroupAdd=admin"
         - "GroupAdd=users"
@@ -1411,9 +1415,11 @@
           BAR: foo
           TEST: 1
           BOOL: false
+          WITH_SPACES: "a nice string"
         label:
           somelabel: labelvalue
           otheralbe: othervalue
+          spacelabel: "a nice label"
         log_opt:
           max_size: 10mb
           path: /var/log/container/mycontainer.json

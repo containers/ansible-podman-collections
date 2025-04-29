@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import os
+import shlex
 
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
 
@@ -169,9 +170,9 @@ class ContainerQuadlet(Quadlet):
                                  if isinstance(params["command"], list)
                                  else params["command"])
         if params["label"]:
-            params["label"] = ["%s=%s" % (k, v) for k, v in params["label"].items()]
+            params["label"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["label"].items()]
         if params["env"]:
-            params["env"] = ["%s=%s" % (k, v) for k, v in params["env"].items()]
+            params["env"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["env"].items()]
         if params["rootfs"]:
             params["rootfs"] = params["image"]
             params["image"] = None
