@@ -22,7 +22,7 @@ EXAMPLES = r'''
   register: podman_info
 - name: Printing Podman System info
   debug:
-    msg: "{{ podman_info['podman_system_info'] }}
+    msg: "{{ podman_info['podman_system_info'] }}"
 '''
 
 RETURN = r'''
