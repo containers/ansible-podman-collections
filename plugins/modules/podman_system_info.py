@@ -10,7 +10,7 @@ module: podman_system_info
 author:
   - Johnson Lien (@johnsonlien)
 short_description: Get podman system information from host machine
-description: Runs "podman system info --format json" on host machine
+description: Runs "podman system info" on host machine
 '''
 
 EXAMPLES = r'''
