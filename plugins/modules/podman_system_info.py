@@ -11,6 +11,14 @@ author:
   - Johnson Lien (@johnsonlien)
 short_description: Get podman system information from host machine
 description: Runs "podman system info" on host machine
+requirements:
+  - "Podman installed on host"
+options:
+  executable:
+    description:
+      - Path to C(podman) executable if it is not in the C($PATH) on the machine running C(podman)
+    default: 'podman'
+    type: str
 '''
 
 EXAMPLES = r'''
