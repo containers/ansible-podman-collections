@@ -169,7 +169,6 @@ version:
   GoVersion: go1.16.6
   OsArch: linux/amd64
   Version: 4.0.0
-}
 '''
 
 import json
