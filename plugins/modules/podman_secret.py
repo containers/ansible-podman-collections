@@ -140,11 +140,6 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
         return False
     try:
         secret = module.from_json(out)[0]
-        # We support only file driver for now
-        if (driver and driver != 'file') or secret['Spec']['Driver']['Name'] != 'file':
-            if debug:
-                module.log("PODMAN-SECRET-DEBUG: Idempotency of driver %s is not supported" % driver)
-            return True
         if data:
             if secret['SecretData'] != data:
                 if debug:
@@ -175,7 +170,11 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
                     diff['after'] = "<different-secret>"
                     diff['before'] = "<secret>"
                 return True
-
+        if driver:
+            if secret['Spec']['Driver']['Name'] != driver:
+                diff['after'] = driver
+                diff['before'] = secret['Spec']['Driver']['Name']
+                return True
         if driver_opts:
             for k, v in driver_opts.items():
                 if secret['Spec']['Driver']['Options'].get(k) != v:
@@ -198,9 +197,7 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
 def podman_secret_create(module, executable, name, data, path, env, force, skip,
                          driver, driver_opts, debug, labels):
     podman_version = get_podman_version(module, fail=False)
-    if (podman_version is not None and
-        LooseVersion(podman_version) >= LooseVersion('4.7.0')
-            and (driver is None or driver == 'file')):
+    if podman_version is not None and LooseVersion(podman_version) >= LooseVersion('4.7.0'):
         if need_update(module, executable, name, data, path, env, skip, driver, driver_opts, debug, labels):
             podman_secret_remove(module, executable, name)
         else:
