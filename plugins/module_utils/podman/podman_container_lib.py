@@ -1436,7 +1436,20 @@ class PodmanContainerDiff:
         return self._diff_update_and_compare('tty', before, after)
 
     def diffparam_tmpfs(self):
-        return self._diff_generic('tmpfs', '--tmpfs')
+        before = createcommand("--tmpfs", self.info["config"])
+        if before == []:
+            before = None
+        after = self.params['tmpfs']
+        if before is None and after is None:
+            return self._diff_update_and_compare('tmpfs', before, after)
+        if after is not None:
+            after = ",".join(sorted(
+                [str(k).lower() + ":" + str(v).lower() for k, v in after.items() if v is not None]))
+            if before:
+                before = ",".join(sorted([j.lower() for j in before]))
+            else:
+                before = ''
+        return self._diff_update_and_compare('tmpfs', before, after)
 
     def diffparam_uidmap(self):
         return self._diff_generic('uidmap', '--uidmap')
