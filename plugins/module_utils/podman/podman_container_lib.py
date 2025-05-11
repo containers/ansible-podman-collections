@@ -1541,6 +1541,20 @@ def ensure_image_exists(module, image, module_params):
     image_pull_cmd = [module_exec, 'image', 'pull', image]
     if module_params['tls_verify'] is False:
         image_pull_cmd.append('--tls-verify=false')
+    if module_params['authfile']:
+        image_pull_cmd.extend(['--authfile', module_params['authfile']])
+    if module_params['arch']:
+        image_pull_cmd.append('--arch=%s' % module_params['arch'])
+    if module_params['decryption_key']:
+        image_pull_cmd.append('--decryption-key=%s' % module_params['decryption_key'])
+    if module_params['platform']:
+        image_pull_cmd.append('--platform=%s' % module_params['platform'])
+    if module_params['os']:
+        image_pull_cmd.append('--os=%s' % module_params['os'])
+    if module_params['variant']:
+        image_pull_cmd.append('--variant=%s' % module_params['variant'])
+    if module_params.get('debug'):
+        module.log("PODMAN-CONTAINER-DEBUG: %s" % " ".join(image_pull_cmd))
     rc, out, err = module.run_command(image_pull_cmd)
     if rc != 0:
         module.fail_json(msg="Can't pull image %s" % image, stdout=out,
