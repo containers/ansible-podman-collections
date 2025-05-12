@@ -286,7 +286,9 @@ class ContainerQuadlet(Quadlet):
         if params["label_file"]:
             params["podman_args"].append(f"--label-file {params['label_file']}")
         if params["log_opt"]:
-            params["log_opt"] = ["%s=%s" % (k.replace('max_size', 'max-size'), v) for k, v in params['log_opt'].items()]
+            params["log_opt"] = [
+                "%s=%s" % (k.replace('max_size', 'max-size'), v)
+                for k, v in params['log_opt'].items() if v is not None]
         if params["mac_address"]:
             params["podman_args"].append(f"--mac-address {params['mac_address']}")
         if params["memory"]:
