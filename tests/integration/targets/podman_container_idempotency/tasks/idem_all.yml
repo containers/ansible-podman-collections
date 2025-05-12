@@ -483,6 +483,72 @@
   assert:
     that: test32 is changed
 
+- name: Run container without tmpfs mount
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test33
+
+- name: Run container with tmpfs mount
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    tmpfs:
+      "/var/cache": "rw,size=512M"
+  register: test34
+
+- name: Check container with tmpfs mount
+  assert:
+    that:
+      - test34 is changed
+
+- name: Run container with tmpfs mount again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    tmpfs:
+      "/var/cache": "rw,size=512M"
+  register: test35
+
+- name: Check container with tmpfs mount again
+  assert:
+    that:
+      - test35 is not changed
+
+- name: Run container with different tmpfs mount
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    tmpfs:
+      "/var/cache": "rw,size=256M"
+  register: test36
+
+- name: Check container with different tmpfs mount
+  assert:
+    that:
+      - test36 is changed
+
+- name: Run container without tmpfs mount
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test37
+
+- name: Check container without tmpfs mount
+  assert:
+    that:
+      - test37 is changed
+
 - name: Remove dependent test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
