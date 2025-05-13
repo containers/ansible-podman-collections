@@ -281,6 +281,73 @@
               - secretlabels is changed
               - secretlabels2 is not changed
               - secretlabels3 is changed
+        
+        - name: Set dummy shell secret driver opts
+          set_fact:
+            shell_driver_opts:
+              list: "cat ~/shellsecret_*"
+              lookup: "cat ~/shellsecret_${SECRET_ID}"
+              store: "cat > ~/shellsecret_${SECRET_ID}"
+              delete: "rm ~/shellsecret_${SECRET_ID}"
+
+        - name: Create secret with shell driver
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: shellsecret
+            data: secret content
+            driver: shell
+            driver_opts: "{{ shell_driver_opts }}"
+          register: shellsecret_changed
+
+        - name: Create secret with shell driver and same content
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: shellsecret
+            data: secret content
+            driver: shell
+            driver_opts: "{{ shell_driver_opts }}"
+          register: shellsecret_changed2
+        
+        - name: Create secret with shell driver and different content
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            name: shellsecret
+            data: some other secret content
+            driver: shell
+            driver_opts: "{{ shell_driver_opts }}"
+          register: shellsecret_changed3
+        
+        - name: Show shell secret
+          containers.podman.podman_secret_info:
+            executable: "{{ test_executable | default('podman') }}"
+            name: shellsecret
+            showsecret: true
+          register: shellsecret_info
+
+        - name: Remove shell secret
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            state: absent
+            name: shellsecret
+          register: shellsecret_removed
+        
+        - name: Remove shell secret again
+          containers.podman.podman_secret:
+            executable: "{{ test_executable | default('podman') }}"
+            state: absent
+            name: shellsecret
+          register: shellsecret_removed2
+
+        - name: Check shell secret outputs
+          assert:
+            that:
+              - shellsecret_changed is changed
+              - shellsecret_changed2 is not changed
+              - shellsecret_changed3 is changed
+              - shellsecret_info is success
+              - shellsecret_info.secrets.0.SecretData == "some other secret content"
+              - shellsecret_removed is changed
+              - shellsecret_removed2 is not changed
 
     - name: Remove secret
       containers.podman.podman_secret:
