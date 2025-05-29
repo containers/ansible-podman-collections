@@ -549,6 +549,42 @@
     that:
       - test37 is changed
 
+- name: Run container with systemd
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    systemd: false
+
+- name: Run container with same systemd
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    systemd: false
+  register: test38
+
+- name: Check container with same systemd
+  assert:
+    that:
+      - test38 is not changed
+
+- name: Run container with different systemd
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    systemd: always
+  register: test39
+
+- name: Check container with different systemd
+  assert:
+    that:
+      - test39 is changed
+
 - name: Remove dependent test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
