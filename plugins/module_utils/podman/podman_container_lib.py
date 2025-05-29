@@ -1419,6 +1419,8 @@ class PodmanContainerDiff:
         return self._diff_generic('sysctl', '--sysctl')
 
     def diffparam_systemd(self):
+        if self.params['systemd'] is not None:
+            self.params['systemd'] = str(self.params['systemd']).lower()
         return self._diff_generic('systemd', '--systemd')
 
     def diffparam_timeout(self):
