@@ -5,6 +5,32 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.16.4
+=======
+
+Release Summary
+---------------
+
+Bugfixes
+
+Bugfixes
+--------
+
+- Document that sdnotify can be set to healthy
+- Fix CI for podman_image_info
+- Fix None values in LogOpt in Quadlet
+- Fix conditions in CI jobs
+- Fix idempotency for any podman secret driver
+- Fix idempotency for systemd keyword
+- Fix setuptools
+- Handle image arguments in podman_container
+- Remove docker protocol when inspecting image
+- Set custom tmpfs idempotency
+- Use usedforsecurity for hashlib.sha256 only in python version >=3.9
+- correctly quote labels and environment variables for quadlets
+- doc - podman_secret - fix indentation error in example
+- fix(podman_image) - correct intendation on 'loop' keyword
+
 v1.16.3
 =======
 
