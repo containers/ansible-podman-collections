@@ -419,6 +419,25 @@ releases:
       - docs(podman_container) - improve comments on network property (#878)
       release_summary: Bugfixes
     release_date: '2025-01-29'
+  1.16.4:
+    changes:
+      bugfixes:
+      - Document that sdnotify can be set to healthy
+      - Fix CI for podman_image_info
+      - Fix None values in LogOpt in Quadlet
+      - Fix conditions in CI jobs
+      - Fix idempotency for any podman secret driver
+      - Fix idempotency for systemd keyword
+      - Fix setuptools
+      - Handle image arguments in podman_container
+      - Remove docker protocol when inspecting image
+      - Set custom tmpfs idempotency
+      - Use usedforsecurity for hashlib.sha256 only in python version >=3.9
+      - correctly quote labels and environment variables for quadlets
+      - doc - podman_secret - fix indentation error in example
+      - fix(podman_image) - correct intendation on 'loop' keyword
+      release_summary: Bugfixes
+    release_date: '2025-06-04'
   1.2.0:
     changes:
       minor_changes:
