@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_export
 short_description: Export a podman container
 author: Sagi Shnaidman (@sshnaidm)
@@ -41,12 +41,12 @@ options:
     type: str
 requirements:
   - "Podman installed on host"
-'''
+"""
 
-RETURN = '''
-'''
+RETURN = """
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # What modules does for example
 - containers.podman.podman_export:
     dest: /path/to/tar/file
@@ -54,7 +54,7 @@ EXAMPLES = '''
 - containers.podman.podman_export:
     dest: /path/to/tar/file
     volume: volume-name
-'''
+"""
 
 import os  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
@@ -63,56 +63,58 @@ from ..module_utils.podman.common import remove_file_or_dir  # noqa: E402
 
 def export(module, executable):
     changed = False
-    export_type = ''
+    export_type = ""
     command = []
-    if module.params['container']:
-        export_type = 'container'
-        command = [executable, 'export']
+    if module.params["container"]:
+        export_type = "container"
+        command = [executable, "export"]
     else:
-        export_type = 'volume'
-        command = [executable, 'volume', 'export']
+        export_type = "volume"
+        command = [executable, "volume", "export"]
 
-    command += ['-o=%s' % module.params['dest'], module.params[export_type]]
-    if module.params['force']:
-        dest = module.params['dest']
+    command += ["-o=%s" % module.params["dest"], module.params[export_type]]
+    if module.params["force"]:
+        dest = module.params["dest"]
         if os.path.exists(dest):
             changed = True
             if module.check_mode:
-                return changed, '', ''
+                return changed, "", ""
             try:
                 remove_file_or_dir(dest)
             except Exception as e:
                 module.fail_json(msg="Error deleting %s path: %s" % (dest, e))
     else:
-        changed = not os.path.exists(module.params['dest'])
+        changed = not os.path.exists(module.params["dest"])
     if module.check_mode:
-        return changed, '', ''
+        return changed, "", ""
     rc, out, err = module.run_command(command)
     if rc != 0:
-        module.fail_json(msg="Error exporting %s %s: %s" % (export_type,
-                         module.params['container'], err))
+        module.fail_json(
+            msg="Error exporting %s %s: %s"
+            % (export_type, module.params["container"], err)
+        )
     return changed, out, err
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            dest=dict(type='str', required=True),
-            container=dict(type='str'),
-            volume=dict(type='str'),
-            force=dict(type='bool', default=True),
-            executable=dict(type='str', default='podman')
+            dest=dict(type="str", required=True),
+            container=dict(type="str"),
+            volume=dict(type="str"),
+            force=dict(type="bool", default=True),
+            executable=dict(type="str", default="podman"),
         ),
         supports_check_mode=True,
         mutually_exclusive=[
-            ('container', 'volume'),
+            ("container", "volume"),
         ],
         required_one_of=[
-            ('container', 'volume'),
+            ("container", "volume"),
         ],
     )
 
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    executable = module.get_bin_path(module.params["executable"], required=True)
     changed, out, err = export(module, executable)
 
     results = {
@@ -123,5 +125,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

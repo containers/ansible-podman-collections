@@ -2,9 +2,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_login
 author:
   - "Jason Hiatt (@jthiatt)"
@@ -70,7 +71,7 @@ options:
       - Name of an existing C(podman) secret to use for authentication
         to target registry
     type: str
-'''
+"""
 
 EXAMPLES = r"""
 - name: Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json
@@ -96,57 +97,70 @@ EXAMPLES = r"""
 import hashlib
 import os
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import get_podman_version
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    LooseVersion,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    get_podman_version,
+)
 
 
-def login(module, executable, registry, authfile,
-          certdir, tlsverify, username, password, secret):
+def login(
+    module,
+    executable,
+    registry,
+    authfile,
+    certdir,
+    tlsverify,
+    username,
+    password,
+    secret,
+):
 
-    command = [executable, 'login']
+    command = [executable, "login"]
     changed = False
 
     if username:
-        command.extend(['--username', username])
+        command.extend(["--username", username])
     if password:
-        command.extend(['--password', password])
+        command.extend(["--password", password])
     if secret:
-        command.extend(['--secret', secret])
+        command.extend(["--secret", secret])
     if authfile:
-        command.extend(['--authfile', authfile])
+        command.extend(["--authfile", authfile])
         authfile = os.path.expandvars(authfile)
     else:
-        authfile = os.getenv('XDG_RUNTIME_DIR', '') + '/containers/auth.json'
+        authfile = os.getenv("XDG_RUNTIME_DIR", "") + "/containers/auth.json"
     if registry:
         command.append(registry)
     if certdir:
-        command.extend(['--cert-dir', certdir])
+        command.extend(["--cert-dir", certdir])
     if tlsverify is not None:
         if tlsverify:
-            command.append('--tls-verify')
+            command.append("--tls-verify")
         else:
-            command.append('--tls-verify=False')
+            command.append("--tls-verify=False")
     # Use a checksum to check if the auth JSON has changed
     checksum = None
-    docker_authfile = os.path.expandvars('$HOME/.docker/config.json')
+    docker_authfile = os.path.expandvars("$HOME/.docker/config.json")
     # podman falls back to ~/.docker/config.json if the default authfile doesn't exist
     check_file = authfile if os.path.exists(authfile) else docker_authfile
     if os.path.exists(check_file):
-        content = open(check_file, 'rb').read()
+        content = open(check_file, "rb").read()
         checksum = hashlib.sha256(content).hexdigest()
     rc, out, err = module.run_command(command)
     if rc != 0:
-        if 'Error: Not logged into' not in err:
+        if "Error: Not logged into" not in err:
             module.fail_json(msg="Unable to gather info for %s: %s" % (registry, err))
     else:
         # If the command is successful, we managed to login
         changed = True
-        if 'Existing credentials are valid' in out:
+        if "Existing credentials are valid" in out:
             changed = False
         # If we have managed to calculate a checksum before, check if it has changed
         # due to the login
         if checksum:
-            content = open(check_file, 'rb').read()
+            content = open(check_file, "rb").read()
             new_checksum = hashlib.sha256(content).hexdigest()
             if new_checksum == checksum:
                 changed = False
@@ -156,47 +170,56 @@ def login(module, executable, registry, authfile,
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            registry=dict(type='str'),
-            authfile=dict(type='path'),
-            username=dict(type='str'),
-            password=dict(type='str', no_log=True),
-            certdir=dict(type='path'),
-            tlsverify=dict(type='bool'),
-            secret=dict(type='str', no_log=False),
+            executable=dict(type="str", default="podman"),
+            registry=dict(type="str"),
+            authfile=dict(type="path"),
+            username=dict(type="str"),
+            password=dict(type="str", no_log=True),
+            certdir=dict(type="path"),
+            tlsverify=dict(type="bool"),
+            secret=dict(type="str", no_log=False),
         ),
         supports_check_mode=False,
         required_by={
-            'password': 'username',
+            "password": "username",
         },
         mutually_exclusive=[
-            ['password', 'secret'],
+            ["password", "secret"],
         ],
     )
 
-    registry = module.params['registry']
-    authfile = module.params['authfile']
-    username = module.params['username']
-    password = module.params['password']
-    certdir = module.params['certdir']
-    tlsverify = module.params['tlsverify']
-    secret = module.params['secret']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    registry = module.params["registry"]
+    authfile = module.params["authfile"]
+    username = module.params["username"]
+    password = module.params["password"]
+    certdir = module.params["certdir"]
+    tlsverify = module.params["tlsverify"]
+    secret = module.params["secret"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     podman_version = get_podman_version(module, fail=False)
 
     if (
-        (podman_version is not None) and
-        (LooseVersion(podman_version) < LooseVersion('4.7.0')) and
-        secret
+        (podman_version is not None)
+        and (LooseVersion(podman_version) < LooseVersion("4.7.0"))
+        and secret
     ):
         module.fail_json(msg="secret option may not be used with podman < 4.7.0")
 
     if username and ((not password) and (not secret)):
         module.fail_json(msg="Must pass either password or secret with username")
 
-    changed, out, err = login(module, executable, registry, authfile,
-                              certdir, tlsverify, username, password, secret)
+    changed, out, err = login(
+        module,
+        executable,
+        registry,
+        authfile,
+        certdir,
+        tlsverify,
+        username,
+        password,
+        secret,
+    )
 
     results = {
         "changed": changed,
@@ -207,5 +230,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

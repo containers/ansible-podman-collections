@@ -4,9 +4,10 @@
 
 # flake8: noqa: E501
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: podman_volume
 short_description: Manage Podman volumes
@@ -101,9 +102,9 @@ options:
 requirements:
   - "podman"
 
-'''
+"""
 
-RETURN = '''
+RETURN = """
 volume:
   description: Volume inspection results if exists.
   returned: always
@@ -121,9 +122,9 @@ volume:
     Options: {}
     Scope: local
 
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # What modules does for example
 - name: Create a volume
   containers.podman.podman_volume:
@@ -147,26 +148,32 @@ EXAMPLES = '''
       - Copy=true
       - Image=quay.io/centos/centos:latest
 
-'''
+"""
 # noqa: F402
 import json  # noqa: F402
 import os  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    LooseVersion,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    lower_keys,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+    create_quadlet_state,
+)
 
 
 class PodmanVolumeModuleParams:
     """Creates list of arguments for podman CLI command.
 
-       Arguments:
-           action {str} -- action type from 'create', 'delete'
-           params {dict} -- dictionary of module parameters
+    Arguments:
+        action {str} -- action type from 'create', 'delete'
+        params {dict} -- dictionary of module parameters
 
-       """
+    """
 
     def __init__(self, action, params, podman_version, module):
         self.params = params
@@ -180,58 +187,64 @@ class PodmanVolumeModuleParams:
         Returns:
            list -- list of byte strings for Popen command
         """
-        if self.action in ['delete', 'mount', 'unmount']:
+        if self.action in ["delete", "mount", "unmount"]:
             return self._simple_action()
-        if self.action in ['create']:
+        if self.action in ["create"]:
             return self._create_action()
 
     def _simple_action(self):
-        if self.action == 'delete':
-            cmd = ['rm', '-f', self.params['name']]
-            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
-        if self.action == 'mount':
-            cmd = ['mount', self.params['name']]
-            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
-        if self.action == 'unmount':
-            cmd = ['unmount', self.params['name']]
-            return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        if self.action == "delete":
+            cmd = ["rm", "-f", self.params["name"]]
+            return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
+        if self.action == "mount":
+            cmd = ["mount", self.params["name"]]
+            return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
+        if self.action == "unmount":
+            cmd = ["unmount", self.params["name"]]
+            return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
 
     def _create_action(self):
-        cmd = [self.action, self.params['name']]
-        all_param_methods = [func for func in dir(self)
-                             if callable(getattr(self, func))
-                             and func.startswith("addparam")]
+        cmd = [self.action, self.params["name"]]
+        all_param_methods = [
+            func
+            for func in dir(self)
+            if callable(getattr(self, func)) and func.startswith("addparam")
+        ]
         params_set = (i for i in self.params if self.params[i] is not None)
         for param in params_set:
             func_name = "_".join(["addparam", param])
             if func_name in all_param_methods:
                 cmd = getattr(self, func_name)(cmd)
-        return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
 
     def check_version(self, param, minv=None, maxv=None):
-        if minv and LooseVersion(minv) > LooseVersion(
-                self.podman_version):
-            self.module.fail_json(msg="Parameter %s is supported from podman "
-                                  "version %s only! Current version is %s" % (
-                                      param, minv, self.podman_version))
-        if maxv and LooseVersion(maxv) < LooseVersion(
-                self.podman_version):
-            self.module.fail_json(msg="Parameter %s is supported till podman "
-                                  "version %s only! Current version is %s" % (
-                                      param, minv, self.podman_version))
+        if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
+            self.module.fail_json(
+                msg="Parameter %s is supported from podman "
+                "version %s only! Current version is %s"
+                % (param, minv, self.podman_version)
+            )
+        if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
+            self.module.fail_json(
+                msg="Parameter %s is supported till podman "
+                "version %s only! Current version is %s"
+                % (param, minv, self.podman_version)
+            )
 
     def addparam_label(self, c):
-        for label in self.params['label'].items():
-            c += ['--label', b'='.join(
-                [to_bytes(l, errors='surrogate_or_strict') for l in label])]
+        for label in self.params["label"].items():
+            c += [
+                "--label",
+                b"=".join([to_bytes(l, errors="surrogate_or_strict") for l in label]),
+            ]
         return c
 
     def addparam_driver(self, c):
-        return c + ['--driver', self.params['driver']]
+        return c + ["--driver", self.params["driver"]]
 
     def addparam_options(self, c):
-        for opt in self.params['options']:
-            c += ['--opt', opt]
+        for opt in self.params["options"]:
+            c += ["--opt", opt]
         return c
 
 
@@ -239,11 +252,7 @@ class PodmanVolumeDefaults:
     def __init__(self, module, podman_version):
         self.module = module
         self.version = podman_version
-        self.defaults = {
-            'driver': 'local',
-            'label': {},
-            'options': {}
-        }
+        self.defaults = {"driver": "local", "label": {}, "options": {}}
 
     def default_dict(self):
         # make here any changes to self.defaults related to podman version
@@ -257,13 +266,14 @@ class PodmanVolumeDiff:
         self.default_dict = None
         self.info = lower_keys(info)
         self.params = self.defaultize()
-        self.diff = {'before': {}, 'after': {}}
+        self.diff = {"before": {}, "after": {}}
         self.non_idempotent = {}
 
     def defaultize(self):
         params_with_defaults = {}
         self.default_dict = PodmanVolumeDefaults(
-            self.module, self.version).default_dict()
+            self.module, self.version
+        ).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
@@ -273,29 +283,29 @@ class PodmanVolumeDiff:
 
     def _diff_update_and_compare(self, param_name, before, after):
         if before != after:
-            self.diff['before'].update({param_name: before})
-            self.diff['after'].update({param_name: after})
+            self.diff["before"].update({param_name: before})
+            self.diff["after"].update({param_name: after})
             return True
         return False
 
     def diffparam_label(self):
-        before = self.info['labels'] if 'labels' in self.info else {}
-        after = self.params['label']
-        return self._diff_update_and_compare('label', before, after)
+        before = self.info["labels"] if "labels" in self.info else {}
+        after = self.params["label"]
+        return self._diff_update_and_compare("label", before, after)
 
     def diffparam_driver(self):
-        before = self.info['driver']
-        after = self.params['driver']
-        return self._diff_update_and_compare('driver', before, after)
+        before = self.info["driver"]
+        after = self.params["driver"]
+        return self._diff_update_and_compare("driver", before, after)
 
     def diffparam_options(self):
-        before = self.info['options'] if 'options' in self.info else {}
+        before = self.info["options"] if "options" in self.info else {}
         # Removing GID and UID from options list
-        before.pop('uid', None)
-        before.pop('gid', None)
+        before.pop("uid", None)
+        before.pop("gid", None)
         # Collecting all other options in the list
         before = ["=".join((k, v)) for k, v in before.items()]
-        after = self.params['options']
+        after = self.params["options"]
         # # For UID, GID
         # if 'uid' in self.info or 'gid' in self.info:
         #     ids = []
@@ -312,12 +322,14 @@ class PodmanVolumeDiff:
         #     after = [i for i in after if 'gid' not in i and 'uid' not in i]
         #     after += ids
         before, after = sorted(list(set(before))), sorted(list(set(after)))
-        return self._diff_update_and_compare('options', before, after)
+        return self._diff_update_and_compare("options", before, after)
 
     def is_different(self):
-        diff_func_list = [func for func in dir(self)
-                          if callable(getattr(self, func)) and func.startswith(
-                              "diffparam")]
+        diff_func_list = [
+            func
+            for func in dir(self)
+            if callable(getattr(self, func)) and func.startswith("diffparam")
+        ]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -329,7 +341,11 @@ class PodmanVolumeDiff:
                     different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:
+            if self.module.params[p] is not None and self.module.params[p] not in [
+                {},
+                [],
+                "",
+            ]:
                 different = True
         return different
 
@@ -351,7 +367,7 @@ class PodmanVolume:
         super(PodmanVolume, self).__init__()
         self.module = module
         self.name = name
-        self.stdout, self.stderr = '', ''
+        self.stdout, self.stderr = "", ""
         self.mount_point = None
         self.info = self.get_info()
         self.version = self._get_podman_version()
@@ -366,26 +382,30 @@ class PodmanVolume:
     @property
     def different(self):
         """Check if volume is different."""
-        diffcheck = PodmanVolumeDiff(
-            self.module,
-            self.info,
-            self.version)
+        diffcheck = PodmanVolumeDiff(self.module, self.info, self.version)
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
-        if self.module._diff and is_different and diffs['before'] and diffs['after']:
-            self.diff['before'] = "\n".join(
-                ["%s - %s" % (k, v) for k, v in sorted(
-                    diffs['before'].items())]) + "\n"
-            self.diff['after'] = "\n".join(
-                ["%s - %s" % (k, v) for k, v in sorted(
-                    diffs['after'].items())]) + "\n"
+        if self.module._diff and is_different and diffs["before"] and diffs["after"]:
+            self.diff["before"] = (
+                "\n".join(
+                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
+                )
+                + "\n"
+            )
+            self.diff["after"] = (
+                "\n".join(
+                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
+                )
+                + "\n"
+            )
         return is_different
 
     def get_info(self):
         """Inspect volume and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'volume', b'inspect', self.name])
+            [self.module.params["executable"], b"volume", b"inspect", self.name]
+        )
         if rc == 0:
             data = json.loads(out)
             if data:
@@ -397,10 +417,12 @@ class PodmanVolume:
     def _get_podman_version(self):
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'--version'])
+            [self.module.params["executable"], b"--version"]
+        )
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(msg="%s run failed!" %
-                                  self.module.params['executable'])
+            self.module.fail_json(
+                msg="%s run failed!" % self.module.params["executable"]
+            )
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -409,47 +431,50 @@ class PodmanVolume:
         Arguments:
             action {str} -- action to perform - create, delete, mount, unmout
         """
-        b_command = PodmanVolumeModuleParams(action,
-                                             self.module.params,
-                                             self.version,
-                                             self.module,
-                                             ).construct_command_from_params()
-        full_cmd = " ".join([self.module.params['executable'], 'volume']
-                            + [to_native(i) for i in b_command])
+        b_command = PodmanVolumeModuleParams(
+            action,
+            self.module.params,
+            self.version,
+            self.module,
+        ).construct_command_from_params()
+        full_cmd = " ".join(
+            [self.module.params["executable"], "volume"]
+            + [to_native(i) for i in b_command]
+        )
         # check if running not from root
-        if os.getuid() != 0 and action == 'mount':
+        if os.getuid() != 0 and action == "mount":
             full_cmd = f"{self.module.params['executable']} unshare {full_cmd}"
         self.module.log("PODMAN-VOLUME-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
-            rc, out, err = self.module.run_command(
-                full_cmd,
-                expand_user_and_vars=False)
+            rc, out, err = self.module.run_command(full_cmd, expand_user_and_vars=False)
             self.stdout = out
             self.stderr = err
             if rc != 0:
                 self.module.fail_json(
                     msg="Can't %s volume %s" % (action, self.name),
-                    stdout=out, stderr=err)
+                    stdout=out,
+                    stderr=err,
+                )
             # in case of mount/unmount, return path to the volume from stdout
-            if action in ['mount']:
+            if action in ["mount"]:
                 self.mount_point = out.strip()
 
     def delete(self):
         """Delete the volume."""
-        self._perform_action('delete')
+        self._perform_action("delete")
 
     def create(self):
         """Create the volume."""
-        self._perform_action('create')
+        self._perform_action("create")
 
     def mount(self):
         """Delete the volume."""
-        self._perform_action('mount')
+        self._perform_action("mount")
 
     def unmount(self):
         """Create the volume."""
-        self._perform_action('unmount')
+        self._perform_action("unmount")
 
     def recreate(self):
         """Recreate the volume."""
@@ -474,16 +499,16 @@ class PodmanVolumeManager:
 
         self.module = module
         self.results = {
-            'changed': False,
-            'actions': [],
-            'volume': {},
+            "changed": False,
+            "actions": [],
+            "volume": {},
         }
-        self.name = self.module.params['name']
-        self.executable = \
-            self.module.get_bin_path(self.module.params['executable'],
-                                     required=True)
-        self.state = self.module.params['state']
-        self.recreate = self.module.params['recreate']
+        self.name = self.module.params["name"]
+        self.executable = self.module.get_bin_path(
+            self.module.params["executable"], required=True
+        )
+        self.state = self.module.params["state"]
+        self.recreate = self.module.params["recreate"]
         self.volume = PodmanVolume(self.module, self.name)
 
     def update_volume_result(self, changed=True):
@@ -495,39 +520,45 @@ class PodmanVolumeManager:
         """
         facts = self.volume.get_info() if changed else self.volume.info
         out, err = self.volume.stdout, self.volume.stderr
-        self.results.update({'changed': changed, 'volume': facts,
-                             'podman_actions': self.volume.actions},
-                            stdout=out, stderr=err)
+        self.results.update(
+            {
+                "changed": changed,
+                "volume": facts,
+                "podman_actions": self.volume.actions,
+            },
+            stdout=out,
+            stderr=err,
+        )
         if self.volume.diff:
-            self.results.update({'diff': self.volume.diff})
-        if self.module.params['debug']:
-            self.results.update({'podman_version': self.volume.version})
+            self.results.update({"diff": self.volume.diff})
+        if self.module.params["debug"]:
+            self.results.update({"podman_version": self.volume.version})
         self.module.exit_json(**self.results)
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
         states_map = {
-            'present': self.make_present,
-            'absent': self.make_absent,
-            'mounted': self.make_mount,
-            'unmounted': self.make_unmount,
-            'quadlet': self.make_quadlet,
+            "present": self.make_present,
+            "absent": self.make_absent,
+            "mounted": self.make_mount,
+            "unmounted": self.make_unmount,
+            "quadlet": self.make_quadlet,
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(msg="Unexpected logic error happened, "
-                                  "please contact maintainers ASAP!")
+        self.module.fail_json(
+            msg="Unexpected logic error happened, " "please contact maintainers ASAP!"
+        )
 
     def make_present(self):
         """Run actions if desired state is 'started'."""
         if not self.volume.exists:
             self.volume.create()
-            self.results['actions'].append('created %s' % self.volume.name)
+            self.results["actions"].append("created %s" % self.volume.name)
             self.update_volume_result()
         elif self.recreate or self.volume.different:
             self.volume.recreate()
-            self.results['actions'].append('recreated %s' %
-                                           self.volume.name)
+            self.results["actions"].append("recreated %s" % self.volume.name)
             self.update_volume_result()
         else:
             self.update_volume_result(changed=False)
@@ -535,31 +566,30 @@ class PodmanVolumeManager:
     def make_absent(self):
         """Run actions if desired state is 'absent'."""
         if not self.volume.exists:
-            self.results.update({'changed': False})
+            self.results.update({"changed": False})
         elif self.volume.exists:
             self.volume.delete()
-            self.results['actions'].append('deleted %s' % self.volume.name)
-            self.results.update({'changed': True})
-        self.results.update({'volume': {},
-                             'podman_actions': self.volume.actions})
+            self.results["actions"].append("deleted %s" % self.volume.name)
+            self.results.update({"changed": True})
+        self.results.update({"volume": {}, "podman_actions": self.volume.actions})
         self.module.exit_json(**self.results)
 
     def make_mount(self):
         """Run actions if desired state is 'mounted'."""
         if not self.volume.exists:
             self.volume.create()
-            self.results['actions'].append('created %s' % self.volume.name)
+            self.results["actions"].append("created %s" % self.volume.name)
         self.volume.mount()
-        self.results['actions'].append('mounted %s' % self.volume.name)
+        self.results["actions"].append("mounted %s" % self.volume.name)
         if self.volume.mount_point:
-            self.results.update({'mount_point': self.volume.mount_point})
+            self.results.update({"mount_point": self.volume.mount_point})
         self.update_volume_result()
 
     def make_unmount(self):
         """Run actions if desired state is 'unmounted'."""
         if self.volume.exists:
             self.volume.unmount()
-            self.results['actions'].append('unmounted %s' % self.volume.name)
+            self.results["actions"].append("unmounted %s" % self.volume.name)
             self.update_volume_result()
         else:
             self.module.fail_json(msg="Volume %s does not exist!" % self.name)
@@ -573,23 +603,27 @@ class PodmanVolumeManager:
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', default="present",
-                       choices=['present', 'absent', 'mounted', 'unmounted', 'quadlet']),
-            name=dict(type='str', required=True),
-            label=dict(type='dict', required=False),
-            driver=dict(type='str', required=False),
-            options=dict(type='list', elements='str', required=False),
-            recreate=dict(type='bool', default=False),
-            executable=dict(type='str', required=False, default='podman'),
-            debug=dict(type='bool', default=False),
-            quadlet_dir=dict(type='path', required=False),
-            quadlet_filename=dict(type='str', required=False),
-            quadlet_file_mode=dict(type='raw', required=False),
-            quadlet_options=dict(type='list', elements='str', required=False),
-        ))
+            state=dict(
+                type="str",
+                default="present",
+                choices=["present", "absent", "mounted", "unmounted", "quadlet"],
+            ),
+            name=dict(type="str", required=True),
+            label=dict(type="dict", required=False),
+            driver=dict(type="str", required=False),
+            options=dict(type="list", elements="str", required=False),
+            recreate=dict(type="bool", default=False),
+            executable=dict(type="str", required=False, default="podman"),
+            debug=dict(type="bool", default=False),
+            quadlet_dir=dict(type="path", required=False),
+            quadlet_filename=dict(type="str", required=False),
+            quadlet_file_mode=dict(type="raw", required=False),
+            quadlet_options=dict(type="list", elements="str", required=False),
+        )
+    )
 
     PodmanVolumeManager(module).execute()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

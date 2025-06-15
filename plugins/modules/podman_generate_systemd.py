@@ -3,11 +3,12 @@
 
 # 2022, Sébastien Gendre <seb@k-7.ch>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 module: podman_generate_systemd
 author:
   - Sébastien Gendre (@CyberFox001)
@@ -140,9 +141,9 @@ notes:
     systemd will not see the container or pod as started
   - Stop your container or pod before you do a C(systemctl daemon-reload),
     then you can start them with C(systemctl start my_container.service)
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Example of creating a container and systemd unit file.
 # When using podman_generate_systemd with new:true then
 # the container needs rm:true for idempotence.
@@ -204,9 +205,9 @@ EXAMPLES = '''
       POSTGRES_USER: my_app
       POSTGRES_PASSWORD: example
   register: postgres_local_systemd_unit
-'''
+"""
 
-RETURN = '''
+RETURN = """
 systemd_units:
   description: A copy of the generated systemd .service unit(s)
   returned: always
@@ -220,27 +221,29 @@ podman_command:
   returned: always
   type: str
   sample: "podman generate systemd my_webapp"
-'''
+"""
 
 
 import os
 from ansible.module_utils.basic import AnsibleModule
 import json
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    compare_systemd_file_content,
+)
 
 RESTART_POLICY_CHOICES = [
-    'no-restart',
-    'on-success',
-    'on-failure',
-    'on-abnormal',
-    'on-watchdog',
-    'on-abort',
-    'always',
+    "no-restart",
+    "on-success",
+    "on-failure",
+    "on-abnormal",
+    "on-watchdog",
+    "on-abort",
+    "always",
 ]
 
 
 def generate_systemd(module):
-    '''Generate systemd .service unit file from a pod or container.
+    """Generate systemd .service unit file from a pod or container.
 
     Parameter:
     - module (AnsibleModule): An AnsibleModule object
@@ -249,7 +252,7 @@ def generate_systemd(module):
     - A boolean which indicate whether the targeted systemd state is modified
     - A copy of the generated systemd .service units content
     - A copy of the command, as a string
-    '''
+    """
     # Flag which indicate whether the targeted system state is modified
     changed = False
 
@@ -257,115 +260,115 @@ def generate_systemd(module):
     command_options = []
 
     #  New option
-    if module.params['new']:
-        command_options.append('--new')
+    if module.params["new"]:
+        command_options.append("--new")
 
     #  Restart policy option
-    restart_policy = module.params['restart_policy']
+    restart_policy = module.params["restart_policy"]
     if restart_policy:
         # add the restart policy to options
-        if restart_policy == 'no-restart':
-            restart_policy = 'no'
+        if restart_policy == "no-restart":
+            restart_policy = "no"
         command_options.append(
-            '--restart-policy={restart_policy}'.format(
+            "--restart-policy={restart_policy}".format(
                 restart_policy=restart_policy,
             ),
         )
 
     #  Restart-sec option (only for Podman 4.0.0 and above)
-    restart_sec = module.params['restart_sec']
+    restart_sec = module.params["restart_sec"]
     if restart_sec:
         command_options.append(
-            '--restart-sec={restart_sec}'.format(
+            "--restart-sec={restart_sec}".format(
                 restart_sec=restart_sec,
             ),
         )
 
     #  Start-timeout option (only for Podman 4.0.0 and above)
-    start_timeout = module.params['start_timeout']
+    start_timeout = module.params["start_timeout"]
     if start_timeout:
         command_options.append(
-            '--start-timeout={start_timeout}'.format(
+            "--start-timeout={start_timeout}".format(
                 start_timeout=start_timeout,
             ),
         )
 
     #  Stop-timeout option
-    stop_timeout = module.params['stop_timeout']
+    stop_timeout = module.params["stop_timeout"]
     if stop_timeout:
         command_options.append(
-            '--stop-timeout={stop_timeout}'.format(
+            "--stop-timeout={stop_timeout}".format(
                 stop_timeout=stop_timeout,
             ),
         )
 
     #  Use container name(s) option
-    if module.params['use_names']:
-        command_options.append('--name')
+    if module.params["use_names"]:
+        command_options.append("--name")
 
     #  Container-prefix option
-    container_prefix = module.params['container_prefix']
+    container_prefix = module.params["container_prefix"]
     if container_prefix is not None:
         command_options.append(
-            '--container-prefix={container_prefix}'.format(
+            "--container-prefix={container_prefix}".format(
                 container_prefix=container_prefix,
             ),
         )
 
     #  Pod-prefix option
-    pod_prefix = module.params['pod_prefix']
+    pod_prefix = module.params["pod_prefix"]
     if pod_prefix is not None:
         command_options.append(
-            '--pod-prefix={pod_prefix}'.format(
+            "--pod-prefix={pod_prefix}".format(
                 pod_prefix=pod_prefix,
             ),
         )
 
     #  Separator option
-    separator = module.params['separator']
+    separator = module.params["separator"]
     if separator is not None:
         command_options.append(
-            '--separator={separator}'.format(
+            "--separator={separator}".format(
                 separator=separator,
             ),
         )
 
     #  No-header option
-    if module.params['no_header']:
-        command_options.append('--no-header')
+    if module.params["no_header"]:
+        command_options.append("--no-header")
 
     #  After option (only for Podman 4.0.0 and above)
-    after = module.params['after']
+    after = module.params["after"]
     if after:
         for item in after:
             command_options.append(
-                '--after={item}'.format(
+                "--after={item}".format(
                     item=item,
                 ),
             )
 
     #  Wants option (only for Podman 4.0.0 and above)
-    wants = module.params['wants']
+    wants = module.params["wants"]
     if wants:
         for item in wants:
             command_options.append(
-                '--wants={item}'.format(
+                "--wants={item}".format(
                     item=item,
                 )
             )
 
     #  Requires option (only for Podman 4.0.0 and above)
-    requires = module.params['requires']
+    requires = module.params["requires"]
     if requires:
         for item in requires:
             command_options.append(
-                '--requires={item}'.format(
+                "--requires={item}".format(
                     item=item,
                 ),
             )
 
     # Environment variables (only for Podman 4.3.0 and above)
-    environment_variables = module.params['env']
+    environment_variables = module.params["env"]
     if environment_variables:
         for env_var_name, env_var_value in environment_variables.items():
             command_options.append(
@@ -376,19 +379,21 @@ def generate_systemd(module):
             )
 
     #   Set output format, of podman command, to json
-    command_options.extend(['--format', 'json'])
+    command_options.extend(["--format", "json"])
 
     #  Full command build, with option included
     #   Base of the command
     command = [
-        module.params['executable'], 'generate', 'systemd',
+        module.params["executable"],
+        "generate",
+        "systemd",
     ]
     #   Add the options to the commande
     command.extend(command_options)
     #   Add pod or container name to the command
-    command.append(module.params['name'])
+    command.append(module.params["name"])
     #   Build the string version of the command, only for module return
-    command_str = ' '.join(command)
+    command_str = " ".join(command)
 
     # Run the podman command to generated systemd .service unit(s) content
     return_code, stdout, stderr = module.run_command(command)
@@ -396,10 +401,10 @@ def generate_systemd(module):
     # In case of error in running the command
     if return_code != 0:
         # Print information about the error and return and empty dictionary
-        message = 'Error generating systemd .service unit(s).'
-        message += ' Command executed: {command_str}'
-        message += ' Command returned with code: {return_code}.'
-        message += ' Error message: {stderr}.'
+        message = "Error generating systemd .service unit(s)."
+        message += " Command executed: {command_str}"
+        message += " Command returned with code: {return_code}."
+        message += " Error message: {stderr}."
         module.fail_json(
             msg=message.format(
                 command_str=command_str,
@@ -421,9 +426,9 @@ def generate_systemd(module):
 
     # Write the systemd .service unit(s) content to file(s), if
     # requested
-    if module.params['dest']:
+    if module.params["dest"]:
         try:
-            systemd_units_dest = module.params['dest']
+            systemd_units_dest = module.params["dest"]
             # If destination don't exist
             if not os.path.exists(systemd_units_dest):
                 # If  not in check mode, make it
@@ -447,23 +452,24 @@ def generate_systemd(module):
             # Write each systemd unit, if needed
             for unit_name, unit_content in systemd_units.items():
                 # Build full path to unit file
-                unit_file_name = unit_name + '.service'
+                unit_file_name = unit_name + ".service"
                 unit_file_full_path = os.path.join(
                     systemd_units_dest,
                     unit_file_name,
                 )
 
-                if module.params['force']:
+                if module.params["force"]:
                     # Force to replace the existing unit file
                     need_to_write_file = True
                 else:
                     # See if we need to write the unit file, default yes
-                    need_to_write_file = bool(compare_systemd_file_content(
-                        unit_file_full_path, unit_content))
+                    need_to_write_file = bool(
+                        compare_systemd_file_content(unit_file_full_path, unit_content)
+                    )
 
                 # Write the file, if needed
                 if need_to_write_file:
-                    with open(unit_file_full_path, 'w') as unit_file:
+                    with open(unit_file_full_path, "w") as unit_file:
                         # If not in check mode, write the file
                         if not module.check_mode:
                             unit_file.write(unit_content)
@@ -471,133 +477,128 @@ def generate_systemd(module):
 
         except Exception as exception:
             # When exception occurs while trying to write units file
-            message = 'PODMAN-GENERATE-SYSTEMD-DEBUG: '
-            message += 'Error writing systemd units files: '
-            message += '{exception}'
+            message = "PODMAN-GENERATE-SYSTEMD-DEBUG: "
+            message += "Error writing systemd units files: "
+            message += "{exception}"
             module.log(
-                message.format(
-                    exception=exception
-                ),
+                message.format(exception=exception),
             )
     # Return the systemd .service unit(s) content
     return changed, systemd_units, command_str
 
 
 def run_module():
-    '''Run the module on the target'''
+    """Run the module on the target"""
     # Build the list of parameters user can use
     module_parameters = {
-        'name': {
-            'type': 'str',
-            'required': True,
+        "name": {
+            "type": "str",
+            "required": True,
         },
-        'dest': {
-            'type': 'path',
-            'required': False,
+        "dest": {
+            "type": "path",
+            "required": False,
         },
-        'new': {
-            'type': 'bool',
-            'required': False,
-            'default': False,
+        "new": {
+            "type": "bool",
+            "required": False,
+            "default": False,
         },
-        'force': {
-            'type': 'bool',
-            'required': False,
-            'default': False,
+        "force": {
+            "type": "bool",
+            "required": False,
+            "default": False,
         },
-        'restart_policy': {
-            'type': 'str',
-            'required': False,
-            'choices': RESTART_POLICY_CHOICES,
+        "restart_policy": {
+            "type": "str",
+            "required": False,
+            "choices": RESTART_POLICY_CHOICES,
         },
-        'restart_sec': {
-            'type': 'int',
-            'required': False,
+        "restart_sec": {
+            "type": "int",
+            "required": False,
         },
-        'start_timeout': {
-            'type': 'int',
-            'required': False,
+        "start_timeout": {
+            "type": "int",
+            "required": False,
         },
-        'stop_timeout': {
-            'type': 'int',
-            'required': False,
+        "stop_timeout": {
+            "type": "int",
+            "required": False,
         },
-        'env': {
-            'type': 'dict',
-            'required': False,
+        "env": {
+            "type": "dict",
+            "required": False,
         },
-        'use_names': {
-            'type': 'bool',
-            'required': False,
-            'default': True,
+        "use_names": {
+            "type": "bool",
+            "required": False,
+            "default": True,
         },
-        'container_prefix': {
-            'type': 'str',
-            'required': False,
+        "container_prefix": {
+            "type": "str",
+            "required": False,
         },
-        'pod_prefix': {
-            'type': 'str',
-            'required': False,
+        "pod_prefix": {
+            "type": "str",
+            "required": False,
         },
-        'separator': {
-            'type': 'str',
-            'required': False,
+        "separator": {
+            "type": "str",
+            "required": False,
         },
-        'no_header': {
-            'type': 'bool',
-            'required': False,
-            'default': False,
+        "no_header": {
+            "type": "bool",
+            "required": False,
+            "default": False,
         },
-        'after': {
-            'type': 'list',
-            'elements': 'str',
-            'required': False,
+        "after": {
+            "type": "list",
+            "elements": "str",
+            "required": False,
         },
-        'wants': {
-            'type': 'list',
-            'elements': 'str',
-            'required': False,
+        "wants": {
+            "type": "list",
+            "elements": "str",
+            "required": False,
         },
-        'requires': {
-            'type': 'list',
-            'elements': 'str',
-            'required': False,
+        "requires": {
+            "type": "list",
+            "elements": "str",
+            "required": False,
         },
-        'executable': {
-            'type': 'str',
-            'required': False,
-            'default': 'podman',
+        "executable": {
+            "type": "str",
+            "required": False,
+            "default": "podman",
         },
     }
 
     # Build result dictionary
     result = {
-        'changed': False,
-        'systemd_units': {},
-        'podman_command': '',
+        "changed": False,
+        "systemd_units": {},
+        "podman_command": "",
     }
 
     # Build the Ansible Module
-    module = AnsibleModule(
-        argument_spec=module_parameters,
-        supports_check_mode=True
-    )
+    module = AnsibleModule(argument_spec=module_parameters, supports_check_mode=True)
 
     # Generate the systemd units
     state_changed, systemd_units, podman_command = generate_systemd(module)
 
-    result['changed'] = state_changed
-    result['systemd_units'] = systemd_units
-    result['podman_command'] = podman_command
+    result["changed"] = state_changed
+    result["systemd_units"] = systemd_units
+    result["podman_command"] = podman_command
 
     # Return the result
     module.exit_json(**result)
 
 
 def main():
-    '''Main function of this script.'''
+    """Main function of this script."""
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

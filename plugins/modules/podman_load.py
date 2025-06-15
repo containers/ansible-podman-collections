@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_load
 short_description: Load image from a tar file.
 author: Sagi Shnaidman (@sshnaidm)
@@ -32,9 +32,9 @@ options:
     type: str
 requirements:
   - "Podman installed on host"
-'''
+"""
 
-RETURN = '''
+RETURN = """
 image:
     description: info from loaded image
     returned: always
@@ -132,13 +132,13 @@ c53ad57a0b1e44cab226a6251598accbead40b23fac89c19ad8c25ca/merged",
             "VirtualSize": 569919342
         }
     ]
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # What modules does for example
 - containers.podman.podman_load:
     input: /path/to/tar/file
-'''
+"""
 
 import json  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
@@ -146,24 +146,24 @@ from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 def load(module, executable):
     changed = False
-    command = [executable, 'load', '--input']
-    command.append(module.params['input'])
+    command = [executable, "load", "--input"]
+    command.append(module.params["input"])
     changed = True
     if module.check_mode:
-        return changed, '', '', ''
+        return changed, "", "", ""
     rc, out, err = module.run_command(command)
     if rc != 0:
         module.fail_json(msg="Image loading failed: %s" % (err))
-    image_name_line = [i for i in out.splitlines() if 'Loaded image' in i][0]
+    image_name_line = [i for i in out.splitlines() if "Loaded image" in i][0]
     # For Podman < 4.x
-    if 'Loaded image(s):' in image_name_line:
-        image_name = image_name_line.split("Loaded image(s): ")[1].split(',')[0].strip()
+    if "Loaded image(s):" in image_name_line:
+        image_name = image_name_line.split("Loaded image(s): ")[1].split(",")[0].strip()
     # For Podman > 4.x
-    elif 'Loaded image:' in image_name_line:
+    elif "Loaded image:" in image_name_line:
         image_name = image_name_line.split("Loaded image: ")[1].strip()
     else:
         module.fail_json(msg="Not found images in %s" % image_name_line)
-    rc, out2, err2 = module.run_command([executable, 'image', 'inspect', image_name])
+    rc, out2, err2 = module.run_command([executable, "image", "inspect", image_name])
     if rc != 0:
         module.fail_json(msg="Image %s inspection failed: %s" % (image_name, err2))
     try:
@@ -176,13 +176,13 @@ def load(module, executable):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            input=dict(type='str', required=True, aliases=['path']),
-            executable=dict(type='str', default='podman')
+            input=dict(type="str", required=True, aliases=["path"]),
+            executable=dict(type="str", default="podman"),
         ),
         supports_check_mode=True,
     )
 
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    executable = module.get_bin_path(module.params["executable"], required=True)
     changed, out, err, image_info = load(module, executable)
 
     results = {
@@ -195,5 +195,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

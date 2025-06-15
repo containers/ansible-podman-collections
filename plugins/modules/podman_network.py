@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -295,27 +296,35 @@ network:
 """
 
 import json
+
 try:
     import ipaddress
+
     HAS_IP_ADDRESS_MODULE = True
 except ImportError:
     HAS_IP_ADDRESS_MODULE = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    LooseVersion,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    lower_keys,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+    create_quadlet_state,
+)
 
 
 class PodmanNetworkModuleParams:
     """Creates list of arguments for podman CLI command.
 
-       Arguments:
-           action {str} -- action type from 'create', 'delete'
-           params {dict} -- dictionary of module parameters
+    Arguments:
+        action {str} -- action type from 'create', 'delete'
+        params {dict} -- dictionary of module parameters
 
-       """
+    """
 
     def __init__(self, action, params, podman_version, module):
         self.params = params
@@ -329,99 +338,104 @@ class PodmanNetworkModuleParams:
         Returns:
            list -- list of byte strings for Popen command
         """
-        if self.action in ['delete']:
+        if self.action in ["delete"]:
             return self._delete_action()
-        if self.action in ['create']:
+        if self.action in ["create"]:
             return self._create_action()
 
     def _delete_action(self):
-        cmd = ['rm', self.params['name']]
-        if self.params['force']:
-            cmd += ['--force']
-        return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        cmd = ["rm", self.params["name"]]
+        if self.params["force"]:
+            cmd += ["--force"]
+        return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
 
     def _create_action(self):
-        cmd = [self.action, self.params['name']]
-        all_param_methods = [func for func in dir(self)
-                             if callable(getattr(self, func))
-                             and func.startswith("addparam")]
+        cmd = [self.action, self.params["name"]]
+        all_param_methods = [
+            func
+            for func in dir(self)
+            if callable(getattr(self, func)) and func.startswith("addparam")
+        ]
         params_set = (i for i in self.params if self.params[i] is not None)
         for param in params_set:
             func_name = "_".join(["addparam", param])
             if func_name in all_param_methods:
                 cmd = getattr(self, func_name)(cmd)
-        return [to_bytes(i, errors='surrogate_or_strict') for i in cmd]
+        return [to_bytes(i, errors="surrogate_or_strict") for i in cmd]
 
     def check_version(self, param, minv=None, maxv=None):
-        if minv and LooseVersion(minv) > LooseVersion(
-                self.podman_version):
-            self.module.fail_json(msg="Parameter %s is supported from podman "
-                                  "version %s only! Current version is %s" % (
-                                      param, minv, self.podman_version))
-        if maxv and LooseVersion(maxv) < LooseVersion(
-                self.podman_version):
-            self.module.fail_json(msg="Parameter %s is supported till podman "
-                                  "version %s only! Current version is %s" % (
-                                      param, minv, self.podman_version))
+        if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
+            self.module.fail_json(
+                msg="Parameter %s is supported from podman "
+                "version %s only! Current version is %s"
+                % (param, minv, self.podman_version)
+            )
+        if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
+            self.module.fail_json(
+                msg="Parameter %s is supported till podman "
+                "version %s only! Current version is %s"
+                % (param, minv, self.podman_version)
+            )
 
     def addparam_gateway(self, c):
-        return c + ['--gateway', self.params['gateway']]
+        return c + ["--gateway", self.params["gateway"]]
 
     def addparam_dns(self, c):
-        for dns in self.params['dns']:
-            c += ['--dns', dns]
+        for dns in self.params["dns"]:
+            c += ["--dns", dns]
         return c
 
     def addparam_driver(self, c):
-        return c + ['--driver', self.params['driver']]
+        return c + ["--driver", self.params["driver"]]
 
     def addparam_subnet(self, c):
-        return c + ['--subnet', self.params['subnet']]
+        return c + ["--subnet", self.params["subnet"]]
 
     def addparam_ip_range(self, c):
-        return c + ['--ip-range', self.params['ip_range']]
+        return c + ["--ip-range", self.params["ip_range"]]
 
     def addparam_ipv6(self, c):
-        return c + ['--ipv6=%s' % self.params['ipv6']]
+        return c + ["--ipv6=%s" % self.params["ipv6"]]
 
     def addparam_macvlan(self, c):
-        return c + ['--macvlan', self.params['macvlan']]
+        return c + ["--macvlan", self.params["macvlan"]]
 
     def addparam_net_config(self, c):
-        for net in self.params['net_config']:
-            for kw in ('subnet', 'gateway', 'ip_range'):
+        for net in self.params["net_config"]:
+            for kw in ("subnet", "gateway", "ip_range"):
                 if kw in net and net[kw]:
-                    c += ['--%s=%s' % (kw.replace('_', '-'), net[kw])]
+                    c += ["--%s=%s" % (kw.replace("_", "-"), net[kw])]
         return c
 
     def addparam_interface_name(self, c):
-        return c + ['--interface-name', self.params['interface_name']]
+        return c + ["--interface-name", self.params["interface_name"]]
 
     def addparam_internal(self, c):
-        return c + ['--internal=%s' % self.params['internal']]
+        return c + ["--internal=%s" % self.params["internal"]]
 
     def addparam_opt(self, c):
-        for opt in self.params['opt'].items():
+        for opt in self.params["opt"].items():
             if opt[1] is not None:
-                if opt[0] == 'bridge_name':
-                    opt = ('com.docker.network.bridge.name', opt[1])
-                if opt[0] == 'driver_mtu':
-                    opt = ('com.docker.network.driver.mtu', opt[1])
-                c += ['--opt',
-                      b"=".join([to_bytes(k, errors='surrogate_or_strict')
-                                 for k in opt])]
+                if opt[0] == "bridge_name":
+                    opt = ("com.docker.network.bridge.name", opt[1])
+                if opt[0] == "driver_mtu":
+                    opt = ("com.docker.network.driver.mtu", opt[1])
+                c += [
+                    "--opt",
+                    b"=".join([to_bytes(k, errors="surrogate_or_strict") for k in opt]),
+                ]
         return c
 
     def addparam_route(self, c):
-        for route in self.params['route']:
-            c += ['--route', route]
+        for route in self.params["route"]:
+            c += ["--route", route]
         return c
 
     def addparam_ipam_driver(self, c):
-        return c + ['--ipam-driver=%s' % self.params['ipam_driver']]
+        return c + ["--ipam-driver=%s" % self.params["ipam_driver"]]
 
     def addparam_disable_dns(self, c):
-        return c + ['--disable-dns=%s' % self.params['disable_dns']]
+        return c + ["--disable-dns=%s" % self.params["disable_dns"]]
 
 
 class PodmanNetworkDefaults:
@@ -429,8 +443,8 @@ class PodmanNetworkDefaults:
         self.module = module
         self.version = podman_version
         self.defaults = {
-            'driver': 'bridge',
-            'internal': False,
+            "driver": "bridge",
+            "internal": False,
         }
 
     def default_dict(self):
@@ -445,13 +459,14 @@ class PodmanNetworkDiff:
         self.default_dict = None
         self.info = lower_keys(info)
         self.params = self.defaultize()
-        self.diff = {'before': {}, 'after': {}}
+        self.diff = {"before": {}, "after": {}}
         self.non_idempotent = {}
 
     def defaultize(self):
         params_with_defaults = {}
         self.default_dict = PodmanNetworkDefaults(
-            self.module, self.version).default_dict()
+            self.module, self.version
+        ).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
@@ -461,171 +476,189 @@ class PodmanNetworkDiff:
 
     def _diff_update_and_compare(self, param_name, before, after):
         if before != after:
-            self.diff['before'].update({param_name: before})
-            self.diff['after'].update({param_name: after})
+            self.diff["before"].update({param_name: before})
+            self.diff["after"].update({param_name: after})
             return True
         return False
 
     def diffparam_disable_dns(self):
         # For v3 it's impossible to find out DNS settings.
-        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
-            before = not self.info.get('dns_enabled', True)
-            after = self.params['disable_dns']
+        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
+            before = not self.info.get("dns_enabled", True)
+            after = self.params["disable_dns"]
             # compare only if set explicitly
-            if self.params['disable_dns'] is None:
+            if self.params["disable_dns"] is None:
                 after = before
-            return self._diff_update_and_compare('disable_dns', before, after)
-        before = after = self.params['disable_dns']
-        return self._diff_update_and_compare('disable_dns', before, after)
+            return self._diff_update_and_compare("disable_dns", before, after)
+        before = after = self.params["disable_dns"]
+        return self._diff_update_and_compare("disable_dns", before, after)
 
     def diffparam_dns(self):
-        before = self.info.get('network_dns_servers', [])
-        after = self.params['dns'] or []
-        return self._diff_update_and_compare('dns', sorted(before), sorted(after))
+        before = self.info.get("network_dns_servers", [])
+        after = self.params["dns"] or []
+        return self._diff_update_and_compare("dns", sorted(before), sorted(after))
 
     def diffparam_driver(self):
         # Currently only bridge is supported
-        before = after = 'bridge'
-        return self._diff_update_and_compare('driver', before, after)
+        before = after = "bridge"
+        return self._diff_update_and_compare("driver", before, after)
 
     def diffparam_ipv6(self):
         # We don't support dual stack because it generates subnets randomly
-        return self._diff_update_and_compare('ipv6', '', '')
+        return self._diff_update_and_compare("ipv6", "", "")
 
     def diffparam_gateway(self):
         # Disable idempotency of subnet for v4, subnets are added automatically
         # TODO(sshnaidm): check if it's still the issue in v5
-        if LooseVersion(self.version) < LooseVersion('4.0.0'):
+        if LooseVersion(self.version) < LooseVersion("4.0.0"):
             try:
-                before = self.info['plugins'][0]['ipam']['ranges'][0][0]['gateway']
+                before = self.info["plugins"][0]["ipam"]["ranges"][0][0]["gateway"]
             except (IndexError, KeyError):
-                before = ''
+                before = ""
             after = before
-            if self.params['gateway'] is not None:
-                after = self.params['gateway']
-            return self._diff_update_and_compare('gateway', before, after)
+            if self.params["gateway"] is not None:
+                after = self.params["gateway"]
+            return self._diff_update_and_compare("gateway", before, after)
         else:
-            before_subs = self.info.get('subnets')
-            after = self.params['gateway']
+            before_subs = self.info.get("subnets")
+            after = self.params["gateway"]
             if not before_subs:
                 before = None
             if before_subs:
                 if len(before_subs) > 1 and after:
                     return self._diff_update_and_compare(
-                        'gateway', ",".join([i['gateway'] for i in before_subs]), after)
-                before = [i.get('gateway') for i in before_subs][0]
+                        "gateway", ",".join([i["gateway"] for i in before_subs]), after
+                    )
+                before = [i.get("gateway") for i in before_subs][0]
             if not after:
                 after = before
-            return self._diff_update_and_compare('gateway', before, after)
+            return self._diff_update_and_compare("gateway", before, after)
 
     def diffparam_internal(self):
-        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
-            before = self.info.get('internal', False)
-            after = self.params['internal']
-            return self._diff_update_and_compare('internal', before, after)
+        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
+            before = self.info.get("internal", False)
+            after = self.params["internal"]
+            return self._diff_update_and_compare("internal", before, after)
         try:
-            before = not self.info['plugins'][0]['isgateway']
+            before = not self.info["plugins"][0]["isgateway"]
         except (IndexError, KeyError):
             before = False
-        after = self.params['internal']
-        return self._diff_update_and_compare('internal', before, after)
+        after = self.params["internal"]
+        return self._diff_update_and_compare("internal", before, after)
 
     def diffparam_ip_range(self):
         # TODO(sshnaidm): implement IP to CIDR convert and vice versa
-        before = after = ''
-        return self._diff_update_and_compare('ip_range', before, after)
+        before = after = ""
+        return self._diff_update_and_compare("ip_range", before, after)
 
     def diffparam_ipam_driver(self):
         before = self.info.get("ipam_options", {}).get("driver", "")
-        after = self.params['ipam_driver']
+        after = self.params["ipam_driver"]
         if not after:
             after = before
-        return self._diff_update_and_compare('ipam_driver', before, after)
+        return self._diff_update_and_compare("ipam_driver", before, after)
 
     def diffparam_net_config(self):
-        after = self.params['net_config']
+        after = self.params["net_config"]
         if not after:
-            return self._diff_update_and_compare('net_config', '', '')
-        before_subs = self.info.get('subnets', [])
+            return self._diff_update_and_compare("net_config", "", "")
+        before_subs = self.info.get("subnets", [])
         if before_subs:
-            before = ":".join(sorted([",".join([i['subnet'], i['gateway']]).rstrip(",") for i in before_subs]))
+            before = ":".join(
+                sorted(
+                    [
+                        ",".join([i["subnet"], i["gateway"]]).rstrip(",")
+                        for i in before_subs
+                    ]
+                )
+            )
         else:
-            before = ''
-        after = ":".join(sorted([",".join([i['subnet'], i['gateway']]).rstrip(",") for i in after]))
-        return self._diff_update_and_compare('net_config', before, after)
+            before = ""
+        after = ":".join(
+            sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in after])
+        )
+        return self._diff_update_and_compare("net_config", before, after)
 
     def diffparam_route(self):
-        routes = self.info.get('routes', [])
+        routes = self.info.get("routes", [])
         if routes:
-            before = [",".join([
-                r['destination'], r['gateway'], str(r.get('metric', ''))]).rstrip(",") for r in routes]
+            before = [
+                ",".join(
+                    [r["destination"], r["gateway"], str(r.get("metric", ""))]
+                ).rstrip(",")
+                for r in routes
+            ]
         else:
             before = []
-        after = self.params['route'] or []
-        return self._diff_update_and_compare('route', sorted(before), sorted(after))
+        after = self.params["route"] or []
+        return self._diff_update_and_compare("route", sorted(before), sorted(after))
 
     def diffparam_subnet(self):
         # Disable idempotency of subnet for v3 and below
-        if LooseVersion(self.version) < LooseVersion('4.0.0'):
+        if LooseVersion(self.version) < LooseVersion("4.0.0"):
             try:
-                before = self.info['plugins'][0]['ipam']['ranges'][0][0]['subnet']
+                before = self.info["plugins"][0]["ipam"]["ranges"][0][0]["subnet"]
             except (IndexError, KeyError):
-                before = ''
+                before = ""
             after = before
-            if self.params['subnet'] is not None:
-                after = self.params['subnet']
+            if self.params["subnet"] is not None:
+                after = self.params["subnet"]
                 if HAS_IP_ADDRESS_MODULE:
                     after = ipaddress.ip_network(after).compressed
-            return self._diff_update_and_compare('subnet', before, after)
+            return self._diff_update_and_compare("subnet", before, after)
         else:
-            if self.params['ipv6'] is not None:
+            if self.params["ipv6"] is not None:
                 # We can't support dual stack, it generates subnets randomly
-                return self._diff_update_and_compare('subnet', '', '')
-            after = self.params['subnet']
+                return self._diff_update_and_compare("subnet", "", "")
+            after = self.params["subnet"]
             if after is None:
                 # We can't guess what subnet was used before by default
-                return self._diff_update_and_compare('subnet', '', '')
-            before = self.info.get('subnets')
+                return self._diff_update_and_compare("subnet", "", "")
+            before = self.info.get("subnets")
             if before:
                 if len(before) > 1 and after:
-                    return self._diff_update_and_compare('subnet', ",".join([i['subnet'] for i in before]), after)
-                before = [i['subnet'] for i in before][0]
-            return self._diff_update_and_compare('subnet', before, after)
+                    return self._diff_update_and_compare(
+                        "subnet", ",".join([i["subnet"] for i in before]), after
+                    )
+                before = [i["subnet"] for i in before][0]
+            return self._diff_update_and_compare("subnet", before, after)
 
     def diffparam_macvlan(self):
-        before = after = ''
-        return self._diff_update_and_compare('macvlan', before, after)
+        before = after = ""
+        return self._diff_update_and_compare("macvlan", before, after)
 
     def diffparam_opt(self):
-        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
-            vlan_before = self.info.get('options', {}).get('vlan')
+        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
+            vlan_before = self.info.get("options", {}).get("vlan")
         else:
             try:
-                vlan_before = self.info['plugins'][0].get('vlan')
+                vlan_before = self.info["plugins"][0].get("vlan")
             except (IndexError, KeyError):
                 vlan_before = None
-        vlan_after = self.params['opt'].get('vlan') if self.params['opt'] else None
+        vlan_after = self.params["opt"].get("vlan") if self.params["opt"] else None
         if vlan_before or vlan_after:
-            before, after = {'vlan': str(vlan_before)}, {'vlan': str(vlan_after)}
+            before, after = {"vlan": str(vlan_before)}, {"vlan": str(vlan_after)}
         else:
             before, after = {}, {}
-        if LooseVersion(self.version) >= LooseVersion('4.0.0'):
-            mtu_before = self.info.get('options', {}).get('mtu')
+        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
+            mtu_before = self.info.get("options", {}).get("mtu")
         else:
             try:
-                mtu_before = self.info['plugins'][0].get('mtu')
+                mtu_before = self.info["plugins"][0].get("mtu")
             except (IndexError, KeyError):
                 mtu_before = None
-        mtu_after = self.params['opt'].get('mtu') if self.params['opt'] else None
+        mtu_after = self.params["opt"].get("mtu") if self.params["opt"] else None
         if mtu_before or mtu_after:
-            before.update({'mtu': str(mtu_before)})
-            after.update({'mtu': str(mtu_after)})
-        return self._diff_update_and_compare('opt', before, after)
+            before.update({"mtu": str(mtu_before)})
+            after.update({"mtu": str(mtu_after)})
+        return self._diff_update_and_compare("opt", before, after)
 
     def is_different(self):
-        diff_func_list = [func for func in dir(self)
-                          if callable(getattr(self, func)) and func.startswith(
-                              "diffparam")]
+        diff_func_list = [
+            func
+            for func in dir(self)
+            if callable(getattr(self, func)) and func.startswith("diffparam")
+        ]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -636,7 +669,11 @@ class PodmanNetworkDiff:
                 different = True
         # Check non idempotent parameters
         for p in self.non_idempotent:
-            if self.module.params[p] is not None and self.module.params[p] not in [{}, [], '']:
+            if self.module.params[p] is not None and self.module.params[p] not in [
+                {},
+                [],
+                "",
+            ]:
                 different = True
         return different
 
@@ -658,7 +695,7 @@ class PodmanNetwork:
         super(PodmanNetwork, self).__init__()
         self.module = module
         self.name = name
-        self.stdout, self.stderr = '', ''
+        self.stdout, self.stderr = "", ""
         self.info = self.get_info()
         self.version = self._get_podman_version()
         self.diff = {}
@@ -672,35 +709,41 @@ class PodmanNetwork:
     @property
     def different(self):
         """Check if network is different."""
-        diffcheck = PodmanNetworkDiff(
-            self.module,
-            self.info,
-            self.version)
+        diffcheck = PodmanNetworkDiff(self.module, self.info, self.version)
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
-        if self.module._diff and is_different and diffs['before'] and diffs['after']:
-            self.diff['before'] = "\n".join(
-                ["%s - %s" % (k, v) for k, v in sorted(
-                    diffs['before'].items())]) + "\n"
-            self.diff['after'] = "\n".join(
-                ["%s - %s" % (k, v) for k, v in sorted(
-                    diffs['after'].items())]) + "\n"
+        if self.module._diff and is_different and diffs["before"] and diffs["after"]:
+            self.diff["before"] = (
+                "\n".join(
+                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
+                )
+                + "\n"
+            )
+            self.diff["after"] = (
+                "\n".join(
+                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
+                )
+                + "\n"
+            )
         return is_different
 
     def get_info(self):
         """Inspect network and gather info about it."""
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'network', b'inspect', self.name])
+            [self.module.params["executable"], b"network", b"inspect", self.name]
+        )
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
         rc, out, err = self.module.run_command(
-            [self.module.params['executable'], b'--version'])
+            [self.module.params["executable"], b"--version"]
+        )
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(msg="%s run failed!" %
-                                  self.module.params['executable'])
+            self.module.fail_json(
+                msg="%s run failed!" % self.module.params["executable"]
+            )
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -709,33 +752,39 @@ class PodmanNetwork:
         Arguments:
             action {str} -- action to perform - create, stop, delete
         """
-        b_command = PodmanNetworkModuleParams(action,
-                                              self.module.params,
-                                              self.version,
-                                              self.module,
-                                              ).construct_command_from_params()
-        full_cmd = " ".join([self.module.params['executable'], 'network']
-                            + [to_native(i) for i in b_command])
+        b_command = PodmanNetworkModuleParams(
+            action,
+            self.module.params,
+            self.version,
+            self.module,
+        ).construct_command_from_params()
+        full_cmd = " ".join(
+            [self.module.params["executable"], "network"]
+            + [to_native(i) for i in b_command]
+        )
         self.module.log("PODMAN-NETWORK-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
             rc, out, err = self.module.run_command(
-                [self.module.params['executable'], b'network'] + b_command,
-                expand_user_and_vars=False)
+                [self.module.params["executable"], b"network"] + b_command,
+                expand_user_and_vars=False,
+            )
             self.stdout = out
             self.stderr = err
             if rc != 0:
                 self.module.fail_json(
                     msg="Can't %s network %s" % (action, self.name),
-                    stdout=out, stderr=err)
+                    stdout=out,
+                    stderr=err,
+                )
 
     def delete(self):
         """Delete the network."""
-        self._perform_action('delete')
+        self._perform_action("delete")
 
     def create(self):
         """Create the network."""
-        self._perform_action('create')
+        self._perform_action("create")
 
     def recreate(self):
         """Recreate the network."""
@@ -760,16 +809,16 @@ class PodmanNetworkManager:
 
         self.module = module
         self.results = {
-            'changed': False,
-            'actions': [],
-            'network': {},
+            "changed": False,
+            "actions": [],
+            "network": {},
         }
-        self.name = self.module.params['name']
-        self.executable = \
-            self.module.get_bin_path(self.module.params['executable'],
-                                     required=True)
-        self.state = self.module.params['state']
-        self.recreate = self.module.params['recreate']
+        self.name = self.module.params["name"]
+        self.executable = self.module.get_bin_path(
+            self.module.params["executable"], required=True
+        )
+        self.state = self.module.params["state"]
+        self.recreate = self.module.params["recreate"]
         self.network = PodmanNetwork(self.module, self.name)
 
     def update_network_result(self, changed=True):
@@ -781,37 +830,43 @@ class PodmanNetworkManager:
         """
         facts = self.network.get_info() if changed else self.network.info
         out, err = self.network.stdout, self.network.stderr
-        self.results.update({'changed': changed, 'network': facts,
-                             'podman_actions': self.network.actions},
-                            stdout=out, stderr=err)
+        self.results.update(
+            {
+                "changed": changed,
+                "network": facts,
+                "podman_actions": self.network.actions,
+            },
+            stdout=out,
+            stderr=err,
+        )
         if self.network.diff:
-            self.results.update({'diff': self.network.diff})
-        if self.module.params['debug']:
-            self.results.update({'podman_version': self.network.version})
+            self.results.update({"diff": self.network.diff})
+        if self.module.params["debug"]:
+            self.results.update({"podman_version": self.network.version})
         self.module.exit_json(**self.results)
 
     def execute(self):
         """Execute the desired action according to map of actions & states."""
         states_map = {
-            'present': self.make_present,
-            'absent': self.make_absent,
-            'quadlet': self.make_quadlet,
+            "present": self.make_present,
+            "absent": self.make_absent,
+            "quadlet": self.make_quadlet,
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(msg="Unexpected logic error happened, "
-                                  "please contact maintainers ASAP!")
+        self.module.fail_json(
+            msg="Unexpected logic error happened, " "please contact maintainers ASAP!"
+        )
 
     def make_present(self):
         """Run actions if desired state is 'started'."""
         if not self.network.exists:
             self.network.create()
-            self.results['actions'].append('created %s' % self.network.name)
+            self.results["actions"].append("created %s" % self.network.name)
             self.update_network_result()
         elif self.recreate or self.network.different:
             self.network.recreate()
-            self.results['actions'].append('recreated %s' %
-                                           self.network.name)
+            self.results["actions"].append("recreated %s" % self.network.name)
             self.update_network_result()
         else:
             self.update_network_result(changed=False)
@@ -819,13 +874,12 @@ class PodmanNetworkManager:
     def make_absent(self):
         """Run actions if desired state is 'absent'."""
         if not self.network.exists:
-            self.results.update({'changed': False})
+            self.results.update({"changed": False})
         elif self.network.exists:
             self.network.delete()
-            self.results['actions'].append('deleted %s' % self.network.name)
-            self.results.update({'changed': True})
-        self.results.update({'network': {},
-                             'podman_actions': self.network.actions})
+            self.results["actions"].append("deleted %s" % self.network.name)
+            self.results.update({"changed": True})
+        self.results.update({"network": {}, "podman_actions": self.network.actions})
         self.module.exit_json(**self.results)
 
     def make_quadlet(self):
@@ -837,60 +891,70 @@ class PodmanNetworkManager:
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', default="present",
-                       choices=['present', 'absent', 'quadlet']),
-            name=dict(type='str', required=True),
-            disable_dns=dict(type='bool', required=False),
-            dns=dict(type='list', elements='str', required=False),
-            driver=dict(type='str', required=False),
-            force=dict(type='bool', default=False),
-            gateway=dict(type='str', required=False),
-            interface_name=dict(type='str', required=False),
-            internal=dict(type='bool', required=False),
-            ip_range=dict(type='str', required=False),
-            ipam_driver=dict(type='str', required=False,
-                             choices=['host-local', 'dhcp', 'none']),
-            ipv6=dict(type='bool', required=False),
-            subnet=dict(type='str', required=False),
-            macvlan=dict(type='str', required=False),
-            opt=dict(type='dict', required=False,
-                     options=dict(
-                         isolate=dict(type='bool', required=False),
-                         mtu=dict(type='int', required=False),
-                         metric=dict(type='int', required=False),
-                         mode=dict(type='str', required=False),
-                         parent=dict(type='str', required=False),
-                         vlan=dict(type='int', required=False),
-                         bclim=dict(type='int', required=False),
-                         no_default_route=dict(type='str', required=False),
-                         vrf=dict(type='str', required=False),
-                         bridge_name=dict(type='str', required=False),
-                         driver_mtu=dict(type='str', required=False),
-                     )),
-            executable=dict(type='str', required=False, default='podman'),
-            debug=dict(type='bool', default=False),
-            recreate=dict(type='bool', default=False),
-            route=dict(type='list', elements='str', required=False),
-            quadlet_dir=dict(type='path', required=False),
-            quadlet_filename=dict(type='str', required=False),
-            quadlet_file_mode=dict(type='raw', required=False),
-            quadlet_options=dict(type='list', elements='str', required=False),
-            net_config=dict(type='list', required=False, elements='dict',
-                            options=dict(
-                                subnet=dict(type='str', required=True),
-                                gateway=dict(type='str', required=True),
-                                ip_range=dict(type='str', required=False),
-                            )),
+            state=dict(
+                type="str", default="present", choices=["present", "absent", "quadlet"]
+            ),
+            name=dict(type="str", required=True),
+            disable_dns=dict(type="bool", required=False),
+            dns=dict(type="list", elements="str", required=False),
+            driver=dict(type="str", required=False),
+            force=dict(type="bool", default=False),
+            gateway=dict(type="str", required=False),
+            interface_name=dict(type="str", required=False),
+            internal=dict(type="bool", required=False),
+            ip_range=dict(type="str", required=False),
+            ipam_driver=dict(
+                type="str", required=False, choices=["host-local", "dhcp", "none"]
+            ),
+            ipv6=dict(type="bool", required=False),
+            subnet=dict(type="str", required=False),
+            macvlan=dict(type="str", required=False),
+            opt=dict(
+                type="dict",
+                required=False,
+                options=dict(
+                    isolate=dict(type="bool", required=False),
+                    mtu=dict(type="int", required=False),
+                    metric=dict(type="int", required=False),
+                    mode=dict(type="str", required=False),
+                    parent=dict(type="str", required=False),
+                    vlan=dict(type="int", required=False),
+                    bclim=dict(type="int", required=False),
+                    no_default_route=dict(type="str", required=False),
+                    vrf=dict(type="str", required=False),
+                    bridge_name=dict(type="str", required=False),
+                    driver_mtu=dict(type="str", required=False),
+                ),
+            ),
+            executable=dict(type="str", required=False, default="podman"),
+            debug=dict(type="bool", default=False),
+            recreate=dict(type="bool", default=False),
+            route=dict(type="list", elements="str", required=False),
+            quadlet_dir=dict(type="path", required=False),
+            quadlet_filename=dict(type="str", required=False),
+            quadlet_file_mode=dict(type="raw", required=False),
+            quadlet_options=dict(type="list", elements="str", required=False),
+            net_config=dict(
+                type="list",
+                required=False,
+                elements="dict",
+                options=dict(
+                    subnet=dict(type="str", required=True),
+                    gateway=dict(type="str", required=True),
+                    ip_range=dict(type="str", required=False),
+                ),
+            ),
         ),
         required_by=dict(  # for IP range and GW to set 'subnet' is required
-            ip_range=('subnet'),
-            gateway=('subnet'),
+            ip_range=("subnet"),
+            gateway=("subnet"),
         ),
         # define or subnet or net config
-        mutually_exclusive=[['subnet', 'net_config']])
+        mutually_exclusive=[["subnet", "net_config"]],
+    )
 
     PodmanNetworkManager(module).execute()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

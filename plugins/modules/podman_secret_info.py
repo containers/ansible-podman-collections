@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_secret_info
 author:
   - "Sagi Shnaidman (@sshnaidm)"
@@ -32,7 +33,7 @@ options:
         machine running C(podman)
     default: 'podman'
     type: str
-'''
+"""
 
 EXAMPLES = r"""
 - name: Gather info about all present secrets
@@ -72,21 +73,23 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_secret_info(module, executable, show, name):
-    command = [executable, 'secret', 'inspect']
+    command = [executable, "secret", "inspect"]
     if show:
-        command.append('--showsecret')
+        command.append("--showsecret")
     if name:
         command.append(name)
     else:
-        all_names = [executable, 'secret', 'ls', '-q']
+        all_names = [executable, "secret", "ls", "-q"]
         rc, out, err = module.run_command(all_names)
         name = out.split()
         if not name:
             return [], out, err
         command.extend(name)
     rc, out, err = module.run_command(command)
-    if rc != 0 or 'no secret with name or id' in err:
-        module.fail_json(msg="Unable to gather info for %s: %s" % (name or 'all secrets', err))
+    if rc != 0 or "no secret with name or id" in err:
+        module.fail_json(
+            msg="Unable to gather info for %s: %s" % (name or "all secrets", err)
+        )
     if not out or json.loads(out) is None:
         return [], out, err
     return json.loads(out), out, err
@@ -95,16 +98,16 @@ def get_secret_info(module, executable, show, name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            name=dict(type='str'),
-            showsecret=dict(type='bool', default=False),
+            executable=dict(type="str", default="podman"),
+            name=dict(type="str"),
+            showsecret=dict(type="bool", default=False),
         ),
         supports_check_mode=True,
     )
 
-    name = module.params['name']
-    showsecret = module.params['showsecret']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    name = module.params["name"]
+    showsecret = module.params["showsecret"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     inspect_results, out, err = get_secret_info(module, executable, showsecret, name)
 
@@ -117,5 +120,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

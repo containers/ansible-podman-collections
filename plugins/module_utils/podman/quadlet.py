@@ -2,12 +2,15 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import os
 import shlex
 
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import compare_systemd_file_content
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    compare_systemd_file_content,
+)
 
 QUADLET_ROOT_PATH = "/etc/containers/systemd/"
 QUADLET_NON_ROOT_PATH = "~/.config/containers/systemd/"
@@ -52,102 +55,107 @@ class Quadlet:
         Construct the quadlet content as a string.
         """
         custom_user_options = self.custom_params.get("quadlet_options")
-        custom_text = "\n" + "\n".join(custom_user_options) if custom_user_options else ""
-        return f"[{self.section}]\n" + "\n".join(
-            f"{key}={value}" for key, value in self.dict_params
-        ) + custom_text + "\n"
+        custom_text = (
+            "\n" + "\n".join(custom_user_options) if custom_user_options else ""
+        )
+        return (
+            f"[{self.section}]\n"
+            + "\n".join(f"{key}={value}" for key, value in self.dict_params)
+            + custom_text
+            + "\n"
+        )
 
     def write_to_file(self, path: str):
         """
         Write the quadlet content to a file at the specified path.
         """
         content = self.create_quadlet_content()
-        with open(path, 'w') as file:
+        with open(path, "w") as file:
             file.write(content)
 
 
 class ContainerQuadlet(Quadlet):
     param_map = {
-        'cap_add': 'AddCapability',
-        'device': 'AddDevice',
-        'annotation': 'Annotation',
-        'name': 'ContainerName',
+        "cap_add": "AddCapability",
+        "device": "AddDevice",
+        "annotation": "Annotation",
+        "name": "ContainerName",
         # the following are not implemented yet in Podman module
-        'AutoUpdate': 'AutoUpdate',
-        'ContainersConfModule': 'ContainersConfModule',
+        "AutoUpdate": "AutoUpdate",
+        "ContainersConfModule": "ContainersConfModule",
         # end of not implemented yet
-        'dns': 'DNS',
-        'dns_option': 'DNSOption',
-        'dns_search': 'DNSSearch',
-        'cap_drop': 'DropCapability',
-        'cgroups': 'CgroupsMode',
-        'entrypoint': 'Entrypoint',
-        'env': 'Environment',
-        'env_file': 'EnvironmentFile',
-        'env_host': 'EnvironmentHost',
-        'etc_hosts': 'AddHost',
-        'command': 'Exec',
-        'expose': 'ExposeHostPort',
-        'gidmap': 'GIDMap',
-        'global_args': 'GlobalArgs',
-        'group': 'Group',  # Does not exist in module parameters
-        'group_add': 'GroupAdd',
-        'healthcheck': 'HealthCmd',
-        'healthcheck_interval': 'HealthInterval',
-        'healthcheck_failure_action': 'HealthOnFailure',
-        'healthcheck_retries': 'HealthRetries',
-        'healthcheck_start_period': 'HealthStartPeriod',
-        'healthcheck_timeout': 'HealthTimeout',
-        'health_startup_cmd': 'HealthStartupCmd',
-        'health_startup_interval': 'HealthStartupInterval',
-        'health_startup_retries': 'HealthStartupRetries',
-        'health_startup_success': 'HealthStartupSuccess',
-        'health_startup_timeout': 'HealthStartupTimeout',
-        'hostname': 'HostName',
-        'image': 'Image',
-        'ip': 'IP',
-        'ip6': 'IP6',
-        'label': 'Label',
-        'log_driver': 'LogDriver',
-        'log_opt': 'LogOpt',
+        "dns": "DNS",
+        "dns_option": "DNSOption",
+        "dns_search": "DNSSearch",
+        "cap_drop": "DropCapability",
+        "cgroups": "CgroupsMode",
+        "entrypoint": "Entrypoint",
+        "env": "Environment",
+        "env_file": "EnvironmentFile",
+        "env_host": "EnvironmentHost",
+        "etc_hosts": "AddHost",
+        "command": "Exec",
+        "expose": "ExposeHostPort",
+        "gidmap": "GIDMap",
+        "global_args": "GlobalArgs",
+        "group": "Group",  # Does not exist in module parameters
+        "group_add": "GroupAdd",
+        "healthcheck": "HealthCmd",
+        "healthcheck_interval": "HealthInterval",
+        "healthcheck_failure_action": "HealthOnFailure",
+        "healthcheck_retries": "HealthRetries",
+        "healthcheck_start_period": "HealthStartPeriod",
+        "healthcheck_timeout": "HealthTimeout",
+        "health_startup_cmd": "HealthStartupCmd",
+        "health_startup_interval": "HealthStartupInterval",
+        "health_startup_retries": "HealthStartupRetries",
+        "health_startup_success": "HealthStartupSuccess",
+        "health_startup_timeout": "HealthStartupTimeout",
+        "hostname": "HostName",
+        "image": "Image",
+        "ip": "IP",
+        "ip6": "IP6",
+        "label": "Label",
+        "log_driver": "LogDriver",
+        "log_opt": "LogOpt",
         "Mask": "Mask",  # add it in security_opt
-        'mount': 'Mount',
-        'network': 'Network',
-        'network_aliases': 'NetworkAlias',
-        'no_new_privileges': 'NoNewPrivileges',
-        'sdnotify': 'Notify',
-        'pids_limit': 'PidsLimit',
-        'pod': 'Pod',
-        'publish': 'PublishPort',
+        "mount": "Mount",
+        "network": "Network",
+        "network_aliases": "NetworkAlias",
+        "no_new_privileges": "NoNewPrivileges",
+        "sdnotify": "Notify",
+        "pids_limit": "PidsLimit",
+        "pod": "Pod",
+        "publish": "PublishPort",
         "pull": "Pull",
-        'read_only': 'ReadOnly',
-        'read_only_tmpfs': 'ReadOnlyTmpfs',
-        'rootfs': 'Rootfs',
-        'init': 'RunInit',
-        'SeccompProfile': 'SeccompProfile',
-        'secrets': 'Secret',
+        "read_only": "ReadOnly",
+        "read_only_tmpfs": "ReadOnlyTmpfs",
+        "rootfs": "Rootfs",
+        "init": "RunInit",
+        "SeccompProfile": "SeccompProfile",
+        "secrets": "Secret",
         # All these are in security_opt
-        'SecurityLabelDisable': 'SecurityLabelDisable',
-        'SecurityLabelFileType': 'SecurityLabelFileType',
-        'SecurityLabelLevel': 'SecurityLabelLevel',
-        'SecurityLabelNested': 'SecurityLabelNested',
-        'SecurityLabelType': 'SecurityLabelType',
-        'shm_size': 'ShmSize',
-        'stop_signal': 'StopSignal',
-        'stop_timeout': 'StopTimeout',
-        'subgidname': 'SubGIDMap',
-        'subuidname': 'SubUIDMap',
-        'sysctl': 'Sysctl',
-        'timezone': 'Timezone',
-        'tmpfs': 'Tmpfs',
-        'uidmap': 'UIDMap',
-        'ulimit': 'Ulimit',
-        'Unmask': 'Unmask',  # --security-opt unmask=ALL
-        'user': 'User',
-        'userns': 'UserNS',
-        'volume': 'Volume',
-        'workdir': 'WorkingDir',
-        'podman_args': 'PodmanArgs',
+        "SecurityLabelDisable": "SecurityLabelDisable",
+        "SecurityLabelFileType": "SecurityLabelFileType",
+        "SecurityLabelLevel": "SecurityLabelLevel",
+        "SecurityLabelNested": "SecurityLabelNested",
+        "SecurityLabelType": "SecurityLabelType",
+        "shm_size": "ShmSize",
+        "stop_signal": "StopSignal",
+        "stop_timeout": "StopTimeout",
+        "subgidname": "SubGIDMap",
+        "subuidname": "SubUIDMap",
+        "sysctl": "Sysctl",
+        "timezone": "Timezone",
+        "tmpfs": "Tmpfs",
+        "uidmap": "UIDMap",
+        "ulimit": "Ulimit",
+        "Unmask": "Unmask",  # --security-opt unmask=ALL
+        "user": "User",
+        "userns": "UserNS",
+        "volume": "Volume",
+        "workdir": "WorkingDir",
+        "podman_args": "PodmanArgs",
     }
 
     def __init__(self, params: dict):
@@ -159,27 +167,36 @@ class ContainerQuadlet(Quadlet):
         """
         # Work on params in params_map and convert them to a right form
         if params["annotation"]:
-            params['annotation'] = ["%s=%s" %
-                                    (k, v) for k, v in params['annotation'].items()]
+            params["annotation"] = [
+                "%s=%s" % (k, v) for k, v in params["annotation"].items()
+            ]
         if params["cap_add"]:
             params["cap_add"] = " ".join(params["cap_add"])
         if params["cap_drop"]:
             params["cap_drop"] = " ".join(params["cap_drop"])
         if params["command"]:
-            params["command"] = (" ".join([str(j) for j in params["command"]])
-                                 if isinstance(params["command"], list)
-                                 else params["command"])
+            params["command"] = (
+                " ".join([str(j) for j in params["command"]])
+                if isinstance(params["command"], list)
+                else params["command"]
+            )
         if params["label"]:
-            params["label"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["label"].items()]
+            params["label"] = [
+                shlex.quote("%s=%s" % (k, v)) for k, v in params["label"].items()
+            ]
         if params["env"]:
-            params["env"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["env"].items()]
+            params["env"] = [
+                shlex.quote("%s=%s" % (k, v)) for k, v in params["env"].items()
+            ]
         if params["rootfs"]:
             params["rootfs"] = params["image"]
             params["image"] = None
         if params["sysctl"]:
             params["sysctl"] = ["%s=%s" % (k, v) for k, v in params["sysctl"].items()]
         if params["tmpfs"]:
-            params["tmpfs"] = ["%s:%s" % (k, v) if v else k for k, v in params["tmpfs"].items()]
+            params["tmpfs"] = [
+                "%s:%s" % (k, v) if v else k for k, v in params["tmpfs"].items()
+            ]
 
         # Work on params which are not in the param_map but can be calculated
         params["global_args"] = []
@@ -208,8 +225,14 @@ class ContainerQuadlet(Quadlet):
         if params["blkio_weight"]:
             params["podman_args"].append(f"--blkio-weight {params['blkio_weight']}")
         if params["blkio_weight_device"]:
-            params["podman_args"].append(" ".join([
-                f"--blkio-weight-device {':'.join(blkio)}" for blkio in params["blkio_weight_device"].items()]))
+            params["podman_args"].append(
+                " ".join(
+                    [
+                        f"--blkio-weight-device {':'.join(blkio)}"
+                        for blkio in params["blkio_weight_device"].items()
+                    ]
+                )
+            )
         if params["cgroupns"]:
             params["podman_args"].append(f"--cgroupns {params['cgroupns']}")
         if params["cgroup_conf"]:
@@ -242,7 +265,9 @@ class ContainerQuadlet(Quadlet):
         if params["decryption_key"]:
             params["podman_args"].append(f"--decryption-key {params['decryption_key']}")
         if params["device_cgroup_rule"]:
-            params["podman_args"].append(f"--device-cgroup-rule {params['device_cgroup_rule']}")
+            params["podman_args"].append(
+                f"--device-cgroup-rule {params['device_cgroup_rule']}"
+            )
         if params["device_read_bps"]:
             for i in params["device_read_bps"]:
                 params["podman_args"].append(f"--device-read-bps {i}")
@@ -256,7 +281,9 @@ class ContainerQuadlet(Quadlet):
             for i in params["device_write_iops"]:
                 params["podman_args"].append(f"--device-write-iops {i}")
         if params["etc_hosts"]:
-            params['etc_hosts'] = ["%s:%s" % (k, v) for k, v in params['etc_hosts'].items()]
+            params["etc_hosts"] = [
+                "%s:%s" % (k, v) for k, v in params["etc_hosts"].items()
+            ]
         if params["env_merge"]:
             for k, v in params["env_merge"].items():
                 params["podman_args"].append(f"--env {k}={v}")
@@ -287,24 +314,32 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--label-file {params['label_file']}")
         if params["log_opt"]:
             params["log_opt"] = [
-                "%s=%s" % (k.replace('max_size', 'max-size'), v)
-                for k, v in params['log_opt'].items() if v is not None]
+                "%s=%s" % (k.replace("max_size", "max-size"), v)
+                for k, v in params["log_opt"].items()
+                if v is not None
+            ]
         if params["mac_address"]:
             params["podman_args"].append(f"--mac-address {params['mac_address']}")
         if params["memory"]:
             params["podman_args"].append(f"--memory {params['memory']}")
         if params["memory_reservation"]:
-            params["podman_args"].append(f"--memory-reservation {params['memory_reservation']}")
+            params["podman_args"].append(
+                f"--memory-reservation {params['memory_reservation']}"
+            )
         if params["memory_swap"]:
             params["podman_args"].append(f"--memory-swap {params['memory_swap']}")
         if params["memory_swappiness"]:
-            params["podman_args"].append(f"--memory-swappiness {params['memory_swappiness']}")
+            params["podman_args"].append(
+                f"--memory-swappiness {params['memory_swappiness']}"
+            )
         if params["no_healthcheck"]:
             params["podman_args"].append("--no-healthcheck")
         if params["no_hosts"] is not None:
             params["podman_args"].append(f"--no-hosts={params['no_hosts']}")
         if params["oom_kill_disable"]:
-            params["podman_args"].append(f"--oom-kill-disable={params['oom_kill_disable']}")
+            params["podman_args"].append(
+                f"--oom-kill-disable={params['oom_kill_disable']}"
+            )
         if params["oom_score_adj"]:
             params["podman_args"].append(f"--oom-score-adj {params['oom_score_adj']}")
         if params["os"]:
@@ -350,7 +385,9 @@ class ContainerQuadlet(Quadlet):
             for security_opt in params["security_opt"]:
                 params["podman_args"].append(f"--security-opt {security_opt}")
         if params["shm_size_systemd"]:
-            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
+            params["podman_args"].append(
+                f"--shm-size-systemd {params['shm_size_systemd']}"
+            )
         if params["sig_proxy"]:
             params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
         if params["systemd"]:
@@ -358,7 +395,9 @@ class ContainerQuadlet(Quadlet):
         if params["timeout"]:
             params["podman_args"].append(f"--timeout {params['timeout']}")
         if params["tls_verify"]:
-            params["podman_args"].append(f"--tls-verify={str(params['tls_verify']).lower()}")
+            params["podman_args"].append(
+                f"--tls-verify={str(params['tls_verify']).lower()}"
+            )
         if params["tty"]:
             params["podman_args"].append("--tty")
         if params["umask"]:
@@ -384,17 +423,17 @@ class ContainerQuadlet(Quadlet):
 
 class NetworkQuadlet(Quadlet):
     param_map = {
-        'name': 'NetworkName',
-        'internal': 'Internal',
-        'driver': 'Driver',
-        'gateway': 'Gateway',
-        'disable_dns': 'DisableDNS',
-        'subnet': 'Subnet',
-        'ip_range': 'IPRange',
-        'ipv6': 'IPv6',
+        "name": "NetworkName",
+        "internal": "Internal",
+        "driver": "Driver",
+        "gateway": "Gateway",
+        "disable_dns": "DisableDNS",
+        "subnet": "Subnet",
+        "ip_range": "IPRange",
+        "ipv6": "IPv6",
         "opt": "Options",
         # Add more parameter mappings specific to networks
-        'ContainersConfModule': 'ContainersConfModule',
+        "ContainersConfModule": "ContainersConfModule",
         "dns": "DNS",
         "ipam_driver": "IPAMDriver",
         "Label": "Label",
@@ -424,11 +463,11 @@ class NetworkQuadlet(Quadlet):
 # This is a inherited class that represents a Quadlet file for the Podman pod
 class PodQuadlet(Quadlet):
     param_map = {
-        'name': 'PodName',
+        "name": "PodName",
         "network": "Network",
         "publish": "PublishPort",
         "volume": "Volume",
-        'ContainersConfModule': 'ContainersConfModule',
+        "ContainersConfModule": "ContainersConfModule",
         "global_args": "GlobalArgs",
         "podman_args": "PodmanArgs",
     }
@@ -445,15 +484,21 @@ class PodQuadlet(Quadlet):
         params["podman_args"] = []
 
         if params["add_host"]:
-            for host in params['add_host']:
+            for host in params["add_host"]:
                 params["podman_args"].append(f"--add-host {host}")
         if params["cgroup_parent"]:
             params["podman_args"].append(f"--cgroup-parent {params['cgroup_parent']}")
         if params["blkio_weight"]:
             params["podman_args"].append(f"--blkio-weight {params['blkio_weight']}")
         if params["blkio_weight_device"]:
-            params["podman_args"].append(" ".join([
-                f"--blkio-weight-device {':'.join(blkio)}" for blkio in params["blkio_weight_device"].items()]))
+            params["podman_args"].append(
+                " ".join(
+                    [
+                        f"--blkio-weight-device {':'.join(blkio)}"
+                        for blkio in params["blkio_weight_device"].items()
+                    ]
+                )
+            )
         if params["cpuset_cpus"]:
             params["podman_args"].append(f"--cpuset-cpus {params['cpuset_cpus']}")
         if params["cpuset_mems"]:
@@ -494,7 +539,9 @@ class PodQuadlet(Quadlet):
         if params["infra_command"]:
             params["podman_args"].append(f"--infra-command {params['infra_command']}")
         if params["infra_conmon_pidfile"]:
-            params["podman_args"].append(f"--infra-conmon-pidfile {params['infra_conmon_pidfile']}")
+            params["podman_args"].append(
+                f"--infra-conmon-pidfile {params['infra_conmon_pidfile']}"
+            )
         if params["infra_image"]:
             params["podman_args"].append(f"--infra-image {params['infra_image']}")
         if params["infra_name"]:
@@ -528,11 +575,15 @@ class PodQuadlet(Quadlet):
         if params["share"]:
             params["podman_args"].append(f"--share {params['share']}")
         if params["share_parent"] is not None:
-            params["podman_args"].append(f"--share-parent={str(params['share_parent']).lower()}")
+            params["podman_args"].append(
+                f"--share-parent={str(params['share_parent']).lower()}"
+            )
         if params["shm_size"]:
             params["podman_args"].append(f"--shm-size {params['shm_size']}")
         if params["shm_size_systemd"]:
-            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
+            params["podman_args"].append(
+                f"--shm-size-systemd {params['shm_size_systemd']}"
+            )
         if params["subgidname"]:
             params["podman_args"].append(f"--subgidname {params['subgidname']}")
         if params["subuidname"]:
@@ -559,13 +610,13 @@ class PodQuadlet(Quadlet):
 # This is a inherited class that represents a Quadlet file for the Podman volume
 class VolumeQuadlet(Quadlet):
     param_map = {
-        'name': 'VolumeName',
-        'driver': 'Driver',
-        'label': 'Label',
+        "name": "VolumeName",
+        "driver": "Driver",
+        "label": "Label",
         # 'opt': 'Options',
-        'ContainersConfModule': 'ContainersConfModule',
-        'global_args': 'GlobalArgs',
-        'podman_args': 'PodmanArgs',
+        "ContainersConfModule": "ContainersConfModule",
+        "global_args": "GlobalArgs",
+        "podman_args": "PodmanArgs",
     }
 
     def __init__(self, params: dict):
@@ -593,19 +644,19 @@ class VolumeQuadlet(Quadlet):
 # This is a inherited class that represents a Quadlet file for the Podman kube
 class KubeQuadlet(Quadlet):
     param_map = {
-        'configmap': 'ConfigMap',
-        'log_driver': 'LogDriver',
-        'network': 'Network',
-        'kube_file': 'Yaml',
-        'userns': 'UserNS',
-        'AutoUpdate': 'AutoUpdate',
-        'ExitCodePropagation': 'ExitCodePropagation',
-        'KubeDownForce': 'KubeDownForce',
-        'PublishPort': 'PublishPort',
-        'SetWorkingDirectory': 'SetWorkingDirectory',
-        'ContainersConfModule': 'ContainersConfModule',
-        'global_args': 'GlobalArgs',
-        'podman_args': 'PodmanArgs',
+        "configmap": "ConfigMap",
+        "log_driver": "LogDriver",
+        "network": "Network",
+        "kube_file": "Yaml",
+        "userns": "UserNS",
+        "AutoUpdate": "AutoUpdate",
+        "ExitCodePropagation": "ExitCodePropagation",
+        "KubeDownForce": "KubeDownForce",
+        "PublishPort": "PublishPort",
+        "SetWorkingDirectory": "SetWorkingDirectory",
+        "ContainersConfModule": "ContainersConfModule",
+        "global_args": "GlobalArgs",
+        "podman_args": "PodmanArgs",
     }
 
     def __init__(self, params: dict):
@@ -628,20 +679,20 @@ class KubeQuadlet(Quadlet):
 # This is a inherited class that represents a Quadlet file for the Podman image
 class ImageQuadlet(Quadlet):
     param_map = {
-        'AllTags': 'AllTags',
-        'arch': 'Arch',
-        'authfile': 'AuthFile',
-        'ca_cert_dir': 'CertDir',
-        'creds': 'Creds',
-        'DecryptionKey': 'DecryptionKey',
-        'name': 'Image',
-        'ImageTag': 'ImageTag',
-        'OS': 'OS',
-        'validate_certs': 'TLSVerify',
-        'Variant': 'Variant',
-        'ContainersConfModule': 'ContainersConfModule',
-        'global_args': 'GlobalArgs',
-        'podman_args': 'PodmanArgs',
+        "AllTags": "AllTags",
+        "arch": "Arch",
+        "authfile": "AuthFile",
+        "ca_cert_dir": "CertDir",
+        "creds": "Creds",
+        "DecryptionKey": "DecryptionKey",
+        "name": "Image",
+        "ImageTag": "ImageTag",
+        "OS": "OS",
+        "validate_certs": "TLSVerify",
+        "Variant": "Variant",
+        "ContainersConfModule": "ContainersConfModule",
+        "global_args": "GlobalArgs",
+        "podman_args": "PodmanArgs",
     }
 
     def __init__(self, params: dict):
@@ -664,20 +715,20 @@ class ImageQuadlet(Quadlet):
 
 
 def check_quadlet_directory(module, quadlet_dir):
-    '''Check if the directory exists and is writable. If not, fail the module.'''
+    """Check if the directory exists and is writable. If not, fail the module."""
     if not os.path.exists(quadlet_dir):
         try:
             os.makedirs(quadlet_dir)
         except Exception as e:
-            module.fail_json(
-                msg="Directory for quadlet_file can't be created: %s" % e)
+            module.fail_json(msg="Directory for quadlet_file can't be created: %s" % e)
     if not os.access(quadlet_dir, os.W_OK):
         module.fail_json(
-            msg="Directory for quadlet_file is not writable: %s" % quadlet_dir)
+            msg="Directory for quadlet_file is not writable: %s" % quadlet_dir
+        )
 
 
 def create_quadlet_state(module, issuer):
-    '''Create a quadlet file for the specified issuer.'''
+    """Create a quadlet file for the specified issuer."""
     class_map = {
         "container": ContainerQuadlet,
         "network": NetworkQuadlet,
@@ -688,20 +739,22 @@ def create_quadlet_state(module, issuer):
     }
     # Let's detect which user is running
     user = "root" if os.geteuid() == 0 else "user"
-    quadlet_dir = module.params.get('quadlet_dir')
+    quadlet_dir = module.params.get("quadlet_dir")
     if not quadlet_dir:
         if user == "root":
             quadlet_dir = QUADLET_ROOT_PATH
         else:
             quadlet_dir = os.path.expanduser(QUADLET_NON_ROOT_PATH)
     # Create a filename based on the issuer
-    if not module.params.get('name') and not module.params.get('quadlet_filename'):
-        module.fail_json(msg=f"Filename for {issuer} is required for creating a quadlet file.")
+    if not module.params.get("name") and not module.params.get("quadlet_filename"):
+        module.fail_json(
+            msg=f"Filename for {issuer} is required for creating a quadlet file."
+        )
     if issuer == "image":
-        name = module.params['name'].split("/")[-1].split(":")[0]
+        name = module.params["name"].split("/")[-1].split(":")[0]
     else:
-        name = module.params.get('name')
-    quad_file_name = module.params['quadlet_filename']
+        name = module.params.get("name")
+    quad_file_name = module.params["quadlet_filename"]
     if quad_file_name and not quad_file_name.endswith(f".{issuer}"):
         quad_file_name = f"{quad_file_name}.{issuer}"
     filename = quad_file_name or f"{name}.{issuer}"
@@ -710,10 +763,10 @@ def create_quadlet_state(module, issuer):
     if not module.check_mode:
         check_quadlet_directory(module, quadlet_dir)
     # Specify file permissions
-    mode = module.params.get('quadlet_file_mode', None)
+    mode = module.params.get("quadlet_file_mode", None)
     if mode is None and not os.path.exists(quadlet_file_path):
         # default mode for new quadlet file only
-        mode = '0640'
+        mode = "0640"
     # Check if file already exists and if it's different
     quadlet = class_map[issuer](module.params)
     quadlet_content = quadlet.create_quadlet_content()
@@ -724,22 +777,31 @@ def create_quadlet_state(module, issuer):
             if mode is not None:
                 module.set_mode_if_different(quadlet_file_path, mode, False)
         results_update = {
-            'changed': True,
+            "changed": True,
             "diff": {
-                "before": "\n".join(file_diff[0]) if isinstance(file_diff[0], list) else file_diff[0] + "\n",
-                "after": "\n".join(file_diff[1]) if isinstance(file_diff[1], list) else file_diff[1] + "\n",
-            }}
+                "before": (
+                    "\n".join(file_diff[0])
+                    if isinstance(file_diff[0], list)
+                    else file_diff[0] + "\n"
+                ),
+                "after": (
+                    "\n".join(file_diff[1])
+                    if isinstance(file_diff[1], list)
+                    else file_diff[1] + "\n"
+                ),
+            },
+        }
     else:
         # adjust file permissions
         diff = {}
-        if mode is not None and module.set_mode_if_different(quadlet_file_path, mode, False, diff):
-            results_update = {
-                'changed': True,
-                'diff': diff
-            }
+        if mode is not None and module.set_mode_if_different(
+            quadlet_file_path, mode, False, diff
+        ):
+            results_update = {"changed": True, "diff": diff}
         else:
             results_update = {}
     return results_update
+
 
 # Check with following command:
 # QUADLET_UNIT_DIRS=<Directory> /usr/lib/systemd/system-generators/podman-system-generator {--user} --dryrun

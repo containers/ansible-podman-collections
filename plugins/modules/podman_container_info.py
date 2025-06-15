@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_container_info
 author:
     - Sagi Shnaidman (@podman)
@@ -31,7 +32,7 @@ options:
         machine running C(podman)
     default: 'podman'
     type: str
-'''
+"""
 
 EXAMPLES = r"""
 - name: Gather facts for all containers
@@ -338,7 +339,7 @@ def get_containers_facts(module, executable, name):
     retry = 0
     retry_limit = 4
     if not name:
-        all_names = [executable, 'container', 'ls', '-q', '-a']
+        all_names = [executable, "container", "ls", "-q", "-a"]
         rc, out, err = module.run_command(all_names)
         # This should not fail in regular circumstances, so retry again
         # https://github.com/containers/podman/issues/10225
@@ -348,12 +349,14 @@ def get_containers_facts(module, executable, name):
             retry += 1
             rc, out, err = module.run_command(all_names)
         if rc != 0:
-            module.fail_json(msg="Unable to get list of containers during"
-                                 " %s retries" % retry_limit)
+            module.fail_json(
+                msg="Unable to get list of containers during"
+                " %s retries" % retry_limit
+            )
         name = out.split()
         if not name:
             return [], out, err
-    command = [executable, 'container', 'inspect']
+    command = [executable, "container", "inspect"]
     command.extend(name)
     rc, out, err = module.run_command(command)
     if rc == 0:
@@ -361,7 +364,7 @@ def get_containers_facts(module, executable, name):
         if json_out is None:
             return [], out, err
         return json_out, out, err
-    if rc != 0 and 'no such ' in err:
+    if rc != 0 and "no such " in err:
         if len(name) < 2:
             return [], out, err
         return cycle_over(module, executable, name)
@@ -382,9 +385,9 @@ def cycle_over(module, executable, name):
     inspection = []
     stderrs = []
     for container in name:
-        command = [executable, 'container', 'inspect', container]
+        command = [executable, "container", "inspect", container]
         rc, out, err = module.run_command(command)
-        if rc != 0 and 'no such ' not in err:
+        if rc != 0 and "no such " not in err:
             module.fail_json(msg="Unable to gather info for %s: %s" % (container, err))
         if rc == 0 and out:
             json_out = json.loads(out)
@@ -397,25 +400,21 @@ def cycle_over(module, executable, name):
 def main():
     module = AnsibleModule(
         argument_spec={
-            'executable': {'type': 'str', 'default': 'podman'},
-            'name': {'type': 'list', 'elements': 'str'},
+            "executable": {"type": "str", "default": "podman"},
+            "name": {"type": "list", "elements": "str"},
         },
         supports_check_mode=True,
     )
 
-    name = module.params['name']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    name = module.params["name"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
     # pylint: disable=unused-variable
     inspect_results, out, err = get_containers_facts(module, executable, name)
 
-    results = {
-        "changed": False,
-        "containers": inspect_results,
-        "stderr": err
-    }
+    results = {"changed": False, "containers": inspect_results, "stderr": err}
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

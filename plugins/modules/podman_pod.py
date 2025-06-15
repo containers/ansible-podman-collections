@@ -4,9 +4,10 @@
 
 # flake8: noqa: E501
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: podman_pod
 short_description: Manage Podman pods
@@ -500,9 +501,9 @@ options:
 requirements:
   - "podman"
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 pod:
   description: Pod inspection results for the given pod
     built.
@@ -611,9 +612,9 @@ pod:
             ],
             "LockNumber": 1
         }
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # What modules does for example
 - containers.podman.podman_pod:
     name: pod1
@@ -693,7 +694,7 @@ EXAMPLES = r'''
     volume:
       - /var/run/docker.sock:/var/run/docker.sock
     quadlet_dir: /custom/dir
-'''
+"""
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_pod_lib import PodmanPodManager  # noqa: F402
 from ..module_utils.podman.podman_pod_lib import ARGUMENTS_SPEC_POD  # noqa: F402
@@ -705,5 +706,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

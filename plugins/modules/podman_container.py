@@ -1522,28 +1522,31 @@ container:
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
 from ..module_utils.podman.podman_container_lib import PodmanManager  # noqa: F402
-from ..module_utils.podman.podman_container_lib import ARGUMENTS_SPEC_CONTAINER  # noqa: F402
+from ..module_utils.podman.podman_container_lib import (
+    ARGUMENTS_SPEC_CONTAINER,
+)  # noqa: F402
 
 
 def main():
     module = AnsibleModule(
         argument_spec=ARGUMENTS_SPEC_CONTAINER,
-        mutually_exclusive=(
-            ['no_hosts', 'etc_hosts'],
-        ),
+        mutually_exclusive=(["no_hosts", "etc_hosts"],),
         supports_check_mode=True,
     )
 
     # work on input vars
-    if (module.params['state'] in ['present', 'created']
-            and not module.params['force_restart']
-            and not module.params['image']):
-        module.fail_json(msg="State '%s' required image to be configured!" %
-                             module.params['state'])
+    if (
+        module.params["state"] in ["present", "created"]
+        and not module.params["force_restart"]
+        and not module.params["image"]
+    ):
+        module.fail_json(
+            msg="State '%s' required image to be configured!" % module.params["state"]
+        )
 
     results = PodmanManager(module, module.params).execute()
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

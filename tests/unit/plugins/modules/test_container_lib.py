@@ -66,15 +66,17 @@ def test_container_add_params(test_input, expected):
             [
                 None,  # module
                 {"conmon_pidfile": "bbb"},  # module params
-                {"conmonpidfile": "ccc",
+                {
+                    "conmonpidfile": "ccc",
                     "config": {
                         "createcommand": [
                             "podman",
                             "create",
                             "--conmon-pidfile=ccc",
                             "testcont",
-                        ]}
-                 },  # container info
+                        ]
+                    },
+                },  # container info
                 {},  # image info
                 "4.1.1",  # podman version
             ],
@@ -84,15 +86,17 @@ def test_container_add_params(test_input, expected):
             [
                 None,  # module
                 {"conmon_pidfile": None},  # module params
-                {"conmonpidfile": "ccc",
+                {
+                    "conmonpidfile": "ccc",
                     "config": {
                         "createcommand": [
                             "podman",
                             "create",
                             "--conmon-pidfile=ccc",
                             "testcont",
-                        ]}
-                 },  # container info
+                        ]
+                    },
+                },  # container info
                 {},  # image info
                 "4.1.1",  # podman version
             ],
@@ -102,14 +106,16 @@ def test_container_add_params(test_input, expected):
             [
                 None,  # module
                 {"conmon_pidfile": None},  # module params
-                {"conmonpidfile": None,
+                {
+                    "conmonpidfile": None,
                     "config": {
                         "createcommand": [
                             "podman",
                             "create",
                             "testcont",
-                        ]}
-                 },  # container info
+                        ]
+                    },
+                },  # container info
                 {},  # image info
                 "4.1.1",  # podman version
             ],
@@ -118,15 +124,17 @@ def test_container_add_params(test_input, expected):
         (
             [
                 None,  # module
-                {"conmon_pidfile": 'aaa'},  # module params
-                {"conmonpidfile": None,
+                {"conmon_pidfile": "aaa"},  # module params
+                {
+                    "conmonpidfile": None,
                     "config": {
                         "createcommand": [
                             "podman",
                             "create",
                             "testcont",
-                        ]}
-                 },  # container info
+                        ]
+                    },
+                },  # container info
                 {},  # image info
                 "4.1.1",  # podman version
             ],
@@ -135,16 +143,18 @@ def test_container_add_params(test_input, expected):
         (
             [
                 None,  # module
-                {"conmon_pidfile": 'aaa'},  # module params
-                {"conmonpidfile": 'aaa',
+                {"conmon_pidfile": "aaa"},  # module params
+                {
+                    "conmonpidfile": "aaa",
                     "config": {
                         "createcommand": [
                             "podman",
                             "create",
                             "--conmon-pidfile=aaa",
                             "testcont",
-                        ]}
-                 },  # container info
+                        ]
+                    },
+                },  # container info
                 {},  # image info
                 "4.1.1",  # podman version
             ],

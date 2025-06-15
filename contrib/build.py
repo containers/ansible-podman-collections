@@ -9,6 +9,6 @@ if len(sys.argv) < 2:
 version = sys.argv[1]
 with open("galaxy.yml.in") as f:
     y = yaml.safe_load(f)
-y['version'] = version
+y["version"] = version
 with open("galaxy.yml", "w") as ff:
     yaml.safe_dump(y, ff)
