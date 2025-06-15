@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -155,13 +156,13 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_pod_info(module, executable, name):
-    command = [executable, 'pod', 'inspect']
+    command = [executable, "pod", "inspect"]
     pods = [name]
     result = []
     errs = []
     rcs = []
     if not name:
-        all_names = [executable, 'pod', 'ls', '-q']
+        all_names = [executable, "pod", "ls", "-q"]
         rc, out, err = module.run_command(all_names)
         if rc != 0:
             module.fail_json(msg="Unable to get list of pods: %s" % err)
@@ -185,14 +186,13 @@ def get_pod_info(module, executable, name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            name=dict(type='str')
+            executable=dict(type="str", default="podman"), name=dict(type="str")
         ),
         supports_check_mode=True,
     )
 
-    name = module.params['name']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    name = module.params["name"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     inspect_results, errs, rcs = get_pod_info(module, executable, name)
 
@@ -208,5 +208,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

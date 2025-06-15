@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 # Written by Janos Gerzson (grzs@backendo.com)
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = """
@@ -119,7 +120,7 @@ from ansible.plugins.become import BecomeBase
 
 class BecomeModule(BecomeBase):
 
-    name = 'containers.podman.podman_unshare'
+    name = "containers.podman.podman_unshare"
 
     def build_become_command(self, cmd, shell):
         super(BecomeModule, self).build_become_command(cmd, shell)
@@ -127,18 +128,20 @@ class BecomeModule(BecomeBase):
         if not cmd:
             return cmd
 
-        becomecmd = 'podman unshare'
+        becomecmd = "podman unshare"
 
-        user = self.get_option('become_user') or 'root'
-        if user != 'root':
-            cmdlist = [self.get_option('become_exe') or 'sudo']
+        user = self.get_option("become_user") or "root"
+        if user != "root":
+            cmdlist = [self.get_option("become_exe") or "sudo"]
             # -i is required, because
             # podman unshare should be executed in a login shell to avoid chdir permission errors
-            cmdlist.append('-iu %s' % user)
-            if self.get_option('become_pass'):
-                self.prompt = '[sudo podman unshare via ansible, key=%s] password:' % self._id
+            cmdlist.append("-iu %s" % user)
+            if self.get_option("become_pass"):
+                self.prompt = (
+                    "[sudo podman unshare via ansible, key=%s] password:" % self._id
+                )
                 cmdlist.append('-p "%s"' % self.prompt)
-            cmdlist.append('-- %s' % becomecmd)
-            becomecmd = ' '.join(cmdlist)
+            cmdlist.append("-- %s" % becomecmd)
+            becomecmd = " ".join(cmdlist)
 
-        return ' '.join([becomecmd, self._build_success_command(cmd, shell)])
+        return " ".join([becomecmd, self._build_success_command(cmd, shell)])

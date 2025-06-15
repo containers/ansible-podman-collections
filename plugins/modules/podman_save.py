@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_save
 short_description: Saves podman image to tar file
 author: Sagi Shnaidman (@sshnaidm)
@@ -63,12 +63,12 @@ options:
     type: str
 requirements:
   - "Podman installed on host"
-'''
+"""
 
-RETURN = '''
-'''
+RETURN = """
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # What modules does for example
 - containers.podman.podman_save:
     image: nginx
@@ -79,7 +79,7 @@ EXAMPLES = '''
       - fedora
     dest: /tmp/file456.tar
     multi_image_archive: true
-'''
+"""
 
 import os  # noqa: E402
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
@@ -88,32 +88,32 @@ from ..module_utils.podman.common import remove_file_or_dir  # noqa: E402
 
 def save(module, executable):
     changed = False
-    command = [executable, 'save']
+    command = [executable, "save"]
     cmd_args = {
-        'compress': ['--compress'],
-        'dest': ['-o=%s' % module.params['dest']],
-        'format': ['--format=%s' % module.params['format']],
-        'multi_image_archive': ['--multi-image-archive'],
+        "compress": ["--compress"],
+        "dest": ["-o=%s" % module.params["dest"]],
+        "format": ["--format=%s" % module.params["format"]],
+        "multi_image_archive": ["--multi-image-archive"],
     }
     for param in module.params:
         if module.params[param] is not None and param in cmd_args:
             command += cmd_args[param]
-    for img in module.params['image']:
+    for img in module.params["image"]:
         command.append(img)
-    if module.params['force']:
+    if module.params["force"]:
         changed = True
-        dest = module.params['dest']
+        dest = module.params["dest"]
         if os.path.exists(dest):
             if module.check_mode:
-                return changed, '', ''
+                return changed, "", ""
             try:
                 remove_file_or_dir(dest)
             except Exception as e:
                 module.fail_json(msg="Error deleting %s path: %s" % (dest, e))
     else:
-        changed = not os.path.exists(module.params['dest'])
+        changed = not os.path.exists(module.params["dest"])
     if module.check_mode:
-        return changed, '', ''
+        return changed, "", ""
     rc, out, err = module.run_command(command)
     if rc != 0:
         module.fail_json(msg="Error: %s" % (err))
@@ -123,20 +123,28 @@ def save(module, executable):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            image=dict(type='list', elements='str', required=True),
-            compress=dict(type='bool'),
-            dest=dict(type='str', required=True, aliases=['path']),
-            format=dict(type='str', choices=['docker-archive', 'oci-archive', 'oci-dir', 'docker-dir']),
-            multi_image_archive=dict(type='bool'),
-            force=dict(type='bool', default=True),
-            executable=dict(type='str', default='podman')
+            image=dict(type="list", elements="str", required=True),
+            compress=dict(type="bool"),
+            dest=dict(type="str", required=True, aliases=["path"]),
+            format=dict(
+                type="str",
+                choices=["docker-archive", "oci-archive", "oci-dir", "docker-dir"],
+            ),
+            multi_image_archive=dict(type="bool"),
+            force=dict(type="bool", default=True),
+            executable=dict(type="str", default="podman"),
         ),
         supports_check_mode=True,
     )
-    if module.params['compress'] and module.params['format'] not in ['oci-dir', 'docker-dir']:
-        module.fail_json(msg="Compression is only supported for oci-dir and docker-dir format")
+    if module.params["compress"] and module.params["format"] not in [
+        "oci-dir",
+        "docker-dir",
+    ]:
+        module.fail_json(
+            msg="Compression is only supported for oci-dir and docker-dir format"
+        )
 
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    executable = module.get_bin_path(module.params["executable"], required=True)
     changed, out, err = save(module, executable)
 
     results = {
@@ -148,5 +156,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

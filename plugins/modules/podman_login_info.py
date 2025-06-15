@@ -2,6 +2,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -64,23 +65,23 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_login_info(module, executable, authfile, registry):
-    command = [executable, 'login', '--get-login']
+    command = [executable, "login", "--get-login"]
     result = dict(
         registry=registry,
-        username='',
+        username="",
         logged_in=False,
     )
     if authfile:
-        command.extend(['--authfile', authfile])
+        command.extend(["--authfile", authfile])
     if registry:
         command.append(registry)
     rc, out, err = module.run_command(command)
     if rc != 0:
-        if 'Error: not logged into' in err:
+        if "Error: not logged into" in err:
             # The error message is e.g. 'Error: not logged into docker.io'
             # Therefore get last word to extract registry name
             result["registry"] = err.split()[-1]
-            err = ''
+            err = ""
             return result
         module.fail_json(msg="Unable to gather info for %s: %s" % (registry, err))
     result["username"] = out.strip()
@@ -91,16 +92,16 @@ def get_login_info(module, executable, authfile, registry):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            authfile=dict(type='path'),
-            registry=dict(type='str', required=True)
+            executable=dict(type="str", default="podman"),
+            authfile=dict(type="path"),
+            registry=dict(type="str", required=True),
         ),
         supports_check_mode=True,
     )
 
-    registry = module.params['registry']
-    authfile = module.params['authfile']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    registry = module.params["registry"]
+    authfile = module.params["authfile"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     inspect_results = get_login_info(module, executable, authfile, registry)
 
@@ -112,5 +113,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_volume_info
 author:
   - "Sagi Shnaidman (@sshnaidm)"
@@ -27,7 +28,7 @@ options:
         machine running C(podman)
     default: 'podman'
     type: str
-'''
+"""
 
 EXAMPLES = r"""
 - name: Gather info about all present volumes
@@ -65,14 +66,16 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_volume_info(module, executable, name):
-    command = [executable, 'volume', 'inspect']
+    command = [executable, "volume", "inspect"]
     if name:
         command.append(name)
     else:
         command.append("--all")
     rc, out, err = module.run_command(command)
-    if rc != 0 or 'no such volume' in err:
-        module.fail_json(msg="Unable to gather info for %s: %s" % (name or 'all volumes', err))
+    if rc != 0 or "no such volume" in err:
+        module.fail_json(
+            msg="Unable to gather info for %s: %s" % (name or "all volumes", err)
+        )
     if not out or json.loads(out) is None:
         return [], out, err
     return json.loads(out), out, err
@@ -81,25 +84,20 @@ def get_volume_info(module, executable, name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            name=dict(type='str')
+            executable=dict(type="str", default="podman"), name=dict(type="str")
         ),
         supports_check_mode=True,
     )
 
-    name = module.params['name']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    name = module.params["name"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     inspect_results, out, err = get_volume_info(module, executable, name)
 
-    results = {
-        "changed": False,
-        "volumes": inspect_results,
-        "stderr": err
-    }
+    results = {"changed": False, "volumes": inspect_results, "stderr": err}
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

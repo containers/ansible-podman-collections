@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
   module: podman_image
   author:
       - Sam Doran (@samdoran)
@@ -225,7 +226,7 @@ DOCUMENTATION = r'''
       type: list
       elements: str
       required: false
-'''
+"""
 
 EXAMPLES = r"""
 - name: Pull an image
@@ -436,8 +437,12 @@ import sys  # noqa: E402
 
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+    run_podman_command,
+)
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+    create_quadlet_state,
+)
 
 
 class PodmanImageManager(object):
@@ -448,57 +453,68 @@ class PodmanImageManager(object):
 
         self.module = module
         self.results = results
-        self.name = self.module.params.get('name')
-        self.executable = self.module.get_bin_path(module.params.get('executable'), required=True)
-        self.tag = self.module.params.get('tag')
-        self.pull = self.module.params.get('pull')
-        self.pull_extra_args = self.module.params.get('pull_extra_args')
-        self.push = self.module.params.get('push')
-        self.path = self.module.params.get('path')
-        self.force = self.module.params.get('force')
-        self.state = self.module.params.get('state')
-        self.validate_certs = self.module.params.get('validate_certs')
-        self.auth_file = self.module.params.get('auth_file')
-        self.username = self.module.params.get('username')
-        self.password = self.module.params.get('password')
-        self.ca_cert_dir = self.module.params.get('ca_cert_dir')
-        self.build = self.module.params.get('build')
-        self.push_args = self.module.params.get('push_args')
-        self.arch = self.module.params.get('arch')
+        self.name = self.module.params.get("name")
+        self.executable = self.module.get_bin_path(
+            module.params.get("executable"), required=True
+        )
+        self.tag = self.module.params.get("tag")
+        self.pull = self.module.params.get("pull")
+        self.pull_extra_args = self.module.params.get("pull_extra_args")
+        self.push = self.module.params.get("push")
+        self.path = self.module.params.get("path")
+        self.force = self.module.params.get("force")
+        self.state = self.module.params.get("state")
+        self.validate_certs = self.module.params.get("validate_certs")
+        self.auth_file = self.module.params.get("auth_file")
+        self.username = self.module.params.get("username")
+        self.password = self.module.params.get("password")
+        self.ca_cert_dir = self.module.params.get("ca_cert_dir")
+        self.build = self.module.params.get("build")
+        self.push_args = self.module.params.get("push_args")
+        self.arch = self.module.params.get("arch")
 
         repo, repo_tag = parse_repository_tag(self.name)
         if repo_tag:
             self.name = repo
             self.tag = repo_tag
 
-        delimiter = ':' if "sha256" not in self.tag else '@'
-        self.image_name = '{name}{d}{tag}'.format(name=self.name, d=delimiter, tag=self.tag)
+        delimiter = ":" if "sha256" not in self.tag else "@"
+        self.image_name = "{name}{d}{tag}".format(
+            name=self.name, d=delimiter, tag=self.tag
+        )
 
-        if self.state in ['present', 'build']:
+        if self.state in ["present", "build"]:
             self.present()
 
-        if self.state in ['absent']:
+        if self.state in ["absent"]:
             self.absent()
 
-        if self.state == 'quadlet':
+        if self.state == "quadlet":
             self.make_quadlet()
 
     def _run(self, args, expected_rc=0, ignore_errors=False):
-        cmd = " ".join([self.executable]
-                       + [to_native(i) for i in args])
+        cmd = " ".join([self.executable] + [to_native(i) for i in args])
         self.module.log("PODMAN-IMAGE-DEBUG: %s" % cmd)
-        self.results['podman_actions'].append(cmd)
+        self.results["podman_actions"].append(cmd)
         return run_podman_command(
             module=self.module,
             executable=self.executable,
             args=args,
             expected_rc=expected_rc,
-            ignore_errors=ignore_errors)
+            ignore_errors=ignore_errors,
+        )
 
-    def _get_id_from_output(self, lines, startswith=None, contains=None, split_on=' ', maxsplit=1):
+    def _get_id_from_output(
+        self, lines, startswith=None, contains=None, split_on=" ", maxsplit=1
+    ):
         layer_ids = []
         for line in lines.splitlines():
-            if startswith and line.startswith(startswith) or contains and contains in line:
+            if (
+                startswith
+                and line.startswith(startswith)
+                or contains
+                and contains in line
+            ):
                 splitline = line.rsplit(split_on, maxsplit)
                 layer_ids.append(splitline[1])
 
@@ -515,7 +531,9 @@ class PodmanImageManager(object):
         """
 
         containerfile_path = None
-        for filename in [os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]]:
+        for filename in [
+            os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]
+        ]:
             if os.path.exists(filename):
                 containerfile_path = filename
                 break
@@ -534,8 +552,10 @@ class PodmanImageManager(object):
         locations, return 'None'.
         """
 
-        build_file_arg = self.build.get('file') if self.build else None
-        containerfile_contents = self.build.get('container_file') if self.build else None
+        build_file_arg = self.build.get("file") if self.build else None
+        containerfile_contents = (
+            self.build.get("container_file") if self.build else None
+        )
 
         container_filename = None
         if build_file_arg:
@@ -564,8 +584,7 @@ class PodmanImageManager(object):
             ).hexdigest()
         else:
             return hashlib.sha256(
-                containerfile_contents.encode(),
-                usedforsecurity=False
+                containerfile_contents.encode(), usedforsecurity=False
             ).hexdigest()
 
     def _get_args_containerfile_hash(self):
@@ -578,12 +597,14 @@ class PodmanImageManager(object):
 
         args_containerfile_hash = None
 
-        context_has_containerfile = self.path and self._find_containerfile_from_context()
+        context_has_containerfile = (
+            self.path and self._find_containerfile_from_context()
+        )
 
         should_hash_args_containerfile = (
-            context_has_containerfile or
-            self.build.get('file') is not None or
-            self.build.get('container_file') is not None
+            context_has_containerfile
+            or self.build.get("file") is not None
+            or self.build.get("container_file") is not None
         )
 
         if should_hash_args_containerfile:
@@ -599,68 +620,86 @@ class PodmanImageManager(object):
         args_containerfile_hash = self._get_args_containerfile_hash()
 
         if image:
-            digest_before = image[0].get('Digest', image[0].get('digest'))
-            labels = image[0].get('Labels') or {}
+            digest_before = image[0].get("Digest", image[0].get("digest"))
+            labels = image[0].get("Labels") or {}
             if "containerfile.hash" in labels:
                 existing_image_containerfile_hash = labels["containerfile.hash"]
         else:
             digest_before = None
 
-        both_hashes_exist_and_differ = (args_containerfile_hash and existing_image_containerfile_hash and
-                                        args_containerfile_hash != existing_image_containerfile_hash
-                                        )
+        both_hashes_exist_and_differ = (
+            args_containerfile_hash
+            and existing_image_containerfile_hash
+            and args_containerfile_hash != existing_image_containerfile_hash
+        )
 
         if not image or self.force or both_hashes_exist_and_differ:
-            if self.state == 'build' or self.path:
+            if self.state == "build" or self.path:
                 # Build the image
-                build_file = self.build.get('file') if self.build else None
-                container_file_txt = self.build.get('container_file') if self.build else None
+                build_file = self.build.get("file") if self.build else None
+                container_file_txt = (
+                    self.build.get("container_file") if self.build else None
+                )
                 if build_file and container_file_txt:
-                    self.module.fail_json(msg='Cannot specify both build file and container file content!')
+                    self.module.fail_json(
+                        msg="Cannot specify both build file and container file content!"
+                    )
                 if not self.path and build_file:
                     self.path = os.path.dirname(build_file)
                 elif not self.path and not build_file and not container_file_txt:
-                    self.module.fail_json(msg='Path to build context or file is required when building an image')
-                self.results['actions'].append('Built image {image_name} from {path}'.format(
-                    image_name=self.image_name, path=self.path or 'default context'))
+                    self.module.fail_json(
+                        msg="Path to build context or file is required when building an image"
+                    )
+                self.results["actions"].append(
+                    "Built image {image_name} from {path}".format(
+                        image_name=self.image_name, path=self.path or "default context"
+                    )
+                )
                 if not self.module.check_mode:
-                    self.results['image'], self.results['stdout'] = self.build_image(args_containerfile_hash)
-                    image = self.results['image']
+                    self.results["image"], self.results["stdout"] = self.build_image(
+                        args_containerfile_hash
+                    )
+                    image = self.results["image"]
             else:
                 # Pull the image
-                self.results['actions'].append('Pulled image {image_name}'.format(image_name=self.image_name))
+                self.results["actions"].append(
+                    "Pulled image {image_name}".format(image_name=self.image_name)
+                )
                 if not self.module.check_mode:
-                    image = self.results['image'] = self.pull_image()
+                    image = self.results["image"] = self.pull_image()
 
             if not image:
                 image = self.find_image()
             if not self.module.check_mode:
-                digest_after = image[0].get('Digest', image[0].get('digest'))
-                self.results['changed'] = digest_before != digest_after
+                digest_after = image[0].get("Digest", image[0].get("digest"))
+                self.results["changed"] = digest_before != digest_after
             else:
-                self.results['changed'] = True
+                self.results["changed"] = True
 
         if self.push:
-            self.results['image'], output = self.push_image()
-            self.results['stdout'] += "\n" + output
-        if image and not self.results.get('image'):
-            self.results['image'] = image
+            self.results["image"], output = self.push_image()
+            self.results["stdout"] += "\n" + output
+        if image and not self.results.get("image"):
+            self.results["image"] = image
 
     def absent(self):
         image = self.find_image()
         image_id = self.find_image_id()
 
         if image:
-            self.results['actions'].append('Removed image {name}'.format(name=self.name))
-            self.results['changed'] = True
-            self.results['image']['state'] = 'Deleted'
+            self.results["actions"].append(
+                "Removed image {name}".format(name=self.name)
+            )
+            self.results["changed"] = True
+            self.results["image"]["state"] = "Deleted"
             if not self.module.check_mode:
                 self.remove_image()
         elif image_id:
-            self.results['actions'].append(
-                'Removed image with id {id}'.format(id=self.image_name))
-            self.results['changed'] = True
-            self.results['image']['state'] = 'Deleted'
+            self.results["actions"].append(
+                "Removed image with id {id}".format(id=self.image_name)
+            )
+            self.results["changed"] = True
+            self.results["image"]["state"] = "Deleted"
             if not self.module.check_mode:
                 self.remove_image_id()
 
@@ -673,17 +712,21 @@ class PodmanImageManager(object):
         if image_name is None:
             image_name = self.image_name
         # Let's find out if image exists
-        rc, out, err = self._run(['image', 'exists', image_name], ignore_errors=True)
+        rc, out, err = self._run(["image", "exists", image_name], ignore_errors=True)
         if rc == 0:
             inspect_json = self.inspect_image(image_name)
         else:
             return None
-        args = ['image', 'ls', image_name, '--format', 'json']
+        args = ["image", "ls", image_name, "--format", "json"]
         rc, images, err = self._run(args, ignore_errors=True)
         try:
             images = json.loads(images)
         except json.decoder.JSONDecodeError:
-            self.module.fail_json(msg='Failed to parse JSON output from podman image ls: {out}'.format(out=images))
+            self.module.fail_json(
+                msg="Failed to parse JSON output from podman image ls: {out}".format(
+                    out=images
+                )
+            )
         if len(images) == 0:
             return None
         inspect_json = self.inspect_image(image_name)
@@ -692,16 +735,15 @@ class PodmanImageManager(object):
         return None
 
     def _is_target_arch(self, inspect_json=None, arch=None):
-        return arch and inspect_json[0]['Architecture'] == arch
+        return arch and inspect_json[0]["Architecture"] == arch
 
     def find_image_id(self, image_id=None):
         if image_id is None:
             # If image id is set as image_name, remove tag
-            image_id = re.sub(':.*$', '', self.image_name)
-        args = ['image', 'ls', '--quiet', '--no-trunc']
+            image_id = re.sub(":.*$", "", self.image_name)
+        args = ["image", "ls", "--quiet", "--no-trunc"]
         rc, candidates, err = self._run(args, ignore_errors=True)
-        candidates = [re.sub('^sha256:', '', c)
-                      for c in str.splitlines(candidates)]
+        candidates = [re.sub("^sha256:", "", c) for c in str.splitlines(candidates)]
         for c in candidates:
             if c.startswith(image_id):
                 return image_id
@@ -710,12 +752,16 @@ class PodmanImageManager(object):
     def inspect_image(self, image_name=None):
         if image_name is None:
             image_name = self.image_name
-        args = ['inspect', image_name, '--format', 'json']
+        args = ["inspect", image_name, "--format", "json"]
         rc, image_data, err = self._run(args)
         try:
             image_data = json.loads(image_data)
         except json.decoder.JSONDecodeError:
-            self.module.fail_json(msg='Failed to parse JSON output from podman inspect: {out}'.format(out=image_data))
+            self.module.fail_json(
+                msg="Failed to parse JSON output from podman inspect: {out}".format(
+                    out=image_data
+                )
+            )
         if len(image_data) > 0:
             return image_data
         else:
@@ -725,26 +771,28 @@ class PodmanImageManager(object):
         if image_name is None:
             image_name = self.image_name
 
-        args = ['pull', image_name, '-q']
+        args = ["pull", image_name, "-q"]
 
         if self.arch:
-            args.extend(['--arch', self.arch])
+            args.extend(["--arch", self.arch])
 
         if self.auth_file:
-            args.extend(['--authfile', self.auth_file])
+            args.extend(["--authfile", self.auth_file])
 
         if self.username and self.password:
-            cred_string = '{user}:{password}'.format(user=self.username, password=self.password)
-            args.extend(['--creds', cred_string])
+            cred_string = "{user}:{password}".format(
+                user=self.username, password=self.password
+            )
+            args.extend(["--creds", cred_string])
 
         if self.validate_certs is not None:
             if self.validate_certs:
-                args.append('--tls-verify')
+                args.append("--tls-verify")
             else:
-                args.append('--tls-verify=false')
+                args.append("--tls-verify=false")
 
         if self.ca_cert_dir:
-            args.extend(['--cert-dir', self.ca_cert_dir])
+            args.extend(["--cert-dir", self.ca_cert_dir])
 
         if self.pull_extra_args:
             args.extend(shlex.split(self.pull_extra_args))
@@ -753,177 +801,212 @@ class PodmanImageManager(object):
         if rc != 0:
             if not self.pull:
                 self.module.fail_json(
-                    msg='Failed to find image {image_name} locally, image pull set to {pull_bool}'.format(
-                        pull_bool=self.pull, image_name=image_name))
+                    msg="Failed to find image {image_name} locally, image pull set to {pull_bool}".format(
+                        pull_bool=self.pull, image_name=image_name
+                    )
+                )
             else:
                 self.module.fail_json(
-                    msg='Failed to pull image {image_name}'.format(image_name=image_name))
+                    msg="Failed to pull image {image_name}".format(
+                        image_name=image_name
+                    )
+                )
         return self.inspect_image(out.strip())
 
     def build_image(self, containerfile_hash):
-        args = ['build']
-        args.extend(['-t', self.image_name])
+        args = ["build"]
+        args.extend(["-t", self.image_name])
 
         if self.validate_certs is not None:
             if self.validate_certs:
-                args.append('--tls-verify')
+                args.append("--tls-verify")
             else:
-                args.append('--tls-verify=false')
+                args.append("--tls-verify=false")
 
-        annotation = self.build.get('annotation')
+        annotation = self.build.get("annotation")
         if annotation:
             for k, v in annotation.items():
-                args.extend(['--annotation', '{k}={v}'.format(k=k, v=v)])
+                args.extend(["--annotation", "{k}={v}".format(k=k, v=v)])
 
         if self.ca_cert_dir:
-            args.extend(['--cert-dir', self.ca_cert_dir])
+            args.extend(["--cert-dir", self.ca_cert_dir])
 
-        if self.build.get('force_rm'):
-            args.append('--force-rm')
+        if self.build.get("force_rm"):
+            args.append("--force-rm")
 
-        image_format = self.build.get('format')
+        image_format = self.build.get("format")
         if image_format:
-            args.extend(['--format', image_format])
+            args.extend(["--format", image_format])
 
         if self.arch:
-            args.extend(['--arch', self.arch])
+            args.extend(["--arch", self.arch])
 
-        if not self.build.get('cache'):
-            args.append('--no-cache')
+        if not self.build.get("cache"):
+            args.append("--no-cache")
 
-        if self.build.get('rm'):
-            args.append('--rm')
+        if self.build.get("rm"):
+            args.append("--rm")
 
-        containerfile = self.build.get('file')
+        containerfile = self.build.get("file")
         if containerfile:
-            args.extend(['--file', containerfile])
-        container_file_txt = self.build.get('container_file')
+            args.extend(["--file", containerfile])
+        container_file_txt = self.build.get("container_file")
         if container_file_txt:
             # create a temporarly file with the content of the Containerfile
             if self.path:
-                container_file_path = os.path.join(self.path, 'Containerfile.generated_by_ansible_%s' % time.time())
+                container_file_path = os.path.join(
+                    self.path, "Containerfile.generated_by_ansible_%s" % time.time()
+                )
             else:
                 container_file_path = os.path.join(
-                    tempfile.gettempdir(), 'Containerfile.generated_by_ansible_%s' % time.time())
-            with open(container_file_path, 'w') as f:
+                    tempfile.gettempdir(),
+                    "Containerfile.generated_by_ansible_%s" % time.time(),
+                )
+            with open(container_file_path, "w") as f:
                 f.write(container_file_txt)
-            args.extend(['--file', container_file_path])
+            args.extend(["--file", container_file_path])
 
         if containerfile_hash:
-            args.extend(['--label', f"containerfile.hash={containerfile_hash}"])
+            args.extend(["--label", f"containerfile.hash={containerfile_hash}"])
 
-        volume = self.build.get('volume')
+        volume = self.build.get("volume")
         if volume:
             for v in volume:
                 if v:
-                    args.extend(['--volume', v])
+                    args.extend(["--volume", v])
 
         if self.auth_file:
-            args.extend(['--authfile', self.auth_file])
+            args.extend(["--authfile", self.auth_file])
 
         if self.username and self.password:
-            cred_string = '{user}:{password}'.format(user=self.username, password=self.password)
-            args.extend(['--creds', cred_string])
+            cred_string = "{user}:{password}".format(
+                user=self.username, password=self.password
+            )
+            args.extend(["--creds", cred_string])
 
-        extra_args = self.build.get('extra_args')
+        extra_args = self.build.get("extra_args")
         if extra_args:
             args.extend(shlex.split(extra_args))
 
-        target = self.build.get('target')
+        target = self.build.get("target")
         if target:
-            args.extend(['--target', target])
+            args.extend(["--target", target])
         if self.path:
             args.append(self.path)
 
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg="Failed to build image {image}: {out} {err}".format(
-                image=self.image_name, out=out, err=err))
+            self.module.fail_json(
+                msg="Failed to build image {image}: {out} {err}".format(
+                    image=self.image_name, out=out, err=err
+                )
+            )
         # remove the temporary file if it was created
         if container_file_txt:
             os.remove(container_file_path)
-        last_id = self._get_id_from_output(out, startswith='-->')
+        last_id = self._get_id_from_output(out, startswith="-->")
         return self.inspect_image(last_id), out + err
 
     def push_image(self):
-        args = ['push']
+        args = ["push"]
 
         if self.validate_certs is not None:
             if self.validate_certs:
-                args.append('--tls-verify')
+                args.append("--tls-verify")
             else:
-                args.append('--tls-verify=false')
+                args.append("--tls-verify=false")
 
         if self.ca_cert_dir:
-            args.extend(['--cert-dir', self.ca_cert_dir])
+            args.extend(["--cert-dir", self.ca_cert_dir])
 
         if self.username and self.password:
-            cred_string = '{user}:{password}'.format(user=self.username, password=self.password)
-            args.extend(['--creds', cred_string])
+            cred_string = "{user}:{password}".format(
+                user=self.username, password=self.password
+            )
+            args.extend(["--creds", cred_string])
 
         if self.auth_file:
-            args.extend(['--authfile', self.auth_file])
+            args.extend(["--authfile", self.auth_file])
 
-        if self.push_args.get('compress'):
-            args.append('--compress')
+        if self.push_args.get("compress"):
+            args.append("--compress")
 
-        push_format = self.push_args.get('format')
+        push_format = self.push_args.get("format")
         if push_format:
-            args.extend(['--format', push_format])
+            args.extend(["--format", push_format])
 
-        if self.push_args.get('remove_signatures'):
-            args.append('--remove-signatures')
+        if self.push_args.get("remove_signatures"):
+            args.append("--remove-signatures")
 
-        sign_by_key = self.push_args.get('sign_by')
+        sign_by_key = self.push_args.get("sign_by")
         if sign_by_key:
-            args.extend(['--sign-by', sign_by_key])
+            args.extend(["--sign-by", sign_by_key])
 
-        push_extra_args = self.push_args.get('extra_args')
+        push_extra_args = self.push_args.get("extra_args")
         if push_extra_args:
             args.extend(shlex.split(push_extra_args))
 
         args.append(self.image_name)
 
         # Build the destination argument
-        dest = self.push_args.get('dest')
-        transport = self.push_args.get('transport')
+        dest = self.push_args.get("dest")
+        transport = self.push_args.get("transport")
 
         if dest is None:
             dest = self.image_name
 
         if transport:
-            if transport == 'docker':
-                dest_format_string = '{transport}://{dest}'
-            elif transport == 'ostree':
-                dest_format_string = '{transport}:{name}@{dest}'
+            if transport == "docker":
+                dest_format_string = "{transport}://{dest}"
+            elif transport == "ostree":
+                dest_format_string = "{transport}:{name}@{dest}"
             else:
-                dest_format_string = '{transport}:{dest}'
-                if transport == 'docker-daemon' and ":" not in dest:
-                    dest_format_string = '{transport}:{dest}:latest'
-            dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest)
+                dest_format_string = "{transport}:{dest}"
+                if transport == "docker-daemon" and ":" not in dest:
+                    dest_format_string = "{transport}:{dest}:latest"
+            dest_string = dest_format_string.format(
+                transport=transport, name=self.name, dest=dest
+            )
         else:
             dest_string = dest
             # In case of dest as a repository with org name only, append image name to it
-            if ":" not in dest and "@" not in dest and len(dest.rstrip("/").split("/")) == 2:
+            if (
+                ":" not in dest
+                and "@" not in dest
+                and len(dest.rstrip("/").split("/")) == 2
+            ):
                 dest_string = dest.rstrip("/") + "/" + self.image_name
 
-        if "/" not in dest_string and "@" not in dest_string and "docker-daemon" not in dest_string:
-            self.module.fail_json(msg="Destination must be a full URL or path to a directory with image name and tag.")
+        if (
+            "/" not in dest_string
+            and "@" not in dest_string
+            and "docker-daemon" not in dest_string
+        ):
+            self.module.fail_json(
+                msg="Destination must be a full URL or path to a directory with image name and tag."
+            )
 
         args.append(dest_string)
-        self.module.log("PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(
-            image_name=self.image_name, dest_string=dest_string))
-        self.results['actions'].append(" ".join(args))
-        self.results['changed'] = True
-        out, err = '', ''
+        self.module.log(
+            "PODMAN-IMAGE-DEBUG: Pushing image {image_name} to {dest_string}".format(
+                image_name=self.image_name, dest_string=dest_string
+            )
+        )
+        self.results["actions"].append(" ".join(args))
+        self.results["changed"] = True
+        out, err = "", ""
         if not self.module.check_mode:
             rc, out, err = self._run(args, ignore_errors=True)
             if rc != 0:
-                self.module.fail_json(msg="Failed to push image {image_name}".format(
-                    image_name=self.image_name),
-                    stdout=out, stderr=err,
-                    actions=self.results['actions'],
-                    podman_actions=self.results['podman_actions'])
+                self.module.fail_json(
+                    msg="Failed to push image {image_name}".format(
+                        image_name=self.image_name
+                    ),
+                    stdout=out,
+                    stderr=err,
+                    actions=self.results["actions"],
+                    podman_actions=self.results["podman_actions"],
+                )
 
         return self.inspect_image(self.image_name), out + err
 
@@ -931,35 +1014,41 @@ class PodmanImageManager(object):
         if image_name is None:
             image_name = self.image_name
 
-        args = ['rmi', image_name]
+        args = ["rmi", image_name]
         if self.force:
-            args.append('--force')
+            args.append("--force")
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg='Failed to remove image {image_name}. {err}'.format(
-                image_name=image_name, err=err))
+            self.module.fail_json(
+                msg="Failed to remove image {image_name}. {err}".format(
+                    image_name=image_name, err=err
+                )
+            )
         return out
 
     def remove_image_id(self, image_id=None):
         if image_id is None:
-            image_id = re.sub(':.*$', '', self.image_name)
+            image_id = re.sub(":.*$", "", self.image_name)
 
-        args = ['rmi', image_id]
+        args = ["rmi", image_id]
         if self.force:
-            args.append('--force')
+            args.append("--force")
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
-            self.module.fail_json(msg='Failed to remove image with id {image_id}. {err}'.format(
-                image_id=image_id, err=err))
+            self.module.fail_json(
+                msg="Failed to remove image with id {image_id}. {err}".format(
+                    image_id=image_id, err=err
+                )
+            )
         return out
 
 
 def parse_repository_tag(repo_name):
-    parts = repo_name.rsplit('@', 1)
+    parts = repo_name.rsplit("@", 1)
     if len(parts) == 2:
         return tuple(parts)
-    parts = repo_name.rsplit(':', 1)
-    if len(parts) == 2 and '/' not in parts[1]:
+    parts = repo_name.rsplit(":", 1)
+    if len(parts) == 2 and "/" not in parts[1]:
         return tuple(parts)
     return repo_name, None
 
@@ -967,77 +1056,78 @@ def parse_repository_tag(repo_name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            name=dict(type='str', required=True),
-            arch=dict(type='str'),
-            tag=dict(type='str', default='latest'),
-            pull=dict(type='bool', default=True),
-            pull_extra_args=dict(type='str'),
-            push=dict(type='bool', default=False),
-            path=dict(type='str'),
-            force=dict(type='bool', default=False),
-            state=dict(type='str', default='present', choices=['absent', 'present', 'build', 'quadlet']),
-            validate_certs=dict(type='bool', aliases=['tlsverify', 'tls_verify']),
-            executable=dict(type='str', default='podman'),
-            auth_file=dict(type='path', aliases=['authfile']),
-            username=dict(type='str'),
-            password=dict(type='str', no_log=True),
-            ca_cert_dir=dict(type='path'),
-            quadlet_dir=dict(type='path', required=False),
-            quadlet_filename=dict(type='str'),
-            quadlet_file_mode=dict(type='raw', required=False),
-            quadlet_options=dict(type='list', elements='str', required=False),
+            name=dict(type="str", required=True),
+            arch=dict(type="str"),
+            tag=dict(type="str", default="latest"),
+            pull=dict(type="bool", default=True),
+            pull_extra_args=dict(type="str"),
+            push=dict(type="bool", default=False),
+            path=dict(type="str"),
+            force=dict(type="bool", default=False),
+            state=dict(
+                type="str",
+                default="present",
+                choices=["absent", "present", "build", "quadlet"],
+            ),
+            validate_certs=dict(type="bool", aliases=["tlsverify", "tls_verify"]),
+            executable=dict(type="str", default="podman"),
+            auth_file=dict(type="path", aliases=["authfile"]),
+            username=dict(type="str"),
+            password=dict(type="str", no_log=True),
+            ca_cert_dir=dict(type="path"),
+            quadlet_dir=dict(type="path", required=False),
+            quadlet_filename=dict(type="str"),
+            quadlet_file_mode=dict(type="raw", required=False),
+            quadlet_options=dict(type="list", elements="str", required=False),
             build=dict(
-                type='dict',
-                aliases=['build_args', 'buildargs'],
+                type="dict",
+                aliases=["build_args", "buildargs"],
                 default={},
                 options=dict(
-                    annotation=dict(type='dict'),
-                    force_rm=dict(type='bool', default=False),
-                    file=dict(type='path'),
-                    container_file=dict(type='str'),
-                    format=dict(
-                        type='str',
-                        choices=['oci', 'docker'],
-                        default='oci'
-                    ),
-                    cache=dict(type='bool', default=True),
-                    rm=dict(type='bool', default=True),
-                    volume=dict(type='list', elements='str'),
-                    extra_args=dict(type='str'),
-                    target=dict(type='str'),
+                    annotation=dict(type="dict"),
+                    force_rm=dict(type="bool", default=False),
+                    file=dict(type="path"),
+                    container_file=dict(type="str"),
+                    format=dict(type="str", choices=["oci", "docker"], default="oci"),
+                    cache=dict(type="bool", default=True),
+                    rm=dict(type="bool", default=True),
+                    volume=dict(type="list", elements="str"),
+                    extra_args=dict(type="str"),
+                    target=dict(type="str"),
                 ),
             ),
             push_args=dict(
-                type='dict',
+                type="dict",
                 default={},
                 options=dict(
-                    compress=dict(type='bool'),
-                    format=dict(type='str', choices=['oci', 'v2s1', 'v2s2']),
-                    remove_signatures=dict(type='bool'),
-                    sign_by=dict(type='str'),
-                    dest=dict(type='str', aliases=['destination'],),
-                    extra_args=dict(type='str'),
+                    compress=dict(type="bool"),
+                    format=dict(type="str", choices=["oci", "v2s1", "v2s2"]),
+                    remove_signatures=dict(type="bool"),
+                    sign_by=dict(type="str"),
+                    dest=dict(
+                        type="str",
+                        aliases=["destination"],
+                    ),
+                    extra_args=dict(type="str"),
                     transport=dict(
-                        type='str',
+                        type="str",
                         choices=[
-                            'dir',
-                            'docker-archive',
-                            'docker-daemon',
-                            'oci-archive',
-                            'ostree',
-                            'docker'
-                        ]
+                            "dir",
+                            "docker-archive",
+                            "docker-daemon",
+                            "oci-archive",
+                            "ostree",
+                            "docker",
+                        ],
                     ),
                 ),
             ),
         ),
         supports_check_mode=True,
-        required_together=(
-            ['username', 'password'],
-        ),
+        required_together=(["username", "password"],),
         mutually_exclusive=(
-            ['auth_file', 'username'],
-            ['auth_file', 'password'],
+            ["auth_file", "username"],
+            ["auth_file", "password"],
         ),
     )
 
@@ -1046,12 +1136,12 @@ def main():
         actions=[],
         podman_actions=[],
         image={},
-        stdout='',
+        stdout="",
     )
 
     PodmanImageManager(module, results)
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

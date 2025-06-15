@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_container_copy
 author:
   - Alessandro Rossi (@kubealex)
@@ -54,7 +55,7 @@ options:
     required: False
     default: False
     type: bool
-'''
+"""
 
 EXAMPLES = r"""
 - name: Copy file "test.yml" on the host to the "apache" container's root folder
@@ -73,22 +74,26 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def copy_file(module, executable, src, dest, container, from_container, archive, overwrite):
+def copy_file(
+    module, executable, src, dest, container, from_container, archive, overwrite
+):
     if from_container:
-        command = [executable, 'cp', '{0}:{1}'.format(container, src), dest]
+        command = [executable, "cp", "{0}:{1}".format(container, src), dest]
     else:
-        command = [executable, 'cp', src, '{0}:{1}'.format(container, dest)]
+        command = [executable, "cp", src, "{0}:{1}".format(container, dest)]
 
     if not archive:
-        command.append('--archive=False')
+        command.append("--archive=False")
 
     if overwrite:
-        command.append('--overwrite')
+        command.append("--overwrite")
 
     rc, out, err = module.run_command(command)
 
     if rc != 0:
-        module.fail_json(msg='Unable to copy file to/from container - {out}'.format(out=err))
+        module.fail_json(
+            msg="Unable to copy file to/from container - {out}".format(out=err)
+        )
     else:
         changed = True
     return changed, out, err
@@ -97,35 +102,35 @@ def copy_file(module, executable, src, dest, container, from_container, archive,
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            src=dict(type='str', required=True),
-            dest=dict(type='str', required=True),
-            container=dict(type='str', required=True),
-            from_container=dict(type='bool', required=False, default=False),
-            archive=dict(type='bool', required=False, default=True),
-            overwrite=dict(type='bool', required=False, default=False)
+            executable=dict(type="str", default="podman"),
+            src=dict(type="str", required=True),
+            dest=dict(type="str", required=True),
+            container=dict(type="str", required=True),
+            from_container=dict(type="bool", required=False, default=False),
+            archive=dict(type="bool", required=False, default=True),
+            overwrite=dict(type="bool", required=False, default=False),
         ),
         supports_check_mode=False,
     )
 
-    executable = module.params['executable']
-    src = module.params['src']
-    dest = module.params['dest']
-    container = module.params['container']
-    from_container = module.params['from_container']
-    archive = module.params['archive']
-    overwrite = module.params['overwrite']
+    executable = module.params["executable"]
+    src = module.params["src"]
+    dest = module.params["dest"]
+    container = module.params["container"]
+    from_container = module.params["from_container"]
+    archive = module.params["archive"]
+    overwrite = module.params["overwrite"]
 
     executable = module.get_bin_path(executable, required=True)
 
-    changed, out, err = copy_file(module, executable, src, dest, container, from_container, archive, overwrite)
-
-    results = dict(
-        changed=changed
+    changed, out, err = copy_file(
+        module, executable, src, dest, container, from_container, archive, overwrite
     )
+
+    results = dict(changed=changed)
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

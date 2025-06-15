@@ -3,10 +3,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_image_info
 author:
   - Sam Doran (@samdoran)
@@ -27,7 +28,7 @@ options:
     type: list
     elements: str
 
-'''
+"""
 
 EXAMPLES = r"""
 - name: Gather info for all images
@@ -126,13 +127,13 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def image_exists(module, executable, name):
-    command = [executable, 'image', 'exists', name]
+    command = [executable, "image", "exists", name]
     rc, out, err = module.run_command(command)
     if rc == 1:
         return False
     elif 'Command "exists" not found' in err:
         # The 'exists' test is available in podman >= 0.12.1
-        command = [executable, 'image', 'ls', '-q', name]
+        command = [executable, "image", "ls", "-q", name]
         rc2, out2, err2 = module.run_command(command)
         if rc2 != 0:
             return False
@@ -158,12 +159,14 @@ def get_image_info(module, executable, name):
         names = [name]
 
     if len(names) > 0:
-        command = [executable, 'image', 'inspect']
+        command = [executable, "image", "inspect"]
         command.extend(names)
         rc, out, err = module.run_command(command)
 
         if rc != 0:
-            module.fail_json(msg="Unable to gather info for '{0}': {1}".format(', '.join(names), err))
+            module.fail_json(
+                msg="Unable to gather info for '{0}': {1}".format(", ".join(names), err)
+            )
         return out
 
     else:
@@ -171,11 +174,11 @@ def get_image_info(module, executable, name):
 
 
 def get_all_image_info(module, executable):
-    command = [executable, 'image', 'ls', '-q']
+    command = [executable, "image", "ls", "-q"]
     rc, out, err = module.run_command(command)
     out = out.strip()
     if out:
-        name = out.split('\n')
+        name = out.split("\n")
         res = get_image_info(module, executable, name)
         return res
     return json.dumps([])
@@ -184,14 +187,14 @@ def get_all_image_info(module, executable):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            name=dict(type='list', elements='str')
+            executable=dict(type="str", default="podman"),
+            name=dict(type="list", elements="str"),
         ),
         supports_check_mode=True,
     )
 
-    executable = module.params['executable']
-    name = module.params.get('name')
+    executable = module.params["executable"]
+    name = module.params.get("name")
     executable = module.get_bin_path(executable, required=True)
 
     if name:
@@ -200,13 +203,10 @@ def main():
     else:
         results = json.loads(get_all_image_info(module, executable))
 
-    results = dict(
-        changed=False,
-        images=results
-    )
+    results = dict(changed=False, images=results)
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -82,9 +83,9 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_network_info(module, executable, name):
-    command = [executable, 'network', 'inspect']
+    command = [executable, "network", "inspect"]
     if not name:
-        all_names = [executable, 'network', 'ls', '-q']
+        all_names = [executable, "network", "ls", "-q"]
         rc, out, err = module.run_command(all_names)
         if rc != 0:
             module.fail_json(msg="Unable to get list of networks: %s" % err)
@@ -95,7 +96,7 @@ def get_network_info(module, executable, name):
     else:
         command.append(name)
     rc, out, err = module.run_command(command)
-    if rc != 0 or 'unable to find network configuration' in err:
+    if rc != 0 or "unable to find network configuration" in err:
         module.fail_json(msg="Unable to gather info for %s: %s" % (name, err))
     if not out or json.loads(out) is None:
         return [], out, err
@@ -105,25 +106,20 @@ def get_network_info(module, executable, name):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            executable=dict(type='str', default='podman'),
-            name=dict(type='str')
+            executable=dict(type="str", default="podman"), name=dict(type="str")
         ),
         supports_check_mode=True,
     )
 
-    name = module.params['name']
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    name = module.params["name"]
+    executable = module.get_bin_path(module.params["executable"], required=True)
 
     inspect_results, out, err = get_network_info(module, executable, name)
 
-    results = {
-        "changed": False,
-        "networks": inspect_results,
-        "stderr": err
-    }
+    results = {"changed": False, "networks": inspect_results, "stderr": err}
 
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

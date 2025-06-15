@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: podman_tag
 short_description: Add an additional name to a local image
 author: Christian Bourque (@ocafebabe)
@@ -33,50 +33,51 @@ options:
     type: str
 requirements:
   - "Podman installed on host"
-'''
+"""
 
-RETURN = '''
-'''
+RETURN = """
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # What modules does for example
 - containers.podman.podman_tag:
     image: docker.io/continuumio/miniconda3
     target_names:
       - miniconda3
       - miniconda
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 
 def tag(module, executable):
     changed = False
-    command = [executable, 'tag']
-    command.append(module.params['image'])
-    command.extend(module.params['target_names'])
+    command = [executable, "tag"]
+    command.append(module.params["image"])
+    command.extend(module.params["target_names"])
     if module.check_mode:
-        return changed, '', ''
+        return changed, "", ""
     rc, out, err = module.run_command(command)
     if rc == 0:
         changed = True
     else:
-        module.fail_json(msg="Error tagging local image %s: %s" % (
-            module.params['image'], err))
+        module.fail_json(
+            msg="Error tagging local image %s: %s" % (module.params["image"], err)
+        )
     return changed, out, err
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            image=dict(type='str', required=True),
-            target_names=dict(type='list', elements='str', required=True),
-            executable=dict(type='str', default='podman')
+            image=dict(type="str", required=True),
+            target_names=dict(type="list", elements="str", required=True),
+            executable=dict(type="str", default="podman"),
         ),
         supports_check_mode=True,
     )
 
-    executable = module.get_bin_path(module.params['executable'], required=True)
+    executable = module.get_bin_path(module.params["executable"], required=True)
     changed, out, err = tag(module, executable)
 
     results = {
@@ -87,5 +88,5 @@ def main():
     module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

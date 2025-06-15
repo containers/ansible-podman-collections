@@ -7,10 +7,11 @@
 #
 # Written by: Tomas Tomecek (https://github.com/TomasTomecek)
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
     author: Tomas Tomecek (@TomasTomecek)
     name: podman
     short_description: Interact with an existing podman container
@@ -56,7 +57,7 @@ DOCUMENTATION = '''
           - name: ansible_podman_executable
         env:
           - name: ANSIBLE_PODMAN_EXECUTABLE
-'''
+"""
 
 import os
 import shlex
@@ -79,7 +80,7 @@ class Connection(ConnectionBase):
     """
 
     # String used to identify this Connection class from other classes
-    transport = 'containers.podman.podman'
+    transport = "containers.podman.podman"
     # We know that pipelining does not work with podman. Do not enable it, or
     # users will start containers and fail to connect to them.
     has_pipelining = False
@@ -104,7 +105,7 @@ class Connection(ConnectionBase):
         :param use_container_id: whether to append the container ID to the command
         :return: return code, stdout, stderr
         """
-        podman_exec = self.get_option('podman_executable')
+        podman_exec = self.get_option("podman_executable")
         try:
             podman_cmd = get_bin_path(podman_exec)
         except ValueError:
@@ -112,11 +113,12 @@ class Connection(ConnectionBase):
         if not podman_cmd:
             raise AnsibleError("%s command not found in PATH" % podman_exec)
         local_cmd = [podman_cmd]
-        if self.get_option('podman_extra_args'):
+        if self.get_option("podman_extra_args"):
             local_cmd += shlex.split(
                 to_native(
-                    self.get_option('podman_extra_args'),
-                    errors='surrogate_or_strict'))
+                    self.get_option("podman_extra_args"), errors="surrogate_or_strict"
+                )
+            )
         if isinstance(cmd, str):
             local_cmd.append(cmd)
         else:
@@ -126,18 +128,23 @@ class Connection(ConnectionBase):
             local_cmd.append(self._container_id)
         if cmd_args:
             local_cmd += cmd_args
-        local_cmd = [to_bytes(i, errors='surrogate_or_strict') for i in local_cmd]
+        local_cmd = [to_bytes(i, errors="surrogate_or_strict") for i in local_cmd]
 
         display.vvv("RUN %s" % (local_cmd,), host=self._container_id)
-        p = subprocess.Popen(local_cmd, shell=False, stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(
+            local_cmd,
+            shell=False,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
         stdout, stderr = p.communicate(input=in_data)
         display.vvvvv("STDOUT %s" % stdout)
         display.vvvvv("STDERR %s" % stderr)
         display.vvvvv("RC CODE %s" % p.returncode)
-        stdout = to_bytes(stdout, errors='surrogate_or_strict')
-        stderr = to_bytes(stderr, errors='surrogate_or_strict')
+        stdout = to_bytes(stdout, errors="surrogate_or_strict")
+        stderr = to_bytes(stderr, errors="surrogate_or_strict")
         return p.returncode, stdout, stderr
 
     def _connect(self):
@@ -148,22 +155,30 @@ class Connection(ConnectionBase):
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._podman("mount")
         if rc != 0:
-            display.vvvv("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
+            display.vvvv(
+                "Failed to mount container %s: %s"
+                % (self._container_id, stderr.strip())
+            )
         elif not os.listdir(self._mount_point.strip()):
-            display.vvvv("Failed to mount container with CGroups2: empty dir %s" % self._mount_point.strip())
+            display.vvvv(
+                "Failed to mount container with CGroups2: empty dir %s"
+                % self._mount_point.strip()
+            )
             self._mount_point = None
         else:
             self._mount_point = self._mount_point.strip()
-            display.vvvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
+            display.vvvvv(
+                "MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr)
+            )
         self._connected = True
 
     @ensure_connect
     def exec_command(self, cmd, in_data=None, sudoable=False):
-        """ run specified command in a running OCI container using podman """
+        """run specified command in a running OCI container using podman"""
         super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         # shlex.split has a bug with text strings on Python-2.6 and can only handle text strings on Python-3
-        cmd_args_list = shlex.split(to_native(cmd, errors='surrogate_or_strict'))
+        cmd_args_list = shlex.split(to_native(cmd, errors="surrogate_or_strict"))
         exec_args_list = ["exec"]
         if self.user:
             exec_args_list.extend(("--user", self.user))
@@ -174,56 +189,70 @@ class Connection(ConnectionBase):
         return rc, stdout, stderr
 
     def put_file(self, in_path, out_path):
-        """ Place a local file located in 'in_path' inside container at 'out_path' """
+        """Place a local file located in 'in_path' inside container at 'out_path'"""
         super(Connection, self).put_file(in_path, out_path)
         display.vvv("PUT %s TO %s" % (in_path, out_path), host=self._container_id)
         if not self._mount_point or self.user:
             rc, stdout, stderr = self._podman(
-                "cp", [in_path, self._container_id + ":" + out_path], use_container_id=False
+                "cp",
+                [in_path, self._container_id + ":" + out_path],
+                use_container_id=False,
             )
             if rc != 0:
                 rc, stdout, stderr = self._podman(
-                    "cp", ["--pause=false", in_path, self._container_id + ":" + out_path], use_container_id=False
+                    "cp",
+                    ["--pause=false", in_path, self._container_id + ":" + out_path],
+                    use_container_id=False,
                 )
                 if rc != 0:
                     raise AnsibleError(
-                        "Failed to copy file from %s to %s in container %s\n%s" % (
-                            in_path, out_path, self._container_id, stderr)
+                        "Failed to copy file from %s to %s in container %s\n%s"
+                        % (in_path, out_path, self._container_id, stderr)
                     )
             if self.user:
                 rc, stdout, stderr = self._podman(
-                    "exec", ["chown", self.user, out_path])
+                    "exec", ["chown", self.user, out_path]
+                )
             if rc != 0:
                 raise AnsibleError(
-                    "Failed to chown file %s for user %s in container %s\n%s" % (
-                        out_path, self.user, self._container_id, stderr)
+                    "Failed to chown file %s for user %s in container %s\n%s"
+                    % (out_path, self.user, self._container_id, stderr)
                 )
         else:
-            real_out_path = self._mount_point + to_bytes(out_path, errors='surrogate_or_strict')
+            real_out_path = self._mount_point + to_bytes(
+                out_path, errors="surrogate_or_strict"
+            )
             shutil.copyfile(
-                to_bytes(in_path, errors='surrogate_or_strict'),
-                to_bytes(real_out_path, errors='surrogate_or_strict')
+                to_bytes(in_path, errors="surrogate_or_strict"),
+                to_bytes(real_out_path, errors="surrogate_or_strict"),
             )
 
     def fetch_file(self, in_path, out_path):
-        """ obtain file specified via 'in_path' from the container and place it at 'out_path' """
+        """obtain file specified via 'in_path' from the container and place it at 'out_path'"""
         super(Connection, self).fetch_file(in_path, out_path)
         display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self._container_id)
         if not self._mount_point:
             rc, stdout, stderr = self._podman(
-                "cp", [self._container_id + ":" + in_path, out_path], use_container_id=False)
+                "cp",
+                [self._container_id + ":" + in_path, out_path],
+                use_container_id=False,
+            )
             if rc != 0:
-                raise AnsibleError("Failed to fetch file from %s to %s from container %s\n%s" % (
-                    in_path, out_path, self._container_id, stderr))
+                raise AnsibleError(
+                    "Failed to fetch file from %s to %s from container %s\n%s"
+                    % (in_path, out_path, self._container_id, stderr)
+                )
         else:
-            real_in_path = self._mount_point + to_bytes(in_path, errors='surrogate_or_strict')
+            real_in_path = self._mount_point + to_bytes(
+                in_path, errors="surrogate_or_strict"
+            )
             shutil.copyfile(
-                to_bytes(real_in_path, errors='surrogate_or_strict'),
-                to_bytes(out_path, errors='surrogate_or_strict')
+                to_bytes(real_in_path, errors="surrogate_or_strict"),
+                to_bytes(out_path, errors="surrogate_or_strict"),
             )
 
     def close(self):
-        """ unmount container's filesystem """
+        """unmount container's filesystem"""
         super(Connection, self).close()
         # we actually don't need to unmount since the container is mounted anyway
         # rc, stdout, stderr = self._podman("umount")
