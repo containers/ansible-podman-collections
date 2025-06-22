@@ -349,3 +349,36 @@
 - name: check test23
   assert:
     that: test23 is not changed
+
+- ansible.builtin.file:
+    path: /tmp/data
+    state: directory
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: test24
+    image: alpine
+    state: present
+    volumes:
+      - /tmp/data:/data:z
+
+- containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: test24
+    image: alpine
+    state: present
+    volumes:
+      - /tmp/data:/data:U
+  register: test24
+
+- name: Check test24
+  assert:
+    that:
+      - test24 is changed
+      - >-
+        (test24.container['Config']['CreateCommand'] is defined and
+        '/tmp/data:/data:U' in test24.container['Config']['CreateCommand'] | list)
+
+- ansible.builtin.file:
+    path: /tmp/data
+    state: absent

@@ -1560,12 +1560,12 @@ class PodmanContainerDiff:
         after = self.params["volume"]
         if after is not None:
             after = [
-                ":".join([clean_volume(i) for i in v.split(":")[:2]])
+                ":".join([clean_volume(i) for i in v.split(":")[:3]])
                 for v in self.params["volume"]
             ]
         if before is not None:
             before = [
-                ":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before
+                ":".join([clean_volume(i) for i in v.split(":")[:3]]) for v in before
             ]
         if before is None and after is None:
             return self._diff_update_and_compare("volume", before, after)
