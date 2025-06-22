@@ -1,0 +1,9 @@
+- name: Get Podman system info
+  containers.podman.podman_system_info:
+    executable: "{{ test_executable | default('podman') }}"
+  register: podman_info
+
+- name: Check results
+  assert:
+    that:
+      - podman_info.podman_system_info | length > 0
