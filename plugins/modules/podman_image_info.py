@@ -164,9 +164,7 @@ def get_image_info(module, executable, name):
         rc, out, err = module.run_command(command)
 
         if rc != 0:
-            module.fail_json(
-                msg="Unable to gather info for '{0}': {1}".format(", ".join(names), err)
-            )
+            module.fail_json(msg="Unable to gather info for '{0}': {1}".format(", ".join(names), err))
         return out
 
     else:

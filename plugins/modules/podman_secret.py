@@ -126,17 +126,13 @@ diff = {"before": "", "after": ""}
 
 def podman_secret_exists(module, executable, name, version):
     if version is None or LooseVersion(version) < LooseVersion("4.5.0"):
-        rc, out, err = module.run_command(
-            [executable, "secret", "ls", "--format", "{{.Name}}"]
-        )
+        rc, out, err = module.run_command([executable, "secret", "ls", "--format", "{{.Name}}"])
         return name in [i.strip() for i in out.splitlines()]
     rc, out, err = module.run_command([executable, "secret", "exists", name])
     return rc == 0
 
 
-def need_update(
-    module, executable, name, data, path, env, skip, driver, driver_opts, debug, labels
-):
+def need_update(module, executable, name, data, path, env, skip, driver, driver_opts, debug, labels):
     cmd = [executable, "secret", "inspect", "--showsecret", name]
     rc, out, err = module.run_command(cmd)
     if rc != 0:
@@ -186,9 +182,7 @@ def need_update(
             for k, v in driver_opts.items():
                 if secret["Spec"]["Driver"]["Options"].get(k) != v:
                     diff["after"] = "=".join([k, v])
-                    diff["before"] = "=".join(
-                        [k, secret["Spec"]["Driver"]["Options"].get(k)]
-                    )
+                    diff["before"] = "=".join([k, secret["Spec"]["Driver"]["Options"].get(k)])
                     return True
         if labels:
             for k, v in labels.items():
@@ -216,9 +210,7 @@ def podman_secret_create(
     labels,
 ):
     podman_version = get_podman_version(module, fail=False)
-    if podman_version is not None and LooseVersion(podman_version) >= LooseVersion(
-        "4.7.0"
-    ):
+    if podman_version is not None and LooseVersion(podman_version) >= LooseVersion("4.7.0"):
         if need_update(
             module,
             executable,

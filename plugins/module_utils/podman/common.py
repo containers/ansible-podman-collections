@@ -46,20 +46,14 @@ ARGUMENTS_OPTS_DICT = {
 }
 
 
-def run_podman_command(
-    module, executable="podman", args=None, expected_rc=0, ignore_errors=False
-):
+def run_podman_command(module, executable="podman", args=None, expected_rc=0, ignore_errors=False):
     if not isinstance(executable, list):
         command = [executable]
     if args is not None:
         command.extend(args)
     rc, out, err = module.run_command(command)
     if not ignore_errors and rc != expected_rc:
-        module.fail_json(
-            msg="Failed to run {command} {args}: {err}".format(
-                command=command, args=args, err=err
-            )
-        )
+        module.fail_json(msg="Failed to run {command} {args}: {err}".format(command=command, args=args, err=err))
     return rc, out, err
 
 
@@ -96,11 +90,7 @@ def run_generate_systemd_command(module, module_params, name, version):
     if (sysconf.get("stop_timeout") is not None) or (sysconf.get("time") is not None):
         # Select correct parameter name based on version
         arg_name = "stop-timeout" if gt4ver else "time"
-        arg_value = (
-            sysconf.get("stop_timeout")
-            if sysconf.get("stop_timeout") is not None
-            else sysconf.get("time")
-        )
+        arg_value = sysconf.get("stop_timeout") if sysconf.get("stop_timeout") is not None else sysconf.get("time")
         command.extend(["--%s=%s" % (arg_name, arg_value)])
     if sysconf.get("start_timeout") is not None:
         command.extend(["--start-timeout=%s" % sysconf["start_timeout"]])
@@ -158,9 +148,7 @@ def compare_systemd_file_content(file_path, file_content):
 
     # Function to remove comments from file content
     def remove_comments(content):
-        return "\n".join(
-            [line for line in content.splitlines() if not line.startswith("#")]
-        )
+        return "\n".join([line for line in content.splitlines() if not line.startswith("#")])
 
     # Remove comments from both file contents before comparison
     current_unit_file_content_nocmnt = remove_comments(current_unit_file_content)
@@ -170,14 +158,10 @@ def compare_systemd_file_content(file_path, file_content):
 
     # Get the different lines between the two contents
     diff_in_file = [
-        line
-        for line in unit_content_nocmnt.splitlines()
-        if line not in current_unit_file_content_nocmnt.splitlines()
+        line for line in unit_content_nocmnt.splitlines() if line not in current_unit_file_content_nocmnt.splitlines()
     ]
     diff_in_string = [
-        line
-        for line in current_unit_file_content_nocmnt.splitlines()
-        if line not in unit_content_nocmnt.splitlines()
+        line for line in current_unit_file_content_nocmnt.splitlines() if line not in unit_content_nocmnt.splitlines()
     ]
 
     return diff_in_string, diff_in_file
@@ -190,9 +174,7 @@ def generate_systemd(module, module_params, name, version):
         "diff": {},
     }
     sysconf = module_params["generate_systemd"]
-    rc, systemd, err = run_generate_systemd_command(
-        module, module_params, name, version
-    )
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
     if rc != 0:
         module.log("PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
         if sysconf:
@@ -209,8 +191,7 @@ def generate_systemd(module, module_params, name, version):
                     result["changed"] = True
                 if not os.path.isdir(full_path):
                     module.fail_json(
-                        "Path %s is not a directory! "
-                        "Can not save systemd unit files there!" % full_path
+                        "Path %s is not a directory! " "Can not save systemd unit files there!" % full_path
                     )
                 for file_name, file_content in data.items():
                     file_name += ".service"
@@ -218,42 +199,22 @@ def generate_systemd(module, module_params, name, version):
                         result["changed"] = True
                         if result["diff"].get("before") is None:
                             result["diff"] = {"before": {}, "after": {}}
-                        result["diff"]["before"].update(
-                            {
-                                "systemd_{file_name}.service".format(
-                                    file_name=file_name
-                                ): ""
-                            }
-                        )
+                        result["diff"]["before"].update({"systemd_{file_name}.service".format(file_name=file_name): ""})
                         result["diff"]["after"].update(
-                            {
-                                "systemd_{file_name}.service".format(
-                                    file_name=file_name
-                                ): file_content
-                            }
+                            {"systemd_{file_name}.service".format(file_name=file_name): file_content}
                         )
 
                     else:
-                        diff_ = compare_systemd_file_content(
-                            os.path.join(full_path, file_name), file_content
-                        )
+                        diff_ = compare_systemd_file_content(os.path.join(full_path, file_name), file_content)
                         if diff_:
                             result["changed"] = True
                             if result["diff"].get("before") is None:
                                 result["diff"] = {"before": {}, "after": {}}
                             result["diff"]["before"].update(
-                                {
-                                    "systemd_{file_name}.service".format(
-                                        file_name=file_name
-                                    ): "\n".join(diff_[0])
-                                }
+                                {"systemd_{file_name}.service".format(file_name=file_name): "\n".join(diff_[0])}
                             )
                             result["diff"]["after"].update(
-                                {
-                                    "systemd_{file_name}.service".format(
-                                        file_name=file_name
-                                    ): "\n".join(diff_[1])
-                                }
+                                {"systemd_{file_name}.service".format(file_name=file_name): "\n".join(diff_[1])}
                             )
                     with open(os.path.join(full_path, file_name), "w") as f:
                         f.write(file_content)
@@ -290,9 +251,7 @@ def delete_systemd(module, module_params, name, version):
         # We don't know where systemd files are located, nothing to delete
         module.log("PODMAN-CONTAINER-DEBUG: Not deleting systemd file - no path!")
         return
-    rc, systemd, err = run_generate_systemd_command(
-        module, module_params, name, version
-    )
+    rc, systemd, err = run_generate_systemd_command(module, module_params, name, version)
     if rc != 0:
         module.log("PODMAN-CONTAINER-DEBUG: Error generating systemd: %s" % err)
         return
@@ -390,15 +349,11 @@ def normalize_signal(signal_name_or_number):
 
 
 def get_podman_version(module, fail=True):
-    executable = (
-        module.params["executable"] if module.params["executable"] else "podman"
-    )
+    executable = module.params["executable"] if module.params["executable"] else "podman"
     rc, out, err = module.run_command([executable, b"--version"])
     if rc != 0 or not out or "version" not in out:
         if fail:
-            module.fail_json(
-                msg="'%s --version' run failed! Error: %s" % (executable, err)
-            )
+            module.fail_json(msg="'%s --version' run failed! Error: %s" % (executable, err))
         return None
     return out.split("version")[1].strip()
 
@@ -477,15 +432,7 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
         elif isinstance(after, dict):
             if module_arg == "log_opt" and "max_size" in after:
                 after["max-size"] = after.pop("max_size")
-            after = ",".join(
-                sorted(
-                    [
-                        str(k).lower() + "=" + str(v).lower()
-                        for k, v in after.items()
-                        if v is not None
-                    ]
-                )
-            )
+            after = ",".join(sorted([str(k).lower() + "=" + str(v).lower() for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
             else:

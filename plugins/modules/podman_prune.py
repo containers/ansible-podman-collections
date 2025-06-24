@@ -182,21 +182,14 @@ def filtersPrepare(target, filters):
                         )
                     )
             else:
-                if target == "image" and (
-                    common_filter in ("dangling_only", "external")
-                ):
-                    if (
-                        common_filter == "dangling_only"
-                        and not filters["dangling_only"]
-                    ):
+                if target == "image" and (common_filter in ("dangling_only", "external")):
+                    if common_filter == "dangling_only" and not filters["dangling_only"]:
                         filter_out.append("-a")
                     if common_filter == "external" and filters["external"]:
                         filter_out.append("--external")
                 else:
                     filter_out.append(
-                        "--filter={label}={value}".format(
-                            label=common_filter, value=filters[common_filter]
-                        )
+                        "--filter={label}={value}".format(label=common_filter, value=filters[common_filter])
                     )
 
     return filter_out
@@ -210,11 +203,7 @@ def podmanExec(module, target, filters, executable):
     changed = bool(out)
 
     if rc != 0:
-        module.fail_json(
-            msg="Error executing prune on {target}: {err}".format(
-                target=target, err=err
-            )
-        )
+        module.fail_json(msg="Error executing prune on {target}: {err}".format(target=target, err=err))
 
     return {
         "changed": changed,
@@ -251,9 +240,7 @@ def main():
         ("volume", "volume_filters"),
     ):
         if module.params[target]:
-            results[target] = podmanExec(
-                module, target, module.params[filters], executable
-            )
+            results[target] = podmanExec(module, target, module.params[filters], executable)
 
     if module.params["system"]:
         target = "system"

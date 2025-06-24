@@ -140,9 +140,7 @@ def main():
         "oci-dir",
         "docker-dir",
     ]:
-        module.fail_json(
-            msg="Compression is only supported for oci-dir and docker-dir format"
-        )
+        module.fail_json(msg="Compression is only supported for oci-dir and docker-dir format")
 
     executable = module.get_bin_path(module.params["executable"], required=True)
     changed, out, err = save(module, executable)

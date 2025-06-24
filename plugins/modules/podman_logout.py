@@ -88,9 +88,7 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def logout(
-    module, executable, registry, authfile, all_registries, ignore_docker_credentials
-):
+def logout(module, executable, registry, authfile, all_registries, ignore_docker_credentials):
     command = [executable, "logout"]
     changed = False
     if authfile:

@@ -349,10 +349,7 @@ def get_containers_facts(module, executable, name):
             retry += 1
             rc, out, err = module.run_command(all_names)
         if rc != 0:
-            module.fail_json(
-                msg="Unable to get list of containers during"
-                " %s retries" % retry_limit
-            )
+            module.fail_json(msg="Unable to get list of containers during" " %s retries" % retry_limit)
         name = out.split()
         if not name:
             return [], out, err

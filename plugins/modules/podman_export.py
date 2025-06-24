@@ -89,10 +89,7 @@ def export(module, executable):
         return changed, "", ""
     rc, out, err = module.run_command(command)
     if rc != 0:
-        module.fail_json(
-            msg="Error exporting %s %s: %s"
-            % (export_type, module.params["container"], err)
-        )
+        module.fail_json(msg="Error exporting %s %s: %s" % (export_type, module.params["container"], err))
     return changed, out, err
 
 

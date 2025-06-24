@@ -463,9 +463,7 @@ def generate_systemd(module):
                     need_to_write_file = True
                 else:
                     # See if we need to write the unit file, default yes
-                    need_to_write_file = bool(
-                        compare_systemd_file_content(unit_file_full_path, unit_content)
-                    )
+                    need_to_write_file = bool(compare_systemd_file_content(unit_file_full_path, unit_content))
 
                 # Write the file, if needed
                 if need_to_write_file:

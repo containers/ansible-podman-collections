@@ -128,15 +128,11 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     label=dict(type="dict", aliases=["labels"]),
     label_file=dict(type="str"),
     log_driver=dict(type="str", choices=["k8s-file", "journald", "json-file"]),
-    log_level=dict(
-        type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]
-    ),
+    log_level=dict(type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]),
     log_opt=dict(
         type="dict",
         aliases=["log_options"],
-        options=dict(
-            max_size=dict(type="str"), path=dict(type="str"), tag=dict(type="str")
-        ),
+        options=dict(max_size=dict(type="str"), path=dict(type="str"), tag=dict(type="str")),
     ),
     mac_address=dict(type="str"),
     memory=dict(type="str"),
@@ -163,9 +159,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     preserve_fd=dict(type="list", elements="str"),
     preserve_fds=dict(type="str"),
     privileged=dict(type="bool"),
-    publish=dict(
-        type="list", elements="str", aliases=["ports", "published", "published_ports"]
-    ),
+    publish=dict(type="list", elements="str", aliases=["ports", "published", "published_ports"]),
     publish_all=dict(type="bool"),
     pull=dict(type="str", choices=["always", "missing", "never", "newer"]),
     quadlet_dir=dict(type="path"),
@@ -244,17 +238,11 @@ def update_options(opts_dict, container):
             container[key] = container.pop(k)
         else:
             key = k
-        if ARGUMENTS_SPEC_CONTAINER[key]["type"] == "list" and not isinstance(
-            container[key], list
-        ):
+        if ARGUMENTS_SPEC_CONTAINER[key]["type"] == "list" and not isinstance(container[key], list):
             opts_dict[key] = [container[key]]
-        elif ARGUMENTS_SPEC_CONTAINER[key]["type"] == "bool" and not isinstance(
-            container[key], bool
-        ):
+        elif ARGUMENTS_SPEC_CONTAINER[key]["type"] == "bool" and not isinstance(container[key], bool):
             opts_dict[key] = to_bool(container[key])
-        elif ARGUMENTS_SPEC_CONTAINER[key]["type"] == "int" and not isinstance(
-            container[key], int
-        ):
+        elif ARGUMENTS_SPEC_CONTAINER[key]["type"] == "int" and not isinstance(container[key], int):
             opts_dict[key] = int(container[key])
         else:
             opts_dict[key] = container[key]
@@ -295,9 +283,7 @@ class PodmanModuleParams:
         if self.action in ["create", "run"]:
             cmd = [self.action, "--name", self.params["name"]]
             all_param_methods = [
-                func
-                for func in dir(self)
-                if callable(getattr(self, func)) and func.startswith("addparam")
+                func for func in dir(self) if callable(getattr(self, func)) and func.startswith("addparam")
             ]
             params_set = (i for i in self.params if self.params[i] is not None)
             for param in params_set:
@@ -317,11 +303,7 @@ class PodmanModuleParams:
         def complete_params(cmd):
             if self.params["attach"] and self.action == "start":
                 cmd.append("--attach")
-            if (
-                self.params["detach"] is False
-                and self.action == "start"
-                and "--attach" not in cmd
-            ):
+            if self.params["detach"] is False and self.action == "start" and "--attach" not in cmd:
                 cmd.append("--attach")
             if self.params["detach_keys"] and self.action == "start":
                 cmd += ["--detach-keys", self.params["detach_keys"]]
@@ -353,14 +335,12 @@ class PodmanModuleParams:
         if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported from podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
         if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported till podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
 
     def addparam_annotation(self, c):
@@ -504,9 +484,7 @@ class PodmanModuleParams:
         for env_value in self.params["env"].items():
             c += [
                 "--env",
-                b"=".join(
-                    [to_bytes(k, errors="surrogate_or_strict") for k in env_value]
-                ),
+                b"=".join([to_bytes(k, errors="surrogate_or_strict") for k in env_value]),
             ]
         return c
 
@@ -529,9 +507,7 @@ class PodmanModuleParams:
         for env_merge in self.params["env_merge"].items():
             c += [
                 "--env-merge",
-                b"=".join(
-                    [to_bytes(k, errors="surrogate_or_strict") for k in env_merge]
-                ),
+                b"=".join([to_bytes(k, errors="surrogate_or_strict") for k in env_merge]),
             ]
         return c
 
@@ -941,9 +917,7 @@ class PodmanDefaults:
     def default_dict(self):
         # make here any changes to self.defaults related to podman version
         # https://github.com/containers/libpod/pull/5669
-        if LooseVersion(self.version) >= LooseVersion("1.8.0") and LooseVersion(
-            self.version
-        ) < LooseVersion("1.9.0"):
+        if LooseVersion(self.version) >= LooseVersion("1.8.0") and LooseVersion(self.version) < LooseVersion("1.9.0"):
             self.defaults["cpu_shares"] = 1024
         if LooseVersion(self.version) >= LooseVersion("3.0.0"):
             self.defaults["log_level"] = "warning"
@@ -994,9 +968,7 @@ class PodmanContainerDiff:
 
         """
         info_config = self.info["config"]
-        before, after = diff_generic(
-            self.params, info_config, module_arg, cmd_arg, boolean_type
-        )
+        before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
         return self._diff_update_and_compare(module_arg, before, after)
 
     def diffparam_annotation(self):
@@ -1174,9 +1146,7 @@ class PodmanContainerDiff:
 
     def diffparam_etc_hosts(self):
         if self.info["hostconfig"]["extrahosts"]:
-            before = dict(
-                [i.split(":", 1) for i in self.info["hostconfig"]["extrahosts"]]
-            )
+            before = dict([i.split(":", 1) for i in self.info["hostconfig"]["extrahosts"]])
         else:
             before = {}
         after = self.params["etc_hosts"] or {}
@@ -1215,9 +1185,7 @@ class PodmanContainerDiff:
         else:
             before = ""
         after = self.params["healthcheck_failure_action"] or before
-        return self._diff_update_and_compare(
-            "healthcheckonfailureaction", before, after
-        )
+        return self._diff_update_and_compare("healthcheckonfailureaction", before, after)
 
     def diffparam_healthcheck_interval(self):
         return self._diff_generic("healthcheck_interval", "--healthcheck-interval")
@@ -1226,17 +1194,13 @@ class PodmanContainerDiff:
         return self._diff_generic("healthcheck_retries", "--healthcheck-retries")
 
     def diffparam_healthcheck_start_period(self):
-        return self._diff_generic(
-            "healthcheck_start_period", "--healthcheck-start-period"
-        )
+        return self._diff_generic("healthcheck_start_period", "--healthcheck-start-period")
 
     def diffparam_health_startup_cmd(self):
         return self._diff_generic("health_startup_cmd", "--health-startup-cmd")
 
     def diffparam_health_startup_interval(self):
-        return self._diff_generic(
-            "health_startup_interval", "--health-startup-interval"
-        )
+        return self._diff_generic("health_startup_interval", "--health-startup-interval")
 
     def diffparam_health_startup_retries(self):
         return self._diff_generic("health_startup_retries", "--health-startup-retries")
@@ -1309,9 +1273,7 @@ class PodmanContainerDiff:
         before = self.info["config"]["labels"] or {}
         after = self.image_info.get("labels") or {}
         if self.params["label"]:
-            after.update(
-                {str(k).lower(): str(v) for k, v in self.params["label"].items()}
-            )
+            after.update({str(k).lower(): str(v) for k, v in self.params["label"].items()})
         # Strip out labels that are coming from systemd files
         # https://github.com/containers/ansible-podman-collections/issues/276
         if "podman_systemd_unit" in before:
@@ -1353,9 +1315,7 @@ class PodmanContainerDiff:
         return self._diff_generic("network_aliases", "--network-alias")
 
     def diffparam_no_healthcheck(self):
-        return self._diff_generic(
-            "no_healthcheck", "--no-healthcheck", boolean_type=True
-        )
+        return self._diff_generic("no_healthcheck", "--no-healthcheck", boolean_type=True)
 
     def diffparam_no_hosts(self):
         return self._diff_generic("no_hosts", "--no-hosts")
@@ -1505,15 +1465,7 @@ class PodmanContainerDiff:
         if before is None and after is None:
             return self._diff_update_and_compare("tmpfs", before, after)
         if after is not None:
-            after = ",".join(
-                sorted(
-                    [
-                        str(k).lower() + ":" + str(v).lower()
-                        for k, v in after.items()
-                        if v is not None
-                    ]
-                )
-            )
+            after = ",".join(sorted([str(k).lower() + ":" + str(v).lower() for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
             else:
@@ -1559,14 +1511,9 @@ class PodmanContainerDiff:
             before = None
         after = self.params["volume"]
         if after is not None:
-            after = [
-                ":".join([clean_volume(i) for i in v.split(":")[:3]])
-                for v in self.params["volume"]
-            ]
+            after = [":".join([clean_volume(i) for i in v.split(":")[:3]]) for v in self.params["volume"]]
         if before is not None:
-            before = [
-                ":".join([clean_volume(i) for i in v.split(":")[:3]]) for v in before
-            ]
+            before = [":".join([clean_volume(i) for i in v.split(":")[:3]]) for v in before]
         if before is None and after is None:
             return self._diff_update_and_compare("volume", before, after)
         if after is not None:
@@ -1582,11 +1529,7 @@ class PodmanContainerDiff:
         return self._diff_generic("workdir", "--workdir")
 
     def is_different(self):
-        diff_func_list = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("diffparam")
-        ]
+        diff_func_list = [func for func in dir(self) if callable(getattr(self, func)) and func.startswith("diffparam")]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -1695,18 +1638,8 @@ class PodmanContainer:
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
         if self.module._diff and is_different and diffs["before"] and diffs["after"]:
-            self.diff["before"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
-                )
-                + "\n"
-            )
-            self.diff["after"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
-                )
-                + "\n"
-            )
+            self.diff["before"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]) + "\n"
+            self.diff["after"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]) + "\n"
         return is_different
 
     @property
@@ -1722,9 +1655,7 @@ class PodmanContainer:
     def get_info(self):
         """Inspect container and gather info about it."""
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module_params["executable"], b"container", b"inspect", self.name]
-        )
+        rc, out, err = self.module.run_command([self.module_params["executable"], b"container", b"inspect", self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def get_image_info(self):
@@ -1741,20 +1672,14 @@ class PodmanContainer:
                 self.module_params["image"].replace("docker://", ""),
             ]
         )
-        self.module.log(
-            "PODMAN-CONTAINER-DEBUG: %s: %s" % (out, self.module_params["image"])
-        )
+        self.module.log("PODMAN-CONTAINER-DEBUG: %s: %s" % (out, self.module_params["image"]))
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module_params["executable"], b"--version"]
-        )
+        rc, out, err = self.module.run_command([self.module_params["executable"], b"--version"])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(
-                msg="%s run failed!" % self.module_params["executable"]
-            )
+            self.module.fail_json(msg="%s run failed!" % self.module_params["executable"])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -1770,9 +1695,7 @@ class PodmanContainer:
             self.version,
             self.module,
         ).construct_command_from_params()
-        full_cmd = " ".join(
-            [self.module_params["executable"]] + [to_native(i) for i in b_command]
-        )
+        full_cmd = " ".join([self.module_params["executable"]] + [to_native(i) for i in b_command])
         self.actions.append(full_cmd)
         if self.module.check_mode:
             self.module.log("PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
@@ -1790,8 +1713,7 @@ class PodmanContainer:
             self.stderr = err
             if rc != 0:
                 self.module.fail_json(
-                    msg="Container %s exited with code %s when %sed"
-                    % (self.name, rc, action),
+                    msg="Container %s exited with code %s when %sed" % (self.name, rc, action),
                     stdout=out,
                     stderr=err,
                 )
@@ -1858,18 +1780,12 @@ class PodmanManager:
         }
         self.module_params = params
         self.name = self.module_params["name"]
-        self.executable = self.module.get_bin_path(
-            self.module_params["executable"], required=True
-        )
+        self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
         self.image = self.module_params["image"]
         self.state = self.module_params["state"]
-        disable_image_pull = (
-            self.state in ("quadlet", "absent") or self.module_params["pull"] == "never"
-        )
+        disable_image_pull = self.state in ("quadlet", "absent") or self.module_params["pull"] == "never"
         image_actions = (
-            ensure_image_exists(self.module, self.image, self.module_params)
-            if not disable_image_pull
-            else []
+            ensure_image_exists(self.module, self.image, self.module_params) if not disable_image_pull else []
         )
         self.results["actions"] += image_actions
 
@@ -1903,9 +1819,7 @@ class PodmanManager:
             self.results.update({"diff": self.container.diff})
         if self.module.params["debug"] or self.module_params["debug"]:
             self.results.update({"podman_version": self.container.version})
-        sysd = generate_systemd(
-            self.module, self.module_params, self.name, self.container.version
-        )
+        sysd = generate_systemd(self.module, self.module_params, self.name, self.container.version)
         self.results["changed"] = changed or sysd["changed"]
         self.results.update({"podman_systemd": sysd["systemd"]})
         if sysd["diff"]:
@@ -1922,9 +1836,7 @@ class PodmanManager:
         """Run actions if desired state is 'started'."""
         if not self.image:
             if not self.container.exists:
-                self.module.fail_json(
-                    msg="Cannot start container when image" " is not specified!"
-                )
+                self.module.fail_json(msg="Cannot start container when image" " is not specified!")
             if self.restart:
                 self.container.restart()
                 self.results["actions"].append("restarted %s" % self.container.name)
@@ -1974,9 +1886,7 @@ class PodmanManager:
     def make_created(self):
         """Run actions if desired state is 'created'."""
         if not self.container.exists and not self.image:
-            self.module.fail_json(
-                msg="Cannot create container when image" " is not specified!"
-            )
+            self.module.fail_json(msg="Cannot create container when image" " is not specified!")
         if not self.container.exists:
             self.container.create()
             self.results["actions"].append("created %s" % self.container.name)
@@ -2006,9 +1916,7 @@ class PodmanManager:
     def make_stopped(self):
         """Run actions if desired state is 'stopped'."""
         if not self.container.exists and not self.image:
-            self.module.fail_json(
-                msg="Cannot create container when image" " is not specified!"
-            )
+            self.module.fail_json(msg="Cannot create container when image" " is not specified!")
         if not self.container.exists:
             self.container.create()
             self.results["actions"].append("created %s" % self.container.name)
@@ -2028,9 +1936,7 @@ class PodmanManager:
         if not self.container.exists:
             self.results.update({"changed": False})
         elif self.container.exists:
-            delete_systemd(
-                self.module, self.module_params, self.name, self.container.version
-            )
+            delete_systemd(self.module, self.module_params, self.name, self.container.version)
             self.container.delete()
             self.results["actions"].append("deleted %s" % self.container.name)
             self.results.update({"changed": True})

@@ -160,9 +160,7 @@ def run_container_exec(module: AnsibleModule) -> dict:
     if env is not None:
         for key, value in env.items():
             if not isinstance(value, string_types):
-                module.fail_json(
-                    msg="Specify string value %s on the env field" % (value)
-                )
+                module.fail_json(msg="Specify string value %s on the env field" % (value))
 
             to_text(value, errors="surrogate_or_strict")
             exec_options += ["--env", "%s=%s" % (key, value)]
