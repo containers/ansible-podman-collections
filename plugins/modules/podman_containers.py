@@ -117,10 +117,7 @@ def main():
         options_dict["debug"] = module.params["debug"] or options_dict["debug"]
         test_input = check_input_strict(options_dict)
         if test_input:
-            module.fail_json(
-                msg="Failed to run container %s because: %s"
-                % (options_dict["name"], test_input)
-            )
+            module.fail_json(msg="Failed to run container %s because: %s" % (options_dict["name"], test_input))
         res = PodmanManager(module, options_dict).execute()
         results.append(res)
     total_results = combine(results)

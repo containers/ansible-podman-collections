@@ -119,11 +119,7 @@ def main():
         try:
             results = json.loads(result_str)
         except json.decoder.JSONDecodeError:
-            module.fail_json(
-                msg="Failed to parse JSON output from podman search: {out}".format(
-                    out=result_str
-                )
-            )
+            module.fail_json(msg="Failed to parse JSON output from podman search: {out}".format(out=result_str))
 
     results = dict(
         changed=False,

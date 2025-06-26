@@ -87,9 +87,7 @@ def get_secret_info(module, executable, show, name):
         command.extend(name)
     rc, out, err = module.run_command(command)
     if rc != 0 or "no secret with name or id" in err:
-        module.fail_json(
-            msg="Unable to gather info for %s: %s" % (name or "all secrets", err)
-        )
+        module.fail_json(msg="Unable to gather info for %s: %s" % (name or "all secrets", err))
     if not out or json.loads(out) is None:
         return [], out, err
     return json.loads(out), out, err

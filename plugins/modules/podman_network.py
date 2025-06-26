@@ -352,9 +352,7 @@ class PodmanNetworkModuleParams:
     def _create_action(self):
         cmd = [self.action, self.params["name"]]
         all_param_methods = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("addparam")
+            func for func in dir(self) if callable(getattr(self, func)) and func.startswith("addparam")
         ]
         params_set = (i for i in self.params if self.params[i] is not None)
         for param in params_set:
@@ -367,14 +365,12 @@ class PodmanNetworkModuleParams:
         if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported from podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
         if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported till podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
 
     def addparam_gateway(self, c):
@@ -464,9 +460,7 @@ class PodmanNetworkDiff:
 
     def defaultize(self):
         params_with_defaults = {}
-        self.default_dict = PodmanNetworkDefaults(
-            self.module, self.version
-        ).default_dict()
+        self.default_dict = PodmanNetworkDefaults(self.module, self.version).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
@@ -564,30 +558,16 @@ class PodmanNetworkDiff:
             return self._diff_update_and_compare("net_config", "", "")
         before_subs = self.info.get("subnets", [])
         if before_subs:
-            before = ":".join(
-                sorted(
-                    [
-                        ",".join([i["subnet"], i["gateway"]]).rstrip(",")
-                        for i in before_subs
-                    ]
-                )
-            )
+            before = ":".join(sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in before_subs]))
         else:
             before = ""
-        after = ":".join(
-            sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in after])
-        )
+        after = ":".join(sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in after]))
         return self._diff_update_and_compare("net_config", before, after)
 
     def diffparam_route(self):
         routes = self.info.get("routes", [])
         if routes:
-            before = [
-                ",".join(
-                    [r["destination"], r["gateway"], str(r.get("metric", ""))]
-                ).rstrip(",")
-                for r in routes
-            ]
+            before = [",".join([r["destination"], r["gateway"], str(r.get("metric", ""))]).rstrip(",") for r in routes]
         else:
             before = []
         after = self.params["route"] or []
@@ -617,9 +597,7 @@ class PodmanNetworkDiff:
             before = self.info.get("subnets")
             if before:
                 if len(before) > 1 and after:
-                    return self._diff_update_and_compare(
-                        "subnet", ",".join([i["subnet"] for i in before]), after
-                    )
+                    return self._diff_update_and_compare("subnet", ",".join([i["subnet"] for i in before]), after)
                 before = [i["subnet"] for i in before][0]
             return self._diff_update_and_compare("subnet", before, after)
 
@@ -654,11 +632,7 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare("opt", before, after)
 
     def is_different(self):
-        diff_func_list = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("diffparam")
-        ]
+        diff_func_list = [func for func in dir(self) if callable(getattr(self, func)) and func.startswith("diffparam")]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -713,37 +687,21 @@ class PodmanNetwork:
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
         if self.module._diff and is_different and diffs["before"] and diffs["after"]:
-            self.diff["before"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
-                )
-                + "\n"
-            )
-            self.diff["after"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
-                )
-                + "\n"
-            )
+            self.diff["before"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]) + "\n"
+            self.diff["after"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]) + "\n"
         return is_different
 
     def get_info(self):
         """Inspect network and gather info about it."""
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module.params["executable"], b"network", b"inspect", self.name]
-        )
+        rc, out, err = self.module.run_command([self.module.params["executable"], b"network", b"inspect", self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module.params["executable"], b"--version"]
-        )
+        rc, out, err = self.module.run_command([self.module.params["executable"], b"--version"])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(
-                msg="%s run failed!" % self.module.params["executable"]
-            )
+            self.module.fail_json(msg="%s run failed!" % self.module.params["executable"])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -758,10 +716,7 @@ class PodmanNetwork:
             self.version,
             self.module,
         ).construct_command_from_params()
-        full_cmd = " ".join(
-            [self.module.params["executable"], "network"]
-            + [to_native(i) for i in b_command]
-        )
+        full_cmd = " ".join([self.module.params["executable"], "network"] + [to_native(i) for i in b_command])
         self.module.log("PODMAN-NETWORK-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
@@ -814,9 +769,7 @@ class PodmanNetworkManager:
             "network": {},
         }
         self.name = self.module.params["name"]
-        self.executable = self.module.get_bin_path(
-            self.module.params["executable"], required=True
-        )
+        self.executable = self.module.get_bin_path(self.module.params["executable"], required=True)
         self.state = self.module.params["state"]
         self.recreate = self.module.params["recreate"]
         self.network = PodmanNetwork(self.module, self.name)
@@ -854,9 +807,7 @@ class PodmanNetworkManager:
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(
-            msg="Unexpected logic error happened, " "please contact maintainers ASAP!"
-        )
+        self.module.fail_json(msg="Unexpected logic error happened, " "please contact maintainers ASAP!")
 
     def make_present(self):
         """Run actions if desired state is 'started'."""
@@ -891,9 +842,7 @@ class PodmanNetworkManager:
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(
-                type="str", default="present", choices=["present", "absent", "quadlet"]
-            ),
+            state=dict(type="str", default="present", choices=["present", "absent", "quadlet"]),
             name=dict(type="str", required=True),
             disable_dns=dict(type="bool", required=False),
             dns=dict(type="list", elements="str", required=False),
@@ -903,9 +852,7 @@ def main():
             interface_name=dict(type="str", required=False),
             internal=dict(type="bool", required=False),
             ip_range=dict(type="str", required=False),
-            ipam_driver=dict(
-                type="str", required=False, choices=["host-local", "dhcp", "none"]
-            ),
+            ipam_driver=dict(type="str", required=False, choices=["host-local", "dhcp", "none"]),
             ipv6=dict(type="bool", required=False),
             subnet=dict(type="str", required=False),
             macvlan=dict(type="str", required=False),

@@ -137,9 +137,7 @@ class BecomeModule(BecomeBase):
             # podman unshare should be executed in a login shell to avoid chdir permission errors
             cmdlist.append("-iu %s" % user)
             if self.get_option("become_pass"):
-                self.prompt = (
-                    "[sudo podman unshare via ansible, key=%s] password:" % self._id
-                )
+                self.prompt = "[sudo podman unshare via ansible, key=%s] password:" % self._id
                 cmdlist.append('-p "%s"' % self.prompt)
             cmdlist.append("-- %s" % becomecmd)
             becomecmd = " ".join(cmdlist)

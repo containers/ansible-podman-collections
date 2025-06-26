@@ -74,9 +74,7 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 
-def copy_file(
-    module, executable, src, dest, container, from_container, archive, overwrite
-):
+def copy_file(module, executable, src, dest, container, from_container, archive, overwrite):
     if from_container:
         command = [executable, "cp", "{0}:{1}".format(container, src), dest]
     else:
@@ -91,9 +89,7 @@ def copy_file(
     rc, out, err = module.run_command(command)
 
     if rc != 0:
-        module.fail_json(
-            msg="Unable to copy file to/from container - {out}".format(out=err)
-        )
+        module.fail_json(msg="Unable to copy file to/from container - {out}".format(out=err))
     else:
         changed = True
     return changed, out, err
@@ -123,9 +119,7 @@ def main():
 
     executable = module.get_bin_path(executable, required=True)
 
-    changed, out, err = copy_file(
-        module, executable, src, dest, container, from_container, archive, overwrite
-    )
+    changed, out, err = copy_file(module, executable, src, dest, container, from_container, archive, overwrite)
 
     results = dict(changed=changed)
 

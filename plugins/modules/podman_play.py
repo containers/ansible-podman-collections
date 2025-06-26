@@ -276,9 +276,7 @@ class PodmanKubeManagement:
             self.command.extend(["--configmap=%s" % configmaps])
         if self.module.params["log_opt"]:
             for k, v in self.module.params["log_opt"].items():
-                self.command.extend(
-                    ["--log-opt", "{k}={v}".format(k=k.replace("_", "-"), v=v)]
-                )
+                self.command.extend(["--log-opt", "{k}={v}".format(k=k.replace("_", "-"), v=v)])
         start = self.module.params["state"] == "started"
         self.command.extend(["--start=%s" % str(start).lower()])
         for arg, param in {
@@ -302,9 +300,7 @@ class PodmanKubeManagement:
 
     def _command_run(self, cmd):
         if self.module.params["kube_file_content"]:
-            rc, out, err = self.module.run_command(
-                cmd, data=self.module.params["kube_file_content"]
-            )
+            rc, out, err = self.module.run_command(cmd, data=self.module.params["kube_file_content"])
         else:
             rc, out, err = self.module.run_command(cmd)
         self.actions.append(" ".join(cmd))
@@ -324,20 +320,15 @@ class PodmanKubeManagement:
         kube_file = self.module.params["kube_file"]
         kube_file_content = self.module.params["kube_file_content"]
         if kube_file:
-            rc, out, err = self._command_run(
-                [self.executable, "kube", "play", "--down", kube_file]
-            )
+            rc, out, err = self._command_run([self.executable, "kube", "play", "--down", kube_file])
         elif kube_file_content:
-            rc, out, err = self._command_run(
-                [self.executable, "kube", "play", "--down", "-"]
-            )
+            rc, out, err = self._command_run([self.executable, "kube", "play", "--down", "-"])
         if rc != 0 and "no such pod" in err:
             changed = False
             return changed, out, err
         if rc != 0:
             self.module.fail_json(
-                msg="Failed to delete Pod with %s: %s %s"
-                % (kube_file if kube_file else "YAML content", out, err)
+                msg="Failed to delete Pod with %s: %s %s" % (kube_file if kube_file else "YAML content", out, err)
             )
 
         # hack to check if no resources are deleted
@@ -386,9 +377,7 @@ class PodmanKubeManagement:
         out_all, err_all = "", ""
         # Delete all pods
         for pod_id in pods:
-            rc, out, err = self._command_run(
-                [self.executable, "pod", "rm", "-f", pod_id]
-            )
+            rc, out, err = self._command_run([self.executable, "pod", "rm", "-f", pod_id])
             if rc != 0:
                 self.module.fail_json("Can NOT delete Pod %s" % pod_id)
             else:
@@ -398,9 +387,7 @@ class PodmanKubeManagement:
         return changed, out_all, err_all
 
     def pod_recreate(self):
-        if self.version is not None and LooseVersion(self.version) >= LooseVersion(
-            "3.4.0"
-        ):
+        if self.version is not None and LooseVersion(self.version) >= LooseVersion("3.4.0"):
             self.tear_down_pods()
         else:
             pods = self.discover_pods()
@@ -420,9 +407,7 @@ class PodmanKubeManagement:
                 changed = True
             else:
                 changed = False
-            err = "\n".join(
-                [i for i in err.splitlines() if "pod already exists" not in i]
-            )
+            err = "\n".join([i for i in err.splitlines() if "pod already exists" not in i])
         elif rc != 0:
             self.module.fail_json(msg="Output: %s\nError=%s" % (out, err))
         else:
@@ -472,9 +457,7 @@ def main():
             quiet=dict(type="bool"),
             recreate=dict(type="bool"),
             userns=dict(type="str"),
-            log_level=dict(
-                type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]
-            ),
+            log_level=dict(type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]),
             quadlet_dir=dict(type="path", required=False),
             quadlet_filename=dict(type="str", required=False),
             quadlet_file_mode=dict(type="raw", required=False),
@@ -494,13 +477,8 @@ def main():
     changed = False
     out = err = ""
     if module.params["state"] == "absent":
-        if manage.version is not None and LooseVersion(manage.version) > LooseVersion(
-            "3.4.0"
-        ):
-            manage.module.log(
-                msg="version: %s, kube file %s"
-                % (manage.version, manage.module.params["kube_file"])
-            )
+        if manage.version is not None and LooseVersion(manage.version) > LooseVersion("3.4.0"):
+            manage.module.log(msg="version: %s, kube file %s" % (manage.version, manage.module.params["kube_file"]))
             changed, out, err = manage.tear_down_pods()
         else:
             pods = manage.discover_pods()

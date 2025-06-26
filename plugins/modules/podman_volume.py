@@ -206,9 +206,7 @@ class PodmanVolumeModuleParams:
     def _create_action(self):
         cmd = [self.action, self.params["name"]]
         all_param_methods = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("addparam")
+            func for func in dir(self) if callable(getattr(self, func)) and func.startswith("addparam")
         ]
         params_set = (i for i in self.params if self.params[i] is not None)
         for param in params_set:
@@ -221,14 +219,12 @@ class PodmanVolumeModuleParams:
         if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported from podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
         if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported till podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
 
     def addparam_label(self, c):
@@ -271,9 +267,7 @@ class PodmanVolumeDiff:
 
     def defaultize(self):
         params_with_defaults = {}
-        self.default_dict = PodmanVolumeDefaults(
-            self.module, self.version
-        ).default_dict()
+        self.default_dict = PodmanVolumeDefaults(self.module, self.version).default_dict()
         for p in self.module.params:
             if self.module.params[p] is None and p in self.default_dict:
                 params_with_defaults[p] = self.default_dict[p]
@@ -325,11 +319,7 @@ class PodmanVolumeDiff:
         return self._diff_update_and_compare("options", before, after)
 
     def is_different(self):
-        diff_func_list = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("diffparam")
-        ]
+        diff_func_list = [func for func in dir(self) if callable(getattr(self, func)) and func.startswith("diffparam")]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -386,26 +376,14 @@ class PodmanVolume:
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
         if self.module._diff and is_different and diffs["before"] and diffs["after"]:
-            self.diff["before"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
-                )
-                + "\n"
-            )
-            self.diff["after"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
-                )
-                + "\n"
-            )
+            self.diff["before"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]) + "\n"
+            self.diff["after"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]) + "\n"
         return is_different
 
     def get_info(self):
         """Inspect volume and gather info about it."""
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module.params["executable"], b"volume", b"inspect", self.name]
-        )
+        rc, out, err = self.module.run_command([self.module.params["executable"], b"volume", b"inspect", self.name])
         if rc == 0:
             data = json.loads(out)
             if data:
@@ -416,13 +394,9 @@ class PodmanVolume:
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module.params["executable"], b"--version"]
-        )
+        rc, out, err = self.module.run_command([self.module.params["executable"], b"--version"])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(
-                msg="%s run failed!" % self.module.params["executable"]
-            )
+            self.module.fail_json(msg="%s run failed!" % self.module.params["executable"])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -437,10 +411,7 @@ class PodmanVolume:
             self.version,
             self.module,
         ).construct_command_from_params()
-        full_cmd = " ".join(
-            [self.module.params["executable"], "volume"]
-            + [to_native(i) for i in b_command]
-        )
+        full_cmd = " ".join([self.module.params["executable"], "volume"] + [to_native(i) for i in b_command])
         # check if running not from root
         if os.getuid() != 0 and action == "mount":
             full_cmd = f"{self.module.params['executable']} unshare {full_cmd}"
@@ -504,9 +475,7 @@ class PodmanVolumeManager:
             "volume": {},
         }
         self.name = self.module.params["name"]
-        self.executable = self.module.get_bin_path(
-            self.module.params["executable"], required=True
-        )
+        self.executable = self.module.get_bin_path(self.module.params["executable"], required=True)
         self.state = self.module.params["state"]
         self.recreate = self.module.params["recreate"]
         self.volume = PodmanVolume(self.module, self.name)
@@ -546,9 +515,7 @@ class PodmanVolumeManager:
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(
-            msg="Unexpected logic error happened, " "please contact maintainers ASAP!"
-        )
+        self.module.fail_json(msg="Unexpected logic error happened, " "please contact maintainers ASAP!")
 
     def make_present(self):
         """Run actions if desired state is 'started'."""

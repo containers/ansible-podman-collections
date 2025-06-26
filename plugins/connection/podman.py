@@ -114,11 +114,7 @@ class Connection(ConnectionBase):
             raise AnsibleError("%s command not found in PATH" % podman_exec)
         local_cmd = [podman_cmd]
         if self.get_option("podman_extra_args"):
-            local_cmd += shlex.split(
-                to_native(
-                    self.get_option("podman_extra_args"), errors="surrogate_or_strict"
-                )
-            )
+            local_cmd += shlex.split(to_native(self.get_option("podman_extra_args"), errors="surrogate_or_strict"))
         if isinstance(cmd, str):
             local_cmd.append(cmd)
         else:
@@ -155,21 +151,13 @@ class Connection(ConnectionBase):
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._podman("mount")
         if rc != 0:
-            display.vvvv(
-                "Failed to mount container %s: %s"
-                % (self._container_id, stderr.strip())
-            )
+            display.vvvv("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
         elif not os.listdir(self._mount_point.strip()):
-            display.vvvv(
-                "Failed to mount container with CGroups2: empty dir %s"
-                % self._mount_point.strip()
-            )
+            display.vvvv("Failed to mount container with CGroups2: empty dir %s" % self._mount_point.strip())
             self._mount_point = None
         else:
             self._mount_point = self._mount_point.strip()
-            display.vvvvv(
-                "MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr)
-            )
+            display.vvvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
         self._connected = True
 
     @ensure_connect
@@ -210,18 +198,14 @@ class Connection(ConnectionBase):
                         % (in_path, out_path, self._container_id, stderr)
                     )
             if self.user:
-                rc, stdout, stderr = self._podman(
-                    "exec", ["chown", self.user, out_path]
-                )
+                rc, stdout, stderr = self._podman("exec", ["chown", self.user, out_path])
             if rc != 0:
                 raise AnsibleError(
                     "Failed to chown file %s for user %s in container %s\n%s"
                     % (out_path, self.user, self._container_id, stderr)
                 )
         else:
-            real_out_path = self._mount_point + to_bytes(
-                out_path, errors="surrogate_or_strict"
-            )
+            real_out_path = self._mount_point + to_bytes(out_path, errors="surrogate_or_strict")
             shutil.copyfile(
                 to_bytes(in_path, errors="surrogate_or_strict"),
                 to_bytes(real_out_path, errors="surrogate_or_strict"),
@@ -243,9 +227,7 @@ class Connection(ConnectionBase):
                     % (in_path, out_path, self._container_id, stderr)
                 )
         else:
-            real_in_path = self._mount_point + to_bytes(
-                in_path, errors="surrogate_or_strict"
-            )
+            real_in_path = self._mount_point + to_bytes(in_path, errors="surrogate_or_strict")
             shutil.copyfile(
                 to_bytes(real_in_path, errors="surrogate_or_strict"),
                 to_bytes(out_path, errors="surrogate_or_strict"),

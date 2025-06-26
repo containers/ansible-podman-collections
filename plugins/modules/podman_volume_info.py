@@ -73,9 +73,7 @@ def get_volume_info(module, executable, name):
         command.append("--all")
     rc, out, err = module.run_command(command)
     if rc != 0 or "no such volume" in err:
-        module.fail_json(
-            msg="Unable to gather info for %s: %s" % (name or "all volumes", err)
-        )
+        module.fail_json(msg="Unable to gather info for %s: %s" % (name or "all volumes", err))
     if not out or json.loads(out) is None:
         return [], out, err
     return json.loads(out), out, err
@@ -83,9 +81,7 @@ def get_volume_info(module, executable, name):
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(
-            executable=dict(type="str", default="podman"), name=dict(type="str")
-        ),
+        argument_spec=dict(executable=dict(type="str", default="podman"), name=dict(type="str")),
         supports_check_mode=True,
     )
 

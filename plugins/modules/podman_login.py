@@ -199,11 +199,7 @@ def main():
 
     podman_version = get_podman_version(module, fail=False)
 
-    if (
-        (podman_version is not None)
-        and (LooseVersion(podman_version) < LooseVersion("4.7.0"))
-        and secret
-    ):
+    if (podman_version is not None) and (LooseVersion(podman_version) < LooseVersion("4.7.0")) and secret:
         module.fail_json(msg="secret option may not be used with podman < 4.7.0")
 
     if username and ((not password) and (not secret)):

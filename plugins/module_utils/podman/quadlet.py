@@ -55,14 +55,9 @@ class Quadlet:
         Construct the quadlet content as a string.
         """
         custom_user_options = self.custom_params.get("quadlet_options")
-        custom_text = (
-            "\n" + "\n".join(custom_user_options) if custom_user_options else ""
-        )
+        custom_text = "\n" + "\n".join(custom_user_options) if custom_user_options else ""
         return (
-            f"[{self.section}]\n"
-            + "\n".join(f"{key}={value}" for key, value in self.dict_params)
-            + custom_text
-            + "\n"
+            f"[{self.section}]\n" + "\n".join(f"{key}={value}" for key, value in self.dict_params) + custom_text + "\n"
         )
 
     def write_to_file(self, path: str):
@@ -167,9 +162,7 @@ class ContainerQuadlet(Quadlet):
         """
         # Work on params in params_map and convert them to a right form
         if params["annotation"]:
-            params["annotation"] = [
-                "%s=%s" % (k, v) for k, v in params["annotation"].items()
-            ]
+            params["annotation"] = ["%s=%s" % (k, v) for k, v in params["annotation"].items()]
         if params["cap_add"]:
             params["cap_add"] = " ".join(params["cap_add"])
         if params["cap_drop"]:
@@ -181,22 +174,16 @@ class ContainerQuadlet(Quadlet):
                 else params["command"]
             )
         if params["label"]:
-            params["label"] = [
-                shlex.quote("%s=%s" % (k, v)) for k, v in params["label"].items()
-            ]
+            params["label"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["label"].items()]
         if params["env"]:
-            params["env"] = [
-                shlex.quote("%s=%s" % (k, v)) for k, v in params["env"].items()
-            ]
+            params["env"] = [shlex.quote("%s=%s" % (k, v)) for k, v in params["env"].items()]
         if params["rootfs"]:
             params["rootfs"] = params["image"]
             params["image"] = None
         if params["sysctl"]:
             params["sysctl"] = ["%s=%s" % (k, v) for k, v in params["sysctl"].items()]
         if params["tmpfs"]:
-            params["tmpfs"] = [
-                "%s:%s" % (k, v) if v else k for k, v in params["tmpfs"].items()
-            ]
+            params["tmpfs"] = ["%s:%s" % (k, v) if v else k for k, v in params["tmpfs"].items()]
 
         # Work on params which are not in the param_map but can be calculated
         params["global_args"] = []
@@ -227,10 +214,7 @@ class ContainerQuadlet(Quadlet):
         if params["blkio_weight_device"]:
             params["podman_args"].append(
                 " ".join(
-                    [
-                        f"--blkio-weight-device {':'.join(blkio)}"
-                        for blkio in params["blkio_weight_device"].items()
-                    ]
+                    [f"--blkio-weight-device {':'.join(blkio)}" for blkio in params["blkio_weight_device"].items()]
                 )
             )
         if params["cgroupns"]:
@@ -265,9 +249,7 @@ class ContainerQuadlet(Quadlet):
         if params["decryption_key"]:
             params["podman_args"].append(f"--decryption-key {params['decryption_key']}")
         if params["device_cgroup_rule"]:
-            params["podman_args"].append(
-                f"--device-cgroup-rule {params['device_cgroup_rule']}"
-            )
+            params["podman_args"].append(f"--device-cgroup-rule {params['device_cgroup_rule']}")
         if params["device_read_bps"]:
             for i in params["device_read_bps"]:
                 params["podman_args"].append(f"--device-read-bps {i}")
@@ -281,9 +263,7 @@ class ContainerQuadlet(Quadlet):
             for i in params["device_write_iops"]:
                 params["podman_args"].append(f"--device-write-iops {i}")
         if params["etc_hosts"]:
-            params["etc_hosts"] = [
-                "%s:%s" % (k, v) for k, v in params["etc_hosts"].items()
-            ]
+            params["etc_hosts"] = ["%s:%s" % (k, v) for k, v in params["etc_hosts"].items()]
         if params["env_merge"]:
             for k, v in params["env_merge"].items():
                 params["podman_args"].append(f"--env {k}={v}")
@@ -314,32 +294,24 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--label-file {params['label_file']}")
         if params["log_opt"]:
             params["log_opt"] = [
-                "%s=%s" % (k.replace("max_size", "max-size"), v)
-                for k, v in params["log_opt"].items()
-                if v is not None
+                "%s=%s" % (k.replace("max_size", "max-size"), v) for k, v in params["log_opt"].items() if v is not None
             ]
         if params["mac_address"]:
             params["podman_args"].append(f"--mac-address {params['mac_address']}")
         if params["memory"]:
             params["podman_args"].append(f"--memory {params['memory']}")
         if params["memory_reservation"]:
-            params["podman_args"].append(
-                f"--memory-reservation {params['memory_reservation']}"
-            )
+            params["podman_args"].append(f"--memory-reservation {params['memory_reservation']}")
         if params["memory_swap"]:
             params["podman_args"].append(f"--memory-swap {params['memory_swap']}")
         if params["memory_swappiness"]:
-            params["podman_args"].append(
-                f"--memory-swappiness {params['memory_swappiness']}"
-            )
+            params["podman_args"].append(f"--memory-swappiness {params['memory_swappiness']}")
         if params["no_healthcheck"]:
             params["podman_args"].append("--no-healthcheck")
         if params["no_hosts"] is not None:
             params["podman_args"].append(f"--no-hosts={params['no_hosts']}")
         if params["oom_kill_disable"]:
-            params["podman_args"].append(
-                f"--oom-kill-disable={params['oom_kill_disable']}"
-            )
+            params["podman_args"].append(f"--oom-kill-disable={params['oom_kill_disable']}")
         if params["oom_score_adj"]:
             params["podman_args"].append(f"--oom-score-adj {params['oom_score_adj']}")
         if params["os"]:
@@ -385,9 +357,7 @@ class ContainerQuadlet(Quadlet):
             for security_opt in params["security_opt"]:
                 params["podman_args"].append(f"--security-opt {security_opt}")
         if params["shm_size_systemd"]:
-            params["podman_args"].append(
-                f"--shm-size-systemd {params['shm_size_systemd']}"
-            )
+            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["sig_proxy"]:
             params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
         if params["systemd"]:
@@ -395,9 +365,7 @@ class ContainerQuadlet(Quadlet):
         if params["timeout"]:
             params["podman_args"].append(f"--timeout {params['timeout']}")
         if params["tls_verify"]:
-            params["podman_args"].append(
-                f"--tls-verify={str(params['tls_verify']).lower()}"
-            )
+            params["podman_args"].append(f"--tls-verify={str(params['tls_verify']).lower()}")
         if params["tty"]:
             params["podman_args"].append("--tty")
         if params["umask"]:
@@ -493,10 +461,7 @@ class PodQuadlet(Quadlet):
         if params["blkio_weight_device"]:
             params["podman_args"].append(
                 " ".join(
-                    [
-                        f"--blkio-weight-device {':'.join(blkio)}"
-                        for blkio in params["blkio_weight_device"].items()
-                    ]
+                    [f"--blkio-weight-device {':'.join(blkio)}" for blkio in params["blkio_weight_device"].items()]
                 )
             )
         if params["cpuset_cpus"]:
@@ -539,9 +504,7 @@ class PodQuadlet(Quadlet):
         if params["infra_command"]:
             params["podman_args"].append(f"--infra-command {params['infra_command']}")
         if params["infra_conmon_pidfile"]:
-            params["podman_args"].append(
-                f"--infra-conmon-pidfile {params['infra_conmon_pidfile']}"
-            )
+            params["podman_args"].append(f"--infra-conmon-pidfile {params['infra_conmon_pidfile']}")
         if params["infra_image"]:
             params["podman_args"].append(f"--infra-image {params['infra_image']}")
         if params["infra_name"]:
@@ -575,15 +538,11 @@ class PodQuadlet(Quadlet):
         if params["share"]:
             params["podman_args"].append(f"--share {params['share']}")
         if params["share_parent"] is not None:
-            params["podman_args"].append(
-                f"--share-parent={str(params['share_parent']).lower()}"
-            )
+            params["podman_args"].append(f"--share-parent={str(params['share_parent']).lower()}")
         if params["shm_size"]:
             params["podman_args"].append(f"--shm-size {params['shm_size']}")
         if params["shm_size_systemd"]:
-            params["podman_args"].append(
-                f"--shm-size-systemd {params['shm_size_systemd']}"
-            )
+            params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
         if params["subgidname"]:
             params["podman_args"].append(f"--subgidname {params['subgidname']}")
         if params["subuidname"]:
@@ -722,9 +681,7 @@ def check_quadlet_directory(module, quadlet_dir):
         except Exception as e:
             module.fail_json(msg="Directory for quadlet_file can't be created: %s" % e)
     if not os.access(quadlet_dir, os.W_OK):
-        module.fail_json(
-            msg="Directory for quadlet_file is not writable: %s" % quadlet_dir
-        )
+        module.fail_json(msg="Directory for quadlet_file is not writable: %s" % quadlet_dir)
 
 
 def create_quadlet_state(module, issuer):
@@ -747,9 +704,7 @@ def create_quadlet_state(module, issuer):
             quadlet_dir = os.path.expanduser(QUADLET_NON_ROOT_PATH)
     # Create a filename based on the issuer
     if not module.params.get("name") and not module.params.get("quadlet_filename"):
-        module.fail_json(
-            msg=f"Filename for {issuer} is required for creating a quadlet file."
-        )
+        module.fail_json(msg=f"Filename for {issuer} is required for creating a quadlet file.")
     if issuer == "image":
         name = module.params["name"].split("/")[-1].split(":")[0]
     else:
@@ -779,24 +734,14 @@ def create_quadlet_state(module, issuer):
         results_update = {
             "changed": True,
             "diff": {
-                "before": (
-                    "\n".join(file_diff[0])
-                    if isinstance(file_diff[0], list)
-                    else file_diff[0] + "\n"
-                ),
-                "after": (
-                    "\n".join(file_diff[1])
-                    if isinstance(file_diff[1], list)
-                    else file_diff[1] + "\n"
-                ),
+                "before": ("\n".join(file_diff[0]) if isinstance(file_diff[0], list) else file_diff[0] + "\n"),
+                "after": ("\n".join(file_diff[1]) if isinstance(file_diff[1], list) else file_diff[1] + "\n"),
             },
         }
     else:
         # adjust file permissions
         diff = {}
-        if mode is not None and module.set_mode_if_different(
-            quadlet_file_path, mode, False, diff
-        ):
+        if mode is not None and module.set_mode_if_different(quadlet_file_path, mode, False, diff):
             results_update = {"changed": True, "diff": diff}
         else:
             results_update = {}

@@ -78,9 +78,7 @@ ARGUMENTS_SPEC_POD = dict(
     memory_swap=dict(type="str", required=False),
     name=dict(type="str", required=True),
     network=dict(type="list", elements="str", required=False),
-    network_alias=dict(
-        type="list", elements="str", required=False, aliases=["network_aliases"]
-    ),
+    network_alias=dict(type="list", elements="str", required=False, aliases=["network_aliases"]),
     no_hosts=dict(type="bool", required=False),
     pid=dict(type="str", required=False),
     pod_id_file=dict(type="str", required=False),
@@ -157,9 +155,7 @@ class PodmanPodModuleParams:
     def _create_action(self):
         cmd = [self.action]
         all_param_methods = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("addparam")
+            func for func in dir(self) if callable(getattr(self, func)) and func.startswith("addparam")
         ]
         params_set = (i for i in self.params if self.params[i] is not None)
         for param in params_set:
@@ -172,14 +168,12 @@ class PodmanPodModuleParams:
         if minv and LooseVersion(minv) > LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported from podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
         if maxv and LooseVersion(maxv) < LooseVersion(self.podman_version):
             self.module.fail_json(
                 msg="Parameter %s is supported till podman "
-                "version %s only! Current version is %s"
-                % (param, minv, self.podman_version)
+                "version %s only! Current version is %s" % (param, minv, self.podman_version)
             )
 
     def addparam_add_host(self, c):
@@ -459,9 +453,7 @@ class PodmanPodDiff:
 
         """
         info_config = self.info
-        before, after = diff_generic(
-            self.params, info_config, module_arg, cmd_arg, boolean_type
-        )
+        before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
         return self._diff_update_and_compare(module_arg, before, after)
 
     def diffparam_add_host(self):
@@ -643,14 +635,9 @@ class PodmanPodDiff:
             before = None
         after = self.params["volume"]
         if after is not None:
-            after = [
-                ":".join([clean_volume(i) for i in v.split(":")[:2]])
-                for v in self.params["volume"]
-            ]
+            after = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in self.params["volume"]]
         if before is not None:
-            before = [
-                ":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before
-            ]
+            before = [":".join([clean_volume(i) for i in v.split(":")[:2]]) for v in before]
         self.module.log("PODMAN Before: %s and After: %s" % (before, after))
         if before is None and after is None:
             return self._diff_update_and_compare("volume", before, after)
@@ -664,11 +651,7 @@ class PodmanPodDiff:
         return self._diff_generic("volumes_from", "--volumes-from")
 
     def is_different(self):
-        diff_func_list = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and func.startswith("diffparam")
-        ]
+        diff_func_list = [func for func in dir(self) if callable(getattr(self, func)) and func.startswith("diffparam")]
         fail_fast = not bool(self.module._diff)
         different = False
         for func_name in diff_func_list:
@@ -720,24 +703,12 @@ class PodmanPod:
     @property
     def different(self):
         """Check if pod is different."""
-        diffcheck = PodmanPodDiff(
-            self.module, self.module_params, self.info, self.infra_info, self.version
-        )
+        diffcheck = PodmanPodDiff(self.module, self.module_params, self.info, self.infra_info, self.version)
         is_different = diffcheck.is_different()
         diffs = diffcheck.diff
         if self.module._diff and is_different and diffs["before"] and diffs["after"]:
-            self.diff["before"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]
-                )
-                + "\n"
-            )
-            self.diff["after"] = (
-                "\n".join(
-                    ["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]
-                )
-                + "\n"
-            )
+            self.diff["before"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["before"].items())]) + "\n"
+            self.diff["after"] = "\n".join(["%s - %s" % (k, v) for k, v in sorted(diffs["after"].items())]) + "\n"
         return is_different
 
     @property
@@ -771,9 +742,7 @@ class PodmanPod:
     def get_info(self):
         """Inspect pod and gather info about it."""
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module_params["executable"], b"pod", b"inspect", self.name]
-        )
+        rc, out, err = self.module.run_command([self.module_params["executable"], b"pod", b"inspect", self.name])
         if rc == 0:
             info = json.loads(out)
             # from podman 5 onwards, this is a list of dicts,
@@ -812,20 +781,14 @@ class PodmanPod:
         else:
             return {}
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module_params["executable"], b"inspect", infra_container_id]
-        )
+        rc, out, err = self.module.run_command([self.module_params["executable"], b"inspect", infra_container_id])
         return json.loads(out)[0] if rc == 0 else {}
 
     def _get_podman_version(self):
         # pylint: disable=unused-variable
-        rc, out, err = self.module.run_command(
-            [self.module_params["executable"], b"--version"]
-        )
+        rc, out, err = self.module.run_command([self.module_params["executable"], b"--version"])
         if rc != 0 or not out or "version" not in out:
-            self.module.fail_json(
-                msg="%s run failed!" % self.module_params["executable"]
-            )
+            self.module.fail_json(msg="%s run failed!" % self.module_params["executable"])
         return out.split("version")[1].strip()
 
     def _perform_action(self, action):
@@ -841,10 +804,7 @@ class PodmanPod:
             self.version,
             self.module,
         ).construct_command_from_params()
-        full_cmd = " ".join(
-            [self.module_params["executable"], "pod"]
-            + [to_native(i) for i in b_command]
-        )
+        full_cmd = " ".join([self.module_params["executable"], "pod"] + [to_native(i) for i in b_command])
         self.module.log("PODMAN-POD-DEBUG: %s" % full_cmd)
         self.actions.append(full_cmd)
         if not self.module.check_mode:
@@ -855,9 +815,7 @@ class PodmanPod:
             self.stdout = out
             self.stderr = err
             if rc != 0:
-                self.module.fail_json(
-                    msg="Can't %s pod %s" % (action, self.name), stdout=out, stderr=err
-                )
+                self.module.fail_json(msg="Can't %s pod %s" % (action, self.name), stdout=out, stderr=err)
 
     def delete(self):
         """Delete the pod."""
@@ -918,9 +876,7 @@ class PodmanPodManager:
             "pod": {},
         }
         self.name = self.module_params["name"]
-        self.executable = self.module.get_bin_path(
-            self.module_params["executable"], required=True
-        )
+        self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
         self.state = self.module_params["state"]
         self.recreate = self.module_params["recreate"]
         self.pod = PodmanPod(self.module, self.name, self.module_params)
@@ -945,9 +901,7 @@ class PodmanPodManager:
             self.results.update({"diff": self.pod.diff})
         if self.module.params["debug"] or self.module_params["debug"]:
             self.results.update({"podman_version": self.pod.version})
-        sysd = generate_systemd(
-            self.module, self.module_params, self.name, self.pod.version
-        )
+        sysd = generate_systemd(self.module, self.module_params, self.name, self.pod.version)
         self.results["changed"] = changed or sysd["changed"]
         self.results.update({"podman_systemd": sysd["systemd"]})
         if sysd["diff"]:

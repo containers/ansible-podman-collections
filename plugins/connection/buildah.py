@@ -78,9 +78,7 @@ class Connection(ConnectionBase):
         display.vvvv("Using buildah connection from collection")
 
     def _set_user(self):
-        self._buildah(
-            b"config", [b"--user=" + to_bytes(self.user, errors="surrogate_or_strict")]
-        )
+        self._buildah(b"config", [b"--user=" + to_bytes(self.user, errors="surrogate_or_strict")])
 
     def _buildah(self, cmd, cmd_args=None, in_data=None, outfile_stdout=None):
         """
@@ -143,17 +141,10 @@ class Connection(ConnectionBase):
         super(Connection, self)._connect()
         rc, self._mount_point, stderr = self._buildah("mount")
         if rc != 0:
-            display.v(
-                "Failed to mount container %s: %s"
-                % (self._container_id, stderr.strip())
-            )
+            display.v("Failed to mount container %s: %s" % (self._container_id, stderr.strip()))
         else:
-            self._mount_point = self._mount_point.strip() + to_bytes(
-                os.path.sep, errors="surrogate_or_strict"
-            )
-            display.vvvv(
-                "MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr)
-            )
+            self._mount_point = self._mount_point.strip() + to_bytes(os.path.sep, errors="surrogate_or_strict")
+            display.vvvv("MOUNTPOINT %s RC %s STDERR %r" % (self._mount_point, rc, stderr))
         self._connected = True
 
     @ensure_connect
@@ -181,9 +172,7 @@ class Connection(ConnectionBase):
                     % (in_path, out_path, self._container_id, stderr)
                 )
         else:
-            real_out_path = self._mount_point + to_bytes(
-                out_path, errors="surrogate_or_strict"
-            )
+            real_out_path = self._mount_point + to_bytes(out_path, errors="surrogate_or_strict")
             shutil.copyfile(
                 to_bytes(in_path, errors="surrogate_or_strict"),
                 to_bytes(real_out_path, errors="surrogate_or_strict"),
@@ -205,9 +194,7 @@ class Connection(ConnectionBase):
                     % (in_path, out_path, self._container_id, stderr)
                 )
         else:
-            real_in_path = self._mount_point + to_bytes(
-                in_path, errors="surrogate_or_strict"
-            )
+            real_in_path = self._mount_point + to_bytes(in_path, errors="surrogate_or_strict")
             shutil.copyfile(
                 to_bytes(real_in_path, errors="surrogate_or_strict"),
                 to_bytes(out_path, errors="surrogate_or_strict"),

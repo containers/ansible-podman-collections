@@ -105,9 +105,7 @@ def get_network_info(module, executable, name):
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(
-            executable=dict(type="str", default="podman"), name=dict(type="str")
-        ),
+        argument_spec=dict(executable=dict(type="str", default="podman"), name=dict(type="str")),
         supports_check_mode=True,
     )
 

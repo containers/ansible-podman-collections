@@ -61,9 +61,7 @@ def tag(module, executable):
     if rc == 0:
         changed = True
     else:
-        module.fail_json(
-            msg="Error tagging local image %s: %s" % (module.params["image"], err)
-        )
+        module.fail_json(msg="Error tagging local image %s: %s" % (module.params["image"], err))
     return changed, out, err
 
 

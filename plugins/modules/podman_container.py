@@ -1540,9 +1540,7 @@ def main():
         and not module.params["force_restart"]
         and not module.params["image"]
     ):
-        module.fail_json(
-            msg="State '%s' required image to be configured!" % module.params["state"]
-        )
+        module.fail_json(msg="State '%s' required image to be configured!" % module.params["state"])
 
     results = PodmanManager(module, module.params).execute()
     module.exit_json(**results)

@@ -454,9 +454,7 @@ class PodmanImageManager(object):
         self.module = module
         self.results = results
         self.name = self.module.params.get("name")
-        self.executable = self.module.get_bin_path(
-            module.params.get("executable"), required=True
-        )
+        self.executable = self.module.get_bin_path(module.params.get("executable"), required=True)
         self.tag = self.module.params.get("tag")
         self.pull = self.module.params.get("pull")
         self.pull_extra_args = self.module.params.get("pull_extra_args")
@@ -479,9 +477,7 @@ class PodmanImageManager(object):
             self.tag = repo_tag
 
         delimiter = ":" if "sha256" not in self.tag else "@"
-        self.image_name = "{name}{d}{tag}".format(
-            name=self.name, d=delimiter, tag=self.tag
-        )
+        self.image_name = "{name}{d}{tag}".format(name=self.name, d=delimiter, tag=self.tag)
 
         if self.state in ["present", "build"]:
             self.present()
@@ -504,17 +500,10 @@ class PodmanImageManager(object):
             ignore_errors=ignore_errors,
         )
 
-    def _get_id_from_output(
-        self, lines, startswith=None, contains=None, split_on=" ", maxsplit=1
-    ):
+    def _get_id_from_output(self, lines, startswith=None, contains=None, split_on=" ", maxsplit=1):
         layer_ids = []
         for line in lines.splitlines():
-            if (
-                startswith
-                and line.startswith(startswith)
-                or contains
-                and contains in line
-            ):
+            if startswith and line.startswith(startswith) or contains and contains in line:
                 splitline = line.rsplit(split_on, maxsplit)
                 layer_ids.append(splitline[1])
 
@@ -531,9 +520,7 @@ class PodmanImageManager(object):
         """
 
         containerfile_path = None
-        for filename in [
-            os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]
-        ]:
+        for filename in [os.path.join(self.path, fname) for fname in ["Containerfile", "Dockerfile"]]:
             if os.path.exists(filename):
                 containerfile_path = filename
                 break
@@ -553,9 +540,7 @@ class PodmanImageManager(object):
         """
 
         build_file_arg = self.build.get("file") if self.build else None
-        containerfile_contents = (
-            self.build.get("container_file") if self.build else None
-        )
+        containerfile_contents = self.build.get("container_file") if self.build else None
 
         container_filename = None
         if build_file_arg:
@@ -583,9 +568,7 @@ class PodmanImageManager(object):
                 containerfile_contents.encode(),
             ).hexdigest()
         else:
-            return hashlib.sha256(
-                containerfile_contents.encode(), usedforsecurity=False
-            ).hexdigest()
+            return hashlib.sha256(containerfile_contents.encode(), usedforsecurity=False).hexdigest()
 
     def _get_args_containerfile_hash(self):
         """
@@ -597,9 +580,7 @@ class PodmanImageManager(object):
 
         args_containerfile_hash = None
 
-        context_has_containerfile = (
-            self.path and self._find_containerfile_from_context()
-        )
+        context_has_containerfile = self.path and self._find_containerfile_from_context()
 
         should_hash_args_containerfile = (
             context_has_containerfile
@@ -608,9 +589,7 @@ class PodmanImageManager(object):
         )
 
         if should_hash_args_containerfile:
-            args_containerfile_hash = self._hash_containerfile_contents(
-                self._get_containerfile_contents()
-            )
+            args_containerfile_hash = self._hash_containerfile_contents(self._get_containerfile_contents())
         return args_containerfile_hash
 
     def present(self):
@@ -637,34 +616,24 @@ class PodmanImageManager(object):
             if self.state == "build" or self.path:
                 # Build the image
                 build_file = self.build.get("file") if self.build else None
-                container_file_txt = (
-                    self.build.get("container_file") if self.build else None
-                )
+                container_file_txt = self.build.get("container_file") if self.build else None
                 if build_file and container_file_txt:
-                    self.module.fail_json(
-                        msg="Cannot specify both build file and container file content!"
-                    )
+                    self.module.fail_json(msg="Cannot specify both build file and container file content!")
                 if not self.path and build_file:
                     self.path = os.path.dirname(build_file)
                 elif not self.path and not build_file and not container_file_txt:
-                    self.module.fail_json(
-                        msg="Path to build context or file is required when building an image"
-                    )
+                    self.module.fail_json(msg="Path to build context or file is required when building an image")
                 self.results["actions"].append(
                     "Built image {image_name} from {path}".format(
                         image_name=self.image_name, path=self.path or "default context"
                     )
                 )
                 if not self.module.check_mode:
-                    self.results["image"], self.results["stdout"] = self.build_image(
-                        args_containerfile_hash
-                    )
+                    self.results["image"], self.results["stdout"] = self.build_image(args_containerfile_hash)
                     image = self.results["image"]
             else:
                 # Pull the image
-                self.results["actions"].append(
-                    "Pulled image {image_name}".format(image_name=self.image_name)
-                )
+                self.results["actions"].append("Pulled image {image_name}".format(image_name=self.image_name))
                 if not self.module.check_mode:
                     image = self.results["image"] = self.pull_image()
 
@@ -687,17 +656,13 @@ class PodmanImageManager(object):
         image_id = self.find_image_id()
 
         if image:
-            self.results["actions"].append(
-                "Removed image {name}".format(name=self.name)
-            )
+            self.results["actions"].append("Removed image {name}".format(name=self.name))
             self.results["changed"] = True
             self.results["image"]["state"] = "Deleted"
             if not self.module.check_mode:
                 self.remove_image()
         elif image_id:
-            self.results["actions"].append(
-                "Removed image with id {id}".format(id=self.image_name)
-            )
+            self.results["actions"].append("Removed image with id {id}".format(id=self.image_name))
             self.results["changed"] = True
             self.results["image"]["state"] = "Deleted"
             if not self.module.check_mode:
@@ -722,11 +687,7 @@ class PodmanImageManager(object):
         try:
             images = json.loads(images)
         except json.decoder.JSONDecodeError:
-            self.module.fail_json(
-                msg="Failed to parse JSON output from podman image ls: {out}".format(
-                    out=images
-                )
-            )
+            self.module.fail_json(msg="Failed to parse JSON output from podman image ls: {out}".format(out=images))
         if len(images) == 0:
             return None
         inspect_json = self.inspect_image(image_name)
@@ -757,11 +718,7 @@ class PodmanImageManager(object):
         try:
             image_data = json.loads(image_data)
         except json.decoder.JSONDecodeError:
-            self.module.fail_json(
-                msg="Failed to parse JSON output from podman inspect: {out}".format(
-                    out=image_data
-                )
-            )
+            self.module.fail_json(msg="Failed to parse JSON output from podman inspect: {out}".format(out=image_data))
         if len(image_data) > 0:
             return image_data
         else:
@@ -780,9 +737,7 @@ class PodmanImageManager(object):
             args.extend(["--authfile", self.auth_file])
 
         if self.username and self.password:
-            cred_string = "{user}:{password}".format(
-                user=self.username, password=self.password
-            )
+            cred_string = "{user}:{password}".format(user=self.username, password=self.password)
             args.extend(["--creds", cred_string])
 
         if self.validate_certs is not None:
@@ -806,11 +761,7 @@ class PodmanImageManager(object):
                     )
                 )
             else:
-                self.module.fail_json(
-                    msg="Failed to pull image {image_name}".format(
-                        image_name=image_name
-                    )
-                )
+                self.module.fail_json(msg="Failed to pull image {image_name}".format(image_name=image_name))
         return self.inspect_image(out.strip())
 
     def build_image(self, containerfile_hash):
@@ -854,9 +805,7 @@ class PodmanImageManager(object):
         if container_file_txt:
             # create a temporarly file with the content of the Containerfile
             if self.path:
-                container_file_path = os.path.join(
-                    self.path, "Containerfile.generated_by_ansible_%s" % time.time()
-                )
+                container_file_path = os.path.join(self.path, "Containerfile.generated_by_ansible_%s" % time.time())
             else:
                 container_file_path = os.path.join(
                     tempfile.gettempdir(),
@@ -879,9 +828,7 @@ class PodmanImageManager(object):
             args.extend(["--authfile", self.auth_file])
 
         if self.username and self.password:
-            cred_string = "{user}:{password}".format(
-                user=self.username, password=self.password
-            )
+            cred_string = "{user}:{password}".format(user=self.username, password=self.password)
             args.extend(["--creds", cred_string])
 
         extra_args = self.build.get("extra_args")
@@ -897,9 +844,7 @@ class PodmanImageManager(object):
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             self.module.fail_json(
-                msg="Failed to build image {image}: {out} {err}".format(
-                    image=self.image_name, out=out, err=err
-                )
+                msg="Failed to build image {image}: {out} {err}".format(image=self.image_name, out=out, err=err)
             )
         # remove the temporary file if it was created
         if container_file_txt:
@@ -920,9 +865,7 @@ class PodmanImageManager(object):
             args.extend(["--cert-dir", self.ca_cert_dir])
 
         if self.username and self.password:
-            cred_string = "{user}:{password}".format(
-                user=self.username, password=self.password
-            )
+            cred_string = "{user}:{password}".format(user=self.username, password=self.password)
             args.extend(["--creds", cred_string])
 
         if self.auth_file:
@@ -964,27 +907,15 @@ class PodmanImageManager(object):
                 dest_format_string = "{transport}:{dest}"
                 if transport == "docker-daemon" and ":" not in dest:
                     dest_format_string = "{transport}:{dest}:latest"
-            dest_string = dest_format_string.format(
-                transport=transport, name=self.name, dest=dest
-            )
+            dest_string = dest_format_string.format(transport=transport, name=self.name, dest=dest)
         else:
             dest_string = dest
             # In case of dest as a repository with org name only, append image name to it
-            if (
-                ":" not in dest
-                and "@" not in dest
-                and len(dest.rstrip("/").split("/")) == 2
-            ):
+            if ":" not in dest and "@" not in dest and len(dest.rstrip("/").split("/")) == 2:
                 dest_string = dest.rstrip("/") + "/" + self.image_name
 
-        if (
-            "/" not in dest_string
-            and "@" not in dest_string
-            and "docker-daemon" not in dest_string
-        ):
-            self.module.fail_json(
-                msg="Destination must be a full URL or path to a directory with image name and tag."
-            )
+        if "/" not in dest_string and "@" not in dest_string and "docker-daemon" not in dest_string:
+            self.module.fail_json(msg="Destination must be a full URL or path to a directory with image name and tag.")
 
         args.append(dest_string)
         self.module.log(
@@ -999,9 +930,7 @@ class PodmanImageManager(object):
             rc, out, err = self._run(args, ignore_errors=True)
             if rc != 0:
                 self.module.fail_json(
-                    msg="Failed to push image {image_name}".format(
-                        image_name=self.image_name
-                    ),
+                    msg="Failed to push image {image_name}".format(image_name=self.image_name),
                     stdout=out,
                     stderr=err,
                     actions=self.results["actions"],
@@ -1020,9 +949,7 @@ class PodmanImageManager(object):
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             self.module.fail_json(
-                msg="Failed to remove image {image_name}. {err}".format(
-                    image_name=image_name, err=err
-                )
+                msg="Failed to remove image {image_name}. {err}".format(image_name=image_name, err=err)
             )
         return out
 
@@ -1036,9 +963,7 @@ class PodmanImageManager(object):
         rc, out, err = self._run(args, ignore_errors=True)
         if rc != 0:
             self.module.fail_json(
-                msg="Failed to remove image with id {image_id}. {err}".format(
-                    image_id=image_id, err=err
-                )
+                msg="Failed to remove image with id {image_id}. {err}".format(image_id=image_id, err=err)
             )
         return out
 
