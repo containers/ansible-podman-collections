@@ -438,6 +438,17 @@ releases:
       - fix(podman_image) - correct intendation on 'loop' keyword
       release_summary: Bugfixes
     release_date: '2025-06-04'
+  1.17.0:
+    changes:
+      minor_changes:
+      - Add another test for volumes
+      - Added checks for volume opts
+      release_summary: Minor changes and system info module
+    modules:
+    - description: Get podman system information from host machine
+      name: podman_system_info
+      namespace: ''
+    release_date: '2025-06-26'
   1.2.0:
     changes:
       minor_changes:

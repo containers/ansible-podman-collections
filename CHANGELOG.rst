@@ -5,6 +5,25 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.17.0
+=======
+
+Release Summary
+---------------
+
+Minor changes and system info module
+
+Minor Changes
+-------------
+
+- Add another test for volumes
+- Added checks for volume opts
+
+New Modules
+-----------
+
+- containers.podman.podman_system_info - Get podman system information from host machine
+
 v1.16.4
 =======
 
