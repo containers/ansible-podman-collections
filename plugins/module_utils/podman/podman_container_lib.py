@@ -147,6 +147,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     pull=dict(type="str", choices=["always", "missing", "never", "newer"]),
     quadlet_dir=dict(type="path"),
     quadlet_filename=dict(type="str"),
+    quadlet_file_mode=dict(type="raw"),
     quadlet_options=dict(type="list", elements="str"),
     rdt_class=dict(type="str"),
     read_only=dict(type="bool"),
@@ -215,6 +216,7 @@ API_TRANSLATION = {
     "published_ports": "portmappings",
     "ports": "portmappings",
     "pids_mode": "pidns",
+    "pid": "pidns",
     "ipc_mode": "ipcns",
     "ipc": "ipcns",
     "uts": "utsns",
@@ -400,43 +402,28 @@ class PodmanModuleParamsAPI:
                     c_port, protocol = (parts[0].split("/") + ["tcp"])[:2]
                     total_ports.append(
                         {
-                            "container_port": int(p) if "-" not in p else int(p.split("-")[0]),
+                            "container_port": int(p),
                             "protocol": protocol if "udp" not in p else "udp",
-                            # "host_port": int(parts[0].split("/")[0]),
-                            "range": 0 if "-" not in p else int(p.split("-")[1]) - int(p.split("-")[0]),
+                            # "host_port": int(parts[0].split("/")[0])
                         }
                     )
                 elif len(parts) == 2:
                     c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
-                    cport = int(c_port) if "-" not in c_port else int(c_port.split("-")[0])
-                    hport = (
-                        int(parts[0].split("/")[0])
-                        if "-" not in parts[0]
-                        else int(parts[0].split("/")[0].split("-")[0])
-                    )
                     total_ports.append(
                         {
-                            "container_port": cport,
-                            "host_port": hport,
+                            "container_port": int(c_port),
+                            "host_port": int(parts[0].split("/")[0]),
                             "protocol": protocol if "udp" not in p else "udp",
-                            "range": 0 if "-" not in c_port else int(c_port.split("-")[1]) - int(c_port.split("-")[0]),
                         }
                     )
                 elif len(parts) == 3:
                     c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
-                    hport = int(c_port) if "-" not in c_port else int(c_port.split("-")[0])
-                    cport = (
-                        int(parts[2].split("/")[0])
-                        if "-" not in parts[2]
-                        else int(parts[2].split("/")[0].split("-")[0])
-                    )
                     total_ports.append(
                         {
-                            "host_port": hport,
-                            "container_port": cport,
+                            "host_port": int(c_port),
+                            "container_port": int(parts[2].split("/")[0]),
                             "protocol": protocol if "udp" not in p else "udp",
                             "host_ip": parts[0],
-                            "range": 0 if "-" not in c_port else int(c_port.split("-")[1]) - int(c_port.split("-")[0]),
                         }
                     )
             transformed["portmappings"] = total_ports
@@ -1242,6 +1229,9 @@ class PodmanContainerDiff:
             cmd = self._get_create_command_annotation()
             if cmd:
                 params = self.clean_aliases(self.params)
+                self.module.log(
+                    "PODMAN-DEBUG: cmd_arg = %s and param arg = %s" % (cmd.get(module_arg), params.get(module_arg))
+                )
                 return self._diff_update_and_compare(module_arg, cmd.get(module_arg), params.get(module_arg))
             return self._diff_update_and_compare(module_arg, None, None)
 
@@ -1862,11 +1852,25 @@ def ensure_image_exists(module, image, module_params, client):
         image_pull_cmd = [module_exec, "image", "pull", image]
         if module_params["tls_verify"] is False:
             image_pull_cmd.append("--tls-verify=false")
+        if module_params["authfile"]:
+            image_pull_cmd.extend(["--authfile", module_params["authfile"]])
+        if module_params["arch"]:
+            image_pull_cmd.append("--arch=%s" % module_params["arch"])
+        if module_params["decryption_key"]:
+            image_pull_cmd.append("--decryption-key=%s" % module_params["decryption_key"])
+        if module_params["platform"]:
+            image_pull_cmd.append("--platform=%s" % module_params["platform"])
+        if module_params["os"]:
+            image_pull_cmd.append("--os=%s" % module_params["os"])
+        if module_params["variant"]:
+            image_pull_cmd.append("--variant=%s" % module_params["variant"])
+        if module_params.get("debug"):
+            module.log("PODMAN-CONTAINER-DEBUG: %s" % " ".join(image_pull_cmd))
         rc, out, err = module.run_command(image_pull_cmd)
         if rc != 0:
             module.fail_json(msg="Can't pull image %s" % image, stdout=out, stderr=err)
-    image_actions.append("pulled image %s" % image)
-    return image_actions
+        image_actions.append("pulled image %s" % image)
+        return image_actions
 
 
 class PodmanContainer:
@@ -2102,14 +2106,21 @@ class PodmanManager:
         else:
             self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
         self.image = self.module_params["image"]
-        image_actions = ensure_image_exists(self.module, self.image, self.module_params, self.client)
-        self.results["actions"] += image_actions
         self.state = self.module_params["state"]
-        self.restart = self.module_params["force_restart"]
-        self.recreate = self.module_params["recreate"]
+        disable_image_pull = self.state in ("quadlet", "absent") or self.module_params["pull"] == "never"
+        image_actions = (
+            ensure_image_exists(self.module, self.image, self.module_params, self.client)
+            if not disable_image_pull
+            else []
+        )
+        self.module.warn(f"Actions performed: {image_actions} and current result: {self.results}")
+        self.results["actions"] += image_actions
 
         self.restart = self.module_params["force_restart"]
         self.recreate = self.module_params["recreate"]
+
+        if self.module_params["generate_systemd"].get("new"):
+            self.module_params["rm"] = True
 
         self.container = PodmanContainer(self.module, self.name, self.module_params, self.client)
 
