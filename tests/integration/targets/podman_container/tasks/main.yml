@@ -955,36 +955,28 @@
         state: directory
         suffix: container-rootfs
       register: container_tempdir
-
     - name: Debug container_tempdir
       ansible.builtin.debug:
         var: container_tempdir
 
     - name: Download alpine releases file
       ansible.builtin.get_url:
-        url: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/{{ ansible_architecture | default('x86_64') }}/latest-releases.yaml"
+        url: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/{{ ansible_architecture }}/latest-releases.yaml"
         dest: "{{ container_tempdir.path }}/latest-releases.yaml"
       register: alpine_releases_file
 
-    - name: Get content of galaxy.yml
-      slurp:
+    - name: Get content of alpine releases file
+      ansible.builtin.slurp:
         src: "{{ container_tempdir.path }}/latest-releases.yaml"
-      register: release_vars
-
-    - name: Parse yaml into temporary variable
-      set_fact:
-        release_yaml_t: "{{ release_vars['content'] | b64decode | from_yaml }}"
-
-    - name: Parse yaml into variable
-      set_fact:
-        release_yaml: "{{ release_yaml_t | from_yaml }}"
+      register: latest_releases_file
 
     - name: Download alpine latest rootfs
       vars:
-        latest_version: "{{ release_yaml[0].version }}"
-        latest_branch: "{{ release_yaml[0].branch }}"
+        latest_releases: "{{ latest_releases_file.content | b64decode }}"
+        latest_version: "{{ (latest_releases | from_yaml)[0].version }}"
+        latest_branch: "{{ (latest_releases | from_yaml)[0].branch }}"
       ansible.builtin.unarchive:
-        src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture | default('x86_64') }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture | default('x86_64') }}.tar.gz"
+        src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture }}.tar.gz"
         dest: "{{ container_tempdir.path }}"
         remote_src: true
 
