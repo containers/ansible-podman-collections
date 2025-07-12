@@ -20,12 +20,12 @@
       register: all_image_result
 
     - name: Pull another image
-      command: podman pull quay.io/coreos/dnsmasq
+      command: podman pull quay.io/sshnaidm1/python:3.12-slim
 
     - name: Get info on specific image
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
-        name: quay.io/coreos/dnsmasq
+        name: quay.io/sshnaidm1/python:3.12-slim
       register: named_image_result
 
     - name: Check results
@@ -33,7 +33,7 @@
         that:
           - all_image_result.images | length > 0
           - named_image_result.images | length == 1
-          - "'quay.io/coreos/dnsmasq' in named_image_result.images[0]['RepoTags'][0]"
+          - "'quay.io/sshnaidm1/python:3.12-slim' in named_image_result.images[0]['RepoTags'][0]"
 
     - name: Get info on single image that does not exist
       containers.podman.podman_image_info:
@@ -53,7 +53,7 @@
       containers.podman.podman_image_info:
         executable: "{{ test_executable | default('podman') }}"
         name:
-          - quay.io/coreos/dnsmasq
+          - quay.io/sshnaidm1/python:3.12-slim
           - nope
           - quay.io/coreos/etcd:v3.5.19
       register: mixed_nonexistent
@@ -73,4 +73,4 @@
         state: absent
       loop:
         - quay.io/coreos/etcd:v3.5.19
-        - quay.io/coreos/dnsmasq
+        - quay.io/sshnaidm1/python:3.12-slim
