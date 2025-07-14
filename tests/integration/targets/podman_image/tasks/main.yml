@@ -8,7 +8,7 @@
         name: "{{ item }}"
         state: absent
       loop:
-        - quay.io/coreos/alpine-sh
+        - quay.io/sshnaidm1/alpine-sh
         - docker.io/alpine
         - docker.io/library/ubuntu
         - docker.io/library/alpine
@@ -16,13 +16,13 @@
     - name: Pull image
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
-        name: quay.io/coreos/alpine-sh
+        name: quay.io/sshnaidm1/alpine-sh
       register: pull1
 
     - name: Pull image again
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
-        name: quay.io/coreos/alpine-sh
+        name: quay.io/sshnaidm1/alpine-sh
       register: pull2
 
     - name: Pull image from docker.io with short url
@@ -72,20 +72,20 @@
         argv:
           - podman
           - tag
-          - quay.io/coreos/alpine-sh
+          - quay.io/sshnaidm1/alpine-sh
           - quay.io/coreos/library/alpine-sh
 
     - name: Remove image (tag)
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
-        name: quay.io/coreos/alpine-sh
+        name: quay.io/sshnaidm1/alpine-sh
         state: absent
       register: rmi1
 
     - name: Remove image again
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
-        name: quay.io/coreos/alpine-sh
+        name: quay.io/sshnaidm1/alpine-sh
         state: absent
       register: rmi2
 
@@ -245,7 +245,7 @@
         build:
           format: oci
           container_file: |-
-            FROM quay.io/coreos/alpine-sh
+            FROM quay.io/sshnaidm1/alpine-sh
       register: oci_build7
       loop: [0, 1]
 
@@ -407,7 +407,7 @@
         path: "{{ playbook_dir }}"
         build:
           container_file: |-
-            FROM quay.io/coreos/alpine-sh
+            FROM quay.io/sshnaidm1/alpine-sh
             RUN echo "Hello World" > /tmp/hello.txt
       register: build_custom1
 
@@ -418,7 +418,7 @@
         state: build
         build:
           container_file: |-
-            FROM quay.io/coreos/alpine-sh
+            FROM quay.io/sshnaidm1/alpine-sh
             RUN echo "Hello2 World" > /tmp/hello2.txt
         force: true
       register: build_custom2
@@ -430,7 +430,7 @@
         state: build
         build:
           container_file: |-
-            FROM quay.io/coreos/alpine-sh
+            FROM quay.io/sshnaidm1/alpine-sh
             RUN echo "Hello2 World" > /tmp/hello2.txt
           file: /var/tmp/build/Dockerfile
         force: true
@@ -589,7 +589,7 @@
         state: absent
       loop:
         - docker.io/library/ubuntu
-        - quay.io/coreos/alpine-sh
+        - quay.io/sshnaidm1/alpine-sh
         - quay.io/coreos/etcd:v3.3.11
         - quay.io/coreos/etcd:v3.5.19
         - localhost/testimage
