@@ -34,7 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          # - ansible<2.10
           - git+https://github.com/ansible/ansible.git@stable-2.18
           - git+https://github.com/ansible/ansible.git@devel
         os:
