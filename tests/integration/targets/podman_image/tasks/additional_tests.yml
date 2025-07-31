@@ -1,0 +1,574 @@
+---
+- name: Additional podman_image tests
+  block:
+    # Authentication and certificate tests
+    - name: Test image pull with username/password (should fail gracefully)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/testing/private-repo
+        username: invaliduser
+        password: invalidpass
+        validate_certs: false
+      register: auth_pull_result
+      ignore_errors: true
+
+    - name: Verify authentication failure is handled properly
+      assert:
+        that:
+          - auth_pull_result is failed
+          - auth_pull_result is not changed
+
+    # Test with auth_file parameter
+    - name: Create temporary auth file for testing
+      tempfile:
+        state: file
+        suffix: .json
+      register: auth_file
+
+    - name: Write valid JSON to auth file
+      copy:
+        content: "{}"
+        dest: "{{ auth_file.path }}"
+
+    - name: Test image pull with auth_file parameter
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/sshnaidm1/alpine:3.16
+        auth_file: "{{ auth_file.path }}"
+      register: auth_file_result
+
+    - name: Verify auth_file parameter works
+      assert:
+        that:
+          - auth_file_result is changed
+
+    # Test with ca_cert_dir parameter
+    - name: Test image pull with ca_cert_dir parameter
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/sshnaidm1/alpine:3.17
+        ca_cert_dir: /etc/ssl/certs
+        validate_certs: true
+      register: cert_dir_result
+
+    - name: Verify ca_cert_dir parameter works
+      assert:
+        that:
+          - cert_dir_result is changed
+
+    # Build tests with annotations and volume mounts
+    - name: Create directory for build context with annotations
+      file:
+        path: /tmp/build_annotations
+        state: directory
+
+    - name: Test build with annotations and volume mounts
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-annotations
+        path: /tmp/build_annotations
+        build:
+          format: oci
+          annotation:
+            version: "1.0"
+            maintainer: "test@example.com"
+            description: "Test image with annotations"
+          volume:
+            - "/tmp:/host-tmp:ro"
+            - "/var/log:/host-logs"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "Testing annotations and volumes" > /tmp/test.txt
+            LABEL test=annotation-build
+      register: annotation_build
+
+    - name: Verify annotation build succeeded
+      assert:
+        that:
+          - annotation_build is changed
+          - "'Built image test-annotations:latest from' in annotation_build.actions[0]"
+
+    # Test idempotency with containerfile hash
+    - name: Build same image again (should not rebuild due to containerfile hash)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-annotations
+        path: /tmp/build_annotations
+        build:
+          format: oci
+          annotation:
+            version: "1.0"
+            maintainer: "test@example.com"
+            description: "Test image with annotations"
+          volume:
+            - "/tmp:/host-tmp:ro"
+            - "/var/log:/host-logs"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "Testing annotations and volumes" > /tmp/test.txt
+            LABEL test=annotation-build
+      register: annotation_build_idempotent
+
+    - name: Verify idempotency based on containerfile hash
+      assert:
+        that:
+          - annotation_build_idempotent is not changed
+
+    # Test force rebuild
+    - name: Force rebuild same image
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-annotations
+        path: /tmp/build_annotations
+        force: true
+        build:
+          format: oci
+          annotation:
+            version: "1.0"
+            maintainer: "test@example.com"
+            description: "Test image with annotations"
+          volume:
+            - "/tmp:/host-tmp:ro"
+            - "/var/log:/host-logs"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "Testing annotations and volumes" > /tmp/test.txt
+            LABEL test=annotation-build
+      register: force_rebuild
+
+    - name: Verify force rebuild works
+      assert:
+        that:
+          - force_rebuild is changed
+          - "'Built image test-annotations:latest from' in force_rebuild.actions[0]"
+
+    # Test build with target stage
+    - name: Test multi-stage build with target
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-multistage
+        state: build
+        build:
+          format: oci
+          target: runtime
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest AS builder
+            RUN echo "builder stage" > /tmp/builder.txt
+
+            FROM quay.io/sshnaidm1/alpine:latest AS runtime
+            COPY --from=builder /tmp/builder.txt /tmp/runtime.txt
+            RUN echo "runtime stage" >> /tmp/runtime.txt
+      register: multistage_build
+
+    - name: Verify multi-stage build with target works
+      assert:
+        that:
+          - multistage_build is changed
+          - "'Built image test-multistage:latest from' in multistage_build.actions[0]"
+
+    # Test build with extra_args
+    - name: Test build with extra arguments
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-extra-args
+        state: build
+        build:
+          format: oci
+          extra_args: "--pull --no-cache"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "Testing extra args" > /tmp/extra.txt
+      register: extra_args_build
+
+    - name: Verify build with extra args works
+      assert:
+        that:
+          - extra_args_build is changed
+          - "'Built image test-extra-args:latest from' in extra_args_build.actions[0]"
+
+    # Test push functionality with different transports
+    - name: Test push to directory transport
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-annotations
+        pull: false
+        push: true
+        push_args:
+          dest: /tmp/push-test-dir
+          transport: dir
+      register: push_dir_result
+
+    - name: Verify push to directory works
+      assert:
+        that:
+          - push_dir_result is changed
+          - "'Pushed image test-annotations:latest' in push_dir_result.actions"
+
+    - name: Test push to oci-archive
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-annotations
+        pull: false
+        push: true
+        push_args:
+          dest: /tmp/test-oci-export.tar
+          transport: oci-archive
+      register: push_oci_result
+
+    - name: Verify push to oci-archive works
+      assert:
+        that:
+          - push_oci_result is changed
+          - "'Pushed image test-annotations:latest' in push_oci_result.actions"
+
+    # Test pull with architecture specification
+    - name: Test pull with specific architecture
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/busybox
+        arch: amd64
+        tag: latest
+      register: arch_pull_result
+
+    - name: Verify architecture-specific pull
+      assert:
+        that:
+          - arch_pull_result is changed
+
+    # Test pull with extra arguments
+    - name: Test pull with extra arguments
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/sshnaidm1/alpine:3.18
+        pull_extra_args: "--quiet"
+      register: pull_extra_args_result
+
+    - name: Verify pull with extra args
+      assert:
+        that:
+          - pull_extra_args_result is changed
+
+    # Error handling tests
+    - name: Test pull non-existent image
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/nonexistent/imagethatdoesnotexist
+        tag: nonexistent
+      register: nonexistent_pull
+      ignore_errors: true
+
+    - name: Verify non-existent image pull fails properly
+      assert:
+        that:
+          - nonexistent_pull is failed
+          - nonexistent_pull is not changed
+
+    # Test build with missing containerfile
+    - name: Create empty directory for missing containerfile test
+      file:
+        path: /tmp/empty_build_dir
+        state: directory
+
+    - name: Test build with missing containerfile (should fail)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-missing-containerfile
+        path: /tmp/empty_build_dir
+      register: missing_containerfile
+      ignore_errors: true
+
+    - name: Verify missing containerfile fails properly
+      assert:
+        that:
+          - missing_containerfile is failed
+          - missing_containerfile is not changed
+
+    # Test conflicting build parameters
+    - name: Test build with conflicting file and container_file (should fail)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-conflict
+        state: build
+        build:
+          file: /tmp/some/file
+          container_file: |
+            FROM alpine
+            RUN echo "conflict test"
+      register: conflict_build
+      ignore_errors: true
+
+    - name: Verify conflicting build parameters fail
+      assert:
+        that:
+          - conflict_build is failed
+          - conflict_build is not changed
+          - "'Cannot specify both build file and container file content' in conflict_build.msg"
+
+    # Test removal by image ID
+    - name: Get image ID for removal test
+      containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-multistage
+      register: multistage_info
+
+    - name: Test removal by image ID
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ multistage_info.images[0].Id }}"
+        state: absent
+      register: remove_by_id
+      when: multistage_info.images | length > 0
+
+    - name: Verify removal by ID works
+      assert:
+        that:
+          - remove_by_id is changed
+          - "'Removed image with ID' in remove_by_id.actions[0]"
+      when: multistage_info.images | length > 0
+
+    # Test image repository parsing edge cases
+    - name: Test image with digest
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "quay.io/sshnaidm1/alpine@sha256:e7d88de73db3d3fd9b2d63aa7f447a10fd0220b7cbf39803c803f2af9ba256b3"
+      register: digest_pull
+      ignore_errors: true
+
+    - name: Test image with port in registry name
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost:5000/test-image
+        tag: latest
+      register: port_registry
+      ignore_errors: true
+
+    # Test push failure scenarios
+    - name: Test push without pull and image doesn't exist
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: nonexistent-local-image
+        pull: false
+        push: true
+      register: push_nonexistent
+      ignore_errors: true
+
+    - name: Verify push nonexistent image fails
+      assert:
+        that:
+          - push_nonexistent is failed
+          - push_nonexistent is not changed
+          - "'Image nonexistent-local-image:latest not found' in push_nonexistent.msg"
+          - "'pull is disabled' in push_nonexistent.msg"
+
+    # Test validate_certs parameter variations
+    - name: Test with validate_certs explicitly true
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/sshnaidm1/alpine:3.19
+        validate_certs: true
+      register: validate_true_result
+
+    - name: Test with validate_certs explicitly false
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/sshnaidm1/alpine:3.20
+        validate_certs: false
+      register: validate_false_result
+
+    - name: Verify validate_certs parameter works
+      assert:
+        that:
+          - validate_true_result is changed
+          - validate_false_result is changed
+
+    # Test containerfile hash changes trigger rebuild
+    - name: Create directory for hash change test
+      file:
+        path: /tmp/hash_change_test
+        state: directory
+
+    - name: Build image with first containerfile
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-hash-change
+        path: /tmp/hash_change_test
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "version 1" > /tmp/version.txt
+      register: hash_build_1
+
+    - name: Build image with modified containerfile (should rebuild)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-hash-change
+        path: /tmp/hash_change_test
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "version 2" > /tmp/version.txt
+      register: hash_build_2
+
+    - name: Verify containerfile change triggers rebuild
+      assert:
+        that:
+          - hash_build_1 is changed
+          - hash_build_2 is changed
+          - "'Built image test-hash-change:latest from' in hash_build_1.actions[0]"
+          - "'Built image test-hash-change:latest from' in hash_build_2.actions[0]"
+
+    # Test build without cache
+    - name: Test build with cache disabled
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-no-cache
+        state: build
+        build:
+          cache: false
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "no cache build" > /tmp/nocache.txt
+      register: no_cache_build
+
+    - name: Verify no-cache build works
+      assert:
+        that:
+          - no_cache_build is changed
+          - "'Built image test-no-cache:latest from' in no_cache_build.actions[0]"
+
+    # Test build with force_rm
+    - name: Test build with force_rm option
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-force-rm
+        state: build
+        build:
+          force_rm: true
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "force rm test" > /tmp/forcerm.txt
+      register: force_rm_build
+
+    - name: Verify force_rm build works
+      assert:
+        that:
+          - force_rm_build is changed
+          - "'Built image test-force-rm:latest from' in force_rm_build.actions[0]"
+
+    # Test push with compress option
+    - name: Test push with compression
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-force-rm
+        pull: false
+        push: true
+        push_args:
+          dest: /tmp/compressed-export.tar
+          transport: docker-archive
+          compress: true
+      register: compress_push
+
+    - name: Verify compressed push works
+      assert:
+        that:
+          - compress_push is changed
+          - "'Pushed image test-force-rm:latest' in compress_push.actions"
+
+    # Test edge case: empty volumes list
+    - name: Test build with empty volumes list
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-empty-volumes
+        state: build
+        build:
+          volume: []
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "empty volumes test" > /tmp/empty.txt
+      register: empty_volumes_build
+
+    - name: Verify empty volumes build works
+      assert:
+        that:
+          - empty_volumes_build is changed
+
+    # Test edge case: empty annotations dict
+    - name: Test build with empty annotations
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-empty-annotations
+        state: build
+        build:
+          annotation: {}
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "empty annotations test" > /tmp/empty-ann.txt
+      register: empty_annotations_build
+
+    - name: Verify empty annotations build works
+      assert:
+        that:
+          - empty_annotations_build is changed
+
+  always:
+    # Cleanup all test images and directories
+    - name: Remove test images
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+        force: true
+      loop:
+        - quay.io/testing/private-repo
+        - quay.io/sshnaidm1/alpine:3.16
+        - quay.io/sshnaidm1/alpine:3.17
+        - quay.io/sshnaidm1/alpine:3.18
+        - quay.io/sshnaidm1/alpine:3.19
+        - quay.io/sshnaidm1/alpine:3.20
+        - test-annotations
+        - test-multistage
+        - test-extra-args
+        - docker.io/library/busybox
+        - test-missing-containerfile
+        - test-conflict
+        - nonexistent-local-image
+        - test-hash-change
+        - test-no-cache
+        - test-force-rm
+        - test-empty-volumes
+        - test-empty-annotations
+        - docker.io/nonexistent/imagethatdoesnotexist
+      ignore_errors: true
+
+    - name: Remove test directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/build_annotations
+        - /tmp/push-test-dir
+        - /tmp/empty_build_dir
+        - /tmp/hash_change_test
+        - "{{ auth_file.path | default('/tmp/nonexistent') }}"
+      ignore_errors: true
+
+    - name: Remove test archive files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/test-oci-export.tar
+        - /tmp/compressed-export.tar
+        - /tmp/testimage-dir
+        - /tmp/testimage-dir1
+        - /tmp/testimage-dir15
+        - /tmp/testimage-dir25
+        - /tmp/test-docker-arch
+        - /tmp/test-docker-arch1
+        - /tmp/test-docker-arch5
+        - /tmp/test-docker-arch15
+        - /tmp/test-oci-arch
+        - /tmp/test-oci-arch1
+        - /tmp/test-oci-arch5
+        - /tmp/test-oci-arch15
+      ignore_errors: true
