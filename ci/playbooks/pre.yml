@@ -36,10 +36,8 @@
             - distro == 'CentOS7'
             - setup_python|default(true)|bool
 
-        - name: Upgrade pip
-          pip:
-            name: pip
-            extra_args: --upgrade
+        - name: Install Python packaging
+          command: pip install --upgrade setuptools packaging pip
           environment:
             PATH: /usr/local/bin:{{ ansible_env.PATH }}
 
