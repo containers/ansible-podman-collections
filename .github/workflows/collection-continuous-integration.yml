@@ -57,31 +57,23 @@ jobs:
         runner-os:
           - ubuntu-22.04
         runner-python-version:
-          - '3.10'
+          - '3.11'
         ansible-version:
-          - ansible<2.10
-          - git+https://github.com/ansible/ansible.git@stable-2.17
+          - git+https://github.com/ansible/ansible.git@stable-2.18
           - git+https://github.com/ansible/ansible.git@devel
         python-version:
-          - '3.10'
+          - '3.11'
         include:
+          - runner-os: ubuntu-22.04
+            runner-python-version: '3.12'
+            ansible-version: git+https://github.com/ansible/ansible.git@devel
+            python-version: '3.12'
+        exclude:
           - runner-os: ubuntu-22.04
             runner-python-version: '3.11'
             ansible-version: git+https://github.com/ansible/ansible.git@devel
             python-version: '3.11'
-          - runner-os: ubuntu-22.04
-            runner-python-version: 3.8
-            ansible-version: ansible<2.10
-            python-version: 3.8
-        exclude:
-          - runner-os: ubuntu-22.04
-            runner-python-version: '3.10'
-            ansible-version: git+https://github.com/ansible/ansible.git@devel
-            python-version: '3.10'
-          - runner-os: ubuntu-22.04
-            runner-python-version: '3.10'
-            ansible-version: ansible<2.10
-            python-version: '3.10'
+
 
     steps:
       - name: Set up Python ${{ matrix.runner-python-version }}
