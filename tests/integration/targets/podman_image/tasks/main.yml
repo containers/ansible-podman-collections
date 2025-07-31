@@ -338,8 +338,8 @@
         that:
           - "bad_push is failed"
           - "bad_push is not changed"
-          - "'Failed to find image bad_image' in bad_push.msg"
-          - "'image pull set to False' in bad_push.msg"
+          - "'Image bad_image:latest not found' in bad_push.msg"
+          - "'pull is disabled' in bad_push.msg"
 
     - name: Pull an image for a specific CPU architecture
       containers.podman.podman_image:
@@ -400,11 +400,16 @@
         path: /var/tmp/build
       register: build_image2
 
+    - name: Create a temporary directory for custom image
+      file:
+        path: /tmp/containers_test
+        state: directory
+
     - name: Build image from a given Containerfile
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
         name: testimage2:customfile
-        path: "{{ playbook_dir }}"
+        path: /tmp/containers_test
         build:
           container_file: |-
             FROM quay.io/sshnaidm1/alpine-sh
@@ -580,6 +585,8 @@
         that:
           - quad3 is changed
           - "'arm64' in quad3.diff.after"
+
+    - include_tasks: additional_tests.yml
 
   always:
     - name: Cleanup images
