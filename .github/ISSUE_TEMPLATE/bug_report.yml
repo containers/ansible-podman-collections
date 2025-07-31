@@ -1,0 +1,105 @@
+name: Bug Report
+description: File a bug report
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please update your version of Podman Ansible modules to the latest possible and retry your command before creating an issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Briefly describe the problem you are having
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What are the reproduction steps?
+      placeholder: |
+        1. Run command...
+        2. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: collection-version
+    attributes:
+      label: Collection version
+      description: Output of `ansible-galaxy collection list | grep containers.podman` or `git show --summary`
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: ansible-version
+    attributes:
+      label: Ansible version
+      description: Output of `ansible --version`
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: podman-version
+    attributes:
+      label: Podman version
+      description: Output of `podman version`
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: playbook
+    attributes:
+      label: Playbook
+      description: Content of your playbook (use real values, not templated parameters like {{ variable_name }}!)
+      placeholder: |
+        - name: Create container
+          containers.podman.podman_container:
+            name: my-container
+            image: nginx:latest
+            state: present
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: command-output
+    attributes:
+      label: Command output
+      description: Command line and output of ansible run with high verbosity (use `--diff -vv` for idempotency issues)
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information
+      description: Any additional information (environment details, package info, etc.)
+    validations:
+      required: false

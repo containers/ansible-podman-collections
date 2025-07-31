@@ -1,0 +1,86 @@
+name: Pull Request
+description: Create a pull request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to the containers.podman collection!
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of change
+      description: What type of change does this PR introduce?
+      options:
+        - Bug fix (non-breaking change which fixes an issue)
+        - New feature (non-breaking change which adds functionality)
+        - Breaking change (fix or feature that would cause existing functionality to not work as expected)
+        - Documentation update
+        - CI/CD improvements
+        - Refactoring
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe what this PR does
+      placeholder: Brief description of the changes...
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation and context
+      description: Why is this change required? What problem does it solve?
+      placeholder: Fixes issue #123, adds support for...
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: How has this been tested?
+      description: Describe the tests that you ran to verify your changes
+      placeholder: |
+        - [ ] Unit tests
+        - [ ] Integration tests
+        - [ ] Manual testing
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have performed a self-review of my own code
+          required: false
+        - label: I have tested my changes thoroughly
+          required: false
+        - label: I have made corresponding changes to the documentation
+          required: false
+        - label: I have added tests that prove my fix is effective or that my feature works
+          required: false
+        - label: If I used AI tools, I have disclosed their use in the description of my changes and reviewed the output for accuracy
+          required: false
+
+  - type: textarea
+    id: breaking-changes
+    attributes:
+      label: Breaking changes
+      description: If this is a breaking change, describe what breaks and how to migrate
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional notes
+      description: Any additional information or notes for reviewers
+    validations:
+      required: false
