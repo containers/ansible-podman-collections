@@ -60,7 +60,7 @@ class ContainerFileProcessor:
             container_filename = self._find_containerfile_from_context()
 
         if not containerfile_contents and container_filename and os.access(container_filename, os.R_OK):
-            with open(container_filename, "r") as f:
+            with open(container_filename, "r", encoding='utf-8') as f:
                 containerfile_contents = f.read()
 
         return containerfile_contents
@@ -96,7 +96,7 @@ class PodmanImageInspector:
     def inspect_image(self, image_name):
         """Inspect an image and return its data."""
         args = ["inspect", image_name, "--format", "json"]
-        rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
+        rc, out, unused = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
             return None
@@ -242,7 +242,7 @@ class PodmanImageBuilder:
             temp_dir = tempfile.gettempdir()
             temp_path = os.path.join(temp_dir, f"Containerfile.generated_by_ansible_{time.time()}")
 
-        with open(temp_path, "w") as f:
+        with open(temp_path, "w", encoding='utf-8') as f:
             f.write(content)
 
         return temp_path
@@ -393,14 +393,13 @@ class PodmanImagePusher:
 
         if transport == "docker":
             return f"{transport}://{dest}"
-        elif transport == "ostree":
+        if transport == "ostree":
             return f"{transport}:{image_base_name}@{dest}"
-        elif transport == "docker-daemon":
+        if transport == "docker-daemon":
             if ":" not in dest:
                 return f"{transport}:{dest}:latest"
             return f"{transport}:{dest}"
-        else:
-            return f"{transport}:{dest}"
+        return f"{transport}:{dest}"
 
 
 class PodmanImageRemover:
@@ -580,7 +579,7 @@ class PodmanImageManager:
             self.module.fail_json(msg=f"Image {self.repository.full_name} not found locally and pull is disabled")
 
         if not self.module.check_mode:
-            output, podman_command = self.puller.pull_image(
+            unused, podman_command = self.puller.pull_image(
                 self.repository.full_name, self.params.get("arch"), self.params.get("pull_extra_args")
             )
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
@@ -608,7 +607,7 @@ class PodmanImageManager:
 
         if image:
             if not self.module.check_mode:
-                output, podman_command = self.remover.remove_image(
+                unused, podman_command = self.remover.remove_image(
                     self.repository.full_name, self.params.get("force", False)
                 )
                 self.results["podman_actions"].append(podman_command)
@@ -621,7 +620,7 @@ class PodmanImageManager:
             image_id = self._extract_image_id(self.repository.original_name)
             if image_id and self._image_id_exists(image_id):
                 if not self.module.check_mode:
-                    output, podman_command = self.remover.remove_image_by_id(image_id, self.params.get("force", False))
+                    unused, podman_command = self.remover.remove_image_by_id(image_id, self.params.get("force", False))
                     self.results["podman_actions"].append(podman_command)
 
                 self.results["changed"] = True
