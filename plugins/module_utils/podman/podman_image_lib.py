@@ -147,6 +147,8 @@ class PodmanImageBuilder:
             args.extend(["--file", temp_file_path])
 
         try:
+            # Return the command that will be executed for podman_actions tracking
+            podman_command = " ".join([self.executable] + args)
             rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
             if rc != 0:
@@ -154,7 +156,7 @@ class PodmanImageBuilder:
 
             # Extract image ID from output
             last_id = self._extract_image_id_from_output(out)
-            return last_id, out + err
+            return last_id, out + err, podman_command
 
         finally:
             if temp_file_path and os.path.exists(temp_file_path):
@@ -278,12 +280,14 @@ class PodmanImagePuller:
         if pull_extra_args:
             args.extend(shlex.split(pull_extra_args))
 
+        # Return the command that will be executed for podman_actions tracking
+        podman_command = " ".join([self.executable] + args)
         rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
             self.module.fail_json(msg=f"Failed to pull image {image_name}: {err}")
 
-        return out.strip()
+        return out.strip(), podman_command
 
     def _add_auth_args(self, args):
         """Add authentication arguments to command."""
@@ -378,7 +382,9 @@ class PodmanImagePusher:
             if ":" not in dest and "@" not in dest and len(dest.rstrip("/").split("/")) == 2:
                 return f"{dest.rstrip('/')}/{image_name}"
             if "/" not in dest and "@" not in dest and "docker-daemon" not in dest:
-                self.module.fail_json(msg="Destination must be a full URL or path to a directory with image name and tag.")
+                self.module.fail_json(
+                    msg="Destination must be a full URL or path to a directory with image name and tag."
+                )
             return dest
 
         # Handle transport-specific destinations
@@ -410,12 +416,14 @@ class PodmanImageRemover:
         if force:
             args.append("--force")
 
+        # Return the command that will be executed for podman_actions tracking
+        podman_command = " ".join([self.executable] + args)
         rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
             self.module.fail_json(msg=f"Failed to remove image {image_name}: {err}")
 
-        return out
+        return out, podman_command
 
     def remove_image_by_id(self, image_id, force=False):
         """Remove an image by ID."""
@@ -423,12 +431,14 @@ class PodmanImageRemover:
         if force:
             args.append("--force")
 
+        # Return the command that will be executed for podman_actions tracking
+        podman_command = " ".join([self.executable] + args)
         rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
             self.module.fail_json(msg=f"Failed to remove image with ID {image_id}: {err}")
 
-        return out
+        return out, podman_command
 
 
 class PodmanImageManager:
@@ -554,11 +564,12 @@ class PodmanImageManager:
 
         # Build the image
         if not self.module.check_mode:
-            image_id, output = self.builder.build_image(
+            image_id, output, podman_command = self.builder.build_image(
                 self.repository.full_name, build_config, path, containerfile_hash
             )
             self.results["stdout"] = output
             self.results["image"] = self.inspector.inspect_image(image_id)
+            self.results["podman_actions"].append(podman_command)
 
         self.results["changed"] = True
         self.results["actions"].append(f"Built image {self.repository.full_name} from {path or 'context'}")
@@ -569,10 +580,11 @@ class PodmanImageManager:
             self.module.fail_json(msg=f"Image {self.repository.full_name} not found locally and pull is disabled")
 
         if not self.module.check_mode:
-            self.puller.pull_image(
+            output, podman_command = self.puller.pull_image(
                 self.repository.full_name, self.params.get("arch"), self.params.get("pull_extra_args")
             )
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
+            self.results["podman_actions"].append(podman_command)
 
         self.results["changed"] = True
         self.results["actions"].append(f"Pulled image {self.repository.full_name}")
@@ -585,6 +597,7 @@ class PodmanImageManager:
             output, action = self.pusher.push_image(self.repository.full_name, push_config)
             self.results["stdout"] += "\n" + output
             self.results["actions"].append(action)
+            self.results["podman_actions"].append(f"{self.executable} {action}")
 
         self.results["changed"] = True
         self.results["actions"].append(f"Pushed image {self.repository.full_name}")
@@ -595,7 +608,10 @@ class PodmanImageManager:
 
         if image:
             if not self.module.check_mode:
-                self.remover.remove_image(self.repository.full_name, self.params.get("force", False))
+                output, podman_command = self.remover.remove_image(
+                    self.repository.full_name, self.params.get("force", False)
+                )
+                self.results["podman_actions"].append(podman_command)
 
             self.results["changed"] = True
             self.results["actions"].append(f"Removed image {self.repository.full_name}")
@@ -605,7 +621,8 @@ class PodmanImageManager:
             image_id = self._extract_image_id(self.repository.original_name)
             if image_id and self._image_id_exists(image_id):
                 if not self.module.check_mode:
-                    self.remover.remove_image_by_id(image_id, self.params.get("force", False))
+                    output, podman_command = self.remover.remove_image_by_id(image_id, self.params.get("force", False))
+                    self.results["podman_actions"].append(podman_command)
 
                 self.results["changed"] = True
                 self.results["actions"].append(f"Removed image with ID {image_id}")

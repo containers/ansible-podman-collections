@@ -524,10 +524,7 @@ def main():
         results = manager.execute()
         module.exit_json(**results)
     except Exception as e:
-        module.fail_json(
-            msg=f"Failed to manage image: {str(e)}",
-            exception=str(e)
-        )
+        module.fail_json(msg=f"Failed to manage image: {str(e)}", exception=str(e))
 
 
 if __name__ == "__main__":
