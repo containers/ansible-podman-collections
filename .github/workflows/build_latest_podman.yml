@@ -144,6 +144,12 @@ jobs:
 
           EOF
 
+      - name: Install pasta
+        run: |
+          # Install pasta
+          wget https://passt.top/builds/latest/x86_64/pasta
+          sudo install -Dm755 pasta /usr/bin/pasta
+
       - name: Test Podman installation
         run: |
           /usr/local/bin/podman --version
