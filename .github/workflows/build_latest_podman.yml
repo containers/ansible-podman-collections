@@ -97,7 +97,7 @@ jobs:
         id: build-info
         run: |
           cd /tmp/podman
-          make BUILDTAGS="selinux seccomp systemd"
+          make BUILDTAGS="seccomp systemd"
           sudo make install PREFIX=/usr/local
 
           # Get version info
@@ -124,20 +124,23 @@ jobs:
 
           # Basic containers.conf with netavark configuration
           cat > ~/.config/containers/containers.conf << EOF
-          [containers]
-          netns = "host"
-          userns = "host"
-          ipcns = "host"
-          utsns = "host"
-          cgroupns = "host"
-          cgroups = "enabled"
-          log_driver = "k8s-file"
 
           [engine]
-          cgroup_manager = "cgroupfs"
-          events_logger = "file"
+
           runtime = "runc"
           helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
 
           EOF
 
