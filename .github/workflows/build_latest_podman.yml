@@ -169,6 +169,10 @@ jobs:
           echo "Default runtime in use:"
           /usr/local/bin/podman info --format json | jq -r '.host.ociRuntime.name' || echo "Could not get runtime info"
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+      # https://github.com/mxschmitt/action-tmate
+
       - name: Create Podman artifact
         run: |
           mkdir -p podman-artifact
