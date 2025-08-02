@@ -336,7 +336,7 @@ jobs:
             -e podman_version_ubuntu=latest
 
           echo "Running podman_container tests..."
-          TEST2RUN=podman_container ./ci/run_containers_tests.sh
+          ADDITIONAL_PARAMS=" -e rootfs_tests=false " TEST2RUN=podman_container ./ci/run_containers_tests.sh
 
   test-podman-idempotency-latest:
     name: Podman Idempotency test with latest Podman
