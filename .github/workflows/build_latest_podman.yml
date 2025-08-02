@@ -16,7 +16,7 @@ on:
 jobs:
   build-podman-from-source:
     name: Build Podman from latest source
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       podman-version: ${{ steps.build-info.outputs.version }}
     steps:
@@ -144,11 +144,9 @@ jobs:
 
           EOF
 
-      - name: Install pasta
+      - name: Install deps
         run: |
-          # Install pasta
-          wget https://passt.top/builds/latest/x86_64/pasta
-          sudo install -Dm755 pasta /usr/bin/pasta
+          sudo apt-get install -y slirp4netns catatonit netavark aardvark-dns passt
 
       - name: Test Podman installation
         run: |
@@ -187,7 +185,7 @@ jobs:
   test-podman-container-latest:
     name: Podman container test with latest Podman
     needs: build-podman-from-source
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     continue-on-error: true # Don't fail the workflow if this job fails
     strategy:
       fail-fast: false
@@ -250,8 +248,8 @@ jobs:
       - name: Configure Podman for testing
         run: |
           # Set up for rootless usage
-          sudo apt-get update
-          sudo apt-get install -y uidmap slirp4netns catatonit
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap slirp4netns catatonit netavark aardvark-dns passt
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -341,7 +339,7 @@ jobs:
   test-podman-idempotency-latest:
     name: Podman Idempotency test with latest Podman
     needs: build-podman-from-source
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     continue-on-error: true # Don't fail the workflow if this job fails
     strategy:
       fail-fast: false
@@ -404,8 +402,8 @@ jobs:
       - name: Configure Podman for testing
         run: |
           # Set up for rootless usage
-          sudo apt-get update
-          sudo apt-get install -y uidmap slirp4netns catatonit
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap slirp4netns catatonit netavark aardvark-dns passt
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -500,7 +498,7 @@ jobs:
   #       test-podman-container-latest,
   #       test-podman-idempotency-latest,
   #     ]
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   if: always()
   #   steps:
   #     - name: Report results
