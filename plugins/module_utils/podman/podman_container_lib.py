@@ -1465,7 +1465,8 @@ class PodmanContainerDiff:
         if before is None and after is None:
             return self._diff_update_and_compare("tmpfs", before, after)
         if after is not None:
-            after = ",".join(sorted([str(k).lower() + ":" + str(v).lower() for k, v in after.items() if v is not None]))
+            after = ",".join(
+                sorted([str(k).lower() + ":" + str(v).lower() for k, v in after.items() if v is not None]))
             if before:
                 before = ",".join(sorted([j.lower() for j in before]))
             else:

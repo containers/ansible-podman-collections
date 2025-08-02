@@ -251,7 +251,7 @@ jobs:
         run: |
           # Set up for rootless usage
           sudo apt-get update
-          sudo apt-get install -y uidmap slirp4netns
+          sudo apt-get install -y uidmap slirp4netns catatonit
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -405,7 +405,7 @@ jobs:
         run: |
           # Set up for rootless usage
           sudo apt-get update
-          sudo apt-get install -y uidmap slirp4netns
+          sudo apt-get install -y uidmap slirp4netns catatonit
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
