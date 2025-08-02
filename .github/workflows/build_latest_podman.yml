@@ -169,10 +169,6 @@ jobs:
           echo "Default runtime in use:"
           /usr/local/bin/podman info --format json | jq -r '.host.ociRuntime.name' || echo "Could not get runtime info"
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      # https://github.com/mxschmitt/action-tmate
-
       - name: Create Podman artifact
         run: |
           mkdir -p podman-artifact
@@ -238,6 +234,7 @@ jobs:
           /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
           runc --version || echo "Runc version check failed"
 
+
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
 
@@ -257,22 +254,25 @@ jobs:
           # Create podman directories
           mkdir -p ~/.config/containers
 
-          # Configure containers.conf for testing
+          # Basic containers.conf with netavark configuration
           cat > ~/.config/containers/containers.conf << EOF
-          [containers]
-          netns = "host"
-          userns = "host"
-          ipcns = "host"
-          utsns = "host"
-          cgroupns = "host"
-          cgroups = "enabled"
-          log_driver = "k8s-file"
 
           [engine]
-          cgroup_manager = "cgroupfs"
-          events_logger = "file"
+
           runtime = "runc"
           helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
 
           EOF
 
@@ -331,7 +331,6 @@ jobs:
 
           echo "Running podman_container tests..."
           TEST2RUN=podman_container ./ci/run_containers_tests.sh
-        continue-on-error: true
 
   test-podman-idempotency-latest:
     name: Test podman_container idempotency with latest Podman
@@ -402,22 +401,25 @@ jobs:
           # Create podman directories
           mkdir -p ~/.config/containers
 
-          # Configure containers.conf for testing
+          # Basic containers.conf with netavark configuration
           cat > ~/.config/containers/containers.conf << EOF
-          [containers]
-          netns = "host"
-          userns = "host"
-          ipcns = "host"
-          utsns = "host"
-          cgroupns = "host"
-          cgroups = "enabled"
-          log_driver = "k8s-file"
 
           [engine]
-          cgroup_manager = "cgroupfs"
-          events_logger = "file"
+
           runtime = "runc"
           helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
 
           EOF
 
@@ -476,39 +478,38 @@ jobs:
 
           echo "Running podman_container tests..."
           TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh
-        continue-on-error: true
 
-  notify-results:
-    name: Notify test results
-    needs:
-      [
-        build-podman-from-source,
-        test-podman-container-latest,
-        test-podman-idempotency-latest,
-      ]
-    runs-on: ubuntu-22.04
-    if: always()
-    steps:
-      - name: Report results
-        run: |
-          echo "=== Podman Latest Build Test Results ==="
-          echo "Podman version built: ${{ needs.build-podman-from-source.outputs.podman-version }}"
-          echo "Build job: ${{ needs.build-podman-from-source.result }}"
-          echo "Container tests: ${{ needs.test-podman-container-latest.result }}"
-          echo "Idempotency tests: ${{ needs.test-podman-idempotency-latest.result }}"
-          echo "========================================"
+  # notify-results:
+  #   name: Notify test results
+  #   needs:
+  #     [
+  #       build-podman-from-source,
+  #       test-podman-container-latest,
+  #       test-podman-idempotency-latest,
+  #     ]
+  #   runs-on: ubuntu-22.04
+  #   if: always()
+  #   steps:
+  #     - name: Report results
+  #       run: |
+  #         echo "=== Podman Latest Build Test Results ==="
+  #         echo "Podman version built: ${{ needs.build-podman-from-source.outputs.podman-version }}"
+  #         echo "Build job: ${{ needs.build-podman-from-source.result }}"
+  #         echo "Container tests: ${{ needs.test-podman-container-latest.result }}"
+  #         echo "Idempotency tests: ${{ needs.test-podman-idempotency-latest.result }}"
+  #         echo "========================================"
 
-          if [ "${{ needs.build-podman-from-source.result }}" != "success" ]; then
-            echo "❌ Podman build failed"
-            exit 1
-          fi
+  #         if [ "${{ needs.build-podman-from-source.result }}" != "success" ]; then
+  #           echo "❌ Podman build failed"
+  #           exit 1
+  #         fi
 
-          if [ "${{ needs.test-podman-container-latest.result }}" == "failure" ]; then
-            echo "⚠️  Container tests failed with latest Podman (informational)"
-          fi
+  #         if [ "${{ needs.test-podman-container-latest.result }}" == "failure" ]; then
+  #           echo "⚠️  Container tests failed with latest Podman (informational)"
+  #         fi
 
-          if [ "${{ needs.test-podman-idempotency-latest.result }}" == "failure" ]; then
-            echo "⚠️  Idempotency tests failed with latest Podman (informational)"
-          fi
+  #         if [ "${{ needs.test-podman-idempotency-latest.result }}" == "failure" ]; then
+  #           echo "⚠️  Idempotency tests failed with latest Podman (informational)"
+  #         fi
 
-          echo "✅ Workflow completed"
+  #         echo "✅ Workflow completed"
