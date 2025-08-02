@@ -60,7 +60,7 @@ jobs:
       - name: Disable apparmor
         run: |
           sudo systemctl stop apparmor.service
-          sudo aa-teardown || true
+          #sudo aa-teardown || true
 
       - name: Clone and build netavark
         run: |
@@ -103,7 +103,7 @@ jobs:
         run: |
           cd /tmp/podman
           make BUILDTAGS="seccomp systemd"
-          sudo make install PREFIX=/usr/local
+          sudo make install PREFIX=/usr
 
           # Get version info
           VERSION=$(/usr/local/bin/podman version --format "{{.Client.Version}}")
