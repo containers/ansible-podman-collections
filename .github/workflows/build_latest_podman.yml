@@ -218,6 +218,13 @@ jobs:
           name: podman-latest
           path: podman-artifact/
 
+      - name: Install deps for Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
+
       - name: Install custom Podman and netavark
         run: |
           sudo cp podman-artifact/podman /usr/local/bin/
@@ -227,24 +234,16 @@ jobs:
             sudo chmod +x /usr/local/bin/podman-remote
           fi
 
-          # Install netavark
-          sudo mkdir -p /usr/local/libexec/podman
-          sudo cp podman-artifact/netavark /usr/local/libexec/podman/
-          sudo chmod +x /usr/local/libexec/podman/netavark
-
+          # # Install netavark
+          # sudo mkdir -p /usr/local/libexec/podman
+          # sudo cp podman-artifact/netavark /usr/local/libexec/podman/
+          # sudo chmod +x /usr/local/libexec/podman/netavark
 
           # Verify installations
-          echo "=== Runtime installation verification ==="
-          ls -la /usr/local/libexec/podman/
-          /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
-          runc --version || echo "Runc version check failed"
-
-          # Install pasta
-          wget https://passt.top/builds/latest/x86_64/pasta
-          sudo install -Dm755 pasta /usr/bin/pasta
-          # Verify pasta installation
-          echo "=== Pasta installation verification ==="
-          pasta --version || echo "Pasta installation failed"
+          # echo "=== Runtime installation verification ==="
+          # ls -la /usr/local/libexec/podman/
+          # /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
+          # runc --version || echo "Runc version check failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
@@ -255,8 +254,6 @@ jobs:
       - name: Configure Podman for testing
         run: |
           # Set up for rootless usage
-          sudo apt-get update -y
-          sudo apt-get install -y uidmap slirp4netns catatonit netavark aardvark-dns passt
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -270,8 +267,7 @@ jobs:
 
           [engine]
 
-          runtime = "runc"
-          helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+          helper_binaries_dir = ["/usr/bin", "/usr/local/libexec/podman", "/usr/local/bin"]
 
           EOF
 
@@ -372,6 +368,13 @@ jobs:
           name: podman-latest
           path: podman-artifact/
 
+      - name: Install deps for Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
+
       - name: Install custom Podman and netavark
         run: |
           sudo cp podman-artifact/podman /usr/local/bin/
@@ -382,23 +385,16 @@ jobs:
           fi
 
           # Install netavark
-          sudo mkdir -p /usr/local/libexec/podman
-          sudo cp podman-artifact/netavark /usr/local/libexec/podman/
-          sudo chmod +x /usr/local/libexec/podman/netavark
+          # sudo mkdir -p /usr/local/libexec/podman
+          # sudo cp podman-artifact/netavark /usr/local/libexec/podman/
+          # sudo chmod +x /usr/local/libexec/podman/netavark
 
 
           # Verify installations
-          echo "=== Runtime installation verification ==="
-          ls -la /usr/local/libexec/podman/
-          /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
-          runc --version || echo "Runc version check failed"
-
-          # Install pasta
-          wget https://passt.top/builds/latest/x86_64/pasta
-          sudo install -Dm755 pasta /usr/bin/pasta
-          # Verify pasta installation
-          echo "=== Pasta installation verification ==="
-          pasta --version || echo "Pasta installation failed"
+          # echo "=== Runtime installation verification ==="
+          # ls -la /usr/local/libexec/podman/
+          # /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
+          # runc --version || echo "Runc version check failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
@@ -409,8 +405,6 @@ jobs:
       - name: Configure Podman for testing
         run: |
           # Set up for rootless usage
-          sudo apt-get update -y
-          sudo apt-get install -y uidmap slirp4netns catatonit netavark aardvark-dns passt
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -424,8 +418,7 @@ jobs:
 
           [engine]
 
-          runtime = "runc"
-          helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+          helper_binaries_dir = ["/usr/bin", "/usr/local/libexec/podman", "/usr/local/bin"]
 
           EOF
 
