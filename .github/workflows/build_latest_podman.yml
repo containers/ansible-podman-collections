@@ -61,6 +61,8 @@ jobs:
         run: |
           sudo systemctl stop apparmor.service
           #sudo aa-teardown || true
+          sudo sed -i "s@/usr/bin@/usr/local/bin@g" /etc/apparmor.d/podman
+          sudo apparmor_parser -r /etc/apparmor.d/podman || echo "AppArmor parser failed, continuing..."
 
       - name: Clone and build netavark
         run: |
@@ -103,7 +105,7 @@ jobs:
         run: |
           cd /tmp/podman
           make BUILDTAGS="seccomp systemd"
-          sudo make install PREFIX=/usr
+          sudo make install PREFIX=/usr/local
 
           # Get version info
           VERSION=$(/usr/local/bin/podman version --format "{{.Client.Version}}")
