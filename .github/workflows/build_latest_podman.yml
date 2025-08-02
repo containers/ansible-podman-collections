@@ -267,7 +267,7 @@ jobs:
 
           [engine]
 
-          helper_binaries_dir = ["/usr/bin", "/usr/local/libexec/podman", "/usr/local/bin"]
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
 
           EOF
 
@@ -418,7 +418,7 @@ jobs:
 
           [engine]
 
-          helper_binaries_dir = ["/usr/bin", "/usr/local/libexec/podman", "/usr/local/bin"]
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
 
           EOF
 
