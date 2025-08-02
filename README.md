@@ -1,113 +1,117 @@
-[![GitHub Actions CI/CD build status — Collection test suite](https://github.com/containers/ansible-podman-collections/workflows/Collection%20build%20and%20tests/badge.svg?branch=main)](https://github.com/containers/ansible-podman-collections/actions?query=workflow%3A%22Collection%20build%20and%20tests)
-
+<!-- omit in toc -->
 # Ansible Collection: containers.podman
 
-This repo hosts the `containers.podman` Ansible Collection.
+[![CI/CD Status](https://img.shields.io/github/actions/workflow/status/containers/ansible-podman-collections/.github/workflows/collection-continuous-integration.yml?branch=main&style=for-the-badge&label=CI%2FCD)](https://github.com/containers/ansible-podman-collections/actions/workflows/collection-continuous-integration.yml)
+[![Ansible Galaxy](https://img.shields.io/ansible/collection/d/containers/podman?style=for-the-badge&label=Ansible%20Galaxy)](https://galaxy.ansible.com/containers/podman)
+[![License](https://img.shields.io/github/license/containers/ansible-podman-collections?style=for-the-badge)](COPYING)
 
-The collection includes the Podman container plugins to help the build and management of Podman containers.
+**Manage the full lifecycle of Podman containers, images, pods, networks, and volumes with Ansible.**
+
+This collection provides a suite of powerful and flexible Ansible modules to automate the management of your [Podman](https://podman.io/) environment. Whether you are running a single container or orchestrating complex, multi-container applications, these modules give you the tools to do it idempotently and efficiently.
+
+---
+
+### **Table of Contents**
+
+- [Key Features](#key-features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Getting Started: A Simple Example](#getting-started-a-simple-example)
+- [Available Content](#available-content)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Key Features
+
+- **Comprehensive Management:** Control every aspect of Podman, including containers, images, pods, networks, volumes, and secrets.
+- **Idempotent Operations:** All modules are designed to be idempotent, ensuring predictable and consistent state for your resources.
+- **Flexible and Powerful:** Exposes a wide range of Podman options, from simple container creation to advanced features like systemd integration and Quadlet file generation.
+- **Connection Plugin:** Includes a `podman` connection plugin to execute Ansible tasks directly inside containers.
+
+## Requirements
+
+- **Ansible:** `ansible-core >= 2.12`
+- **Python:** `python >= 3.9`
+- **Podman:** A working installation of Podman on the target machine.
+
+## Installation
+
+Install the collection from Ansible Galaxy using the `ansible-galaxy` CLI:
+
+```bash
+ansible-galaxy collection install containers.podman
+```
+
+You can also include it in a `requirements.yml` file, which is useful for managing project dependencies:
+
+```yaml
+# requirements.yml
+collections:
+  - name: containers.podman
+```
+
+Then, install it with:
+
+```bash
+ansible-galaxy collection install -r requirements.yml
+```
+
+## Getting Started: A Simple Example
+
+Here is a quick example of how to ensure a Redis container is running using the `podman_container` module.
+
+```yaml
+---
+- name: Deploy a Redis container with Podman
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Ensure the Redis container is running
+      containers.podman.podman_container:
+        name: my-redis-cache
+        image: redis:alpine
+        state: started
+        ports:
+          - "6379:6379"
+        restart_policy: "always"
+```
+
+## Available Content
+
+This collection includes:
+
+- **Modules:**
+  - `podman_container`: Manage Podman containers.
+  - `podman_image`: Build, pull, and manage Podman images.
+  - `podman_pod`: Create and manage Podman pods.
+  - `podman_network`: Manage Podman networks.
+  - `podman_volume`: Manage Podman volumes.
+  - `podman_secret`: Manage Podman secrets.
+  - `podman_login`/`podman_logout`: Authenticate with container registries.
+  - ...and many more!
+
+- **Connection Plugins:**
+  - `podman`: Execute Ansible tasks directly within a container.
+  - `buildah`: Execute Ansible tasks directly within a buildah container.
+
+- **Become Plugins:**
+  - `podman_unshare`: Execute tasks within a `podman unshare` environment.
 
 ## Documentation
 
-For collection versions that are parts of Ansible releases, the documentation can be found on
-Ansible docs site: https://docs.ansible.com/ansible/latest/collections/containers/podman
-
-The latest documentation for current collection version in the repository is hosted on github.io docs
-site: https://containers.github.io/ansible-podman-collections.
-
-## Installation and Usage
-
-### Installing the Collection from Ansible Galaxy
-
-Before using the Podman collection, you need to install the collection with the `ansible-galaxy` CLI:
-
-`ansible-galaxy collection install containers.podman`
-
-You can also include it in a `requirements.yml` file and install it via
-`ansible-galaxy collection install -r requirements.yml` using the format:
-
-```yaml
-collections:
-- name: containers.podman
-```
-
-or clone by your own:
-
-```bash
-mkdir -p ~/.ansible/collections/ansible_collections/containers
-git clone https://github.com/containers/ansible-podman-collections.git ~/.ansible/collections/ansible_collections/containers/podman
-```
-
-### Playbooks
-
-To use a module from Podman collection, please reference the full namespace, collection name,
-and modules name that you want to use:
-
-```yaml
----
-- name: Using Podman collection
-  hosts: localhost
-  tasks:
-    - name: Run redis container
-      containers.podman.podman_container:
-        name: myredis
-        image: redis
-        command: redis-server --appendonly yes
-        state: present
-        recreate: true
-        expose:
-          - 6379
-        volumes_from:
-          - mydata
-```
-
-Or you can add full namespace and collection name in the `collections` element:
-
-```yaml
----
-- name: Using Podman collection
-  hosts: localhost
-  collections:
-    - containers.podman
-  tasks:
-    - name: Build and push an image using existing credentials
-      podman_image:
-        name: nginx
-        path: /path/to/build/dir
-        push: true
-        push_args:
-          dest: quay.io/acme
-```
+- **Official Ansible Docs:** For stable, released versions of the collection, see the documentation on the [official Ansible documentation site](https://docs.ansible.com/ansible/latest/collections/containers/podman/index.html).
+- **Latest Development Version:** For the most up-to-date documentation based on the `main` branch of this repository, visit our [GitHub Pages site](https://containers.github.io/ansible-podman-collections/).
 
 ## Contributing
 
-We are accepting Github pull requests and issues.
-There are many ways in which you can participate in the project, for example:
+We welcome contributions from the community! Whether you want to fix a bug, add a new feature, or improve our documentation, your help is valuable.
 
-- Submit bugs and feature requests, and help us verify them
-- Submit and review source code changes in Github pull requests
-- Add new modules for Podman containers and images
-
-## Testing and Development
-
-If you want to develop new content for this collection or improve what is already
-here, the easiest way to work on the collection is to clone it into one of the configured
-[`COLLECTIONS_PATHS`](https://docs.ansible.com/ansible/latest/reference_appendices/config.html#collections-paths),
-and work on it there.
-
-### Testing with `ansible-test`
-
-We use `ansible-test` for sanity.
-
-## More Information
-
-TBD
-
-## Communication
-
-Please submit Github issues for communication any issues.
-You can ask Podman related questions on `#podman` channel of Ansible Podman questions
-on `#ansible-podman` channel on Freenode IRC.
+Please read our **[Contributing Guide](CONTRIBUTING.md)** to learn how to get started with development, testing, and submitting pull requests.
 
 ## License
 
-GPL-3.0-or-later
+This collection is licensed under the [GNU General Public License v3.0 or later](COPYING).
