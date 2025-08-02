@@ -185,7 +185,7 @@ jobs:
           retention-days: 1
 
   test-podman-container-latest:
-    name: Test podman_container with latest Podman
+    name: Podman container test with latest Podman
     needs: build-podman-from-source
     runs-on: ubuntu-22.04
     continue-on-error: true # Don't fail the workflow if this job fails
@@ -251,7 +251,7 @@ jobs:
         run: |
           # Set up for rootless usage
           sudo apt-get update
-          sudo apt-get install -y uidmap
+          sudo apt-get install -y uidmap slirp4netns
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
@@ -339,7 +339,7 @@ jobs:
           TEST2RUN=podman_container ./ci/run_containers_tests.sh
 
   test-podman-idempotency-latest:
-    name: Test podman_container idempotency with latest Podman
+    name: Podman Idempotency test with latest Podman
     needs: build-podman-from-source
     runs-on: ubuntu-22.04
     continue-on-error: true # Don't fail the workflow if this job fails
@@ -405,7 +405,7 @@ jobs:
         run: |
           # Set up for rootless usage
           sudo apt-get update
-          sudo apt-get install -y uidmap
+          sudo apt-get install -y uidmap slirp4netns
 
           # Configure subuid/subgid for runner user
           echo "runner:100000:65536" | sudo tee -a /etc/subuid
