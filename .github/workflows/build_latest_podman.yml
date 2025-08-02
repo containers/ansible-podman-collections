@@ -234,6 +234,12 @@ jobs:
           /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
           runc --version || echo "Runc version check failed"
 
+          # Install pasta
+          wget https://passt.top/builds/latest/x86_64/pasta
+          sudo install -Dm755 pasta /usr/bin/pasta
+          # Verify pasta installation
+          echo "=== Pasta installation verification ==="
+          pasta --version || echo "Pasta installation failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
@@ -381,6 +387,13 @@ jobs:
           ls -la /usr/local/libexec/podman/
           /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
           runc --version || echo "Runc version check failed"
+
+          # Install pasta
+          wget https://passt.top/builds/latest/x86_64/pasta
+          sudo install -Dm755 pasta /usr/bin/pasta
+          # Verify pasta installation
+          echo "=== Pasta installation verification ==="
+          pasta --version || echo "Pasta installation failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
