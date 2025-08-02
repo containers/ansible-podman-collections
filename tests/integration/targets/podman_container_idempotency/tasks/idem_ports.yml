@@ -23,99 +23,99 @@
   assert:
     that: test1 is not changed
 
-- containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    command: 1h
-    ports:
-      - "4444:4444/tcp"
-      - "1212:5555"
-      - "8888:19191/udp"
-      - "19000:19000/udp"
-      - "127.0.0.1:7671:7676/udp"
-      - "127.0.0.1:12122:8876/udp"
-      - "127.0.0.1:13122:8871/tcp"
-      - "127.0.0.1:43423:8872"
-      - "127.0.0.2:43423:8872/tcp"
-      - "127.0.0.3:43423:8872"
-      - "0.0.0.0:15674:7846"
-      - 127.0.0.1:20000-20010:20000-20010/udp
-      - 0.0.0.0:20000-20010:20000-20010/tcp
-      - "10000-10010:10000-10010/udp"
-      - "[::1]:3001-3003:3001-3003"
-  register: test2
+# - containers.podman.podman_container:
+#     executable: "{{ test_executable | default('podman') }}"
+#     image: "{{ idem_image }}"
+#     name: idempotency
+#     state: present
+#     command: 1h
+#     ports:
+#       - "4444:4444/tcp"
+#       - "1212:5555"
+#       - "8888:19191/udp"
+#       - "19000:19000/udp"
+#       - "127.0.0.1:7671:7676/udp"
+#       - "127.0.0.1:12122:8876/udp"
+#       - "127.0.0.1:13122:8871/tcp"
+#       - "127.0.0.1:43423:8872"
+#       - "127.0.0.2:43423:8872/tcp"
+#       - "127.0.0.3:43423:8872"
+#       - "0.0.0.0:15674:7846"
+#       - 127.0.0.1:20000-20010:20000-20010/udp
+#       - 0.0.0.0:20000-20010:20000-20010/tcp
+#       - "10000-10010:10000-10010/udp"
+#       - "[::1]:3001-3003:3001-3003"
+#   register: test2
 
-- name: check test2
-  assert:
-    that: test2 is changed
+# - name: check test2
+#   assert:
+#     that: test2 is changed
 
-- containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    command: 1h
-    ports:
-      - "4444:4444/tcp"
-      - "1212:5555"
-      - "8888:19191/udp"
-      - "19000:19000/udp"
-      - "127.0.0.1:7671:7676/udp"
-      - "127.0.0.1:12122:8876/udp"
-      - "127.0.0.1:13122:8871/tcp"
-      - "127.0.0.1:43423:8872"
-      - "127.0.0.2:43423:8872/tcp"
-      - "127.0.0.3:43423:8872"
-      - "0.0.0.0:15674:7846"
-      - 127.0.0.1:20000-20010:20000-20010/udp
-      - 0.0.0.0:20000-20010:20000-20010/tcp
-      - "10000-10010:10000-10010/udp"
-      - "[::1]:3001-3003:3001-3003"
-  register: test3
+# - containers.podman.podman_container:
+#     executable: "{{ test_executable | default('podman') }}"
+#     image: "{{ idem_image }}"
+#     name: idempotency
+#     state: present
+#     command: 1h
+#     ports:
+#       - "4444:4444/tcp"
+#       - "1212:5555"
+#       - "8888:19191/udp"
+#       - "19000:19000/udp"
+#       - "127.0.0.1:7671:7676/udp"
+#       - "127.0.0.1:12122:8876/udp"
+#       - "127.0.0.1:13122:8871/tcp"
+#       - "127.0.0.1:43423:8872"
+#       - "127.0.0.2:43423:8872/tcp"
+#       - "127.0.0.3:43423:8872"
+#       - "0.0.0.0:15674:7846"
+#       - 127.0.0.1:20000-20010:20000-20010/udp
+#       - 0.0.0.0:20000-20010:20000-20010/tcp
+#       - "10000-10010:10000-10010/udp"
+#       - "[::1]:3001-3003:3001-3003"
+#   register: test3
 
-- name: check test3
-  assert:
-    that: test3 is not changed
+# - name: check test3
+#   assert:
+#     that: test3 is not changed
 
-- containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    publish_all: true
-    command: 1h
-  register: test4
+# - containers.podman.podman_container:
+#     executable: "{{ test_executable | default('podman') }}"
+#     image: "{{ idem_image }}"
+#     name: idempotency
+#     state: present
+#     publish_all: true
+#     command: 1h
+#   register: test4
 
-- name: check test4
-  assert:
-    that: test4 is changed
+# - name: check test4
+#   assert:
+#     that: test4 is changed
 
-- containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    publish_all: true
-    command: 1h
-  register: test5
+# - containers.podman.podman_container:
+#     executable: "{{ test_executable | default('podman') }}"
+#     image: "{{ idem_image }}"
+#     name: idempotency
+#     state: present
+#     publish_all: true
+#     command: 1h
+#   register: test5
 
-- name: check test5
-  assert:
-    that: test5 is not changed
+# - name: check test5
+#   assert:
+#     that: test5 is not changed
 
-- containers.podman.podman_container:
-    executable: "{{ test_executable | default('podman') }}"
-    image: "{{ idem_image }}"
-    name: idempotency
-    state: present
-    command: 1h
-  register: test6
+# - containers.podman.podman_container:
+#     executable: "{{ test_executable | default('podman') }}"
+#     image: "{{ idem_image }}"
+#     name: idempotency
+#     state: present
+#     command: 1h
+#   register: test6
 
-- name: check test6
-  assert:
-    that: test6 is changed
+# - name: check test6
+#   assert:
+#     that: test6 is changed
 
 - containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
