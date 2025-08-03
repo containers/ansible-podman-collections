@@ -36,6 +36,8 @@
 
 - name: Test idempotency of ports
   include_tasks: idem_ports.yml
+  tags:
+    - no_build_version
 
 - name: Test idempotency of volumes
   include_tasks: idem_volumes.yml

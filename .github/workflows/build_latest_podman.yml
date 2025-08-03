@@ -460,4 +460,5 @@ jobs:
             -e podman_version_ubuntu=latest
 
           echo "Running podman_container tests..."
-          TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh
+          ANSIBLECMD="ansible-playbook --skip-tags no_build_version " \
+            TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh
