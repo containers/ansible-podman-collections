@@ -4,14 +4,17 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run daily at 4:00 UTC
   workflow_dispatch: # Allow manual triggering
-  push:
-    paths:
-      - ".github/workflows/build_latest_podman.yml"
-    branches:
-      - main
   pull_request:
     paths:
       - ".github/workflows/build_latest_podman.yml"
+      - 'ci/playbooks/containers/podman_container.yml'
+      - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
+      - 'plugins/module_utils/podman/quadlet.py'
+      - 'plugins/modules/podman_container_info.py'
+      - 'tests/integration/targets/podman_container/**'
+      - 'tests/integration/targets/podman_container_idempotency/**'
 
 jobs:
   build-podman-from-source:
@@ -322,7 +325,8 @@ jobs:
             -e podman_version_ubuntu=latest
 
           echo "Running podman_container tests..."
-          ANSIBLECMD="ansible-playbook -e rootfs_tests=false " TEST2RUN=podman_container ./ci/run_containers_tests.sh
+          ANSIBLECMD="ansible-playbook --skip-tags no_build_version " \
+            TEST2RUN=podman_container ./ci/run_containers_tests.sh
 
   test-podman-idempotency-latest:
     name: Podman Idempotency test with latest Podman

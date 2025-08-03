@@ -898,7 +898,8 @@
         state: absent
 
     - name: Rootfs container tests
-      when: rootfs_tests | default(true) | bool
+      tags:
+        - no_build_version
       block:
 
         - name: Create temporary rootfs directory
@@ -909,6 +910,7 @@
         - name: Debug container_tempdir
           ansible.builtin.debug:
             var: container_tempdir
+
 
         - name: Download alpine releases file
           ansible.builtin.get_url:
