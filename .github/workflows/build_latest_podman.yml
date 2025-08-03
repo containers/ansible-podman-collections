@@ -128,7 +128,7 @@ jobs:
           [engine]
 
           runtime = "runc"
-          helper_binaries_dir = ["/usr/local/libexec/podman", "/usr/local/bin"]
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
 
           EOF
 
