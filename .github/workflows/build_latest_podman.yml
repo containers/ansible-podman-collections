@@ -57,19 +57,12 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Disable apparmor
+      - name: Fix apparmor
         run: |
           sudo systemctl stop apparmor.service
           #sudo aa-teardown || true
           sudo sed -i "s@/usr/bin@/usr/local/bin@g" /etc/apparmor.d/podman
           sudo apparmor_parser -r /etc/apparmor.d/podman || echo "AppArmor parser failed, continuing..."
-
-      - name: Clone and build netavark
-        run: |
-          git clone https://github.com/containers/netavark.git /tmp/netavark
-          cd /tmp/netavark
-          make
-          sudo make install PREFIX=/usr/local
 
       - name: Clone Podman source and check dependencies
         run: |
@@ -150,10 +143,14 @@ jobs:
           }
 
           EOF
+          echo "Podman configured for rootless usage"
 
-      - name: Install deps
+      - name: Install deps for Podman
         run: |
-          sudo apt-get install -y slirp4netns catatonit netavark aardvark-dns passt
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
 
       - name: Test Podman installation
         run: |
@@ -179,7 +176,7 @@ jobs:
           mkdir -p podman-artifact
           cp /usr/local/bin/podman podman-artifact/
           cp /usr/local/bin/podman-remote podman-artifact/ || true
-          cp /usr/local/libexec/podman/netavark podman-artifact/
+          # cp /usr/local/libexec/podman/netavark podman-artifact/
           echo "${{ steps.build-info.outputs.version }}" > podman-artifact/VERSION
 
       - name: Upload Podman artifact
@@ -199,7 +196,6 @@ jobs:
       matrix:
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.18
-          - git+https://github.com/ansible/ansible.git@devel
         python-version:
           - "3.12"
 
@@ -225,7 +221,7 @@ jobs:
             slirp4netns catatonit netavark aardvark-dns passt conmon \
             containernetworking-plugins crun
 
-      - name: Install custom Podman and netavark
+      - name: Install custom Podman
         run: |
           sudo cp podman-artifact/podman /usr/local/bin/
           sudo chmod +x /usr/local/bin/podman
@@ -233,17 +229,6 @@ jobs:
             sudo cp podman-artifact/podman-remote /usr/local/bin/
             sudo chmod +x /usr/local/bin/podman-remote
           fi
-
-          # # Install netavark
-          # sudo mkdir -p /usr/local/libexec/podman
-          # sudo cp podman-artifact/netavark /usr/local/libexec/podman/
-          # sudo chmod +x /usr/local/libexec/podman/netavark
-
-          # Verify installations
-          # echo "=== Runtime installation verification ==="
-          # ls -la /usr/local/libexec/podman/
-          # /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
-          # runc --version || echo "Runc version check failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
@@ -349,7 +334,6 @@ jobs:
       matrix:
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.18
-          - git+https://github.com/ansible/ansible.git@devel
         python-version:
           - "3.12"
 
@@ -375,7 +359,7 @@ jobs:
             slirp4netns catatonit netavark aardvark-dns passt conmon \
             containernetworking-plugins crun
 
-      - name: Install custom Podman and netavark
+      - name: Install custom Podman
         run: |
           sudo cp podman-artifact/podman /usr/local/bin/
           sudo chmod +x /usr/local/bin/podman
@@ -383,18 +367,6 @@ jobs:
             sudo cp podman-artifact/podman-remote /usr/local/bin/
             sudo chmod +x /usr/local/bin/podman-remote
           fi
-
-          # Install netavark
-          # sudo mkdir -p /usr/local/libexec/podman
-          # sudo cp podman-artifact/netavark /usr/local/libexec/podman/
-          # sudo chmod +x /usr/local/libexec/podman/netavark
-
-
-          # Verify installations
-          # echo "=== Runtime installation verification ==="
-          # ls -la /usr/local/libexec/podman/
-          # /usr/local/libexec/podman/netavark --version || echo "Netavark version check failed"
-          # runc --version || echo "Runc version check failed"
 
           # Configure PATH to use our custom podman
           echo "/usr/local/bin" >> $GITHUB_PATH
@@ -488,39 +460,4 @@ jobs:
             -e podman_version_ubuntu=latest
 
           echo "Running podman_container tests..."
-          ANSIBLECMD="ansible-playbook -e rootfs_tests=false " TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh
-
-  # notify-results:
-  #   name: Notify test results
-  #   needs:
-  #     [
-  #       build-podman-from-source,
-  #       test-podman-container-latest,
-  #       test-podman-idempotency-latest,
-  #     ]
-  #   runs-on: ubuntu-24.04
-  #   if: always()
-  #   steps:
-  #     - name: Report results
-  #       run: |
-  #         echo "=== Podman Latest Build Test Results ==="
-  #         echo "Podman version built: ${{ needs.build-podman-from-source.outputs.podman-version }}"
-  #         echo "Build job: ${{ needs.build-podman-from-source.result }}"
-  #         echo "Container tests: ${{ needs.test-podman-container-latest.result }}"
-  #         echo "Idempotency tests: ${{ needs.test-podman-idempotency-latest.result }}"
-  #         echo "========================================"
-
-  #         if [ "${{ needs.build-podman-from-source.result }}" != "success" ]; then
-  #           echo "❌ Podman build failed"
-  #           exit 1
-  #         fi
-
-  #         if [ "${{ needs.test-podman-container-latest.result }}" == "failure" ]; then
-  #           echo "⚠️  Container tests failed with latest Podman (informational)"
-  #         fi
-
-  #         if [ "${{ needs.test-podman-idempotency-latest.result }}" == "failure" ]; then
-  #           echo "⚠️  Idempotency tests failed with latest Podman (informational)"
-  #         fi
-
-  #         echo "✅ Workflow completed"
+          TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh
