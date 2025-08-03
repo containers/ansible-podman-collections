@@ -1,0 +1,468 @@
+name: Podman Latest Build Testing
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # Run daily at 4:00 UTC
+  workflow_dispatch: # Allow manual triggering
+  pull_request:
+    paths:
+      - ".github/workflows/build_latest_podman.yml"
+      - 'ci/playbooks/containers/podman_container.yml'
+      - 'plugins/modules/podman_container.py'
+      - 'plugins/module_utils/podman/podman_container_lib.py'
+      - 'plugins/module_utils/podman/common.py'
+      - 'plugins/module_utils/podman/quadlet.py'
+      - 'plugins/modules/podman_container_info.py'
+      - 'tests/integration/targets/podman_container/**'
+      - 'tests/integration/targets/podman_container_idempotency/**'
+
+jobs:
+  build-podman-from-source:
+    name: Build Podman from latest source
+    runs-on: ubuntu-24.04
+    outputs:
+      podman-version: ${{ steps.build-info.outputs.version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Install build dependencies and container runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            libseccomp-dev \
+            libgpgme-dev \
+            libdevmapper-dev \
+            libsystemd-dev \
+            pkg-config \
+            uidmap \
+            libbtrfs-dev \
+            protobuf-compiler \
+            go-md2man \
+            runc \
+            conmon \
+            jq
+
+          echo "=== Installed runtime versions ==="
+          runc --version || echo "runc not available"
+          conmon --version || echo "conmon not available"
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Fix apparmor
+        run: |
+          sudo systemctl stop apparmor.service
+          #sudo aa-teardown || true
+          sudo sed -i "s@/usr/bin@/usr/local/bin@g" /etc/apparmor.d/podman
+          sudo apparmor_parser -r /etc/apparmor.d/podman || echo "AppArmor parser failed, continuing..."
+
+      - name: Clone Podman source and check dependencies
+        run: |
+          git clone https://github.com/containers/podman.git /tmp/podman
+          cd /tmp/podman
+          git log --oneline -1
+
+          echo "=== Checking dependency versions ==="
+
+          # Check go.mod for dependencies
+          if [ -f go.mod ]; then
+            echo "--- go.mod dependencies ---"
+            grep -E "(runc|conmon|crun)" go.mod || echo "No runtime deps found in go.mod"
+          fi
+
+          # Check docs for installation requirements
+          if [ -f docs/tutorials/podman-installation.md ]; then
+            echo "--- Installation docs ---"
+            grep -A5 -B5 -i "conmon\|runc\|crun" docs/tutorials/podman-installation.md || echo "No runtime info in installation docs"
+          fi
+
+          # Check Dockerfiles
+          find . -name "Dockerfile*" -exec echo "=== {} ===" \; -exec grep -i "conmon\|runc\|crun" {} \; 2>/dev/null || echo "No Dockerfiles with runtime info"
+
+          # Check CI setup scripts
+          find contrib -name "*.sh" -exec echo "=== {} ===" \; -exec grep -A3 -B3 -i "conmon\|runc\|crun" {} \; 2>/dev/null || echo "No CI scripts with runtime info"
+
+          # Check for any version files
+          find . -name "*version*" -o -name "*VERSION*" | head -5
+
+      - name: Build Podman from source
+        id: build-info
+        run: |
+          cd /tmp/podman
+          make BUILDTAGS="seccomp systemd"
+          sudo make install PREFIX=/usr/local
+
+          # Get version info
+          VERSION=$(/usr/local/bin/podman version --format "{{.Client.Version}}")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Built Podman version: $VERSION"
+
+          # Verify installation
+          /usr/local/bin/podman --version
+          /usr/local/bin/podman info --format json | jq -r '.version.Version'
+
+      - name: Configure Podman for rootless
+        run: |
+          # Set up for rootless usage - use system newuidmap/newgidmap from uidmap package
+          sudo chmod 4755 /usr/bin/newgidmap || echo "newgidmap not found, continuing..."
+          sudo chmod 4755 /usr/bin/newuidmap || echo "newuidmap not found, continuing..."
+
+          # Configure subuid/subgid for runner user
+          echo "runner:100000:65536" | sudo tee -a /etc/subuid
+          echo "runner:100000:65536" | sudo tee -a /etc/subgid
+
+          # Create podman directories
+          mkdir -p ~/.config/containers
+
+          # Basic containers.conf with netavark configuration
+          cat > ~/.config/containers/containers.conf << EOF
+
+          [engine]
+
+          runtime = "runc"
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
+
+          EOF
+          echo "Podman configured for rootless usage"
+
+      - name: Install deps for Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
+
+      - name: Test Podman installation
+        run: |
+          /usr/local/bin/podman --version
+          /usr/local/bin/podman info
+
+          echo "=== Testing container runtime compatibility ==="
+          echo "Testing image pull and run functionality..."
+
+          # Test image pulling and running - this should fail the build if runtime is incompatible
+          /usr/local/bin/podman pull docker.io/library/hello-world:latest
+          /usr/local/bin/podman run --rm hello-world
+
+          # Additional runtime debugging
+          echo "=== Runtime debugging ==="
+          echo "Available runtimes:"
+          ls -la /usr/bin/runc /usr/local/bin/crun /usr/bin/crun 2>/dev/null || echo "Some runtimes not found"
+          echo "Default runtime in use:"
+          /usr/local/bin/podman info --format json | jq -r '.host.ociRuntime.name' || echo "Could not get runtime info"
+
+      - name: Create Podman artifact
+        run: |
+          mkdir -p podman-artifact
+          cp /usr/local/bin/podman podman-artifact/
+          cp /usr/local/bin/podman-remote podman-artifact/ || true
+          # cp /usr/local/libexec/podman/netavark podman-artifact/
+          echo "${{ steps.build-info.outputs.version }}" > podman-artifact/VERSION
+
+      - name: Upload Podman artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: podman-latest
+          path: podman-artifact/
+          retention-days: 1
+
+  test-podman-container-latest:
+    name: Podman container test with latest Podman
+    needs: build-podman-from-source
+    runs-on: ubuntu-24.04
+    continue-on-error: true # Don't fail the workflow if this job fails
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - git+https://github.com/ansible/ansible.git@stable-2.18
+        python-version:
+          - "3.12"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download Podman artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: podman-latest
+          path: podman-artifact/
+
+      - name: Install deps for Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
+
+      - name: Install custom Podman
+        run: |
+          sudo cp podman-artifact/podman /usr/local/bin/
+          sudo chmod +x /usr/local/bin/podman
+          if [ -f podman-artifact/podman-remote ]; then
+            sudo cp podman-artifact/podman-remote /usr/local/bin/
+            sudo chmod +x /usr/local/bin/podman-remote
+          fi
+
+          # Configure PATH to use our custom podman
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+          PODMAN_VERSION=$(cat podman-artifact/VERSION)
+          echo "PODMAN_VERSION=$PODMAN_VERSION" >> $GITHUB_ENV
+
+      - name: Configure Podman for testing
+        run: |
+          # Set up for rootless usage
+
+          # Configure subuid/subgid for runner user
+          echo "runner:100000:65536" | sudo tee -a /etc/subuid
+          echo "runner:100000:65536" | sudo tee -a /etc/subgid
+
+          # Create podman directories
+          mkdir -p ~/.config/containers
+
+          # Basic containers.conf with netavark configuration
+          cat > ~/.config/containers/containers.conf << EOF
+
+          [engine]
+          runtime = "runc"
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
+
+          EOF
+
+      - name: Upgrade pip and install dependencies
+        run: |
+          sudo apt-get install -y python*-wheel python*-yaml
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-podman-latest
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python3 -m pip install --user --force-reinstall --upgrade '${{ matrix.ansible-version }}'
+
+      - name: Build and install collection
+        run: |
+          export PATH=~/.local/bin:$PATH
+
+          echo "Ansible version:"
+          ~/.local/bin/ansible --version
+
+          echo "Podman version:"
+          podman --version
+
+          rm -rf /tmp/just_new_collection
+          ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
+          ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Run podman_container tests
+        run: |
+          export PATH=~/.local/bin:$PATH
+          export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+
+          echo "=== Environment Information ==="
+          echo "Podman version: $PODMAN_VERSION"
+          echo "Ansible version:"
+          ansible --version
+          echo "Python version:"
+          python --version
+          echo "================================"
+
+          ansible-playbook -vv ci/playbooks/pre.yml \
+            -e host=localhost \
+            -i localhost, \
+            -e ansible_connection=local \
+            -e setup_python=false \
+            -e podman_version_ubuntu=latest
+
+          echo "Running podman_container tests..."
+          ANSIBLECMD="ansible-playbook --skip-tags no_build_version " \
+            TEST2RUN=podman_container ./ci/run_containers_tests.sh
+
+  test-podman-idempotency-latest:
+    name: Podman Idempotency test with latest Podman
+    needs: build-podman-from-source
+    runs-on: ubuntu-24.04
+    continue-on-error: true # Don't fail the workflow if this job fails
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - git+https://github.com/ansible/ansible.git@stable-2.18
+        python-version:
+          - "3.12"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download Podman artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: podman-latest
+          path: podman-artifact/
+
+      - name: Install deps for Podman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y uidmap \
+            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            containernetworking-plugins crun
+
+      - name: Install custom Podman
+        run: |
+          sudo cp podman-artifact/podman /usr/local/bin/
+          sudo chmod +x /usr/local/bin/podman
+          if [ -f podman-artifact/podman-remote ]; then
+            sudo cp podman-artifact/podman-remote /usr/local/bin/
+            sudo chmod +x /usr/local/bin/podman-remote
+          fi
+
+          # Configure PATH to use our custom podman
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+          PODMAN_VERSION=$(cat podman-artifact/VERSION)
+          echo "PODMAN_VERSION=$PODMAN_VERSION" >> $GITHUB_ENV
+
+      - name: Configure Podman for testing
+        run: |
+          # Set up for rootless usage
+
+          # Configure subuid/subgid for runner user
+          echo "runner:100000:65536" | sudo tee -a /etc/subuid
+          echo "runner:100000:65536" | sudo tee -a /etc/subgid
+
+          # Create podman directories
+          mkdir -p ~/.config/containers
+
+          # Basic containers.conf with netavark configuration
+          cat > ~/.config/containers/containers.conf << EOF
+
+          [engine]
+          runtime = "runc"
+          helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          EOF
+
+          sudo mkdir -p /etc/containers
+          sudo tee /etc/containers/policy.json > /dev/null <<'EOF'
+          {
+            "default": [
+              {
+                "type": "insecureAcceptAnything"
+              }
+            ]
+          }
+
+          EOF
+
+      - name: Upgrade pip and install dependencies
+        run: |
+          sudo apt-get install -y python*-wheel python*-yaml
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-podman-latest
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python3 -m pip install --user --force-reinstall --upgrade '${{ matrix.ansible-version }}'
+
+      - name: Build and install collection
+        run: |
+          export PATH=~/.local/bin:$PATH
+
+          echo "Ansible version:"
+          ~/.local/bin/ansible --version
+
+          echo "Podman version:"
+          podman --version
+
+          rm -rf /tmp/just_new_collection
+          ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
+          ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Run podman_container tests
+        run: |
+          export PATH=~/.local/bin:$PATH
+          export ANSIBLE_CONFIG=$(pwd)/ci/ansible-dev.cfg
+
+          echo "=== Environment Information ==="
+          echo "Podman version: $PODMAN_VERSION"
+          echo "Ansible version:"
+          ansible --version
+          echo "Python version:"
+          python --version
+          echo "================================"
+
+          ansible-playbook -vv ci/playbooks/pre.yml \
+            -e host=localhost \
+            -i localhost, \
+            -e ansible_connection=local \
+            -e setup_python=false \
+            -e podman_version_ubuntu=latest
+
+          echo "Running podman_container tests..."
+          ANSIBLECMD="ansible-playbook --skip-tags no_build_version " \
+            TEST2RUN=podman_container_idempotency ./ci/run_containers_tests.sh

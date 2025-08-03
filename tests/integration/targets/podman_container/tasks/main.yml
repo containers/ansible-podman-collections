@@ -897,136 +897,142 @@
         name: container1
         state: absent
 
-    - name: Create temporary rootfs directory
-      ansible.builtin.tempfile:
-        state: directory
-        suffix: container-rootfs
-      register: container_tempdir
-    - name: Debug container_tempdir
-      ansible.builtin.debug:
-        var: container_tempdir
+    - name: Rootfs container tests
+      tags:
+        - no_build_version
+      block:
 
-    - name: Download alpine releases file
-      ansible.builtin.get_url:
-        url: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/{{ ansible_architecture }}/latest-releases.yaml"
-        dest: "{{ container_tempdir.path }}/latest-releases.yaml"
-      register: alpine_releases_file
+        - name: Create temporary rootfs directory
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: container-rootfs
+          register: container_tempdir
+        - name: Debug container_tempdir
+          ansible.builtin.debug:
+            var: container_tempdir
 
-    - name: Get content of alpine releases file
-      ansible.builtin.slurp:
-        src: "{{ container_tempdir.path }}/latest-releases.yaml"
-      register: latest_releases_file
 
-    - name: Download alpine latest rootfs
-      vars:
-        latest_releases: "{{ latest_releases_file.content | b64decode }}"
-        latest_version: "{{ (latest_releases | from_yaml)[0].version }}"
-        latest_branch: "{{ (latest_releases | from_yaml)[0].branch }}"
-      ansible.builtin.unarchive:
-        src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture }}.tar.gz"
-        dest: "{{ container_tempdir.path }}"
-        remote_src: true
+        - name: Download alpine releases file
+          ansible.builtin.get_url:
+            url: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/{{ ansible_architecture }}/latest-releases.yaml"
+            dest: "{{ container_tempdir.path }}/latest-releases.yaml"
+          register: alpine_releases_file
 
-    - name: Check invalid rootfs image pull
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container
-        image: /ineverneverneverexist
-        rootfs: true
-        state: started
-        command: sleep 1d
-      register: imagerootfsfail
-      ignore_errors: true
+        - name: Get content of alpine releases file
+          ansible.builtin.slurp:
+            src: "{{ container_tempdir.path }}/latest-releases.yaml"
+          register: latest_releases_file
 
-    - name: Check output is correct
-      assert:
-        that:
-          - imagerootfsfail is failed
-          - imagerootfsfail.msg == "Image rootfs doesn't exist /ineverneverneverexist"
+        - name: Download alpine latest rootfs
+          vars:
+            latest_releases: "{{ latest_releases_file.content | b64decode }}"
+            latest_version: "{{ (latest_releases | from_yaml)[0].version }}"
+            latest_branch: "{{ (latest_releases | from_yaml)[0].branch }}"
+          ansible.builtin.unarchive:
+            src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture }}.tar.gz"
+            dest: "{{ container_tempdir.path }}"
+            remote_src: true
 
-    - name: Check rootfs container
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container3
-        image: "{{ container_tempdir.path }}"
-        rootfs: true
-        state: started
-        command: sleep 1d
-      register: image
+        - name: Check invalid rootfs image pull
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container
+            image: /ineverneverneverexist
+            rootfs: true
+            state: started
+            command: sleep 1d
+          register: imagerootfsfail
+          ignore_errors: true
 
-    - name: Check output is correct
-      assert:
-        that:
-          - image is changed
-          - image.container is defined
-          - image.container['State']['Running']
-          - image.container['Image'] == ""
-          - image.container['Rootfs'] == container_tempdir.path
-          - "'started container3' in image.actions"
-        fail_msg: Rootfs container test failed!
-        success_msg: Rootfs container test passed!
+        - name: Check output is correct
+          assert:
+            that:
+              - imagerootfsfail is failed
+              - imagerootfsfail.msg == "Image rootfs doesn't exist /ineverneverneverexist"
 
-    - name: Check basic idempotency of running rootfs container - run it again
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container3
-        image: "{{ container_tempdir.path }}"
-        rootfs: true
-        state: started
-        command: sleep 1d
-      register: idem
+        - name: Check rootfs container
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container3
+            image: "{{ container_tempdir.path }}"
+            rootfs: true
+            state: started
+            command: sleep 1d
+          register: image
 
-    - name: Check that nothing was changed
-      assert:
-        that:
-          - not idem.changed
+        - name: Check output is correct
+          assert:
+            that:
+              - image is changed
+              - image.container is defined
+              - image.container['State']['Running']
+              - image.container['Image'] == ""
+              - image.container['Rootfs'] == container_tempdir.path
+              - "'started container3' in image.actions"
+            fail_msg: Rootfs container test failed!
+            success_msg: Rootfs container test passed!
 
-    - name: Rebuild rootfs container with image
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container3
-        image: alpine:3.7
-        state: started
-        command: sleep 1d
-      register: image
+        - name: Check basic idempotency of running rootfs container - run it again
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container3
+            image: "{{ container_tempdir.path }}"
+            rootfs: true
+            state: started
+            command: sleep 1d
+          register: idem
 
-    - name: Debug image
-      ansible.builtin.debug:
-        var: image
+        - name: Check that nothing was changed
+          assert:
+            that:
+              - not idem.changed
 
-    - name: Check output is correct
-      assert:
-        that:
-          - image is changed
-          - image.container is defined
-          - image.container['State']['Running']
-          - image.container['Rootfs'] == ""
-          - "'alpine:3.7' in image.container['ImageName']"
-          - "'recreated container3' in image.actions"
-        fail_msg: Rootfs container test failed!
-        success_msg: Rootfs container test passed!
+        - name: Rebuild rootfs container with image
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container3
+            image: alpine:3.7
+            state: started
+            command: sleep 1d
+          register: image
 
-    - name: Rebuild container with rootfs again
-      containers.podman.podman_container:
-        executable: "{{ test_executable | default('podman') }}"
-        name: container3
-        image: "{{ container_tempdir.path }}"
-        rootfs: true
-        state: started
-        command: sleep 1d
-      register: image
+        - name: Debug image
+          ansible.builtin.debug:
+            var: image
 
-    - name: Check output is correct
-      assert:
-        that:
-          - image is changed
-          - image.container is defined
-          - image.container['State']['Running']
-          - image.container['Image'] == ""
-          - image.container['Rootfs'] == container_tempdir.path
-          - "'recreated container3' in image.actions"
-        fail_msg: Rootfs container test failed!
-        success_msg: Rootfs container test passed!
+        - name: Check output is correct
+          assert:
+            that:
+              - image is changed
+              - image.container is defined
+              - image.container['State']['Running']
+              - image.container['Rootfs'] == ""
+              - "'alpine:3.7' in image.container['ImageName']"
+              - "'recreated container3' in image.actions"
+            fail_msg: Rootfs container test failed!
+            success_msg: Rootfs container test passed!
+
+        - name: Rebuild container with rootfs again
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container3
+            image: "{{ container_tempdir.path }}"
+            rootfs: true
+            state: started
+            command: sleep 1d
+          register: image
+
+        - name: Check output is correct
+          assert:
+            that:
+              - image is changed
+              - image.container is defined
+              - image.container['State']['Running']
+              - image.container['Image'] == ""
+              - image.container['Rootfs'] == container_tempdir.path
+              - "'recreated container3' in image.actions"
+            fail_msg: Rootfs container test failed!
+            success_msg: Rootfs container test passed!
 
     - name: Run started container with attaching
       containers.podman.podman_container:
