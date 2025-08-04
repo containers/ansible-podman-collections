@@ -73,7 +73,7 @@ Here is a quick example of how to ensure a Redis container is running using the 
     - name: Ensure the Redis container is running
       containers.podman.podman_container:
         name: my-redis-cache
-        image: redis:alpine
+        image: docker.io/redis:alpine
         state: started
         ports:
           - "6379:6379"
