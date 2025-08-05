@@ -4,9 +4,7 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    lower_keys,
-)
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
 
 
 @pytest.mark.parametrize(
