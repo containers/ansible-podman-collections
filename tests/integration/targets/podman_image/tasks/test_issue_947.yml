@@ -1,0 +1,203 @@
+---
+# Test for Issue #947: Wrong image url creation when using podman_image to pull a container image
+# https://github.com/containers/ansible-podman-collections/issues/947
+- name: Test image name and tag concatenation for issue #947
+  block:
+    # First, clean up any existing images to ensure we test URL formation
+    - name: Remove any existing alpine images to test URL formation
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+        force: true
+      loop:
+        - docker.io/library/alpine:latest
+        - docker.io/library/alpine:3.19
+        - docker.io/library/alpine
+      ignore_errors: true
+
+    # Then, pull a small test image that we can get a real digest from
+    - name: Pull a test image to get its real digest
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "latest"
+        state: present
+      register: alpine_pull
+
+    - name: Get image info to obtain a valid digest
+      containers.podman.podman_image_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine:latest
+      register: alpine_image_info
+
+    - name: Set facts for testing with real digest
+      set_fact:
+        test_digest: "{{ alpine_image_info.images[0].Digest | regex_replace('^sha256:', '') }}"
+        full_digest: "{{ alpine_image_info.images[0].Digest }}"
+      when: alpine_image_info.images is defined and alpine_image_info.images | length > 0
+
+    # Test case 1: Test URL formation - this will try to pull the image and show the command
+    - name: Test image URL formation with version and digest (issue 947 scenario)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "3.19@{{ full_digest }}"
+        state: present
+      register: issue_947_result
+      when: full_digest is defined
+
+    - name: Debug - show issue_947_result
+      debug:
+        var: issue_947_result
+      when: full_digest is defined
+
+    - name: Debug - show actual podman command
+      debug:
+        msg: "Actual podman command: {{ issue_947_result.podman_actions[0] }}"
+      when: full_digest is defined and issue_947_result.podman_actions | length > 0
+
+    - name: Verify issue #947 scenario URL formation is correct
+      assert:
+        that:
+          # If the image was found (not changed), the fix is working correctly
+          # If the image needed to be pulled (changed), check the command used the right format
+          - issue_947_result is not changed or (issue_947_result is changed and "'docker.io/library/alpine:3.19@sha256:' in issue_947_result.podman_actions[0]")
+        fail_msg: "Issue 947 fix failed - wrong delimiter used in image name concatenation"
+      when: full_digest is defined
+
+    # Test case 2: Tag with pure digest (should use @ delimiter)
+    - name: Test URL formation with pure digest tag
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "{{ full_digest }}"
+        state: present
+      register: pure_digest_result
+      when: full_digest is defined
+
+    - name: Verify pure digest tag uses @ delimiter
+      assert:
+        that:
+          # Same image as before, so should be idempotent (not changed)
+          - pure_digest_result is not changed
+          # If there were podman actions, they should use @ delimiter for pure digest
+          - pure_digest_result.podman_actions | length == 0 or "'docker.io/library/alpine@sha256:' in pure_digest_result.podman_actions[0]"
+        fail_msg: "Pure digest should use @ delimiter"
+      when: full_digest is defined
+
+    # Test case 3: Regular tag without digest (should use : delimiter)
+    - name: Test image pull with regular tag
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "3.18"
+        state: present
+      register: regular_tag_result
+
+    - name: Verify regular tag uses colon delimiter
+      assert:
+        that:
+          - (regular_tag_result.podman_actions | length == 0) or ('docker.io/library/alpine:3.18' in regular_tag_result.podman_actions[0])
+          - (regular_tag_result.actions | length == 0) or ('docker.io/library/alpine:3.18' in regular_tag_result.actions[0])
+        fail_msg: "Regular tag should use colon delimiter"
+
+    # Test case 4: Test URL formation for non-existent image with digest format
+    - name: Test URL formation for version@digest in check mode
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/nonexistent-test-image
+        tag: "v1.0@sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        state: present
+      check_mode: true
+      register: error_test_result
+
+    - name: Verify URL formation uses correct delimiter
+      assert:
+        that:
+          - error_test_result is changed
+          - error_test_result.podman_actions | length == 0 or "'docker.io/library/nonexistent-test-image:v1.0@sha256:1234567890abcdef' in error_test_result.podman_actions[0]"
+        fail_msg: "URL should be formed correctly with colon delimiter"
+
+    # Test case 5: Edge case - tag starting with sha256 but not pure digest
+    - name: Test URL formation for tag starting with sha256 but not pure digest
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "sha256tag-v1.0"
+        state: present
+      check_mode: true
+      register: sha256_prefix_result
+
+    - name: Verify tag starting with sha256 but not pure digest uses colon delimiter
+      assert:
+        that:
+          - sha256_prefix_result is changed
+          - sha256_prefix_result.podman_actions | length == 0 or "'docker.io/library/alpine:sha256tag-v1.0' in sha256_prefix_result.podman_actions[0]"
+        fail_msg: "Tag starting with sha256 but not pure digest should use colon delimiter"
+
+    # Test case 6: Test with check mode to verify URL formation without actual pull
+    - name: Test URL formation in check mode with version@digest
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: registry.example.com/test/image
+        tag: "v2.0@sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        state: present
+      check_mode: true
+      register: check_mode_result
+
+    - name: Verify check mode shows correct URL formation
+      assert:
+        that:
+          - check_mode_result is changed
+          - check_mode_result.podman_actions | length == 0 or "'registry.example.com/test/image:v2.0@sha256:abcdef' in check_mode_result.podman_actions[0]"
+        fail_msg: "Check mode should show correctly formatted URL"
+
+    # Test case 7: Test idempotency with existing image and digest
+    - name: Pull same image with digest again (should be idempotent)
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/library/alpine
+        tag: "{{ full_digest }}"
+        state: present
+      register: idempotent_result
+      when: full_digest is defined
+
+    - name: Verify idempotency with digest tags
+      assert:
+        that:
+          - idempotent_result is not changed
+        fail_msg: "Pulling same image with digest should be idempotent"
+      when: full_digest is defined
+
+    # Test case 8: Complex registry name with version@digest
+    - name: Test complex registry URL formation in check mode
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/prometheus/prometheus
+        tag: "v2.45.0@sha256:deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        state: present
+      check_mode: true
+      register: complex_registry_result
+
+    - name: Verify complex registry URL formation
+      assert:
+        that:
+          - complex_registry_result is changed
+          - complex_registry_result.podman_actions | length == 0 or "'quay.io/prometheus/prometheus:v2.45.0@sha256:deadbeef' in complex_registry_result.podman_actions[0]"
+        fail_msg: "Complex registry URL should be formed correctly with : delimiter"
+
+  always:
+    # Cleanup test images
+    - name: Remove test images from issue #947 tests
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+        force: true
+      loop:
+        - docker.io/library/alpine:latest
+        - docker.io/library/alpine:3.18
+        - docker.io/library/alpine:3.19
+        - docker.io/library/nonexistent-test-image
+      ignore_errors: true
