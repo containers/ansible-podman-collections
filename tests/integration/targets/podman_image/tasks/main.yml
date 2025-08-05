@@ -588,6 +588,8 @@
 
     - include_tasks: additional_tests.yml
 
+    - include_tasks: test_issue_947.yml
+
   always:
     - name: Cleanup images
       containers.podman.podman_image:

@@ -26,7 +26,7 @@ class ImageRepository:
         self.original_name = name
         self.name, self.parsed_tag = self._parse_repository_tag(name)
         self.tag = self.parsed_tag or tag
-        self.delimiter = "@" if "sha256" in self.tag else ":"
+        self.delimiter = "@" if self.tag.startswith("sha256:") else ":"
         self.full_name = f"{self.name}{self.delimiter}{self.tag}"
 
     @staticmethod
