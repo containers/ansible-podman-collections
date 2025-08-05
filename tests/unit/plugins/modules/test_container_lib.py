@@ -5,8 +5,8 @@ __metaclass__ = type
 import pytest
 
 from ansible_collections.containers.podman.plugins.module_utils.podman.podman_container_lib import (
-    PodmanModuleParams,
     PodmanContainerDiff,
+    PodmanModuleParams,
 )
 
 
