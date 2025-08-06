@@ -1,0 +1,22 @@
+[buildah_advanced]
+buildah-container
+
+[buildah_advanced:vars]
+ansible_host=buildah-container
+ansible_connection=containers.podman.buildah
+ansible_ssh_pipelining=true
+
+# Test different configurations
+# Basic configuration with timeout
+ansible_buildah_timeout=30
+ansible_buildah_retries=3
+
+# Mount detection enabled by default
+ansible_buildah_mount_detection=true
+ansible_buildah_ignore_mount_errors=true
+
+# Additional environment variables
+ansible_buildah_extra_env={"BUILDAH_TESTING": "true", "BUILD_MODE": "test"}
+
+# Auto-commit disabled for testing
+ansible_buildah_auto_commit=false
