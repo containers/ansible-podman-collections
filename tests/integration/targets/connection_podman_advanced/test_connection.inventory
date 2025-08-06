@@ -1,0 +1,22 @@
+[podman_advanced]
+podman-container
+
+[podman_advanced:vars]
+ansible_host=podman-container
+ansible_connection=containers.podman.podman
+ansible_python_interpreter=/usr/local/bin/python
+
+# Test different configurations
+# Basic configuration with timeout
+ansible_podman_timeout=30
+ansible_podman_retries=3
+
+# Mount detection enabled by default
+ansible_podman_mount_detection=true
+ansible_podman_ignore_mount_errors=true
+
+# Additional environment variables
+ansible_podman_extra_env={"TESTING": "true", "PLUGIN_VERSION": "2.0"}
+
+# Connection caching and performance
+ansible_podman_timeout=15
