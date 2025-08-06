@@ -1,0 +1,248 @@
+---
+# Advanced Podman Connection Plugin Tests
+# Tests new features and configuration options in the rewritten plugin
+
+- hosts: "{{ target_hosts }}"
+  gather_facts: false
+  serial: 1
+  tasks:
+
+  ### Test new configuration options
+
+  - name: Test basic command execution
+    raw: echo "Testing enhanced podman connection"
+    register: basic_test
+  
+  - name: Verify basic command output
+    assert:
+      that:
+        - "'Testing enhanced podman connection' in basic_test.stdout"
+
+  ### Test environment variables injection
+
+  - name: Test environment variable injection
+    raw: printenv TEST_VAR
+    register: env_test
+    vars:
+      ansible_podman_extra_env:
+        TEST_VAR: "custom_value"
+        ANOTHER_VAR: "another_value"
+
+  - name: Verify environment variables were set
+    assert:
+      that:
+        - "'custom_value' in env_test.stdout"
+
+  ### Test timeout configuration
+
+  - name: Test command timeout with quick command
+    raw: sh -c 'sleep 0.1 && echo "Quick command completed"'
+    register: quick_command
+    vars:
+      ansible_podman_timeout: 5
+
+  - name: Verify quick command succeeded
+    assert:
+      that:
+        - "'Quick command completed' in quick_command.stdout"
+
+  ### Test retry mechanism with valid command
+
+  - name: Test retry mechanism with initially failing but eventually succeeding command
+    raw: echo "Retry test successful"
+    register: retry_test
+    vars:
+      ansible_podman_retries: 2
+
+  - name: Verify retry test succeeded
+    assert:
+      that:
+        - "'Retry test successful' in retry_test.stdout"
+
+  ### Test file operations with mount detection
+
+  - name: Create test file locally
+    copy:
+      content: "Test file content with mount detection enabled"
+      dest: /tmp/test_mount_file
+    delegate_to: localhost
+
+  - name: Copy file with mount detection enabled
+    copy:
+      src: /tmp/test_mount_file
+      dest: /tmp/remote_mount_test
+    vars:
+      ansible_podman_mount_detection: true
+
+  - name: Verify file was copied
+    raw: cat /tmp/remote_mount_test
+    register: mount_test
+
+  - name: Verify file content
+    assert:
+      that:
+        - "'Test file content with mount detection enabled' in mount_test.stdout"
+
+  - name: Fetch file with mount detection
+    fetch:
+      src: /tmp/remote_mount_test
+      dest: /tmp/fetched_mount_test
+      flat: true
+    vars:
+      ansible_podman_mount_detection: true
+
+  - name: Verify fetched file content
+    command:
+      cmd: cat /tmp/fetched_mount_test
+    register: fetched_content
+    delegate_to: localhost
+
+  - name: Verify fetched file content is correct
+    assert:
+      that:
+        - "'Test file content with mount detection enabled' in fetched_content.stdout"
+
+  ### Test file operations with mount detection disabled
+
+  - name: Copy file with mount detection disabled
+    copy:
+      src: /tmp/test_mount_file
+      dest: /tmp/remote_no_mount_test
+    vars:
+      ansible_podman_mount_detection: false
+
+  - name: Verify file was copied without mount
+    raw: cat /tmp/remote_no_mount_test
+    register: no_mount_test
+
+  - name: Verify file content without mount
+    assert:
+      that:
+        - "'Test file content with mount detection enabled' in no_mount_test.stdout"
+
+  ### Test user specification
+
+  - name: Test command execution with specific user
+    raw: whoami
+    register: user_test
+    vars:
+      ansible_user: root
+
+  - name: Verify user context
+    assert:
+      that:
+        - "'root' in user_test.stdout"
+
+  ### Test large file transfer
+
+  - name: Create large test file locally
+    command:
+      cmd: head -c 1M /dev/zero
+    register: large_file_content
+    delegate_to: localhost
+
+  - name: Write large file locally
+    copy:
+      content: "{{ large_file_content.stdout }}"
+      dest: /tmp/large_test_file
+    delegate_to: localhost
+
+  - name: Copy large file to container
+    copy:
+      src: /tmp/large_test_file
+      dest: /tmp/remote_large_file
+
+  - name: Verify large file size
+    raw: wc -c /tmp/remote_large_file | cut -d' ' -f1
+    register: large_file_size
+
+  - name: Verify large file was copied correctly
+    assert:
+      that:
+        - large_file_size.stdout | int >= 1000000
+
+  ### Test Unicode and special characters
+
+  - name: Test unicode command output
+    raw: echo "测试中文字符"
+    register: unicode_test
+
+  - name: Verify unicode output
+    assert:
+      that:
+        - "'测试中文字符' in unicode_test.stdout"
+
+  - name: Create unicode filename test
+    copy:
+      content: "Unicode filename test content"
+      dest: "/tmp/测试文件.txt"
+
+  - name: Verify unicode file was created
+    raw: cat "/tmp/测试文件.txt"
+    register: unicode_file_test
+
+  - name: Verify unicode file content
+    assert:
+      that:
+        - "'Unicode filename test content' in unicode_file_test.stdout"
+
+  ### Test connection recovery and error handling
+
+  - name: Test connection robustness with multiple commands
+    raw: echo "Command {{ item }}"
+    register: multiple_commands
+    loop: [1, 2, 3, 4, 5]
+
+  - name: Verify all commands executed successfully
+    assert:
+      that:
+        - multiple_commands.results | length == 5
+        - "'Command 1' in multiple_commands.results[0].stdout"
+        - "'Command 5' in multiple_commands.results[4].stdout"
+
+  ### Test complex shell operations
+
+  - name: Test complex shell command with pipes and redirects
+    raw: sh -c 'echo "test data" | wc -c | tr -d "\n"'
+    register: complex_shell
+
+  - name: Verify complex shell operation
+    assert:
+      that:
+        - complex_shell.stdout | int == 10
+
+  ### Test working directory
+
+  - name: Test working directory commands
+    raw: pwd
+    register: pwd_test
+
+  - name: Create directory and test relative path
+    raw: sh -c 'mkdir -p /tmp/test_workdir && cd /tmp/test_workdir && pwd'
+    register: workdir_test
+
+  - name: Verify working directory operations
+    assert:
+      that:
+        - "'/tmp/test_workdir' in workdir_test.stdout"
+
+  ### Cleanup
+
+  - name: Clean up test files
+    raw: rm -f /tmp/remote_mount_test /tmp/remote_no_mount_test /tmp/remote_large_file /tmp/测试文件.txt
+    ignore_errors: true
+
+  - name: Clean up test directory
+    raw: rm -rf /tmp/test_workdir
+    ignore_errors: true
+
+  - name: Clean up local test files
+    file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - /tmp/test_mount_file
+      - /tmp/fetched_mount_test
+      - /tmp/large_test_file
+    delegate_to: localhost
+    ignore_errors: true
