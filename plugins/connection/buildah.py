@@ -423,6 +423,12 @@ class Connection(ConnectionBase):
                         shutil.chown(real_out_path, user=self.get_option("remote_user"))
                     except (OSError, LookupError) as e:
                         display.vvv(f"Could not change ownership via mount: {e}", host=self._container_id)
+                        # Remove the file and fall back to buildah copy
+                        try:
+                            os.remove(real_out_path)
+                        except OSError:
+                            pass
+                        raise Exception("Ownership change failed, falling back to buildah copy")
                 return
             except Exception as e:
                 display.vvv(f"Mount copy failed, falling back to buildah copy: {e}", host=self._container_id)
