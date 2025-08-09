@@ -122,12 +122,10 @@ DOCUMENTATION = """
           - name: ansible_podman_privilege_escalation
 """
 
-import json
 import os
 import shlex
 import shutil
 import subprocess
-import time
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.common.process import get_bin_path
@@ -156,7 +154,7 @@ class Connection(ConnectionBase):
     """
 
     transport = "containers.podman.podman"
-    has_pipelining = False
+    has_pipelining = True
 
     def __init__(self, play_context, new_stdin, *args, **kwargs):
         super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
@@ -207,85 +205,58 @@ class Connection(ConnectionBase):
         return cmd
 
     def _run_podman_command(self, cmd_args, input_data=None, check_rc=True, include_container=True, retries=None):
-        """Execute podman command with comprehensive error handling and retries"""
-        if retries is None:
-            retries = self.get_option("connection_retries")
-
+        """Execute podman command once with error handling (no retries)"""
         cmd = self._build_podman_command(cmd_args, include_container)
         cmd_bytes = [to_bytes(arg, errors="surrogate_or_strict") for arg in cmd]
 
         display.vvv(f"PODMAN EXEC: {' '.join(cmd)}", host=self._container_id)
 
-        last_exception = None
-        for attempt in range(retries + 1):
-            try:
-                process = subprocess.Popen(
-                    cmd_bytes, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
-                )
+        try:
+            process = subprocess.Popen(
+                cmd_bytes, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+            )
 
-                stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
+            stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
 
-                display.vvvvv(f"STDOUT: {stdout}", host=self._container_id)
-                display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
-                display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
+            display.vvvvv(f"STDOUT: {stdout}", host=self._container_id)
+            display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
+            display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
 
-                stdout = to_bytes(stdout, errors="surrogate_or_strict")
-                stderr = to_bytes(stderr, errors="surrogate_or_strict")
+            stdout = to_bytes(stdout, errors="surrogate_or_strict")
+            stderr = to_bytes(stderr, errors="surrogate_or_strict")
 
-                if check_rc and process.returncode != 0:
-                    error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
-                    if "no such container" in error_msg.lower():
-                        raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-                    raise PodmanConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
+            if check_rc and process.returncode != 0:
+                error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
+                if "no such container" in error_msg.lower():
+                    raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
+                raise PodmanConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
 
-                return process.returncode, stdout, stderr
+            return process.returncode, stdout, stderr
 
-            except subprocess.TimeoutExpired:
-                process.kill()
-                last_exception = PodmanConnectionError(f"Command timeout after {self.get_option('container_timeout')}s")
-                if attempt < retries:
-                    display.vvv(f"Command timeout, retrying ({attempt + 1}/{retries + 1})", host=self._container_id)
-                    time.sleep(1)
-                    continue
-
-            except Exception as e:
-                last_exception = PodmanConnectionError(f"Command execution failed: {e}")
-                if attempt < retries:
-                    display.vvv(f"Command failed, retrying ({attempt + 1}/{retries + 1})", host=self._container_id)
-                    time.sleep(1)
-                    continue
-
-        raise last_exception
+        except subprocess.TimeoutExpired:
+            process.kill()
+            raise PodmanConnectionError(f"Command timeout after {self.get_option('container_timeout')}s")
+        except Exception as e:
+            raise PodmanConnectionError(f"Command execution failed: {e}")
 
     def _validate_container(self):
-        """Validate that the container exists and is accessible"""
+        """Validate that the container exists using a fast check"""
         if self._container_id in self._container_validation_cache:
             return self._container_validation_cache[self._container_id]
 
-        try:
-            unused, stdout, unused1 = self._run_podman_command(
-                ["inspect", "--format", "{{.State.Status}}", self._container_id], include_container=False, retries=1
-            )
+        # Fast existence check avoids expensive JSON parsing
+        rc, _stdout, _stderr = self._run_podman_command(
+            ["container", "exists", self._container_id], include_container=False, check_rc=False, retries=1
+        )
+        if rc != 0:
+            raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
 
-            container_state = to_text(stdout, errors="surrogate_or_strict").strip()
-            if container_state not in ["running", "created", "paused"]:
-                raise PodmanConnectionError(f"Container is not in a usable state: {container_state}")
-
-            # Get detailed container info
-            unused, stdout, unused1 = self._run_podman_command(
-                ["inspect", self._container_id], include_container=False, retries=1
-            )
-            self._container_info = json.loads(to_text(stdout, errors="surrogate_or_strict"))[0]
-
-            self._container_validation_cache[self._container_id] = True
-            display.vvv(f"Container validation successful, state: {container_state}", host=self._container_id)
-            return True
-
-        except (json.JSONDecodeError, IndexError, KeyError) as e:
-            raise PodmanConnectionError(f"Failed to parse container information: {e}")
+        self._container_validation_cache[self._container_id] = True
+        display.vvv("Container validation successful", host=self._container_id)
+        return True
 
     def _setup_mount_point(self):
-        """Attempt to mount container filesystem for direct access"""
+        """Attempt to mount container filesystem for direct access (lightweight)"""
         if not self.get_option("mount_detection"):
             return
 
@@ -293,11 +264,11 @@ class Connection(ConnectionBase):
             rc, stdout, stderr = self._run_podman_command(["mount"], retries=1)
             if rc == 0:
                 mount_point = to_text(stdout, errors="surrogate_or_strict").strip()
-                if mount_point and os.path.isdir(mount_point) and os.listdir(mount_point):
+                if mount_point and os.path.isdir(mount_point):
                     self._mount_point = mount_point
                     display.vvv(f"Container mounted at: {self._mount_point}", host=self._container_id)
                 else:
-                    display.vvv("Container mount point is empty or invalid", host=self._container_id)
+                    display.vvv("Container mount point is invalid", host=self._container_id)
             else:
                 display.vvv(
                     f"Container mount failed: {to_text(stderr, errors='surrogate_or_strict')}", host=self._container_id
@@ -316,11 +287,8 @@ class Connection(ConnectionBase):
 
         display.vvv(f"Connecting to container: {self._container_id}", host=self._container_id)
 
-        # Validate container exists and is accessible
+        # Validate container exists and is accessible (fast)
         self._validate_container()
-
-        # Setup mount point for file operations
-        self._setup_mount_point()
 
         self._connected = True
         display.vvv("Connection established successfully", host=self._container_id)
@@ -335,8 +303,9 @@ class Connection(ConnectionBase):
         cmd_args_list = shlex.split(to_native(cmd, errors="surrogate_or_strict"))
         exec_cmd = ["exec"]
 
-        # Add interactive flag for proper terminal handling
-        exec_cmd.append("-i")
+        # Add interactive flag only when input is provided
+        if in_data is not None:
+            exec_cmd.append("-i")
 
         # Handle user specification
         if self.get_option("remote_user"):
@@ -377,6 +346,10 @@ class Connection(ConnectionBase):
         """Transfer file to container using optimal method"""
         super(Connection, self).put_file(in_path, out_path)
         display.vvv(f"PUT: {in_path} -> {out_path}", host=self._container_id)
+
+        # Lazily prepare mount point if needed
+        if self._mount_point is None and self.get_option("mount_detection"):
+            self._setup_mount_point()
 
         # Use direct filesystem copy if mount point is available and no user specified
         if self._mount_point and not self.get_option("remote_user"):
@@ -419,6 +392,10 @@ class Connection(ConnectionBase):
         """Retrieve file from container using optimal method"""
         super(Connection, self).fetch_file(in_path, out_path)
         display.vvv(f"FETCH: {in_path} -> {out_path}", host=self._container_id)
+
+        # Lazily prepare mount point if needed
+        if self._mount_point is None and self.get_option("mount_detection"):
+            self._setup_mount_point()
 
         # Use direct filesystem copy if mount point is available
         if self._mount_point:
