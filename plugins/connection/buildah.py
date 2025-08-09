@@ -128,12 +128,10 @@ DOCUMENTATION = """
           - name: ansible_buildah_auto_commit
 """
 
-import json
 import os
 import shlex
 import shutil
 import subprocess
-import time
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.common.process import get_bin_path
@@ -215,93 +213,69 @@ class Connection(ConnectionBase):
     def _run_buildah_command(
         self, cmd_args, input_data=None, check_rc=True, include_container=True, retries=None, output_file=None
     ):
-        """Execute buildah command with comprehensive error handling and retries"""
-        if retries is None:
-            retries = self.get_option("connection_retries")
-
+        """Execute buildah command once with error handling (no retries)"""
         cmd = self._build_buildah_command(cmd_args, include_container)
         cmd_bytes = [to_bytes(arg, errors="surrogate_or_strict") for arg in cmd]
 
         display.vvv(f"BUILDAH EXEC: {' '.join(cmd)}", host=self._container_id)
 
-        last_exception = None
-        for attempt in range(retries + 1):
-            try:
-                # Handle output redirection
-                stdout_fd = subprocess.PIPE
-                if output_file:
-                    stdout_fd = open(output_file, "wb")
+        # Handle output redirection
+        stdout_fd = subprocess.PIPE
+        if output_file:
+            stdout_fd = open(output_file, "wb")
 
-                process = subprocess.Popen(
-                    cmd_bytes, stdin=subprocess.PIPE, stdout=stdout_fd, stderr=subprocess.PIPE, shell=False
-                )
+        try:
+            process = subprocess.Popen(
+                cmd_bytes, stdin=subprocess.PIPE, stdout=stdout_fd, stderr=subprocess.PIPE, shell=False
+            )
 
-                stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
+            stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
 
-                if output_file:
-                    stdout_fd.close()
-                    stdout = b""  # No stdout when redirected to file
+            if output_file:
+                stdout_fd.close()
+                stdout = b""  # No stdout when redirected to file
 
-                display.vvvvv(f"STDOUT: {stdout}", host=self._container_id)
-                display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
-                display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
+            display.vvvvv(f"STDOUT: {stdout}", host=self._container_id)
+            display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
+            display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
 
-                stdout = to_bytes(stdout, errors="surrogate_or_strict")
-                stderr = to_bytes(stderr, errors="surrogate_or_strict")
+            stdout = to_bytes(stdout, errors="surrogate_or_strict")
+            stderr = to_bytes(stderr, errors="surrogate_or_strict")
 
-                if check_rc and process.returncode != 0:
-                    error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
-                    if "no such container" in error_msg.lower() or "container not known" in error_msg.lower():
-                        raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-                    raise BuildahConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
+            if check_rc and process.returncode != 0:
+                error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
+                if "no such container" in error_msg.lower() or "container not known" in error_msg.lower():
+                    raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
+                raise BuildahConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
 
-                return process.returncode, stdout, stderr
+            return process.returncode, stdout, stderr
 
-            except subprocess.TimeoutExpired:
-                if output_file and "stdout_fd" in locals():
-                    stdout_fd.close()
-                process.kill()
-                timeout = self.get_option("container_timeout")
-                last_exception = BuildahConnectionError(f"Command timeout after {timeout}s")
-                if attempt < retries:
-                    display.vvv(f"Command timeout, retrying ({attempt + 1}/{retries + 1})", host=self._container_id)
-                    time.sleep(1)
-                    continue
-
-            except Exception as e:
-                if output_file and "stdout_fd" in locals():
-                    stdout_fd.close()
-                last_exception = BuildahConnectionError(f"Command execution failed: {e}")
-                if attempt < retries:
-                    display.vvv(f"Command failed, retrying ({attempt + 1}/{retries + 1})", host=self._container_id)
-                    time.sleep(1)
-                    continue
-
-        raise last_exception
+        except subprocess.TimeoutExpired:
+            if output_file and "stdout_fd" in locals():
+                stdout_fd.close()
+            process.kill()
+            timeout = self.get_option("container_timeout")
+            raise BuildahConnectionError(f"Command timeout after {timeout}s")
+        except Exception as e:
+            if output_file and "stdout_fd" in locals():
+                stdout_fd.close()
+            raise BuildahConnectionError(f"Command execution failed: {e}")
 
     def _validate_container(self):
-        """Validate that the container exists and is accessible"""
+        """Validate that the container exists using a fast check"""
         if self._container_id in self._container_validation_cache:
             return self._container_validation_cache[self._container_id]
 
-        try:
-            # Check if container exists by inspecting it
-            unused, stdout, unused1 = self._run_buildah_command(
-                ["inspect", self._container_id], include_container=False, retries=1
-            )
+        # Use inspect as an existence check only, avoid JSON parsing
+        rc, _stdout, _stderr = self._run_buildah_command(
+            ["inspect", self._container_id], include_container=False, check_rc=False, retries=1
+        )
+        if rc != 0:
+            raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
 
-            self._container_info = json.loads(to_text(stdout, errors="surrogate_or_strict"))
-
-            # Validate container is in a working state
-            if not self._container_info:
-                raise BuildahConnectionError("Container inspection returned empty data")
-
-            self._container_validation_cache[self._container_id] = True
-            display.vvv("Container validation successful", host=self._container_id)
-            return True
-
-        except (json.JSONDecodeError, IndexError, KeyError) as e:
-            raise BuildahConnectionError(f"Failed to parse container information: {e}")
+        self._container_validation_cache[self._container_id] = True
+        display.vvv("Container validation successful", host=self._container_id)
+        return True
 
     def _setup_mount_point(self):
         """Attempt to mount container filesystem for direct access"""
@@ -332,11 +306,8 @@ class Connection(ConnectionBase):
 
         display.vvv(f"Connecting to buildah container: {self._container_id}", host=self._container_id)
 
-        # Validate container exists and is accessible
+        # Validate container exists and is accessible (fast)
         self._validate_container()
-
-        # Setup mount point for file operations
-        self._setup_mount_point()
 
         self._connected = True
         display.vvv("Connection established successfully", host=self._container_id)
@@ -409,6 +380,10 @@ class Connection(ConnectionBase):
         super(Connection, self).put_file(in_path, out_path)
         display.vvv(f"PUT: {in_path} -> {out_path}", host=self._container_id)
 
+        # Lazily prepare mount point if needed
+        if self._mount_point is None and self.get_option("mount_detection"):
+            self._setup_mount_point()
+
         # Use direct filesystem copy if mount point is available
         if self._mount_point:
             try:
@@ -449,6 +424,10 @@ class Connection(ConnectionBase):
         """Retrieve file from container using optimal method"""
         super(Connection, self).fetch_file(in_path, out_path)
         display.vvv(f"FETCH: {in_path} -> {out_path}", host=self._container_id)
+
+        # Lazily prepare mount point if needed
+        if self._mount_point is None and self.get_option("mount_detection"):
+            self._setup_mount_point()
 
         # Use direct filesystem copy if mount point is available
         if self._mount_point:
