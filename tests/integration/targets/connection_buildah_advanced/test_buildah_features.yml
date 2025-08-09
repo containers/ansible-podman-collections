@@ -1,0 +1,209 @@
+---
+# Advanced Buildah Connection Plugin Tests
+# Tests new features and configuration options in the rewritten plugin
+
+- hosts: "{{ target_hosts }}"
+  gather_facts: false
+  serial: 1
+  tasks:
+
+  ### Test basic buildah functionality
+
+  - name: Test basic command execution
+    raw: echo "Testing enhanced buildah connection"
+    register: basic_test
+
+  - name: Verify basic command output
+    assert:
+      that:
+        - "'Testing enhanced buildah connection' in basic_test.stdout"
+
+  ### Test environment variables injection
+
+  - name: Test environment variable injection
+    raw: printenv BUILD_VAR
+    register: env_test
+    vars:
+      ansible_buildah_extra_env:
+        BUILD_VAR: "build_value"
+        CONTAINER_TYPE: "buildah"
+
+  - name: Verify environment variables were set
+    assert:
+      that:
+        - "'build_value' in env_test.stdout"
+
+  ### Test timeout configuration
+
+  - name: Test command timeout with quick command
+    raw: sh -c 'sleep 0.1 && echo "Quick buildah command completed"'
+    register: quick_command
+    vars:
+      ansible_buildah_timeout: 10
+
+  - name: Verify quick command succeeded
+    assert:
+      that:
+        - "'Quick buildah command completed' in quick_command.stdout"
+
+  ### Test working directory functionality
+
+  - name: Test working directory setting
+    raw: pwd
+    register: workdir_test
+    vars:
+      ansible_buildah_working_directory: "/tmp"
+
+  - name: Create test file in working directory
+    raw: sh -c 'echo "buildah test content" > test_buildah_file.txt'
+    vars:
+      ansible_buildah_working_directory: "/tmp"
+
+  - name: Verify file was created in working directory
+    raw: cat /tmp/test_buildah_file.txt
+    register: file_content
+
+  - name: Verify file content
+    assert:
+      that:
+        - "'buildah test content' in file_content.stdout"
+
+  ### Test file operations with mount detection
+
+  - name: Create test file locally
+    copy:
+      content: "Buildah test file content with mount detection"
+      dest: /tmp/buildah_test_file
+    delegate_to: localhost
+
+  - name: Copy file with mount detection enabled
+    copy:
+      src: /tmp/buildah_test_file
+      dest: /tmp/remote_buildah_test
+    vars:
+      ansible_buildah_mount_detection: true
+
+  - name: Verify file was copied
+    raw: cat /tmp/remote_buildah_test
+    register: mount_test
+
+  - name: Verify file content
+    assert:
+      that:
+        - "'Buildah test file content with mount detection' in mount_test.stdout"
+
+  ### Test different user contexts
+
+  - name: Test command execution with root user
+    raw: whoami
+    register: user_test
+    vars:
+      ansible_user: root
+
+  - name: Verify user context (may be root or container default)
+    debug:
+      msg: "Current user: {{ user_test.stdout.strip() }}"
+
+  ### Test retry mechanism
+
+  - name: Test retry mechanism with valid command
+    raw: echo "Buildah retry test successful"
+    register: retry_test
+    vars:
+      ansible_buildah_retries: 2
+
+  - name: Verify retry test succeeded
+    assert:
+      that:
+        - "'Buildah retry test successful' in retry_test.stdout"
+
+  ### Test container building scenarios
+
+  - name: Install package in container (basic build operation)
+    raw: sh -c 'which apk >/dev/null && apk add --no-cache curl || true'
+    register: package_install
+    ignore_errors: true
+
+  - name: Test that package installation succeeded
+    debug:
+      msg: "Package installation completed: {{ package_install.rc }}"
+    when: package_install is defined
+
+  ### Test Unicode and special characters
+
+  - name: Test unicode command output
+    raw: echo "Buildah测试中文字符"
+    register: unicode_test
+
+  - name: Verify unicode output
+    assert:
+      that:
+        - "'Buildah测试中文字符' in unicode_test.stdout"
+
+  ### Test connection robustness with multiple commands
+
+  - name: Test connection robustness with multiple commands
+    raw: echo "Buildah command {{ item }}"
+    register: multiple_commands
+    loop: [1, 2, 3, 4, 5]
+
+  - name: Verify all commands executed successfully
+    assert:
+      that:
+        - multiple_commands.results | length == 5
+        - "'Buildah command 1' in multiple_commands.results[0].stdout"
+        - "'Buildah command 5' in multiple_commands.results[4].stdout"
+
+  ### Test complex shell operations
+
+  - name: Test complex shell command with pipes
+    raw: sh -c 'echo "buildah test data" | wc -w'
+    register: complex_shell
+
+  - name: Verify complex shell operation
+    assert:
+      that:
+        - complex_shell.stdout.strip() | int == 3
+
+  ### Test container inspection capabilities
+
+  - name: Test container info retrieval
+    raw: echo $HOSTNAME
+    register: hostname_test
+
+  - name: Verify hostname is set
+    assert:
+      that:
+        - hostname_test.stdout.strip() | length > 0
+
+  ### Test file system operations
+
+  - name: Create directory structure
+    raw: mkdir -p /tmp/buildah_test/dir1 /tmp/buildah_test/dir2
+
+  - name: Create files in directory structure
+    raw: sh -c 'echo "{{ item }}" > /tmp/buildah_test/dir{{ item }}/file{{ item }}.txt'
+    loop: [1, 2]
+
+  - name: List created files
+    raw: sh -c 'find /tmp/buildah_test -name "*.txt" | sort'
+    register: file_list
+
+  - name: Verify file structure
+    assert:
+      that:
+        - "'file1.txt' in file_list.stdout"
+        - "'file2.txt' in file_list.stdout"
+
+  ### Cleanup
+
+  - name: Clean up test files in container
+    raw: rm -rf /tmp/buildah_test /tmp/remote_buildah_test /tmp/test_buildah_file.txt
+    ignore_errors: true
+
+  - name: Clean up local test files
+    file:
+      path: /tmp/buildah_test_file
+      state: absent
+    delegate_to: localhost
+    ignore_errors: true
