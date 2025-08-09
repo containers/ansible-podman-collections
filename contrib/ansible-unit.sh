@@ -6,6 +6,6 @@ ansible-galaxy collection build --output-path /tmp/ansible-lint-collection --for
 pushd /tmp/ansible-lint-collection/
 ansible-galaxy collection install -vvv --force $(ls /tmp/ansible-lint-collection/) -p /tmp/ansible-lint-installs
 pushd /tmp/ansible-lint-installs/ansible_collections/containers/podman
-ansible-test units --python 3.12 -vvv
+ansible-test units --python $(python -V | sed "s/Python //g" | awk -F"." {'print $1"."$2'}) -vvv
 popd
 popd

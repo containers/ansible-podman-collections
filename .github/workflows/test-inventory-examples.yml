@@ -1,0 +1,110 @@
+name: Test inventory and example playbooks
+
+on:
+  pull_request:
+  push:
+    branches: [ main, connections ]
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible 2.18
+        run: python3 -m pip install --user --force-reinstall --upgrade ansible-core==2.18
+
+      - name: Build and install the collection tarball
+        run: |
+          rm -rf /tmp/just_new_collection
+          ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
+          ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Install system deps (podman, buildah)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman buildah jq
+          podman --version
+          buildah --version
+
+      - name: Configure rootless storage
+        run: |
+          mkdir -p ~/.config/containers
+          printf '[storage]\ndriver = "overlay"\n' > ~/.config/containers/storage.conf
+          printf '[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\n' > ~/.config/containers/engine.conf
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ansible-core
+          ansible --version
+
+      - name: Build basic containers for discovery
+        run: |
+          podman pull alpine:latest
+          podman run -d --name podman-inventory-test alpine:latest sleep 3600
+          buildah from --name hello-buildah alpine:latest
+          echo 'Podman ps output:'
+          podman ps -a --format json | jq '.'
+          echo 'Buildah containers output:'
+          buildah containers -a --json | jq '.'
+
+      - name: Write podman inventory source
+        run: |
+          mkdir -p ci/tmpinv
+          cat > ci/tmpinv/podman.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: false
+          connection_plugin: containers.podman.podman
+          EOF
+
+      - name: Write buildah inventory source
+        run: |
+          cat > ci/tmpinv/buildah.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          connection_plugin: containers.podman.buildah
+          EOF
+
+      - name: Sanity check podman inventory
+        run: |
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman.yml --list)
+          echo "$out" | jq '.'
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Sanity check buildah inventory
+        run: |
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah.yml --list)
+          echo "$out" | jq '.'
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Run example Node build
+        working-directory: playbook/examples
+        run: |
+          ansible-playbook -i localhost, -c local build_node_ai_api.yml -e image_name=ci-ai-node:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q '^ci-ai-node:latest$'
+
+      - name: Run example Go multistage build
+        working-directory: playbook/examples
+        run: |
+          ansible-playbook -i localhost, -c local build_go_ai_multistage.yml -e image_name=ci-ai-go:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q '^ci-ai-go:latest$'
+
+      - name: Run AI env build
+        working-directory: playbook/examples
+        run: |
+          ansible-playbook -i localhost, -c local build_ai_env_with_ansible.yml -e image_name=ci-ai-env:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q '^ci-ai-env:latest$'
+
+      - name: Show resulting images
+        run: |
+          buildah images
+
+
