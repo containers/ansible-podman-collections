@@ -1,0 +1,12 @@
+{
+  "name": "ai-prediction-api",
+  "version": "1.0.0",
+  "description": "Sample Node.js AI prediction API for Buildah example",
+  "main": "app.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
+

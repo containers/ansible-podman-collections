@@ -1,0 +1,10 @@
+---
+# Minimal example role to provision an AI dev environment inside a Buildah working container
+- name: Ensure pip present
+  shell: python3 -m ensurepip || true
+
+- name: Upgrade pip
+  shell: python3 -m pip install --upgrade pip
+
+- name: Install common data science packages
+  shell: python3 -m pip install --no-cache-dir numpy pandas jupyterlab
