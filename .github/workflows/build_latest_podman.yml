@@ -212,7 +212,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Download Podman artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: podman-latest
           path: podman-artifact/
@@ -351,7 +351,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Download Podman artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: podman-latest
           path: podman-artifact/
