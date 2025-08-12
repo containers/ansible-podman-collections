@@ -257,3 +257,57 @@ jobs:
             cd -
           fi
         shell: bash
+
+  test-example-playbooks:
+    name: Test example playbooks with Podman and Buildah connection plugins
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - git+https://github.com/ansible/ansible.git@stable-2.18
+          - git+https://github.com/ansible/ansible.git@devel
+        os:
+          - ubuntu-24.04
+          #- ubuntu-22.04
+          #- ubuntu-16.04
+          #- macos-latest
+        python-version:
+          #- 3.9
+          - "3.12"
+          #- 3.6
+          #- 3.5
+          #- 2.7
+
+    steps:
+
+      - name: Run example Node build
+        working-directory: playbooks/examples
+        run: |
+          echo "Python: $(command -v python)"
+          echo "Python version: $(python --version)"
+          echo "Ansible: $(command -v ansible-playbook)"
+          echo "Ansible version: $(ansible --version)"
+
+          ansible-playbook -vvv -i localhost, -c local build_node_ai_api.yml -e image_name=ci-ai-node:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-node:latest$'
+
+
+      - name: Run example Go multistage build
+        working-directory: playbooks/examples
+        run: |
+          ansible-playbook -vv -i localhost, -c local build_go_ai_multistage.yml -e image_name=ci-ai-go:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-go:latest$'
+
+      - name: Run AI env build
+        working-directory: playbooks/examples
+        run: |
+          ansible-playbook -vv -i localhost, -c local build_ai_env_with_ansible.yml -e image_name=ci-ai-env:latest
+          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-env:latest$'
+
+      - name: Show resulting images
+        run: |
+          buildah images
