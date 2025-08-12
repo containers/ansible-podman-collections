@@ -50,6 +50,32 @@ DOCUMENTATION = r"""
         type: list
         elements: str
         default: []
+      # Additional options (non-API dependent), aligned with community.docker
+      verbose_output:
+        description: When true, store raw C(podman ps --format json) entry under C(podman_ps) host var.
+        type: bool
+        default: false
+      strict:
+        description: Fail when keyed/composed grouping references missing data.
+        type: bool
+        default: false
+      keyed_groups:
+        description: Create groups based on hostvars/labels.
+        type: list
+        elements: dict
+        default: []
+      groups:
+        description: Add hosts to groups based on Jinja2 conditionals.
+        type: dict
+        default: {}
+      filters:
+        description: Include/exclude selection by attributes - C(name), C(id), C(image), C(status), or C(label.<key>).
+        type: dict
+        default: {}
+      debug:
+        description: Emit extra debug logs during processing.
+        type: bool
+        default: false
 """
 
 EXAMPLES = r"""
@@ -65,6 +91,7 @@ import fnmatch
 import shutil
 import subprocess
 import os
+from ansible.utils.display import Display
 from typing import Dict, List
 
 from ansible.errors import AnsibleParserError
@@ -73,6 +100,10 @@ from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable
 
 class InventoryModule(BaseInventoryPlugin, Cacheable):
     NAME = "containers.podman.podman_containers"
+
+    def __init__(self):
+        super(InventoryModule, self).__init__()
+        self.display = Display()
 
     def verify_file(self, path: str) -> bool:
         if not super(InventoryModule, self).verify_file(path):
@@ -102,6 +133,12 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
         connection_plugin = config.get("connection_plugin", "containers.podman.podman")
         group_by_image = bool(config.get("group_by_image", True))
         group_by_label: List[str] = list(config.get("group_by_label", []) or [])
+        verbose_output = bool(config.get("verbose_output", False))
+        strict = bool(config.get("strict", False))
+        keyed_groups = list(config.get("keyed_groups", []) or [])
+        composed_groups = dict(config.get("groups", {}) or {})
+        filters = dict(config.get("filters", {}) or {})
+        debug = bool(config.get("debug", False))
 
         podman_path = shutil.which(executable) or executable
 
@@ -114,6 +151,33 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
             containers = json.loads(output.decode("utf-8"))
         except Exception as exc:
             raise AnsibleParserError(f"Failed to list podman containers: {exc}")
+
+        def matches_filters(name, cid, image, status, labels):
+            include_rules = dict(filters.get("include", {}) or {})
+            exclude_rules = dict(filters.get("exclude", {}) or {})
+
+            def matches_one(k, v):
+                if k.startswith("label."):
+                    lk = k.split(".", 1)[1]
+                    return fnmatch.fnmatch(str((labels or {}).get(lk, "")).lower(), str(v).lower())
+                if k == "name":
+                    return fnmatch.fnmatch((name or "").lower(), str(v).lower())
+                if k == "id":
+                    return fnmatch.fnmatch((cid or "").lower(), str(v).lower())
+                if k == "image":
+                    return fnmatch.fnmatch((image or "").lower(), str(v).lower())
+                if k == "status":
+                    return fnmatch.fnmatch((status or "").lower(), str(v).lower())
+                return False
+
+            if include_rules:
+                for k, v in include_rules.items():
+                    if not matches_one(k, v):
+                        return False
+            for k, v in exclude_rules.items():
+                if matches_one(k, v):
+                    return False
+            return True
 
         for c in containers or []:
             name = (
@@ -135,6 +199,15 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
             if any(labels.get(k) != v for k, v in label_selectors.items()):
                 continue
 
+            image = c.get("Image") or c.get("ImageName")
+            status = c.get("Status") or c.get("State")
+
+            # additional include/exclude filters
+            if filters and not matches_filters(name, cid, image, status, labels):
+                if debug:
+                    self.display.vvvv(f"Filtered out {name or cid} by filters option")
+                continue
+
             host = name or cid
             if not host:
                 continue
@@ -145,8 +218,6 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
             self.inventory.set_variable(host, "ansible_host", name or cid)
 
             # Common vars
-            image = c.get("Image") or c.get("ImageName")
-            status = c.get("Status") or c.get("State")
             self.inventory.set_variable(host, "podman_container_id", cid)
             self.inventory.set_variable(host, "podman_container_name", name)
             if image:
@@ -155,6 +226,8 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
                 self.inventory.set_variable(host, "podman_status", status)
             if labels:
                 self.inventory.set_variable(host, "podman_labels", labels)
+            if verbose_output:
+                self.inventory.set_variable(host, "podman_ps", c)
 
             # Grouping
             if group_by_image and image:
@@ -168,3 +241,22 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
                     group = f"label_{key}_{val}"
                     self.inventory.add_group(group)
                     self.inventory.add_host(host, group=group)
+
+            # Composed and keyed groups
+            hostvars = {
+                "name": name,
+                "id": cid,
+                "image": image,
+                "status": status,
+                "labels": labels,
+            }
+            try:
+                if composed_groups:
+                    self._add_host_to_composed_groups(composed_groups, hostvars, host)
+                if keyed_groups:
+                    self._add_host_to_keyed_groups(keyed_groups, hostvars, host, strict=strict)
+            except Exception as exc:
+                if strict:
+                    raise
+                if debug:
+                    self.display.vvvv(f"Grouping error for host {host}: {exc}")
