@@ -51,6 +51,8 @@ jobs:
         run: |
           podman pull alpine:latest
           podman run -d --name podman-inventory-test alpine:latest sleep 3600
+          podman run -d --name podman-inventory-test2 --label role=api --label env=dev alpine:latest sleep 3600
+          podman run -d --name podman-stopped-test alpine:latest sleep 3600 && podman stop podman-stopped-test
           buildah from --name hello-buildah alpine:latest
           echo 'Podman ps output:'
           podman ps -a --format json | jq '.'
@@ -79,8 +81,143 @@ jobs:
           echo "$out" | jq '.'
           echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
 
+      - name: Test podman inventory - empty selection with name_patterns
+        run: |
+          cat > ci/tmpinv/podman_empty.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          name_patterns: ['no-such-*']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_empty.yml --list)
+          echo "$out" | jq '.'
+          # Expect no groups with hosts
+          test $(echo "$out" | jq '[ . | to_entries[] | select(.value.hosts != null and (.value.hosts | length) > 0) ] | length') -eq 0
+
+      - name: Test podman include_stopped false excludes stopped
+        run: |
+          cat > ci/tmpinv/podman_running.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: false
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_running.yml --list)
+          echo "$out" | jq '.'
+          # Stopped host must not be present in hostvars
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test") | not'
+
+      - name: Test podman include_stopped true includes stopped
+        run: |
+          cat > ci/tmpinv/podman_all.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_all.yml --list)
+          echo "$out" | jq '.'
+          # Stopped host must be present in hostvars
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test")'
+
+      - name: Test label_selectors and group_by_image/label
+        run: |
+          cat > ci/tmpinv/podman_labels.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          label_selectors:
+            role: api
+          group_by_image: true
+          group_by_label: ['env']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_labels.yml --list)
+          echo "$out" | jq '.'
+          # Only labeled host present
+          echo "$out" | jq -e '._meta.hostvars | has("podman-inventory-test2")'
+          echo "$out" | jq -e '._meta.hostvars | has("podman-inventory-test") | not'
+          # Image group exists
+          echo "$out" | jq -e '."image_docker.io_library_alpine_latest".hosts | index("podman-inventory-test2") != null'
+          # Label group exists
+          echo "$out" | jq -e '."label_env_dev".hosts | index("podman-inventory-test2") != null'
+
+      - name: Test verbose_output and filters include/exclude
+        run: |
+          cat > ci/tmpinv/podman_filters.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          verbose_output: true
+          filters:
+            exclude:
+              status: 'Exited*'
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_filters.yml --list)
+          echo "$out" | jq '.'
+          # Exited (stopped) should be excluded
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test") | not'
+          # podman_ps should exist for a running host
+          echo "$out" | jq -e '._meta.hostvars["podman-inventory-test"] | has("podman_ps")'
+
+      - name: Test keyed_groups with prefix/separator/default and parent_group
+        run: |
+          cat > ci/tmpinv/podman_keyed.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          keyed_groups:
+            - key: labels.role
+              prefix: k
+              separator: '-'
+              parent_group: keyed
+            - key: labels.missing
+              prefix: missing
+              default_value: unknown
+              leading_separator: false
+              trailing_separator: false
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_keyed.yml --list)
+          echo "$out" | jq '.'
+          # Group from labels.role
+          echo "$out" | jq -e '."k-api".hosts | index("podman-inventory-test2") != null'
+          # Parent group exists and contains subgroup
+          echo "$out" | jq -e '.keyed.children | index("k-api") != null'
+          # Default value group for missing key exists for at least one host
+          test $(echo "$out" | jq 'to_entries | map(select(.key | startswith("missing"))) | length') -ge 1
+
+      - name: Test strict=true fails on missing keyed key
+        run: |
+          set +e
+          cat > ci/tmpinv/podman_strict.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          strict: true
+          keyed_groups:
+            - key: labels.nonexistent
+          EOF
+          ansible-inventory -i ci/tmpinv/podman_strict.yml --list >/tmp/out.json 2>/tmp/err.log
+          rc=$?
+          echo "RC=$rc"; cat /tmp/err.log || true
+          # Expect non-zero RC when strict and key missing
+          test $rc -ne 0
+
       - name: Sanity check buildah inventory
         run: |
           out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah.yml --list)
           echo "$out" | jq '.'
           echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Test buildah inventory - empty selection with name_patterns
+        run: |
+          cat > ci/tmpinv/buildah_empty.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['no-such-*']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah_empty.yml --list)
+          echo "$out" | jq '.'
+          # Expect no groups with hosts
+          test $(echo "$out" | jq '[ . | to_entries[] | select(.value.hosts != null and (.value.hosts | length) > 0) ] | length') -eq 0
+
+      - name: Test buildah inventory - match by name_patterns and host vars
+        run: |
+          cat > ci/tmpinv/buildah_match.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['hello-buildah']
+          connection_plugin: containers.podman.buildah
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah_match.yml --list)
+          echo "$out" | jq '.'
+          # Host should be present
+          echo "$out" | jq -e '.all.hosts | index("hello-buildah") != null'
+          # Hostvars should include connection and ids
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"].ansible_connection == "containers.podman.buildah"'
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_id")'
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_name")'
