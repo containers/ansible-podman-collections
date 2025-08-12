@@ -254,7 +254,63 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
                 if composed_groups:
                     self._add_host_to_composed_groups(composed_groups, hostvars, host)
                 if keyed_groups:
-                    self._add_host_to_keyed_groups(keyed_groups, hostvars, host, strict=strict)
+                    # Try built-in helper first (signature may vary by ansible-core), do not fail hard
+                    try:
+                        self._add_host_to_keyed_groups(keyed_groups, hostvars, host)
+                    except Exception as _e:
+                        if debug:
+                            self.display.vvvv(f"_add_host_to_keyed_groups helper failed: {_e}")
+                    # Always run manual keyed grouping to support dotted keys like labels.role
+                    for kg in keyed_groups:
+                        key_expr = kg.get("key")
+                        if not key_expr:
+                            continue
+                        # Resolve dotted key path against hostvars
+                        value = None
+                        cur = hostvars
+                        for part in str(key_expr).split('.'):
+                            if isinstance(cur, dict) and part in cur:
+                                cur = cur.get(part)
+                            else:
+                                cur = None
+                                break
+                        value = cur if isinstance(cur, (str, int)) else (cur if cur is not None else None)
+                        if value is None:
+                            if strict and kg.get("default_value") is None:
+                                raise AnsibleParserError(f"Missing keyed_groups key '{key_expr}' for host {host}")
+                            value = kg.get("default_value")
+                        if value is None or value == "":
+                            continue
+                        value = str(value)
+                        prefix = kg.get("prefix", "") or ""
+                        sep = kg.get("separator", "_") or "_"
+                        leading = bool(kg.get("leading_separator", False))
+                        trailing = bool(kg.get("trailing_separator", False))
+                        group_name = ""
+                        if leading and not prefix:
+                            group_name += sep
+                        if prefix:
+                            group_name += prefix
+                            if value:
+                                group_name += sep
+                        group_name += value
+                        if trailing:
+                            group_name += sep
+                        parent = kg.get("parent_group")
+                        # Sanitize group names per Ansible rules
+                        sanitized = self._sanitize_group_name(group_name)
+                        parent_sanitized = self._sanitize_group_name(parent) if parent else None
+                        if parent_sanitized:
+                            self.inventory.add_group(parent_sanitized)
+                            self.inventory.add_group(sanitized)
+                            try:
+                                self.inventory.add_child(parent_sanitized, sanitized)
+                            except Exception:
+                                pass
+                            self.inventory.add_host(host, group=sanitized)
+                        else:
+                            self.inventory.add_group(sanitized)
+                            self.inventory.add_host(host, group=sanitized)
             except Exception as exc:
                 if strict:
                     raise

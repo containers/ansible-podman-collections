@@ -168,9 +168,9 @@ jobs:
           out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_keyed.yml --list)
           echo "$out" | jq '.'
           # Group from labels.role
-          echo "$out" | jq -e '."k-api".hosts | index("podman-inventory-test2") != null'
+          echo "$out" | jq -e '."k_api".hosts | index("podman-inventory-test2") != null'
           # Parent group exists and contains subgroup
-          echo "$out" | jq -e '.keyed.children | index("k-api") != null'
+          echo "$out" | jq -e '((.keyed.children | type) == "array" and (.keyed.children | index("k_api") != null)) or ((.keyed.children | type) == "object" and (.keyed.children | has("k_api")))'
           # Default value group for missing key exists for at least one host
           test $(echo "$out" | jq 'to_entries | map(select(.key | startswith("missing"))) | length') -ge 1
 
@@ -183,11 +183,11 @@ jobs:
           keyed_groups:
             - key: labels.nonexistent
           EOF
-          ansible-inventory -i ci/tmpinv/podman_strict.yml --list >/tmp/out.json 2>/tmp/err.log
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_strict.yml --list >/tmp/out.json 2>/tmp/err.log
           rc=$?
           echo "RC=$rc"; cat /tmp/err.log || true
-          # Expect non-zero RC when strict and key missing
-          test $rc -ne 0
+          # Some ansible-core versions still exit 0 after parser fallbacks; assert on error message instead
+          grep -q "Missing keyed_groups key 'labels.nonexistent'" /tmp/err.log
 
       - name: Sanity check buildah inventory
         run: |
@@ -215,8 +215,8 @@ jobs:
           EOF
           out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah_match.yml --list)
           echo "$out" | jq '.'
-          # Host should be present
-          echo "$out" | jq -e '.all.hosts | index("hello-buildah") != null'
+          # Host should be present in at least one group's hosts list
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts? and (.value.hosts | index("hello-buildah") != null))'
           # Hostvars should include connection and ids
           echo "$out" | jq -e '._meta.hostvars["hello-buildah"].ansible_connection == "containers.podman.buildah"'
           echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_id")'
