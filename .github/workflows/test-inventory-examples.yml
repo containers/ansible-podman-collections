@@ -6,7 +6,7 @@ on:
     branches: [ main, connections ]
 
 jobs:
-  examples:
+  inventory_test:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -84,32 +84,3 @@ jobs:
           out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah.yml --list)
           echo "$out" | jq '.'
           echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
-
-      - name: Run example Node build
-        working-directory: playbooks/examples
-        run: |
-          echo "Python: $(command -v python)"
-          echo "Python version: $(python --version)"
-          echo "Ansible: $(command -v ansible-playbook)"
-          echo "Ansible version: $(ansible --version)"
-
-          ansible-playbook -vvv -i localhost, -c local build_node_ai_api.yml -e image_name=ci-ai-node:latest
-          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-node:latest$'
-
-      - name: Run example Go multistage build
-        working-directory: playbooks/examples
-        run: |
-          ansible-playbook -vv -i localhost, -c local build_go_ai_multistage.yml -e image_name=ci-ai-go:latest
-          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-go:latest$'
-
-      - name: Run AI env build
-        working-directory: playbooks/examples
-        run: |
-          ansible-playbook -vv -i localhost, -c local build_ai_env_with_ansible.yml -e image_name=ci-ai-env:latest
-          buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-env:latest$'
-
-      - name: Show resulting images
-        run: |
-          buildah images
-
-
