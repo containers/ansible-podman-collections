@@ -355,7 +355,13 @@ def test_keyed_groups_leading_trailing_separators(mock_which):
         mod = InventoryModule()
         cfg = {
             "keyed_groups": [
-                {"key": "labels.num", "prefix": "p", "separator": "-", "leading_separator": True, "trailing_separator": True}
+                {
+                    "key": "labels.num",
+                    "prefix": "p",
+                    "separator": "-",
+                    "leading_separator": True,
+                    "trailing_separator": True,
+                }
             ]
         }
         with patch.object(mod, "_read_config_data", return_value=cfg):

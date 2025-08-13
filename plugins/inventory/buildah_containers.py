@@ -74,7 +74,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
 
         # 'buildah containers -a --format json' lists working containers
         args = [buildah_path, "containers", "-a", "--json"]
-        output = ''
+        output = ""
         containers = []
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)

@@ -186,6 +186,48 @@ jobs:
           # Default value group for missing key exists for at least one host
           test $(echo "$out" | jq 'to_entries | map(select(.key | startswith("missing"))) | length') -ge 1
 
+      - name: Verbose logs - podman inventory (-vvvv) name_patterns and label_selectors
+        run: |
+          # Create an inventory that will: match only podman-inventory-test (not test2) by name_patterns,
+          # then filter it out by label_selectors; the unmatched one will be filtered by name_patterns.
+          cat > ci/tmpinv/podman_verbose.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          name_patterns: ['podman-inventory-test']
+          label_selectors:
+            role: api
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/podman_verbose.yml --list -vvvv 1>/tmp/podman_verbose.out 2>/tmp/podman_verbose.err || true
+          echo "podman_verbose.err:"
+          cat /tmp/podman_verbose.err
+          echo "podman_verbose.out:"
+          cat /tmp/podman_verbose.out
+          # Expect messages from plugin
+          grep -q "Filtered out podman-inventory-test2 by name_patterns option" /tmp/podman_verbose.out
+          grep -q "Filtered out podman-inventory-test by label_selectors option" /tmp/podman_verbose.out
+
+      - name: Verbose logs - podman inventory (-vvvv) filters include path
+        run: |
+          # Match only the labeled container and then filter it via filters.include
+          cat > ci/tmpinv/podman_verbose_filters.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          name_patterns: ['podman-inventory-test2']
+          filters:
+            include:
+              status: 'Exited*'
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/podman_verbose_filters.yml --list -vvvv 1>/tmp/podman_verbose2.out 2>/tmp/podman_verbose2.err || true
+          echo "podman_verbose2.err:"
+          cat /tmp/podman_verbose2.err
+          echo "podman_verbose2.out:"
+          cat /tmp/podman_verbose2.out
+          grep -q "Filtered out podman-inventory-test2 by filters option" /tmp/podman_verbose2.out
+
       - name: Test strict=true fails on missing keyed key
         run: |
           set +e
@@ -206,6 +248,18 @@ jobs:
           out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah.yml --list)
           echo "$out" | jq '.'
           echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Verbose logs - buildah inventory (-vvvv) name_patterns filter path
+        run: |
+          cat > ci/tmpinv/buildah_verbose.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['no-such-*']
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/buildah_verbose.yml --list -vvvv 1>/tmp/buildah_verbose.out 2>/tmp/buildah_verbose.err || true
+          cat /tmp/buildah_verbose.err
+          grep -q "Filtered out hello-buildah by name_patterns option" /tmp/buildah_verbose.err
 
       - name: Test buildah inventory - empty selection with name_patterns
         run: |

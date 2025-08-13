@@ -128,7 +128,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
         if include_stopped:
             args.insert(2, "-a")
 
-        output = ''
+        output = ""
         containers = []
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
