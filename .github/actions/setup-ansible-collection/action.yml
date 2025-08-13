@@ -1,0 +1,54 @@
+name: Setup Ansible and install built collection
+description: "Set up Python, install a specific Ansible version, download and install the built collection artifact"
+
+inputs:
+  python-version:
+    description: Python version to install
+    required: true
+  ansible-version:
+    description: Ansible version spec to install (pip spec)
+    required: true
+  artifact-name:
+    description: Name of the uploaded artifact containing the built collection tarball(s)
+    required: true
+    default: collection
+  artifact-path:
+    description: Path to download artifact into
+    required: true
+    default: .cache/collection-tarballs
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Upgrade pip
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: Install Ansible
+      shell: bash
+      run: |
+        python -m pip install --user '${{ inputs.ansible-version }}'
+
+    - name: Ensure ~/.local/bin on PATH
+      shell: bash
+      run: |
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Download collection artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+
+    - name: Install the collection tarball(s)
+      shell: bash
+      run: |
+        ~/.local/bin/ansible-galaxy collection install ${{ inputs.artifact-path }}/*.tar.gz
+
+
