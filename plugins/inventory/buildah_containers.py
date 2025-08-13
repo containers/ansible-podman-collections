@@ -9,6 +9,8 @@ DOCUMENTATION = r"""
     name: buildah_containers
     short_description: Inventory plugin that discovers Buildah working containers as hosts
     version_added: '1.18.0'
+    author:
+      - "Sagi Shnaidman (@sshnaidm)"
     description:
       - Discover Buildah working containers on the local host and add them as inventory hosts.
       - Each discovered host is assigned the Buildah connection plugin so tasks execute inside the working container.

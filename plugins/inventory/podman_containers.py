@@ -9,6 +9,8 @@ DOCUMENTATION = r"""
     name: podman_containers
     short_description: Inventory plugin that discovers Podman containers as hosts
     version_added: '1.18.0'
+    author:
+      - "Sagi Shnaidman (@sshnaidm)"
     description:
       - Discover running (and optionally stopped) Podman containers on the local host and add them as inventory hosts.
       - Each discovered host is assigned an Ansible connection plugin so tasks execute inside the container without SSH.
