@@ -1,0 +1,37 @@
+---
+- name: Run tasks as different users inside containers
+  hosts: all
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+  tasks:
+    - name: Who am I (root default)
+      raw: id -u
+      register: uid_root
+
+    - name: Display root uid
+      debug:
+        msg: "root uid={{ uid_root.stdout }}"
+
+    - name: Run as nobody (if exists)
+      vars:
+        ansible_user: nobody
+      raw: "sh -lc 'id -u && touch /tmp/nobody_was_here'"
+      register: uid_nobody
+      failed_when: false
+
+    - name: Display nobody uid
+      debug:
+        msg: "nobody uid={{ uid_nobody.stdout | default('N/A') }}"
+
+    - name: Run with numeric uid 1000 (common)
+      vars:
+        ansible_user: "1000"
+      raw: "sh -lc 'id -u || true'"
+      register: uid_1000
+      failed_when: false
+
+    - name: Show marker files (root)
+      raw: "sh -lc 'ls -l /tmp/*was_here || true'"
+
+
