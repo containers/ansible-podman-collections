@@ -260,6 +260,8 @@ jobs:
 
   test-example-playbooks:
     name: Test example playbooks with Podman and Buildah connection plugins
+    needs:
+      - build-collection-artifact-connection-tests
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     defaults:
       run:
@@ -284,6 +286,42 @@ jobs:
 
     steps:
 
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip and display Python and PIP versions
+        run: |
+          python -m pip install --upgrade pip
+          python -V
+          pip --version
+
+      - name: Set up pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install Ansible ${{ matrix.ansible-version }}
+        run: python -m pip install --user '${{ matrix.ansible-version }}'
+
+      - name: Download migrated collection artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: collection
+          path: .cache/collection-tarballs
+
+      - name: Install the collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+
       - name: Run example Node build
         working-directory: playbooks/examples
         run: |
@@ -294,7 +332,6 @@ jobs:
 
           ansible-playbook -vvv -i localhost, -c local build_node_ai_api.yml -e image_name=ci-ai-node:latest
           buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-node:latest$'
-
 
       - name: Run example Go multistage build
         working-directory: playbooks/examples
