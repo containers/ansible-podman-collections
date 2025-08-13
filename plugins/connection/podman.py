@@ -24,8 +24,8 @@ DOCUMENTATION = """
           - The ID or name of the container you want to access.
         default: inventory_hostname
         vars:
-          - name: ansible_host
           - name: inventory_hostname
+          - name: ansible_host
           - name: ansible_podman_host
         env:
           - name: ANSIBLE_PODMAN_HOST
@@ -80,15 +80,6 @@ DOCUMENTATION = """
         ini:
           - section: defaults
             key: podman_timeout
-      connection_retries:
-        description:
-          - Number of retries for failed container operations.
-        default: 3
-        type: int
-        vars:
-          - name: ansible_podman_retries
-        env:
-          - name: ANSIBLE_PODMAN_RETRIES
       mount_detection:
         description:
           - Enable automatic detection and use of container mount points for file operations.
@@ -139,13 +130,9 @@ display = Display()
 class PodmanConnectionError(AnsibleConnectionFailure):
     """Specific exception for podman connection issues"""
 
-    pass
-
 
 class ContainerNotFoundError(PodmanConnectionError):
     """Exception for when container cannot be found"""
-
-    pass
 
 
 class Connection(ConnectionBase):
@@ -204,8 +191,8 @@ class Connection(ConnectionBase):
 
         return cmd
 
-    def _run_podman_command(self, cmd_args, input_data=None, check_rc=True, include_container=True, retries=None):
-        """Execute podman command once with error handling (no retries)"""
+    def _run_podman_command(self, cmd_args, input_data=None, check_rc=False, include_container=True):
+        """Execute podman command once with error handling"""
         cmd = self._build_podman_command(cmd_args, include_container)
         cmd_bytes = [to_bytes(arg, errors="surrogate_or_strict") for arg in cmd]
 
@@ -246,7 +233,7 @@ class Connection(ConnectionBase):
 
         # Fast existence check avoids expensive JSON parsing
         rc, _stdout, _stderr = self._run_podman_command(
-            ["container", "exists", self._container_id], include_container=False, check_rc=False, retries=1
+            ["container", "exists", self._container_id], include_container=False, check_rc=False
         )
         if rc != 0:
             raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
@@ -261,7 +248,7 @@ class Connection(ConnectionBase):
             return
 
         try:
-            rc, stdout, stderr = self._run_podman_command(["mount"], retries=1)
+            rc, stdout, stderr = self._run_podman_command(["mount"])
             if rc == 0:
                 mount_point = to_text(stdout, errors="surrogate_or_strict").strip()
                 if mount_point and os.path.isdir(mount_point):
@@ -366,11 +353,11 @@ class Connection(ConnectionBase):
         copy_cmd = ["cp", in_path, f"{self._container_id}:{out_path}"]
 
         try:
-            self._run_podman_command(copy_cmd, include_container=False)
+            self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
         except PodmanConnectionError:
             # Try with --pause=false for running containers
             copy_cmd.insert(1, "--pause=false")
-            self._run_podman_command(copy_cmd, include_container=False)
+            self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
 
         # Change ownership if user specified
         if self.get_option("remote_user"):
@@ -384,7 +371,7 @@ class Connection(ConnectionBase):
                 out_path,
             ]
             try:
-                self._run_podman_command(chown_cmd, include_container=False)
+                self._run_podman_command(chown_cmd, include_container=False, check_rc=True)
             except PodmanConnectionError as e:
                 display.warning(f"Failed to change file ownership: {e}")
 
@@ -411,7 +398,7 @@ class Connection(ConnectionBase):
 
         # Use podman cp command
         copy_cmd = ["cp", f"{self._container_id}:{in_path}", out_path]
-        self._run_podman_command(copy_cmd, include_container=False)
+        self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
 
     def close(self):
         """Close connection and cleanup resources"""
@@ -420,7 +407,7 @@ class Connection(ConnectionBase):
         if self._mount_point:
             try:
                 # Attempt to unmount (optional, container keeps mount anyway)
-                self._run_podman_command(["umount"], retries=1, check_rc=False)
+                self._run_podman_command(["umount"], check_rc=False)
                 display.vvvv("Container unmounted successfully", host=self._container_id)
             except Exception as e:
                 display.vvvv(f"Unmount failed (this is usually not critical): {e}", host=self._container_id)
