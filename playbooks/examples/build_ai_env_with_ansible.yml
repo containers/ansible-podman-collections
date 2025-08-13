@@ -1,0 +1,41 @@
+---
+- name: Build a consistent AI dev environment image using Ansible and Buildah connection
+  hosts: localhost
+  gather_facts: false
+  vars:
+    base_image: "python:3.11-slim"
+    image_name: "ai-dev-env:latest"
+    workdir: "/workspace"
+  tasks:
+    - name: Start Buildah working container
+      command: buildah from {{ base_image }}
+      register: from_out
+
+    - set_fact:
+        container_id: "{{ from_out.stdout | trim }}"
+
+    - name: Configure working directory
+      command: buildah config --workingdir {{ workdir }} {{ container_id }}
+
+    - name: Add working container as dynamic host (Buildah connection)
+      add_host:
+        name: "buildcntr_{{ container_id }}"
+        ansible_connection: containers.podman.buildah
+        ansible_host: "{{ container_id }}"
+        ansible_buildah_working_directory: "{{ workdir }}"
+
+    - name: Provision AI environment inside container using role
+      import_role:
+        name: ai-dev-env
+      delegate_to: "buildcntr_{{ container_id }}"
+
+    - name: Set container metadata
+      shell: |
+        buildah config --env "JUPYTER_TOKEN=ansible" {{ container_id }}
+        buildah config --port 8888 {{ container_id }}
+        buildah config --cmd "jupyter lab --ip=0.0.0.0 --no-browser" {{ container_id }}
+
+    - name: Commit image
+      command: buildah commit {{ container_id }} {{ image_name }}
+
+

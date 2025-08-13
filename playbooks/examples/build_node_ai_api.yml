@@ -1,0 +1,76 @@
+---
+- name: Build Node.js AI prediction API without Dockerfile using Buildah connection
+  hosts: localhost
+  gather_facts: false
+  vars:
+    buildah_base_image: "node:24"
+    image_name: "my-ai-node-app:latest"
+    workdir: "/app"
+    # App sources live under examples/node_app/
+    app_src_dir: "{{ playbook_dir }}/node_app"
+  tasks:
+    - name: Ensure app sources exist
+      stat:
+        path: "{{ app_src_dir }}/package.json"
+      register: app_sources
+
+    - name: Fail if sources are missing
+      fail:
+        msg: "Example sources not found under {{ app_src_dir }}. Provide package.json and app.js."
+      when: not app_sources.stat.exists
+
+    - name: Start Buildah working container
+      command: buildah from {{ buildah_base_image }}
+      register: from_out
+      changed_when: true
+
+    - name: Set container id fact
+      set_fact:
+        container_id: "{{ from_out.stdout | trim }}"
+
+    - name: Add working container as a dynamic host to inventory
+      add_host:
+        name: "buildcntr_{{ container_id }}"
+        ansible_connection: containers.podman.buildah
+        ansible_host: "{{ container_id }}"
+        ansible_buildah_working_directory: "{{ workdir }}"
+
+    - name: Configure image metadata (workdir)
+      command: buildah config --workingdir {{ workdir }} {{ container_id }}
+
+    - name: Copy package files first for better layer caching
+      copy:
+        src: "{{ item }}"
+        dest: "{{ workdir }}/"
+      with_items:
+        - "{{ app_src_dir }}/package.json"
+        - "{{ app_src_dir }}/package-lock.json"
+      delegate_to: "buildcntr_{{ container_id }}"
+
+    - name: Install dependencies
+      command: npm install
+      delegate_to: "buildcntr_{{ container_id }}"
+
+    - name: Copy application code
+      copy:
+        src: "{{ app_src_dir }}/app.js"
+        dest: "{{ workdir }}/app.js"
+      delegate_to: "buildcntr_{{ container_id }}"
+
+    - name: Expose port and set default command
+      shell: |
+        buildah config --port 3000 {{ container_id }}
+        buildah config --cmd "node app.js" {{ container_id }}
+
+    - name: Commit image
+      command: buildah commit {{ container_id }} {{ image_name }}
+
+    - name: Show resulting image
+      command: buildah images --format '{{"{{.Name}}:{{.Tag}}"}}\t{{"{{.Size}}"}}'
+      register: imgs
+      changed_when: false
+
+    - debug:
+        var: imgs.stdout_lines
+
+

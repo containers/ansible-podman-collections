@@ -1,0 +1,358 @@
+name: Test inventory and example playbooks
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-inventory-examples.yml'
+      - 'plugins/inventory/podman_containers.py'
+      - 'plugins/inventory/buildah_containers.py'
+      - 'tests/unit/plugins/inventory/*.py'
+  push:
+    paths:
+      - '.github/workflows/test-inventory-examples.yml'
+      - 'plugins/inventory/podman_containers.py'
+      - 'plugins/inventory/buildah_containers.py'
+      - 'tests/unit/plugins/inventory/*.py'
+    branches: [ main ]
+  schedule:
+    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+
+jobs:
+  inventory_test:
+    name: Functional inventory tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible 2.18
+        run: python3 -m pip install --user --force-reinstall --upgrade ansible-core==2.18
+
+      - name: Build and install the collection tarball
+        run: |
+          rm -rf /tmp/just_new_collection
+          ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
+          ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Install system deps (podman, buildah)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman buildah jq
+          podman --version
+          buildah --version
+
+      - name: Configure rootless storage
+        run: |
+          mkdir -p ~/.config/containers
+          printf '[storage]\ndriver = "overlay"\n' > ~/.config/containers/storage.conf
+          printf '[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\n' > ~/.config/containers/engine.conf
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ansible-core
+          ansible --version
+
+      - name: Build basic containers for discovery
+        run: |
+          podman pull alpine:latest
+          podman run -d --name podman-inventory-test alpine:latest sleep 3600
+          podman run -d --name podman-inventory-test2 --label role=api --label env=dev alpine:latest sleep 3600
+          podman run -d --name podman-stopped-test alpine:latest sleep 3600 && podman stop podman-stopped-test
+          buildah from --name hello-buildah alpine:latest
+          echo 'Podman ps output:'
+          podman ps -a --format json | jq '.'
+          echo 'Buildah containers output:'
+          buildah containers -a --json | jq '.'
+
+      - name: Write podman inventory source
+        run: |
+          mkdir -p ci/tmpinv
+          cat > ci/tmpinv/podman.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: false
+          connection_plugin: containers.podman.podman
+          EOF
+
+      - name: Write buildah inventory source
+        run: |
+          cat > ci/tmpinv/buildah.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          connection_plugin: containers.podman.buildah
+          EOF
+
+      - name: Sanity check podman inventory
+        run: |
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman.yml --list)
+          echo "$out" | jq '.'
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Test podman inventory - empty selection with name_patterns
+        run: |
+          cat > ci/tmpinv/podman_empty.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          name_patterns: ['no-such-*']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_empty.yml --list)
+          echo "$out" | jq '.'
+          # Expect no groups with hosts
+          test $(echo "$out" | jq '[ . | to_entries[] | select(.value.hosts != null and (.value.hosts | length) > 0) ] | length') -eq 0
+
+      - name: Test podman include_stopped false excludes stopped
+        run: |
+          cat > ci/tmpinv/podman_running.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: false
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_running.yml --list)
+          echo "$out" | jq '.'
+          # Stopped host must not be present in hostvars
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test") | not'
+
+      - name: Test podman include_stopped true includes stopped
+        run: |
+          cat > ci/tmpinv/podman_all.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_all.yml --list)
+          echo "$out" | jq '.'
+          # Stopped host must be present in hostvars
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test")'
+
+      - name: Test label_selectors and group_by_image/label
+        run: |
+          cat > ci/tmpinv/podman_labels.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          label_selectors:
+            role: api
+          group_by_image: true
+          group_by_label: ['env']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_labels.yml --list)
+          echo "$out" | jq '.'
+          # Only labeled host present
+          echo "$out" | jq -e '._meta.hostvars | has("podman-inventory-test2")'
+          echo "$out" | jq -e '._meta.hostvars | has("podman-inventory-test") | not'
+          # Image group exists
+          echo "$out" | jq -e '."image_docker.io_library_alpine_latest".hosts | index("podman-inventory-test2") != null'
+          # Label group exists
+          echo "$out" | jq -e '."label_env_dev".hosts | index("podman-inventory-test2") != null'
+
+      - name: Test verbose_output and filters include/exclude
+        run: |
+          cat > ci/tmpinv/podman_filters.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          verbose_output: true
+          filters:
+            exclude:
+              status: 'Exited*'
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_filters.yml --list)
+          echo "$out" | jq '.'
+          # Exited (stopped) should be excluded
+          echo "$out" | jq -e '._meta.hostvars | has("podman-stopped-test") | not'
+          # podman_ps should exist for a running host
+          echo "$out" | jq -e '._meta.hostvars["podman-inventory-test"] | has("podman_ps")'
+
+      - name: Test keyed_groups with prefix/separator/default and parent_group
+        run: |
+          cat > ci/tmpinv/podman_keyed.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          keyed_groups:
+            - key: labels.role
+              prefix: k
+              separator: '-'
+              parent_group: keyed
+            - key: labels.missing
+              prefix: missing
+              default_value: unknown
+              leading_separator: false
+              trailing_separator: false
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_keyed.yml --list)
+          echo "$out" | jq '.'
+          # Group from labels.role
+          echo "$out" | jq -e '."k_api".hosts | index("podman-inventory-test2") != null'
+          # Parent group exists and contains subgroup
+          echo "$out" | jq -e '((.keyed.children | type) == "array" and (.keyed.children | index("k_api") != null)) or ((.keyed.children | type) == "object" and (.keyed.children | has("k_api")))'
+          # Default value group for missing key exists for at least one host
+          test $(echo "$out" | jq 'to_entries | map(select(.key | startswith("missing"))) | length') -ge 1
+
+      - name: Verbose logs - podman inventory (-vvvv) name_patterns and label_selectors
+        run: |
+          # Create an inventory that will: match only podman-inventory-test (not test2) by name_patterns,
+          # then filter it out by label_selectors; the unmatched one will be filtered by name_patterns.
+          cat > ci/tmpinv/podman_verbose.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          name_patterns: ['podman-inventory-test']
+          label_selectors:
+            role: api
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/podman_verbose.yml --list -vvvv 1>/tmp/podman_verbose.out 2>/tmp/podman_verbose.err || true
+          echo "podman_verbose.err:"
+          cat /tmp/podman_verbose.err
+          echo "podman_verbose.out:"
+          cat /tmp/podman_verbose.out
+          # Expect messages from plugin
+          grep -q "Filtered out podman-inventory-test2 by name_patterns option" /tmp/podman_verbose.out
+          grep -q "Filtered out podman-inventory-test by label_selectors option" /tmp/podman_verbose.out
+
+      - name: Verbose logs - podman inventory (-vvvv) filters include path
+        run: |
+          # Match only the labeled container and then filter it via filters.include
+          cat > ci/tmpinv/podman_verbose_filters.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          include_stopped: true
+          name_patterns: ['podman-inventory-test2']
+          filters:
+            include:
+              status: 'Exited*'
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/podman_verbose_filters.yml --list -vvvv 1>/tmp/podman_verbose2.out 2>/tmp/podman_verbose2.err || true
+          echo "podman_verbose2.err:"
+          cat /tmp/podman_verbose2.err
+          echo "podman_verbose2.out:"
+          cat /tmp/podman_verbose2.out
+          grep -q "Filtered out podman-inventory-test2 by filters option" /tmp/podman_verbose2.out
+
+      - name: Test strict=true fails on missing keyed key
+        run: |
+          set +e
+          cat > ci/tmpinv/podman_strict.yml <<'EOF'
+          plugin: containers.podman.podman_containers
+          strict: true
+          keyed_groups:
+            - key: labels.nonexistent
+          EOF
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.podman_containers,yaml,ini ansible-inventory -i ci/tmpinv/podman_strict.yml --list >/tmp/out.json 2>/tmp/err.log
+          rc=$?
+          echo "RC=$rc"; cat /tmp/err.log || true
+          # Some ansible-core versions still exit 0 after parser fallbacks; assert on error message instead
+          grep -q "Missing keyed_groups key 'labels.nonexistent'" /tmp/err.log
+
+      - name: Sanity check buildah inventory
+        run: |
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah.yml --list)
+          echo "$out" | jq '.'
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts != null and (.value.hosts | length) > 0)'
+
+      - name: Verbose logs - buildah inventory (-vvvv) name_patterns filter path
+        run: |
+          cat > ci/tmpinv/buildah_verbose.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['no-such-*']
+          EOF
+          set -o pipefail
+          ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini \
+            ansible-inventory -i ci/tmpinv/buildah_verbose.yml --list -vvvv 1>/tmp/buildah_verbose.out 2>/tmp/buildah_verbose.err || true
+          echo "buildah_verbose.err:"
+          cat /tmp/buildah_verbose.err
+          echo "buildah_verbose.out:"
+          cat /tmp/buildah_verbose.out
+          grep -q "Filtered out hello-buildah by name_patterns option" /tmp/buildah_verbose.out
+
+      - name: Test buildah inventory - empty selection with name_patterns
+        run: |
+          cat > ci/tmpinv/buildah_empty.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['no-such-*']
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah_empty.yml --list)
+          echo "$out" | jq '.'
+          # Expect no groups with hosts
+          test $(echo "$out" | jq '[ . | to_entries[] | select(.value.hosts != null and (.value.hosts | length) > 0) ] | length') -eq 0
+
+      - name: Test buildah inventory - match by name_patterns and host vars
+        run: |
+          cat > ci/tmpinv/buildah_match.yml <<'EOF'
+          plugin: containers.podman.buildah_containers
+          name_patterns: ['hello-buildah']
+          connection_plugin: containers.podman.buildah
+          EOF
+          out=$(ANSIBLE_INVENTORY_ENABLED=containers.podman.buildah_containers,yaml,ini ansible-inventory -i ci/tmpinv/buildah_match.yml --list)
+          echo "$out" | jq '.'
+          # Host should be present in at least one group's hosts list
+          echo "$out" | jq -e '. | to_entries | any(.value.hosts? and (.value.hosts | index("hello-buildah") != null))'
+          # Hostvars should include connection and ids
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"].ansible_connection == "containers.podman.buildah"'
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_id")'
+          echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_name")'
+
+  unittests:
+    name: Unit tests inventory
+    runs-on: ${{ matrix.runner-os }}
+    strategy:
+      matrix:
+        runner-os:
+          - ubuntu-24.04
+        # ansible-version:
+        #   - git+https://github.com/ansible/ansible.git@stable-2.15
+        runner-python-version:
+          - '3.11'
+    steps:
+
+      - name: Check out ${{ github.repository }} on disk
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.runner-python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.runner-python-version }}
+
+      - name: Set up pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install requirements for tests
+        run: >-
+          python -m pip install --user -r test-requirements.txt
+
+      - name: Build a collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection build --output-path
+          "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
+
+      - name: Install the collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection install ${GITHUB_WORKSPACE}/.cache/collection-tarballs/*.tar.gz
+
+      - name: Run collection unit tests (with coverage)
+        run: >-
+          ~/.local/bin/ansible-test units
+          --python "${{ matrix.runner-python-version }}" --coverage -vvv
+          tests/unit/plugins/inventory/
+        working-directory: >-
+          /home/runner/.ansible/collections/ansible_collections/containers/podman
+
+      - name: Generate coverage reports (xml, html)
+        run: |
+          ~/.local/bin/ansible-test coverage xml
+          ~/.local/bin/ansible-test coverage html
+        working-directory: >-
+          /home/runner/.ansible/collections/ansible_collections/containers/podman
+
+      - name: Upload coverage artifact (ansible-test outputs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-coverage
+          path: |
+            /home/runner/.ansible/collections/ansible_collections/containers/podman/tests/output/coverage/**

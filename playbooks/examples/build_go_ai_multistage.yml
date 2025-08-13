@@ -1,0 +1,84 @@
+---
+- name: Build minimal Go-based AI inference image with multi-stage using Buildah connection
+  hosts: localhost
+  gather_facts: false
+  vars:
+    build_stage_image: "golang:1.23"
+    runtime_image: "alpine:latest"
+    image_name: "minimal-ai-inference:latest"
+    source_dir: "{{ playbook_dir }}/go_app"
+    build_workdir: "/app"
+  tasks:
+    - name: Ensure source exists
+      stat:
+        path: "{{ source_dir }}/main.go"
+      register: go_src
+
+    - name: Fail if source missing
+      fail:
+        msg: "Provide a Go main.go under {{ source_dir }}"
+      when: not go_src.stat.exists
+
+    - name: Start build stage container (Go toolchain)
+      command: buildah from {{ build_stage_image }}
+      register: build_from
+
+    - set_fact:
+        build_container: "{{ build_from.stdout | trim }}"
+
+    - name: Add build container to inventory
+      add_host:
+        name: "build_stage_{{ build_container }}"
+        ansible_connection: containers.podman.buildah
+        ansible_host: "{{ build_container }}"
+        ansible_buildah_working_directory: "{{ build_workdir }}"
+
+    - name: Configure workdir
+      command: buildah config --workingdir {{ build_workdir }} {{ build_container }}
+
+    - name: Copy sources
+      copy:
+        src: "{{ source_dir }}/main.go"
+        dest: "{{ build_workdir }}/main.go"
+      delegate_to: "build_stage_{{ build_container }}"
+
+    - name: Build static binary
+      shell: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o inference-engine main.go
+      args:
+        chdir: "{{ build_workdir }}"
+      delegate_to: "build_stage_{{ build_container }}"
+
+    - name: Fetch compiled binary to host
+      fetch:
+        src: "{{ build_workdir }}/inference-engine"
+        dest: "{{ playbook_dir }}/inference-engine"
+        flat: true
+      delegate_to: "build_stage_{{ build_container }}"
+
+    - name: Remove build container
+      command: buildah rm {{ build_container }}
+
+    - name: Start runtime container
+      command: buildah from {{ runtime_image }}
+      register: run_from
+
+    - set_fact:
+        run_container: "{{ run_from.stdout | trim }}"
+
+    - name: Copy binary into runtime container
+      command: buildah copy {{ run_container }} {{ playbook_dir }}/inference-engine /inference-engine
+
+    - name: Configure runtime image
+      shell: |
+        buildah config --cmd "/inference-engine" {{ run_container }}
+        buildah config --port 8080 {{ run_container }}
+
+    - name: Commit image
+      command: buildah commit {{ run_container }} {{ image_name }}
+
+    - name: Cleanup host artifact
+      file:
+        path: "{{ playbook_dir }}/inference-engine"
+        state: absent
+
+
