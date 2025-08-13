@@ -33,10 +33,7 @@ DOCUMENTATION = r"""
         description: Fully-qualified connection plugin to use for discovered hosts.
         type: str
         default: containers.podman.buildah
-      debug:
-        description: Emit extra debug logs during processing.
-        type: bool
-        default: false
+      # Logging uses Ansible verbosity (-v/-vvv). Extra debug option is not required.
 """
 
 EXAMPLES = r"""
@@ -71,7 +68,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
         executable = config.get("executable", "buildah")
         name_patterns = list(config.get("name_patterns", []) or [])
         connection_plugin = config.get("connection_plugin", "containers.podman.buildah")
-        debug = bool(config.get("debug", False))
+        # Logging is controlled by Ansible verbosity flags
 
         buildah_path = shutil.which(executable) or executable
 
@@ -94,14 +91,12 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
             # name filtering
             if name_patterns:
                 if not any(fnmatch.fnmatch(name, pat) or (cid and fnmatch.fnmatch(cid, pat)) for pat in name_patterns):
-                    if debug:
-                        self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
+                    self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
                     continue
 
             host = name or cid
             if not host:
-                if debug:
-                    self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
+                self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
                 continue
 
             self.inventory.add_host(host)

@@ -72,10 +72,7 @@ DOCUMENTATION = r"""
         description: Include/exclude selection by attributes - C(name), C(id), C(image), C(status), or C(label.<key>).
         type: dict
         default: {}
-      debug:
-        description: Emit extra debug logs during processing.
-        type: bool
-        default: false
+      # Logging uses Ansible verbosity (-v/-vvv). Extra debug option is not required.
 """
 
 EXAMPLES = r"""
@@ -123,7 +120,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
         keyed_groups = list(config.get("keyed_groups", []) or [])
         composed_groups = dict(config.get("groups", {}) or {})
         filters = dict(config.get("filters", {}) or {})
-        debug = bool(config.get("debug", False))
+        # Logging is controlled by Ansible verbosity flags
 
         podman_path = shutil.which(executable) or executable
 
@@ -179,15 +176,13 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
             # name filtering
             if name_patterns:
                 if not any(fnmatch.fnmatch(name, pat) or (cid and fnmatch.fnmatch(cid, pat)) for pat in name_patterns):
-                    if debug:
-                        self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
+                    self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
                     continue
 
             # label filtering
             labels = c.get("Labels") or {}
             if any(labels.get(k) != v for k, v in label_selectors.items()):
-                if debug:
-                    self.display.vvvv(f"Filtered out {name or cid} by label_selectors option")
+                self.display.vvvv(f"Filtered out {name or cid} by label_selectors option")
                 continue
 
             image = c.get("Image") or c.get("ImageName")
@@ -195,14 +190,12 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
 
             # additional include/exclude filters
             if filters and not matches_filters(name, cid, image, status, labels):
-                if debug:
-                    self.display.vvvv(f"Filtered out {name or cid} by filters option")
+                self.display.vvvv(f"Filtered out {name or cid} by filters option")
                 continue
 
             host = name or cid
             if not host:
-                if debug:
-                    self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
+                self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
                 continue
 
             self.inventory.add_host(host)
@@ -251,8 +244,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
                     try:
                         self._add_host_to_keyed_groups(keyed_groups, hostvars, host)
                     except Exception as _e:
-                        if debug:
-                            self.display.vvvv(f"_add_host_to_keyed_groups helper failed: {_e}")
+                        self.display.vvvv(f"_add_host_to_keyed_groups helper failed: {_e}")
                     # Always run manual keyed grouping to support dotted keys like labels.role
                     for kg in keyed_groups:
                         key_expr = kg.get("key")
@@ -307,5 +299,4 @@ class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
             except Exception as exc:
                 if strict:
                     raise
-                if debug:
-                    self.display.vvvv(f"Grouping error for host {host}: {exc}")
+                self.display.vvvv(f"Grouping error for host {host}: {exc}")

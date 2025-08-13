@@ -2,8 +2,20 @@ name: Test inventory and example playbooks
 
 on:
   pull_request:
+    paths:
+      - '.github/workflows/test-inventory-examples.yml'
+      - 'plugins/inventory/podman_containers.py'
+      - 'plugins/inventory/buildah_containers.py'
+      - 'tests/unit/plugins/inventory/*.py'
   push:
-    branches: [ main, connections ]
+    paths:
+      - '.github/workflows/test-inventory-examples.yml'
+      - 'plugins/inventory/podman_containers.py'
+      - 'plugins/inventory/buildah_containers.py'
+      - 'tests/unit/plugins/inventory/*.py'
+    branches: [ main ]
+  schedule:
+    - cron: 4 0 * * *  # Run daily at 0:03 UTC
 
 jobs:
   inventory_test:
@@ -221,3 +233,75 @@ jobs:
           echo "$out" | jq -e '._meta.hostvars["hello-buildah"].ansible_connection == "containers.podman.buildah"'
           echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_id")'
           echo "$out" | jq -e '._meta.hostvars["hello-buildah"] | has("buildah_container_name")'
+
+  unittests:
+    name: Unit tests inventory
+    runs-on: ${{ matrix.runner-os }}
+    strategy:
+      matrix:
+        runner-os:
+          - ubuntu-24.04
+        # ansible-version:
+        #   - git+https://github.com/ansible/ansible.git@stable-2.15
+        runner-python-version:
+          - '3.11'
+    steps:
+
+      - name: Check out ${{ github.repository }} on disk
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.runner-python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.runner-python-version }}
+
+      - name: Set up pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('tests/sanity/requirements.txt') }}-${{ hashFiles('tests/unit/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install requirements for tests
+        run: >-
+          python -m pip install --user -r test-requirements.txt
+          pytest pytest-cov coverage
+
+      - name: Build a collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection build --output-path
+          "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
+
+      - name: Install the collection tarball
+        run: >-
+          ~/.local/bin/ansible-galaxy collection install ${GITHUB_WORKSPACE}/.cache/collection-tarballs/*.tar.gz
+
+      - name: Run collection unit tests
+        run: >-
+          ~/.local/bin/ansible-test units
+          --python "${{ matrix.runner-python-version }}" -vvv
+          tests/unit/plugins/inventory/
+        working-directory: >-
+          /home/runner/.ansible/collections/ansible_collections/containers/podman
+
+      - name: Run pytest with coverage (inventory only)
+        run: >-
+          ~/.local/bin/pytest -vv
+          tests/unit/plugins/inventory/
+          --cov=ansible_collections.containers.podman.plugins.inventory
+          --cov-branch
+          --cov-report=term-missing:skip-covered
+          --cov-report=xml:coverage.xml
+          --cov-report=html:htmlcov
+        working-directory: >-
+          /home/runner/.ansible/collections/ansible_collections/containers/podman
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-coverage
+          path: |
+            /home/runner/.ansible/collections/ansible_collections/containers/podman/coverage.xml
+            /home/runner/.ansible/collections/ansible_collections/containers/podman/htmlcov
