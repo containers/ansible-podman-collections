@@ -24,8 +24,8 @@ DOCUMENTATION = """
           - The ID or name of the buildah working container you want to access.
         default: inventory_hostname
         vars:
-          - name: ansible_host
           - name: inventory_hostname
+          - name: ansible_host
           - name: ansible_buildah_host
         env:
           - name: ANSIBLE_BUILDAH_HOST
@@ -79,15 +79,6 @@ DOCUMENTATION = """
         ini:
           - section: defaults
             key: buildah_timeout
-      connection_retries:
-        description:
-          - Number of retries for failed container operations.
-        default: 3
-        type: int
-        vars:
-          - name: ansible_buildah_retries
-        env:
-          - name: ANSIBLE_BUILDAH_RETRIES
       mount_detection:
         description:
           - Enable automatic detection and use of container mount points for file operations.
@@ -145,13 +136,9 @@ display = Display()
 class BuildahConnectionError(AnsibleConnectionFailure):
     """Specific exception for buildah connection issues"""
 
-    pass
-
 
 class ContainerNotFoundError(BuildahConnectionError):
     """Exception for when container cannot be found"""
-
-    pass
 
 
 class Connection(ConnectionBase):
@@ -210,10 +197,8 @@ class Connection(ConnectionBase):
 
         return cmd
 
-    def _run_buildah_command(
-        self, cmd_args, input_data=None, check_rc=True, include_container=True, retries=None, output_file=None
-    ):
-        """Execute buildah command once with error handling (no retries)"""
+    def _run_buildah_command(self, cmd_args, input_data=None, check_rc=False, include_container=True, output_file=None):
+        """Execute buildah command once with error handling"""
         cmd = self._build_buildah_command(cmd_args, include_container)
         cmd_bytes = [to_bytes(arg, errors="surrogate_or_strict") for arg in cmd]
 
@@ -268,7 +253,7 @@ class Connection(ConnectionBase):
 
         # Use inspect as an existence check only, avoid JSON parsing
         rc, _stdout, _stderr = self._run_buildah_command(
-            ["inspect", self._container_id], include_container=False, check_rc=False, retries=1
+            ["inspect", self._container_id], include_container=False, check_rc=False
         )
         if rc != 0:
             raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
@@ -283,7 +268,7 @@ class Connection(ConnectionBase):
             return
 
         try:
-            unused, stdout, unused1 = self._run_buildah_command(["mount"], retries=1)
+            unused, stdout, unused1 = self._run_buildah_command(["mount"])
             mount_point = to_text(stdout, errors="surrogate_or_strict").strip()
 
             if mount_point and os.path.isdir(mount_point):
@@ -371,7 +356,7 @@ class Connection(ConnectionBase):
         """Automatically commit changes if enabled"""
         try:
             display.vvv("Auto-committing container changes", host=self._container_id)
-            self._run_buildah_command(["commit"], check_rc=False, retries=1)
+            self._run_buildah_command(["commit"], check_rc=False)
         except Exception as e:
             display.warning(f"Auto-commit failed: {e}")
 
@@ -453,7 +438,7 @@ class Connection(ConnectionBase):
         if self._mount_point:
             try:
                 # Attempt to unmount the container
-                self._run_buildah_command(["umount"], retries=1, check_rc=False)
+                self._run_buildah_command(["umount"], check_rc=False)
                 display.vvvv("Container unmounted successfully", host=self._container_id)
             except Exception as e:
                 display.vvvv(f"Unmount failed: {e}", host=self._container_id)
