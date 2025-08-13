@@ -2,3 +2,5 @@ ansible-core
 pytest
 pytest-forked
 pytest-xdist
+pytest-cov
+coverage==7.6.1
