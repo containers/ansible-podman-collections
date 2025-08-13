@@ -33,6 +33,10 @@ DOCUMENTATION = r"""
         description: Fully-qualified connection plugin to use for discovered hosts.
         type: str
         default: containers.podman.buildah
+      debug:
+        description: Emit extra debug logs during processing.
+        type: bool
+        default: false
 """
 
 EXAMPLES = r"""
@@ -48,11 +52,11 @@ import shutil
 import subprocess
 
 from ansible.errors import AnsibleParserError
-from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable
+from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable, Constructable
 from ansible_collections.containers.podman.plugins.module_utils.inventory.utils import verify_inventory_file
 
 
-class InventoryModule(BaseInventoryPlugin, Cacheable):
+class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
     NAME = "containers.podman.buildah_containers"
 
     def verify_file(self, path: str) -> bool:
@@ -67,18 +71,21 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
         executable = config.get("executable", "buildah")
         name_patterns = list(config.get("name_patterns", []) or [])
         connection_plugin = config.get("connection_plugin", "containers.podman.buildah")
+        debug = bool(config.get("debug", False))
 
         buildah_path = shutil.which(executable) or executable
 
         # 'buildah containers -a --format json' lists working containers
         args = [buildah_path, "containers", "-a", "--json"]
+        output = ''
+        containers = []
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
             containers = json.loads(output.decode("utf-8"))
         except Exception as exc:
-            raise AnsibleParserError(f"Failed to list buildah containers: {exc}")
+            raise AnsibleParserError(f"Failed to list buildah containers: {exc} from output {output}")
 
-        for c in containers or []:
+        for c in containers:
             name = c.get("name") or c.get("containername") or c.get("id")
             cid = c.get("id") or c.get("containerid")
             if not name and cid:
@@ -87,10 +94,14 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
             # name filtering
             if name_patterns:
                 if not any(fnmatch.fnmatch(name, pat) or (cid and fnmatch.fnmatch(cid, pat)) for pat in name_patterns):
+                    if debug:
+                        self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
                     continue
 
             host = name or cid
             if not host:
+                if debug:
+                    self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
                 continue
 
             self.inventory.add_host(host)
