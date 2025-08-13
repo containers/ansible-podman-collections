@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/connections_tests.yml'
+      - '.github/actions/setup-ansible-collection/action.yml'
       - 'ci/*.yml'
       - 'ci/playbooks/connections/**'
       - 'ci/run_connection_test.sh'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/connections_tests.yml'
+      - '.github/actions/setup-ansible-collection/action.yml'
       - 'ci/*.yml'
       - 'ci/playbooks/connections/**'
       - 'ci/run_connection_test.sh'
@@ -95,38 +97,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+      - name: Setup Python/Ansible and install built collection
+        uses: ./.github/actions/setup-ansible-collection
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Upgrade pip and display Python and PIP versions
-        run: |
-          python -m pip install --upgrade pip
-          python -V
-          pip --version
-
-      - name: Set up pip cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: python -m pip install --user '${{ matrix.ansible-version }}'
-
-      - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v5
-        with:
-          name: collection
-          path: .cache/collection-tarballs
-
-      - name: Install the collection tarball
-        run: >-
-          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+          ansible-version: ${{ matrix.ansible-version }}
+          artifact-name: collection
+          artifact-path: .cache/collection-tarballs
 
       - name: Run collection tests for connection
         run: |
@@ -189,38 +166,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+      - name: Setup Python/Ansible and install built collection
+        uses: ./.github/actions/setup-ansible-collection
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Upgrade pip and display Python and PIP versions
-        run: |
-          python -m pip install --upgrade pip
-          python -V
-          pip --version
-
-      - name: Set up pip cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: python -m pip install --user '${{ matrix.ansible-version }}'
-
-      - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v5
-        with:
-          name: collection
-          path: .cache/collection-tarballs
-
-      - name: Install the collection tarball
-        run: >-
-          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+          ansible-version: ${{ matrix.ansible-version }}
+          artifact-name: collection
+          artifact-path: .cache/collection-tarballs
 
       - name: Run collection tests for connection
         run: |
@@ -289,38 +241,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Setup Python/Ansible and install built collection
+        uses: ./.github/actions/setup-ansible-collection
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Upgrade pip and display Python and PIP versions
-        run: |
-          python -m pip install --upgrade pip
-          python -V
-          pip --version
-
-      - name: Set up pip cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ github.ref }}-units-VMs
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Install Ansible ${{ matrix.ansible-version }}
-        run: python -m pip install --user '${{ matrix.ansible-version }}'
-
-      - name: Download migrated collection artifacts
-        uses: actions/download-artifact@v5
-        with:
-          name: collection
-          path: .cache/collection-tarballs
-
-      - name: Install the collection tarball
-        run: >-
-          ~/.local/bin/ansible-galaxy collection install .cache/collection-tarballs/*.tar.gz
+          ansible-version: ${{ matrix.ansible-version }}
+          artifact-name: collection
+          artifact-path: .cache/collection-tarballs
 
       - name: Run example Node build
         working-directory: playbooks/examples
