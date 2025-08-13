@@ -105,6 +105,7 @@ This collection includes:
 
 - **Official Ansible Docs:** For stable, released versions of the collection, see the documentation on the [official Ansible documentation site](https://docs.ansible.com/ansible/latest/collections/containers/podman/index.html).
 - **Latest Development Version:** For the most up-to-date documentation based on the `main` branch of this repository, visit our [GitHub Pages site](https://containers.github.io/ansible-podman-collections/).
+- **Connection Plugins Guide:** For comprehensive information about using Podman and Buildah connection plugins, including advanced examples and best practices, see our [Connection Plugins Documentation](docs/connection_plugins.md).
 
 ## Contributing
 
