@@ -90,12 +90,10 @@ import json
 import fnmatch
 import shutil
 import subprocess
-import os
-from ansible.utils.display import Display
-from typing import Dict, List
 
 from ansible.errors import AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable
+from ansible_collections.containers.podman.plugins.module_utils.inventory.utils import verify_inventory_file
 
 
 class InventoryModule(BaseInventoryPlugin, Cacheable):
@@ -103,24 +101,11 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
 
     def __init__(self):
         super(InventoryModule, self).__init__()
-        self.display = Display()
 
     def verify_file(self, path: str) -> bool:
         if not super(InventoryModule, self).verify_file(path):
             return False
-        unused, ext = os.path.splitext(path)
-        if ext not in (".yml", ".yaml"):
-            return False
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                header = f.read(2048)
-            return (
-                (f"plugin: {self.NAME}\n" in header)
-                or (f"plugin: '{self.NAME}'" in header)
-                or (f'plugin: "{self.NAME}"' in header)
-            )
-        except Exception:
-            return False
+        return verify_inventory_file(self, path)
 
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
@@ -129,10 +114,10 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
         executable = config.get("executable", "podman")
         include_stopped = bool(config.get("include_stopped", False))
         name_patterns = list(config.get("name_patterns", []) or [])
-        label_selectors: Dict[str, str] = dict(config.get("label_selectors", {}) or {})
+        label_selectors = dict(config.get("label_selectors", {}) or {})
         connection_plugin = config.get("connection_plugin", "containers.podman.podman")
         group_by_image = bool(config.get("group_by_image", True))
-        group_by_label: List[str] = list(config.get("group_by_label", []) or [])
+        group_by_label = list(config.get("group_by_label", []) or [])
         verbose_output = bool(config.get("verbose_output", False))
         strict = bool(config.get("strict", False))
         keyed_groups = list(config.get("keyed_groups", []) or [])
@@ -268,7 +253,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
                         # Resolve dotted key path against hostvars
                         value = None
                         cur = hostvars
-                        for part in str(key_expr).split('.'):
+                        for part in str(key_expr).split("."):
                             if isinstance(cur, dict) and part in cur:
                                 cur = cur.get(part)
                             else:

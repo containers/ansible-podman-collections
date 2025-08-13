@@ -46,10 +46,10 @@ import json
 import fnmatch
 import shutil
 import subprocess
-import os
 
 from ansible.errors import AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable
+from ansible_collections.containers.podman.plugins.module_utils.inventory.utils import verify_inventory_file
 
 
 class InventoryModule(BaseInventoryPlugin, Cacheable):
@@ -58,19 +58,7 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
     def verify_file(self, path: str) -> bool:
         if not super(InventoryModule, self).verify_file(path):
             return False
-        unused, ext = os.path.splitext(path)
-        if ext not in (".yml", ".yaml"):
-            return False
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                header = f.read(2048)
-            return (
-                (f"plugin: {self.NAME}\n" in header)
-                or (f"plugin: '{self.NAME}'" in header)
-                or (f'plugin: "{self.NAME}"' in header)
-            )
-        except Exception:
-            return False
+        return verify_inventory_file(self, path)
 
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
