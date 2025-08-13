@@ -272,6 +272,22 @@ jobs:
           ansible-playbook -vv -i localhost, -c local build_ai_env_with_ansible.yml -e image_name=ci-ai-env:latest
           buildah images --format '{{.Name}}:{{.Tag}}' | grep -q 'ci-ai-env:latest$'
 
+      - name: Run Podman example - exec basic
+        run: |
+          ansible-playbook -vv -i playbooks/examples/inventory/podman_all.yml playbooks/examples/podman_exec_basic.yml
+
+      - name: Run Podman example - copy and fetch
+        run: |
+          ansible-playbook -vv -i playbooks/examples/inventory/podman_all.yml playbooks/examples/podman_copy_fetch.yml
+
+      - name: Run Podman example - multiuser tasks
+        run: |
+          ansible-playbook -vv -i playbooks/examples/inventory/podman_all.yml playbooks/examples/podman_multiuser_tasks.yml
+
+      - name: Run Podman example - package manage
+        run: |
+          ansible-playbook -vv -i playbooks/examples/inventory/podman_all.yml playbooks/examples/podman_pkg_manage.yml
+
       - name: Show resulting images
         run: |
           buildah images
