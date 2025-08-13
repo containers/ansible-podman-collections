@@ -70,8 +70,8 @@ DOCUMENTATION = """
             key: podman_executable
       container_timeout:
         description:
-          - Timeout in seconds for container operations.
-        default: 30
+          - Timeout in seconds for container operations. 0 means no timeout.
+        default: 0
         type: int
         vars:
           - name: ansible_podman_timeout
@@ -203,7 +203,13 @@ class Connection(ConnectionBase):
                 cmd_bytes, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
             )
 
-            stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
+            # Only pass timeout if explicitly configured
+            communicate_kwargs = {}
+            container_timeout = self.get_option("container_timeout")
+            if isinstance(container_timeout, int) and container_timeout > 0:
+                communicate_kwargs["timeout"] = container_timeout
+
+            stdout, stderr = process.communicate(input=input_data, **communicate_kwargs)
 
             display.vvvvv(f"STDOUT: {stdout}", host=self._container_id)
             display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
@@ -222,7 +228,8 @@ class Connection(ConnectionBase):
 
         except subprocess.TimeoutExpired:
             process.kill()
-            raise PodmanConnectionError(f"Command timeout after {self.get_option('container_timeout')}s")
+            timeout_val = self.get_option('container_timeout')
+            raise PodmanConnectionError(f"Command timeout after {timeout_val}s")
         except Exception as e:
             raise PodmanConnectionError(f"Command execution failed: {e}")
 

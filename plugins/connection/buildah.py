@@ -69,8 +69,8 @@ DOCUMENTATION = """
           - name: ANSIBLE_BUILDAH_EXTRA_ARGS
       container_timeout:
         description:
-          - Timeout in seconds for container operations.
-        default: 30
+          - Timeout in seconds for container operations. 0 means no timeout.
+        default: 0
         type: int
         vars:
           - name: ansible_buildah_timeout
@@ -214,7 +214,13 @@ class Connection(ConnectionBase):
                 cmd_bytes, stdin=subprocess.PIPE, stdout=stdout_fd, stderr=subprocess.PIPE, shell=False
             )
 
-            stdout, stderr = process.communicate(input=input_data, timeout=self.get_option("container_timeout"))
+            # Only pass timeout if explicitly configured
+            communicate_kwargs = {}
+            container_timeout = self.get_option("container_timeout")
+            if isinstance(container_timeout, int) and container_timeout > 0:
+                communicate_kwargs["timeout"] = container_timeout
+
+            stdout, stderr = process.communicate(input=input_data, **communicate_kwargs)
 
             if output_file:
                 stdout_fd.close()
