@@ -92,11 +92,11 @@ import shutil
 import subprocess
 
 from ansible.errors import AnsibleParserError
-from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable
+from ansible.plugins.inventory import BaseInventoryPlugin, Cacheable, Constructable
 from ansible_collections.containers.podman.plugins.module_utils.inventory.utils import verify_inventory_file
 
 
-class InventoryModule(BaseInventoryPlugin, Cacheable):
+class InventoryModule(BaseInventoryPlugin, Cacheable, Constructable):
     NAME = "containers.podman.podman_containers"
 
     def __init__(self):
@@ -131,11 +131,13 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
         if include_stopped:
             args.insert(2, "-a")
 
+        output = ''
+        containers = []
         try:
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
             containers = json.loads(output.decode("utf-8"))
         except Exception as exc:
-            raise AnsibleParserError(f"Failed to list podman containers: {exc}")
+            raise AnsibleParserError(f"Failed to list podman containers: {exc} from output {output}")
 
         def matches_filters(name, cid, image, status, labels):
             include_rules = dict(filters.get("include", {}) or {})
@@ -164,24 +166,28 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
                     return False
             return True
 
-        for c in containers or []:
+        for c in containers:
             name = (
                 (c.get("Names") or [c.get("Names", "")])[0]
                 if isinstance(c.get("Names"), list)
                 else c.get("Names") or c.get("Names", "")
             )
-            cid = c.get("Id") or c.get("ID") or c.get("Id")
+            cid = c.get("Id") or c.get("ID")
             if not name and cid:
                 name = cid[:12]
 
             # name filtering
             if name_patterns:
                 if not any(fnmatch.fnmatch(name, pat) or (cid and fnmatch.fnmatch(cid, pat)) for pat in name_patterns):
+                    if debug:
+                        self.display.vvvv(f"Filtered out {name or cid} by name_patterns option")
                     continue
 
             # label filtering
             labels = c.get("Labels") or {}
             if any(labels.get(k) != v for k, v in label_selectors.items()):
+                if debug:
+                    self.display.vvvv(f"Filtered out {name or cid} by label_selectors option")
                 continue
 
             image = c.get("Image") or c.get("ImageName")
@@ -195,6 +201,8 @@ class InventoryModule(BaseInventoryPlugin, Cacheable):
 
             host = name or cid
             if not host:
+                if debug:
+                    self.display.vvvv(f"Filtered out {name or cid} by no name or cid")
                 continue
 
             self.inventory.add_host(host)
