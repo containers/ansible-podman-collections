@@ -22,12 +22,12 @@ The connection plugins enable Ansible to execute tasks directly inside Podman co
 ### Key Features
 
 - **Direct container execution**: Run Ansible tasks inside containers without SSH
-- **Advanced error handling**: Comprehensive error detection and retry mechanisms
+- **Fail-fast error handling**: No implicit retries; commands return rc/stdout/stderr to Ansible
 - **Performance optimization**: Connection caching and mount detection for efficient file operations
 - **Environment management**: Inject environment variables and configure container runtime
 - **Unicode and special character support**: Handle complex file paths and command arguments
 - **Privilege escalation**: Support for sudo and other privilege escalation methods
-- **Timeout and retry configuration**: Customizable timeouts and automatic retries
+- **Timeout configuration**: Optional command timeout (default 0 = no timeout)
 
 ### Use Cases
 
@@ -115,28 +115,26 @@ ansible_host=build-container-name
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `ansible_podman_executable` | string | `podman` | Path to podman executable |
-| `ansible_podman_timeout` | int | `30` | Command execution timeout in seconds |
-| `ansible_podman_retries` | int | `3` | Number of retry attempts for failed commands |
+| `ansible_podman_timeout` | int | `0` | Command execution timeout in seconds (0 = no timeout) |
 | `ansible_podman_extra_env` | dict | `{}` | Additional environment variables to inject |
 | `ansible_podman_mount_detection` | bool | `true` | Enable mount point detection for file operations |
-| `ansible_podman_ignore_mount_errors` | bool | `false` | Ignore errors during mount detection |
-| `ansible_python_interpreter` | string | `/usr/bin/python3` | Python interpreter path in container |
+| `ansible_podman_ignore_mount_errors` | bool | `true` | Continue without mount if detection fails |
 
 ### Buildah Connection Plugin Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `ansible_buildah_executable` | string | `buildah` | Path to buildah executable |
-| `ansible_buildah_timeout` | int | `30` | Command execution timeout in seconds |
-| `ansible_buildah_retries` | int | `3` | Number of retry attempts for failed commands |
+| `ansible_buildah_timeout` | int | `0` | Command execution timeout in seconds (0 = no timeout) |
 | `ansible_buildah_extra_env` | dict | `{}` | Additional environment variables to inject |
 | `ansible_buildah_mount_detection` | bool | `true` | Enable mount point detection for file operations |
-| `ansible_buildah_ignore_mount_errors` | bool | `false` | Ignore errors during mount detection |
+| `ansible_buildah_ignore_mount_errors` | bool | `true` | Continue without mount if detection fails |
 | `ansible_buildah_auto_commit` | bool | `false` | Automatically commit changes after tasks |
-| `ansible_buildah_working_dir` | string | `/` | Working directory for command execution |
+| `ansible_buildah_working_directory` | string |  | Working directory for command execution |
 
 ## Simple Usage Examples
 
+Note: Modules like `package`, `file`, and `copy` require Python inside the target container. For minimal images without Python, prefer `raw`/`command` tasks or delegate host-side operations (for example, `podman cp`). Examples below assume Python is available unless stated otherwise.
 ### Example 1: Basic Container Management
 
 ```yaml
@@ -353,7 +351,6 @@ ansible_host=build-container-name
       PYTHONPATH: "/app"
       LOG_LEVEL: "INFO"
     ansible_podman_timeout: 60
-    ansible_podman_retries: 5
 
   tasks:
     - name: Install system dependencies
@@ -900,13 +897,7 @@ ansible_host=build-container-name
 
 ### Connection Caching
 
-Both plugins implement connection caching to improve performance:
-
-```yaml
-# Enable connection caching (default: true)
-ansible_podman_cache_connections: true
-ansible_buildah_cache_connections: true
-```
+Both plugins internally cache lightweight details (for example, container validation) to reduce overhead. There are no user-facing options to control this.
 
 ### Mount Detection
 
@@ -922,18 +913,14 @@ ansible_podman_ignore_mount_errors: true
 ansible_buildah_ignore_mount_errors: true
 ```
 
-### Timeout and Retry Configuration
+### Timeout Configuration
 
-Configure appropriate timeouts and retries:
+Configure optional timeouts (default is 0 = no timeout):
 
 ```yaml
-# Command timeout in seconds
-ansible_podman_timeout: 60
-ansible_buildah_timeout: 120
-
-# Number of retry attempts
-ansible_podman_retries: 3
-ansible_buildah_retries: 5
+# Command timeout in seconds (0 = no timeout)
+ansible_podman_timeout: 0
+ansible_buildah_timeout: 0
 ```
 
 ### Environment Variable Management
@@ -959,8 +946,7 @@ ansible_podman_extra_env: "{{ lookup('file', 'env.json') | from_json }}"
 4. **Monitor resource usage**: Set appropriate memory and CPU limits
 5. **Use multi-stage builds**: Optimize image size with Buildah multi-stage builds
 6. **Cache dependencies**: Leverage layer caching for faster builds
-7. **Use connection caching**: Enable caching for better performance
-8. **Implement proper error handling**: Use retry mechanisms and proper error handling
+7. **Design for fail-fast**: Prefer explicit failed_when/changed_when instead of retries
 
 ## Troubleshooting
 

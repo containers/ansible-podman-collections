@@ -1,0 +1,40 @@
+---
+- name: Install a small package in container with distro autodetect
+  hosts: all
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+  tasks:
+    - name: Detect package manager
+      raw: >-
+        sh -lc 'if command -v apk >/dev/null 2>&1; then echo apk; exit 0; fi;
+        if command -v apt-get >/dev/null 2>&1; then echo apt; exit 0; fi;
+        if command -v dnf >/dev/null 2>&1; then echo dnf; exit 0; fi;
+        if command -v yum >/dev/null 2>&1; then echo yum; exit 0; fi;
+        echo none'
+      register: pkgmgr
+      changed_when: false
+
+    - name: Install procps or util-linux depending on distro
+      when: pkgmgr.stdout in ['apk','apt','dnf','yum']
+      block:
+        - name: APK install
+          when: pkgmgr.stdout == 'apk'
+          raw: "sh -lc 'apk add --no-cache procps'"
+
+        - name: APT install
+          when: pkgmgr.stdout == 'apt'
+          raw: "sh -lc 'apt-get update && apt-get install -y procps'"
+
+        - name: DNF install
+          when: pkgmgr.stdout == 'dnf'
+          raw: "sh -lc 'dnf -y install procps-ng'"
+
+        - name: YUM install
+          when: pkgmgr.stdout == 'yum'
+          raw: "sh -lc 'yum -y install procps-ng'"
+
+    - name: Verify tools exist
+      raw: "sh -lc 'ps --version || true'"
+
+
