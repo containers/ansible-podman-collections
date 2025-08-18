@@ -10,6 +10,7 @@ on:
       - 'ci/playbooks/containers/podman_image_info.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
+      - 'plugins/module_utils/podman/podman_image_lib.py'
       - 'tests/integration/targets/podman_image_info/**'
     branches:
       - main
@@ -22,6 +23,7 @@ on:
       - 'ci/playbooks/containers/podman_image_info.yml'
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
+      - 'plugins/module_utils/podman/podman_image_lib.py'
       - 'tests/integration/targets/podman_image_info/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC

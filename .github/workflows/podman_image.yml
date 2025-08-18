@@ -11,6 +11,7 @@ on:
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
       - 'plugins/module_utils/podman/quadlet.py'
+      - 'plugins/module_utils/podman/podman_image_lib.py'
       - 'tests/integration/targets/podman_image/**'
     branches:
       - main
@@ -24,6 +25,7 @@ on:
       - 'plugins/modules/podman_image.py'
       - 'plugins/modules/podman_image_info.py'
       - 'plugins/module_utils/podman/quadlet.py'
+      - 'plugins/module_utils/podman/podman_image_lib.py'
       - 'tests/integration/targets/podman_image/**'
   schedule:
     - cron: 4 0 * * *  # Run daily at 0:03 UTC

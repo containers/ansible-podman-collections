@@ -270,7 +270,7 @@ class PodmanImagePuller:
 
     def pull_image(self, image_name, arch=None, pull_extra_args=None):
         """Pull an image from a registry."""
-        args = ["pull", image_name, "-q"]
+        args = ["pull", image_name]
 
         if arch:
             args.extend(["--arch", arch])
@@ -285,7 +285,7 @@ class PodmanImagePuller:
         rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
-            self.module.fail_json(msg=f"Failed to pull image {image_name}: {err}")
+            self.module.fail_json(msg=f"Failed to pull image {image_name}", stderr=err, stdout=out)
 
         return out.strip(), podman_command
 
