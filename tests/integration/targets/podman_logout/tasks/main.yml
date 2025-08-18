@@ -23,7 +23,6 @@
       containers.podman.podman_logout:
         executable: "{{ test_executable | default('podman') }}"
       register: non_existing_registry
-      ignore_errors: true
 
     - name: Check results
       assert:
