@@ -91,6 +91,11 @@ from ansible.module_utils.basic import AnsibleModule
 def logout(module, executable, registry, authfile, all_registries, ignore_docker_credentials):
     command = [executable, "logout"]
     changed = False
+    # In check mode, do not execute the logout command. We cannot reliably
+    # determine current login state here without side effects, so report
+    # no change.
+    if module.check_mode:
+        return changed, "", ""
     if authfile:
         command.extend(["--authfile", authfile])
     if registry:
@@ -99,7 +104,9 @@ def logout(module, executable, registry, authfile, all_registries, ignore_docker
         command.append("--all")
     rc, out, err = module.run_command(command)
     if rc != 0:
-        if "Error: Not logged into" not in err:
+        # Treat "not logged into" as a no-op (idempotent) regardless of
+        # capitalization differences across podman versions.
+        if "not logged into" not in err.lower():
             module.fail_json(msg="Unable to gather info for %s: %s" % (registry, err))
     else:
         # If the command is successful, we managed to log out
