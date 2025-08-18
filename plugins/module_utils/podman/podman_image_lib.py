@@ -318,6 +318,44 @@ class PodmanImagePusher:
 
     def push_image(self, image_name, push_config):
         """Push an image to a registry."""
+        transport = (push_config or {}).get("transport")
+
+        # Special handling for scp transport which uses 'podman image scp'
+        if transport == "scp":
+            args = []
+
+            # Allow passing global --ssh options to podman
+            ssh_opts = push_config.get("ssh") if push_config else None
+            if ssh_opts:
+                args.extend(["--ssh", ssh_opts])
+
+            args.extend(["image", "scp"])
+
+            # Extra args (e.g., --quiet) if provided
+            if push_config.get("extra_args"):
+                args.extend(shlex.split(push_config["extra_args"]))
+
+            # Source image (local)
+            args.append(image_name)
+
+            # Destination host spec
+            dest = push_config.get("dest")
+            if not dest:
+                self.module.fail_json(msg="When using transport 'scp', push_args.dest must be provided")
+
+            # If user did not include '::' in dest, append it to copy into remote storage with same name
+            dest_spec = dest if "::" in dest else f"{dest}::"
+            args.append(dest_spec)
+
+            action = " ".join(args)
+            rc, out, err = run_podman_command(self.module, self.executable, args, ignore_errors=True)
+            if rc != 0:
+                self.module.fail_json(
+                    msg=f"Failed to scp image {image_name} to {dest}", stdout=out, stderr=err, actions=[action]
+                )
+            return out + err, action
+
+        # Default push behavior for all other transports
         args = ["push"]
 
         self._add_auth_args(args)

@@ -36,3 +36,4 @@ jobs:
     with:
       module_name: 'podman_image'
       display_name: 'Podman image'
+      extra_collections: 'ansible.posix'
