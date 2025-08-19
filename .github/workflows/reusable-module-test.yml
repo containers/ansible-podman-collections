@@ -27,6 +27,11 @@ on:
         required: false
         type: string
         default: '["git+https://github.com/ansible/ansible.git@stable-2.18", "git+https://github.com/ansible/ansible.git@devel"]'
+      extra_collections:
+        description: 'Space-separated list of extra Ansible collections to install before running tests (e.g., "ansible.posix community.general")'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   test_module:
@@ -77,6 +82,12 @@ jobs:
           rm -rf /tmp/just_new_collection
           ~/.local/bin/ansible-galaxy collection build --output-path /tmp/just_new_collection --force
           ~/.local/bin/ansible-galaxy collection install -vvv --force /tmp/just_new_collection/*.tar.gz
+
+      - name: Install extra Ansible collections (optional)
+        if: ${{ inputs.extra_collections != '' }}
+        run: |
+          echo "Installing extra collections: ${{ inputs.extra_collections }}"
+          ~/.local/bin/ansible-galaxy collection install -vvv --force ${{ inputs.extra_collections }}
 
       - name: Run collection tests for ${{ inputs.module_name }}
         run: |

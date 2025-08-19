@@ -154,6 +154,10 @@ DOCUMENTATION = r"""
       type: dict
       default: {}
       suboptions:
+        ssh:
+          description:
+            - SSH options to use when pushing images with SCP transport.
+          type: str
         compress:
           description:
             - Compress tarball image layers when pushing to a directory using the 'dir' transport.
@@ -184,11 +188,12 @@ DOCUMENTATION = r"""
           type: str
           choices:
             - dir
-            - docker
             - docker-archive
             - docker-daemon
             - oci-archive
             - ostree
+            - docker
+            - scp
         extra_args:
           description:
             - Extra args to pass to push, if executed. Does not idempotently check for new push args.
@@ -328,6 +333,15 @@ EXAMPLES = r"""
     - name: nginx
       tag: 3
       dest: docker.io/acme
+
+- name: Push image to a remote host via scp transport
+  containers.podman.podman_image:
+    name: testimage
+    pull: false
+    push: true
+    push_args:
+      dest: user@server
+      transport: scp
 
 - name: Pull an image for a specific CPU architecture
   containers.podman.podman_image:
@@ -484,6 +498,7 @@ def main():
                 type="dict",
                 default={},
                 options=dict(
+                    ssh=dict(type="str"),
                     compress=dict(type="bool"),
                     format=dict(type="str", choices=["oci", "v2s1", "v2s2"]),
                     remove_signatures=dict(type="bool"),
@@ -502,6 +517,7 @@ def main():
                             "oci-archive",
                             "ostree",
                             "docker",
+                            "scp",
                         ],
                     ),
                 ),

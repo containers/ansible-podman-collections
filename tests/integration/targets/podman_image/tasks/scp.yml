@@ -1,0 +1,155 @@
+- name: Validate scp transport behavior in podman_image
+  block:
+    - name: Fail when scp transport is used without destination
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testimage
+        pull: false
+        push: true
+        push_args:
+          transport: scp
+      register: scp_missing_dest
+      ignore_errors: true
+
+    - name: Ensure scp without dest fails with clear message
+      assert:
+        that:
+          - scp_missing_dest is failed
+          - "'push_args.dest must be provided' in scp_missing_dest.msg"
+
+
+- name: Build a local image to test scp transport idempotence
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: testimage_scp
+    path: /var/tmp/build
+  register: built_local
+
+- name: Try to scp push to a fake remote (should fail on CI env without remote)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: testimage_scp
+    pull: false
+    push: true
+    push_args:
+      dest: user@server
+      transport: scp
+  register: scp_push_fake
+  ignore_errors: true
+
+- name: Ensure scp push to fake remote fails but reports action
+  assert:
+    that:
+      - built_local is changed
+      - scp_push_fake is failed
+      - scp_push_fake.actions is defined
+
+- name: Prepare SSH access to localhost for scp tests
+  block:
+
+    - name: Ensure SSH keys exist
+      ansible.builtin.shell: >-
+        ssh-keygen -b 2048 -t rsa -f {{ lookup('env','HOME') }}/.ssh/id_rsa -N "" || true
+      args:
+        creates: "{{ lookup('env','HOME') }}/.ssh/id_rsa"
+
+    - name: Get public key for user
+      ansible.builtin.command: >-
+        cat {{ lookup('env','HOME') }}/.ssh/id_rsa.pub
+      register: public_key
+
+    - name: Authorize our public key for localhost for user
+      ansible.posix.authorized_key:
+        user: "{{ lookup('env','USER') }}"
+        state: present
+        key: "{{ public_key.stdout }}"
+
+    - name: Authorize our public key for localhost for root user
+      become: true
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ public_key.stdout }}"
+
+    - name: Start SSH service (Ubuntu uses 'ssh')
+      ansible.builtin.systemd_service:
+        name: ssh
+        state: started
+      become: true
+      ignore_errors: true
+
+    - name: Start SSH service (fallback to 'sshd')
+      ansible.builtin.systemd_service:
+        name: sshd
+        state: started
+      become: true
+      ignore_errors: true
+
+    - name: Verify we can SSH to localhost non-interactively
+      ansible.builtin.command: >-
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ lookup('env','USER') }}@localhost true
+
+- name: Build a local image for scp to localhost
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: testimage_scp_local
+    path: /var/tmp/build
+  register: built_localhost
+
+- name: Add system connection for Podman < 5
+  ansible.builtin.command: podman system connection add local --identity {{ lookup('env','HOME') }}/.ssh/id_rsa {{ lookup('env','USER') }}@127.0.0.1
+
+- name: Add system connection for root user for Podman < 5
+  ansible.builtin.command: podman system connection add rootlocal --identity {{ lookup('env','HOME') }}/.ssh/id_rsa root@127.0.0.1
+
+- name: Push image to localhost via scp transport
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: testimage_scp_local
+    pull: false
+    push: true
+    push_args:
+      dest: "local::newimage"
+      transport: scp
+  register: scp_localhost_push
+
+- name: Validate scp localhost push executed
+  assert:
+    that:
+      - built_localhost is changed
+      - scp_localhost_push is changed
+      - scp_localhost_push.actions is defined
+      - scp_localhost_push.podman_actions is defined
+      - scp_localhost_push.actions | select('search', 'image scp') | list | length > 0
+
+- name: Push image to localhost via scp transport root user
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: testimage_scp_local
+    pull: false
+    push: true
+    push_args:
+      dest: "rootlocal"
+      transport: scp
+  register: scp_localhost_push
+
+- name: Validate scp localhost push executed
+  assert:
+    that:
+      - built_localhost is changed
+      - scp_localhost_push is changed
+      - scp_localhost_push.actions is defined
+      - scp_localhost_push.podman_actions is defined
+      - scp_localhost_push.actions | select('search', 'image scp') | list | length > 0
+
+- name: Ensure image is available for root user
+  become: true
+  ansible.builtin.command: >-
+    podman images --format '{{ '{{.Repository}}:{{.Tag}}' }}' testimage_scp_local
+  register: scp_localhost_root_check
+
+- name: Validate image is available for root user
+  assert:
+    that:
+      - "'testimage_scp_local:latest' in scp_localhost_root_check.stdout"
+      - scp_localhost_root_check.stderr == ''
