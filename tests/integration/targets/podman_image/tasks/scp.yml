@@ -46,21 +46,16 @@
 
 - name: Prepare SSH access to localhost for scp tests
   block:
-    - name: Ensure ~/.ssh exists
-      ansible.builtin.file:
-        path: "{{ lookup('env','HOME') }}/.ssh"
-        state: directory
-        mode: '0700'
 
-    - name: Generate SSH key if missing
-      ansible.builtin.command: >-
-        ssh-keygen -t ed25519 -q -N '' -f {{ lookup('env','HOME') }}/.ssh/id_ed25519
+    - name: Ensure SSH keys exist
+      ansible.builtin.shell: >-
+        ssh-keygen -b 2048 -t rsa -f {{ lookup('env','HOME') }}/.ssh/id_rsa -N "" || true
       args:
-        creates: "{{ lookup('env','HOME') }}/.ssh/id_ed25519"
+        creates: "{{ lookup('env','HOME') }}/.ssh/id_rsa"
 
     - name: Get public key for user
       ansible.builtin.command: >-
-        cat {{ lookup('env','HOME') }}/.ssh/id_ed25519.pub
+        cat {{ lookup('env','HOME') }}/.ssh/id_rsa.pub
       register: public_key
 
     - name: Authorize our public key for localhost for user
@@ -102,10 +97,10 @@
   register: built_localhost
 
 - name: Add system connection for Podman < 5
-  ansible.builtin.command: podman system connection add local --identity {{ lookup('env','HOME') }}/.ssh/id_ed25519 ubuntu@127.0.0.1
+  ansible.builtin.command: podman system connection add local --identity {{ lookup('env','HOME') }}/.ssh/id_rsa {{ lookup('env','USER') }}@127.0.0.1
 
 - name: Add system connection for root user for Podman < 5
-  ansible.builtin.command: podman system connection add rootlocal --identity {{ lookup('env','HOME') }}/.ssh/id_ed25519 root@127.0.0.1
+  ansible.builtin.command: podman system connection add rootlocal --identity {{ lookup('env','HOME') }}/.ssh/id_rsa root@127.0.0.1
 
 - name: Push image to localhost via scp transport
   containers.podman.podman_image:

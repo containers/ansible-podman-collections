@@ -186,8 +186,8 @@
           - extra_args_build is changed
           - "'Built image test-extra-args:latest from' in extra_args_build.actions[0]"
 
-    # SCP transport tests (environment has no remote, so validate errors and argument checks)
-    - name: Include scp transport negative tests
+    # SCP transport tests
+    - name: Include scp transport tests
       include_tasks: scp.yml
 
     # Test push functionality with different transports
