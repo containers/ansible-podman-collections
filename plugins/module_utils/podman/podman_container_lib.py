@@ -1848,6 +1848,8 @@ def ensure_image_exists(module, image, module_params, client):
         img = client.images.pull(image)
         if not img.get("id"):
             module.fail_json(msg="Can't find and pull image %s: %s" % (image, img["text"]))
+        image_actions.append("pulled image %s" % image)
+        return image_actions
     else:
         image_pull_cmd = [module_exec, "image", "pull", image]
         if module_params["tls_verify"] is False:
@@ -2113,7 +2115,6 @@ class PodmanManager:
             if not disable_image_pull
             else []
         )
-        self.module.warn(f"Actions performed: {image_actions} and current result: {self.results}")
         self.results["actions"] += image_actions
 
         self.restart = self.module_params["force_restart"]
