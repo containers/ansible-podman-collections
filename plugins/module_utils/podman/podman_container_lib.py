@@ -1204,7 +1204,8 @@ class PodmanContainerDiff:
 
     def _get_create_command_annotation(self):
         if (
-            "annotations" in self.info["config"]
+            "annotations" in self.info.get("config", {})
+            and self.info["config"]["annotations"] is not None
             and "ansible.podman.collection.cmd" in self.info["config"]["annotations"]
         ):
             return self.clean_aliases(json.loads(self.info["config"]["annotations"]["ansible.podman.collection.cmd"]))
@@ -1229,10 +1230,27 @@ class PodmanContainerDiff:
             cmd = self._get_create_command_annotation()
             if cmd:
                 params = self.clean_aliases(self.params)
-                self.module.log(
-                    "PODMAN-DEBUG: cmd_arg = %s and param arg = %s" % (cmd.get(module_arg), params.get(module_arg))
-                )
                 return self._diff_update_and_compare(module_arg, cmd.get(module_arg), params.get(module_arg))
+            elif 'createcommand' in self.info["config"] and self.info["config"]['createcommand']:
+                self.module.log(
+                    "PODMAN-DEBUG: No annotation found, falling back to create_command parsing."
+                )
+                cmd = self.info["config"]['createcommand']
+                cmd = [i.lower() for i in cmd]
+                cmd_arg = "--" + module_arg.replace("_", "-") if cmd_arg is None else cmd_arg
+                before = None
+                after = self.params.get(module_arg)
+                if boolean_type:
+                    before = cmd_arg in cmd or (cmd_arg + "=true") in cmd
+                    if not before:
+                        before = None
+                    self.module.log(f"PODMAN-DEBUG: 11 before = {before} and after = {after} and cmd = {cmd} and cmd_arg = {cmd_arg}")
+                elif cmd_arg in cmd:
+                    self.module.log(f"PODMAN-DEBUG: 22 before = {before} and after = {after} and cmd = {cmd} and cmd_arg = {cmd_arg}")
+                    arg_index = cmd.index(cmd_arg)
+                    if arg_index + 1 < len(cmd):
+                        before = cmd[arg_index + 1]
+                return self._diff_update_and_compare(module_arg, before, after)
             return self._diff_update_and_compare(module_arg, None, None)
 
         before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
@@ -1949,6 +1967,13 @@ class PodmanContainer:
         is_rootfs = self.module_params["rootfs"]
         if is_rootfs:
             return {"Id": self.module_params["image"]}
+        if USE_API:
+            try:
+                image = self.client.images.get(self.module_params["image"].replace("docker://", ""))
+                return image
+            except Exception:
+                self.module.log("PODMAN-CONTAINER-DEBUG: API Can't inspect image %s" % self.module_params["image"])
+                return {}
         rc, out, err = self.module.run_command(
             [
                 self.module_params["executable"],

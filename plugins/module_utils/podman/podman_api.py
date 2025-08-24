@@ -147,9 +147,9 @@ if HAS_REQUESTS:
 
 class PodmanAPIHTTP:
     def __init__(self, base_url, scheme=DEFAULT_SCHEME):
-        self.api_url = "".join((scheme, quote(base_url, safe=""), "/v2.0.0/libpod"))
+        self.api_url = "".join((scheme, quote(base_url, safe=""), "/v5.0.0/libpod"))
         if scheme == "http://":
-            self.api_url = "".join((scheme, base_url, "/v2.0.0/libpod"))
+            self.api_url = "".join((scheme, base_url, "/v5.0.0/libpod"))
         self.session = APISession()
 
     def request(self, method, url, **kwargs):
