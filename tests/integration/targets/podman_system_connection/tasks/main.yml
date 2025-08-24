@@ -1,0 +1,280 @@
+- name: Test podman_system_connection
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Generate random values for connection names
+      set_fact:
+        test_connection_1: "{{ 'ansible-test-conn1-%0x' % ((2**32) | random) }}"
+        test_connection_2: "{{ 'ansible-test-conn2-%0x' % ((2**32) | random) }}"
+        test_connection_3: "{{ 'ansible-test-conn3-%0x' % ((2**32) | random) }}"
+
+    - name: Clean up any existing test connections
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      loop:
+        - "{{ test_connection_1 }}"
+        - "{{ test_connection_2 }}"
+        - "{{ test_connection_3 }}"
+
+    - name: Test adding a basic unix socket connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_1 }}"
+        destination: "unix:///tmp/test-socket-{{ test_connection_1 }}.sock"
+        state: present
+      register: add_result
+
+    - name: Check add connection results
+      assert:
+        that:
+          - add_result is changed
+          - add_result.connection.Name == test_connection_1
+          - "'unix://' in add_result.connection.URI"
+          - add_result.actions | length > 0
+          - "'added' in add_result.actions[0]"
+
+    - name: Test idempotency - add same connection again
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_1 }}"
+        destination: "unix:///tmp/test-socket-{{ test_connection_1 }}.sock"
+        state: present
+      register: add_idem_result
+
+    - name: Check idempotency
+      assert:
+        that:
+          - add_idem_result is not changed
+          - add_idem_result.connection.Name == test_connection_1
+
+    - name: Test adding connection with unix socket
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+        destination: "unix:///tmp/test-socket-{{ test_connection_2 }}.sock"
+        state: present
+      register: add_custom_result
+
+    - name: Check custom connection results
+      assert:
+        that:
+          - add_custom_result is changed
+          - add_custom_result.connection.Name == test_connection_2
+          - "'unix://' in add_custom_result.connection.URI"
+          - add_custom_result.actions | length > 0
+
+    - name: Test adding connection with default flag
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_3 }}"
+        destination: "unix:///tmp/test-socket-{{ test_connection_3 }}.sock"
+        default: true
+        state: present
+      register: add_default_result
+
+    - name: Check default connection results
+      assert:
+        that:
+          - add_default_result is changed
+          - add_default_result.connection.Name == test_connection_3
+          - add_default_result.connection.Default == true
+
+    - name: Test unix socket connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-unix"
+        destination: "unix:///run/podman/podman.sock"
+        state: present
+      register: unix_result
+
+    - name: Check unix socket connection
+      assert:
+        that:
+          - unix_result is changed
+          - unix_result.connection.Name == "test-unix"
+          - "'unix://' in unix_result.connection.URI"
+
+    - name: Test unix socket connection again for idempotency
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-unix"
+        destination: "unix:///run/podman/podman.sock"
+        state: present
+      register: unix_result2
+
+    - name: Check unix socket connection
+      assert:
+        that:
+          - unix_result2 is not changed
+          - unix_result2.connection.Name == "test-unix"
+          - "'unix://' in unix_result2.connection.URI"
+
+    - name: Test unix socket connection - different
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-unix"
+        destination: "unix:///run/podman/podman2.sock"
+        state: present
+      register: unix_result3
+
+    - name: Check unix socket connection
+      assert:
+        that:
+          - unix_result3 is changed
+          - unix_result3.connection.Name == "test-unix"
+          - "'unix://' in unix_result3.connection.URI"
+
+    - name: Test TCP connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-tcp"
+        destination: "tcp://localhost:8080"
+        state: present
+      register: tcp_result
+
+    - name: Check TCP connection
+      assert:
+        that:
+          - tcp_result is changed
+          - tcp_result.connection.Name == "test-tcp"
+          - "'tcp://' in tcp_result.connection.URI"
+
+    - name: Test connection rename
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_1 }}"
+        new_name: "{{ test_connection_1 }}-renamed"
+        state: present
+      register: rename_result
+
+    - name: Check rename results
+      assert:
+        that:
+          - rename_result is changed
+          - rename_result.connection.Name == test_connection_1 + "-renamed"
+
+    - name: Test rename non-existent connection (should fail)
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "non-existent-connection"
+        new_name: "new-name"
+        state: present
+      register: rename_fail_result
+      ignore_errors: true
+
+    - name: Check rename failure
+      assert:
+        that:
+          - rename_fail_result is failed
+          - "'Cannot rename non-existent connection' in rename_fail_result.msg"
+
+    - name: Test setting existing connection as default
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+        destination: "unix:///tmp/test-socket-{{ test_connection_2 }}.sock"
+        default: true
+        state: present
+      register: set_default_result
+
+    - name: Check set default results
+      assert:
+        that:
+          - set_default_result is changed
+          - set_default_result.actions | select('search', 'set as default') | list | length > 0
+
+    - name: Test removing connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+        state: absent
+      register: remove_result
+
+    - name: Check remove results
+      assert:
+        that:
+          - remove_result is changed
+          - "'removed' in remove_result.actions[0]"
+
+    - name: Test idempotency - remove non-existent connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+        state: absent
+      register: remove_idem_result
+
+    - name: Check remove idempotency
+      assert:
+        that:
+          - remove_idem_result is not changed
+
+    - name: Test check mode for adding connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "check-mode-test"
+        destination: "unix:///tmp/test-socket-check.sock"
+        state: present
+      check_mode: true
+      register: check_add_result
+
+    - name: Verify check mode add
+      assert:
+        that:
+          - check_add_result is changed
+          - check_add_result.connection.Name == "check-mode-test"
+
+    - name: Verify connection was not actually added in check mode
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "check-mode-test"
+      register: check_verify
+
+    - name: Check that connection doesn't exist
+      assert:
+        that:
+          - check_verify.connections | length == 0
+
+    - name: Test check mode for removing connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_3 }}"
+        state: absent
+      check_mode: true
+      register: check_remove_result
+
+    - name: Verify check mode remove
+      assert:
+        that:
+          - check_remove_result is changed
+
+    - name: Verify connection still exists after check mode
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_3 }}"
+      register: check_still_exists
+
+    - name: Check that connection still exists
+      assert:
+        that:
+          - check_still_exists.connections | length > 0
+
+  always:
+    - name: Clean up test connections
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      loop:
+        - "{{ test_connection_1 }}"
+        - "{{ test_connection_1 }}-renamed"
+        - "{{ test_connection_2 }}"
+        - "{{ test_connection_3 }}"
+        - "test-unix"
+        - "test-tcp"
+        - "check-mode-test"
