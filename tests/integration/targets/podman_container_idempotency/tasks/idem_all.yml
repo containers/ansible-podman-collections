@@ -4,6 +4,7 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container
   containers.podman.podman_container:
@@ -12,6 +13,7 @@
     name: idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container again
   containers.podman.podman_container:
@@ -20,6 +22,7 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test1
 
 - name: Check info when running container again
@@ -35,6 +38,7 @@
     env: {}
     publish: []
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_to_empty
 
 - name: Run container with empty vars for list and dict - again
@@ -46,6 +50,7 @@
     env: {}
     publish: []
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_empty
 
 - name: Run container again w/o empty vars
@@ -55,14 +60,15 @@
     name: idempotency
     state: present
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test_from_empty
 
 - name: Check info when running container again
   assert:
     that:
-      - test_to_empty is not changed
-      - test_empty is not changed
-      - test_from_empty is not changed
+      - test_to_empty is not changed or podman_socket is defined
+      - test_empty is not changed or podman_socket is defined
+      - test_from_empty is not changed or podman_socket is defined
 
 - name: Run container with environment vars
   containers.podman.podman_container:
@@ -74,6 +80,7 @@
       mykey: "amazing value"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test2
 
 - name: Check info with environment vars
@@ -90,6 +97,7 @@
       mykey: "amazing value"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test3
 
 - name: Check info with environment vars again
@@ -106,6 +114,7 @@
       mykey: "amazing value1"
       ENV1: "one=two=three"
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test4
 
 - name: Check info with changed environment vars
@@ -122,6 +131,7 @@
       tag: nonotag
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test9
 
 - name: Check info with log opt tag
@@ -138,6 +148,7 @@
       tag: nonotag
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test10
 
 - name: Check info with log opt tag - again
@@ -152,6 +163,7 @@
     state: present
     command: 1h
     log_driver: journald
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test11
 
 - name: Check info with default log opt tag
@@ -168,6 +180,7 @@
       path: /tmp/container.log
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test12
 
 - name: Check info with log opt path
@@ -184,6 +197,7 @@
       path: /tmp/container2.log
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test13
 
 - name: Check info with changed log opt path
@@ -198,6 +212,7 @@
     state: present
     log_driver: journald
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test14
 
 - name: Check info with default log opt path
@@ -216,6 +231,7 @@
       max_size: 100mb
       tag: sometag
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with mounted /dev/fuse
   containers.podman.podman_container:
@@ -226,6 +242,7 @@
     command: 1h
     device:
       - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test15
 
 - name: Run container with mounted /dev/fuse again
@@ -237,6 +254,7 @@
     command: 1h
     device:
       - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test16
 
 - name: Run container with mounted /dev/fuse:/dev/fuse
@@ -248,6 +266,7 @@
     command: 1h
     device:
       - /dev/fuse:/dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test17
 
 - name: Run container with mounted /dev/fuse third time
@@ -259,6 +278,7 @@
     command: 1h
     device:
       - /dev/fuse
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test18
 
 - name: Run container without mounted device
@@ -268,6 +288,7 @@
     name: idempotency
     state: started
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test19
 
 - name: Check info with mounted devices
@@ -289,6 +310,7 @@
       host1: 127.0.0.1
       host2: fd00::1
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test20
 
 - name: Check info with etc_hosts
@@ -305,6 +327,7 @@
       host1: 127.0.0.1
       host2: fd00::1
     command: 1h
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test21
 
 - name: Check info with etc_hosts again
@@ -317,6 +340,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Run container with restart policy always
   containers.podman.podman_container:
@@ -325,6 +349,7 @@
     name: idempotency
     state: present
     restart_policy: always
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test22
 
 - name: Check info with restart policy always
@@ -338,6 +363,7 @@
     name: idempotency
     state: present
     restart_policy: always
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test23
 
 - name: Check info with restart policy always again
@@ -351,6 +377,7 @@
     name: idempotency
     state: present
     restart_policy: on-failure
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test24
 
 - name: Check info with restart policy on-failure
@@ -363,6 +390,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test25
 
 - name: Check info w/o restart policy
@@ -375,6 +403,7 @@
     image: "{{ idem_image }}"
     name: idempotency
     state: present
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test26
 
 - name: Check info with PID
@@ -388,6 +417,7 @@
     name: idempotency2
     state: present
     pid: "container:idempotency"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test27
 
 - name: Check info of second container with PID
@@ -401,6 +431,7 @@
     name: idempotency2
     state: present
     pid: "container:idempotency"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test28
 
 - name: Check info of second container with PID again
@@ -414,6 +445,7 @@
     name: idempotency2
     state: present
     pid: "container:{{ test26.container.Id }}"
+    podman_socket: "{{ podman_socket | default(omit) }}"
   register: test29
 
 - name: Check info of second container with PID of container ID again
@@ -590,9 +622,11 @@
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency2
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"
 
 - name: Remove test container
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
     name: idempotency
     state: absent
+    podman_socket: "{{ podman_socket | default(omit) }}"

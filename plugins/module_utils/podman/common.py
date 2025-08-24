@@ -25,6 +25,14 @@ except ImportError:
             ),
             exc,
         )
+try:
+    import requests  # pylint: disable=unused-import
+    from .podman_api import PodmanAPIClient
+
+    HAS_REQUESTS = True
+except ImportError:
+    PodmanAPIClient = object
+    HAS_REQUESTS = False
 
 ARGUMENTS_OPTS_DICT = {
     "--attach": ["--attach", "-a"],
@@ -378,8 +386,8 @@ def createcommand(argument, info_config, boolean_type=False):
     all_values = []
     # Remove command args from the list
     container_cmd = info_config.get("cmd")
-    if container_cmd and container_cmd == cr_com[-len(container_cmd):]:
-        cr_com = cr_com[:-len(container_cmd)]
+    if container_cmd and container_cmd == cr_com[-len(container_cmd) :]:
+        cr_com = cr_com[: -len(container_cmd)]
     for arg in argument_values:
         for ind, cr_opt in enumerate(cr_com):
             if arg == cr_opt:
@@ -450,3 +458,14 @@ def diff_generic(params, info_config, module_arg, cmd_arg, boolean_type=False):
     else:
         before = ",".join(sorted(before)) if len(before) > 1 else before[0]
     return before, after
+
+
+class PodmanAPI:
+    def __init__(self, module, module_params):
+        if module_params.get("podman_socket") and not HAS_REQUESTS:
+            module.fail_json(msg="Requests module is not installed while socket was provided!")
+        self.client = PodmanAPIClient(module_params.get("podman_socket"))
+        try:
+            self.client.version()
+        except Exception as api_error:
+            module.fail_json(msg="Podman API error: %s" % str(api_error))

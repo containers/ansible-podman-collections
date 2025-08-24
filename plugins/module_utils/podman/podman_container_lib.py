@@ -2,43 +2,28 @@ from __future__ import absolute_import, division, print_function
 import json  # noqa: F402
 import os  # noqa: F402
 import shlex  # noqa: F402
+import time
 
 from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    LooseVersion,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    lower_keys,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    generate_systemd,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    delete_systemd,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    diff_generic,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
-    createcommand,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
-    create_quadlet_state,
-)
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
-    ContainerQuadlet,
-)
-
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import LooseVersion
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import lower_keys
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import generate_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import delete_systemd
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import diff_generic
+from ansible_collections.containers.podman.plugins.module_utils.podman.common import createcommand
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import create_quadlet_state
+from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import ContainerQuadlet
+from .common import PodmanAPI
 
 __metaclass__ = type
 
+USE_API = False
 ARGUMENTS_SPEC_CONTAINER = dict(
     name=dict(required=True, type="str"),
     executable=dict(default="podman", type="str"),
+    podman_socket=dict(type="str"),
     state=dict(
-        type="str",
-        default="started",
-        choices=["absent", "present", "stopped", "started", "created", "quadlet"],
+        type="str", default="started", choices=["absent", "present", "stopped", "started", "created", "quadlet"]
     ),
     image=dict(type="str"),
     annotation=dict(type="dict"),
@@ -107,9 +92,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     health_startup_timeout=dict(type="str"),
     healthcheck_timeout=dict(type="str", aliases=["health_timeout"]),
     healthcheck_failure_action=dict(
-        type="str",
-        choices=["none", "kill", "restart", "stop"],
-        aliases=["health_on_failure"],
+        type="str", choices=["none", "kill", "restart", "stop"], aliases=["health_on_failure"]
     ),
     hooks_dir=dict(type="list", elements="str"),
     hostname=dict(type="str"),
@@ -210,6 +193,48 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     volumes_from=dict(type="list", elements="str"),
     workdir=dict(type="str", aliases=["working_dir"]),
 )
+NON_PODMAN_ARGS = ["state", "podman_socket", "executable", "debug", "force_restart", "image_strict", "recreate"]
+API_TRANSLATION = {
+    "annotation": "annotations",
+    "conmon_pidfile": "conmon_pid_file",
+    "etc_hosts": "hostadd",
+    "add_hosts": "hostadd",
+    "http_proxy": "httpproxy",
+    "label": "labels",
+    "publish_all": "publish_image_ports",
+    "rm": "remove",
+    "auto_remove": "remove",
+    "volume": "volumes",
+    "mount": "mounts",
+    "workdir": "work_dir",
+    "working_dir": "work_dir",
+    "dns_search_domains": "dns_search",
+    "dns": "dns_server",
+    "dns_opts": "dns_option",
+    "publish": "portmappings",
+    "published": "portmappings",
+    "published_ports": "portmappings",
+    "ports": "portmappings",
+    "pids_mode": "pidns",
+    "pid": "pidns",
+    "ipc_mode": "ipcns",
+    "ipc": "ipcns",
+    "uts": "utsns",
+    "userns_mode": "userns",
+    "tty": "terminal",
+    "device": "devices",
+    "exposed": "expose",
+    "exposed_ports": "expose",
+    "group_add": "groups",
+    "ulimit": "r_limits",
+    "ulimits": "r_limits",
+    "read_only": "read_only_filesystem",
+    "ip": "static_ip",
+    "mac_address": "static_mac",
+    "no_hosts": "use_image_hosts",
+    "log_opt": "log_configuration",
+    "log_driver": "log_configuration",
+}
 
 
 def init_options():
@@ -254,6 +279,222 @@ def set_container_opts(input_vars):
     default_options_templ = init_options()
     options_dict = update_options(default_options_templ, input_vars)
     return options_dict
+
+
+class PodmanModuleParamsAPI:
+    """Creates Podman API call.
+
+    Arguments:
+        action {str} -- action type from 'run', 'stop', 'create', 'delete',
+                        'start'
+        params {dict} -- dictionary of module parameters
+
+    """
+
+    def __init__(self, params, podman_version, module):
+        self.params = params
+        self.podman_version = podman_version
+        self.module = module
+        self.new_params = {}
+
+    def translate(self):
+        self.new_params = {k: v for k, v in self.params.items() if v is not None and k not in NON_PODMAN_ARGS}
+        if self.new_params.get("command") and not isinstance(self.new_params.get("command"), list):
+            self.new_params["command"] = shlex.split(self.new_params["command"])
+        transformed = {}
+        mounts = []
+        for k in self.new_params:
+            key = API_TRANSLATION.get(k, k)
+            transformed[key] = self.new_params[k]
+        if transformed.get("env"):
+            for k, v in transformed["env"].items():
+                transformed["env"][k] = str(v)
+        if transformed.get("labels"):
+            for k, v in transformed["labels"].items():
+                transformed["labels"][k] = str(v)
+        if transformed.get("entrypoint") is not None:
+            transformed["entrypoint"] = shlex.split(transformed["entrypoint"])
+        if transformed.get("hostadd") is not None:
+            hosts = []
+            for k, v in transformed["hostadd"].items():
+                hosts.append(":".join((k, v)))
+            transformed["hostadd"] = hosts
+        if transformed.get("volumes"):
+            volumes = []
+            for v in transformed["volumes"]:
+                vols = v.split(":")
+                if len(vols) < 2 or "/" not in vols[0]:
+                    name = vols[0] if len(vols) > 1 else ""
+                    volumes.append(
+                        {
+                            "Name": name,
+                            "Dest": vols[1] if len(vols) > 1 else v,
+                        }
+                    )
+                    continue
+                source = vols[0]
+                dest = vols[1].split(",")[0]  # remove options
+                options = []
+                if len(vols) > 2:
+                    opts = vols[2].split(",")
+                    # work on options
+                    for opt in opts:
+                        if opt.lower() == "ro":
+                            options.append("ro")
+                        elif opt.lower().lstrip("r") in ("shared", "slave", "private", "unbindable"):
+                            options.append(opt)
+                mounts.append(
+                    {
+                        "destination": dest,
+                        "source": source,
+                        "type": "bind",
+                        "options": options,
+                    }
+                )
+            transformed["volumes"] = volumes
+        if transformed.get("mounts"):
+            n_mounts = []
+            for m in transformed["mounts"]:
+                if not isinstance(m, str):
+                    continue
+                mlist = m.split(",")
+                mdict = {}
+                for m1 in mlist:
+                    if "=" in m1:
+                        mkey, mval = m1.split("=")
+                    else:
+                        continue
+                    if mkey.lower() == "type":
+                        mdict["Type"] = mval
+                        if mval.lower() == "devpts":
+                            mdict["Source"] = "devpts"
+                    elif mkey.lower() in ("source", "src"):
+                        mdict["Source"] = mval
+                    elif mkey.lower() in ("destination", "dst", "target"):
+                        mdict["Destination"] = mval
+                    elif mkey.lower() == "bind-propagation":
+                        if "BindOptions" not in mdict:
+                            mdict["BindOptions"] = {}
+                        mdict["BindOptions"]["Propagation"] = mval
+                    elif mkey.lower() == "bind-nonrecursive":
+                        if "BindOptions" not in mdict:
+                            mdict["BindOptions"] = {}
+                        mdict["BindOptions"]["NonRecursive"] = mval
+                    elif mkey.lower() == "ro":
+                        mdict["ReadOnly"] = mval
+                    elif mkey.lower() == "tmpfs-mode":
+                        if "TmpfsOptions" not in mdict:
+                            mdict["TmpfsOptions"] = {}
+                        mdict["TmpfsOptions"]["Mode"] = mval
+                    elif mkey.lower() == "tmpfs-size":
+                        if "TmpfsOptions" not in mdict:
+                            mdict["TmpfsOptions"] = {}
+                        mdict["TmpfsOptions"]["SizeBytes"] = mval
+                n_mounts.append(mdict)
+            transformed["mounts"] = n_mounts + mounts
+        else:
+            transformed["mounts"] = mounts
+        if transformed.get("portmappings") is not None:
+            total_ports = []
+            for p in transformed.get("portmappings"):
+                parts = p.split(":")
+                if len(parts) == 1:
+                    c_port, protocol = (parts[0].split("/") + ["tcp"])[:2]
+                    total_ports.append(
+                        {
+                            "container_port": int(p),
+                            "protocol": protocol if "udp" not in p else "udp",
+                            # "host_port": int(parts[0].split("/")[0])
+                        }
+                    )
+                elif len(parts) == 2:
+                    c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    total_ports.append(
+                        {
+                            "container_port": int(c_port),
+                            "host_port": int(parts[0].split("/")[0]),
+                            "protocol": protocol if "udp" not in p else "udp",
+                        }
+                    )
+                elif len(parts) == 3:
+                    c_port, protocol = (parts[1].split("/") + ["tcp"])[:2]
+                    total_ports.append(
+                        {
+                            "host_port": int(c_port),
+                            "container_port": int(parts[2].split("/")[0]),
+                            "protocol": protocol if "udp" not in p else "udp",
+                            "host_ip": parts[0],
+                        }
+                    )
+            transformed["portmappings"] = total_ports
+        if transformed.get("pod"):
+            # API doesn't support creating Pod
+            transformed["pod"] = transformed["pod"].replace("new:", "")
+        if transformed.get("pidns"):
+            transformed["pidns"] = {"nsmode": transformed["pidns"]}
+        if transformed.get("ipcns"):
+            transformed["ipcns"] = {"nsmode": transformed["ipcns"]}
+        if transformed.get("utsns"):
+            transformed["utsns"] = {"nsmode": transformed["utsns"]}
+        if transformed.get("userns"):
+            transformed["userns"] = {"nsmode": transformed["userns"]}
+        if transformed.get("cgroupns"):
+            transformed["cgroupns"] = {"nsmode": transformed["cgroupns"]}
+        if transformed.get("network"):
+            if (
+                len(transformed["network"]) > 1
+                or len(transformed["network"][0].split(",")) > 1
+                and transformed["network"][0] not in ("none", "host", "bridge", "private")
+                and "container:" not in transformed["network"][0]
+                and "ns:" not in transformed["network"][0]
+                and "slirp4netns:" not in transformed["network"][0]
+            ):
+                if "," in transformed["network"][0]:
+                    transformed["Networks"] = {k: {} for k in transformed["network"][0].split(",")}
+                else:
+                    transformed["Networks"] = {k: {} for k in transformed["network"]}
+                transformed["netns"] = {"nsmode": "bridge"}
+            elif (
+                len(transformed["network"]) == 1
+                and transformed["network"][0] not in ("none", "host", "bridge", "private")
+                and "container:" not in transformed["network"][0]
+                and "ns:" not in transformed["network"][0]
+                and "slirp4netns:" not in transformed["network"][0]
+            ):
+                transformed["Networks"] = {k: {} for k in transformed["network"]}
+            elif "slirp4netns:" in transformed["network"][0] or "bridge:" in transformed["network"][0]:
+                transformed["netns"] = {"nsmode": transformed["network"][0].split(":")[0]}
+                netopts = {
+                    k: [v] for k, v in [i.split("=") for i in transformed["network"][0].split(":")[1].split(",")]
+                }
+                transformed["network_options"] = netopts
+            else:
+                transformed["netns"] = {"nsmode": transformed["network"][0]}
+        if transformed.get("r_limits"):
+            rlimits = []
+            for rlim in transformed["r_limits"]:
+                tmp_rlim = rlim.split("=")
+                typ = tmp_rlim[0]
+                soft = tmp_rlim[1].split(":")[0]
+                if len(tmp_rlim[1].split(":")) > 1:
+                    hard = tmp_rlim[1].split(":")[1]
+                else:
+                    hard = soft
+                rlimits.append({"type": typ, "soft": int(soft), "hard": int(hard)})
+            transformed["r_limits"] = rlimits
+        if transformed.get("rootfs"):
+            transformed["rootfs"] = transformed["image"]
+            transformed.pop("image")
+        if transformed.get("log_configuration"):
+            transformed["log_configuration"] = {}
+            if self.params["log_opt"] is not None:
+                transformed["log_configuration"]["options"] = self.params["log_opt"]
+            if self.params["log_driver"] is not None:
+                transformed["log_configuration"]["driver"] = self.params["log_driver"]
+        if transformed.get("devices"):
+            transformed["devices"] = [{"path": d.split(":")[0]} for d in transformed["devices"]]
+        self.module.log("PODMAN-DEBUG-API: %s" % transformed)
+        return transformed
 
 
 class PodmanModuleParams:
@@ -953,6 +1194,23 @@ class PodmanContainerDiff:
             return True
         return False
 
+    def clean_aliases(self, params):
+        aliases = {}
+        for k, v in ARGUMENTS_SPEC_CONTAINER.items():
+            if "aliases" in v:
+                for alias in v["aliases"]:
+                    aliases[alias] = k
+        return {aliases.get(k, k): v for k, v in params.items()}
+
+    def _get_create_command_annotation(self):
+        if (
+            "annotations" in self.info.get("config", {})
+            and self.info["config"]["annotations"] is not None
+            and "ansible.podman.collection.cmd" in self.info["config"]["annotations"]
+        ):
+            return self.clean_aliases(json.loads(self.info["config"]["annotations"]["ansible.podman.collection.cmd"]))
+        return {}
+
     def _diff_generic(self, module_arg, cmd_arg, boolean_type=False):
         """
         Generic diff function for module arguments from CreateCommand
@@ -968,6 +1226,33 @@ class PodmanContainerDiff:
 
         """
         info_config = self.info["config"]
+        if USE_API:
+            cmd = self._get_create_command_annotation()
+            if cmd:
+                params = self.clean_aliases(self.params)
+                return self._diff_update_and_compare(module_arg, cmd.get(module_arg), params.get(module_arg))
+            elif 'createcommand' in self.info["config"] and self.info["config"]['createcommand']:
+                self.module.log(
+                    "PODMAN-DEBUG: No annotation found, falling back to create_command parsing."
+                )
+                cmd = self.info["config"]['createcommand']
+                cmd = [i.lower() for i in cmd]
+                cmd_arg = "--" + module_arg.replace("_", "-") if cmd_arg is None else cmd_arg
+                before = None
+                after = self.params.get(module_arg)
+                if boolean_type:
+                    before = cmd_arg in cmd or (cmd_arg + "=true") in cmd
+                    if not before:
+                        before = None
+                    self.module.log(f"PODMAN-DEBUG: 11 before = {before} and after = {after} and cmd = {cmd} and cmd_arg = {cmd_arg}")
+                elif cmd_arg in cmd:
+                    self.module.log(f"PODMAN-DEBUG: 22 before = {before} and after = {after} and cmd = {cmd} and cmd_arg = {cmd_arg}")
+                    arg_index = cmd.index(cmd_arg)
+                    if arg_index + 1 < len(cmd):
+                        before = cmd[arg_index + 1]
+                return self._diff_update_and_compare(module_arg, before, after)
+            return self._diff_update_and_compare(module_arg, None, None)
+
         before, after = diff_generic(self.params, info_config, module_arg, cmd_arg, boolean_type)
         return self._diff_update_and_compare(module_arg, before, after)
 
@@ -1174,7 +1459,7 @@ class PodmanContainerDiff:
         if "healthcheck" in self.info["config"]:
             # the "test" key is a list of 2 items where the first one is
             # "CMD-SHELL" and the second one is the actual healthcheck command.
-            if len(self.info["config"]["healthcheck"]["test"]) > 1:
+            if len(self.info["config"]["healthcheck"].get('test', '')) > 1:
                 before = self.info["config"]["healthcheck"]["test"][1]
         after = self.params["healthcheck"] or before
         return self._diff_update_and_compare("healthcheck", before, after)
@@ -1549,7 +1834,7 @@ class PodmanContainerDiff:
         return different
 
 
-def ensure_image_exists(module, image, module_params):
+def ensure_image_exists(module, image, module_params, client):
     """If image is passed, ensure it exists, if not - pull it or fail.
 
     Arguments:
@@ -1569,32 +1854,43 @@ def ensure_image_exists(module, image, module_params):
         return image_actions
     if not image:
         return image_actions
-    image_exists_cmd = [module_exec, "image", "exists", image]
-    rc, out, err = module.run_command(image_exists_cmd)
-    if rc == 0:
+    if USE_API:
+        if client.images.exists(image):
+            return image_actions
+    else:
+        image_exists_cmd = [module_exec, "image", "exists", image]
+        rc, out, err = module.run_command(image_exists_cmd)
+        if rc == 0:
+            return image_actions
+    if USE_API:
+        img = client.images.pull(image)
+        if not img.get("id"):
+            module.fail_json(msg="Can't find and pull image %s: %s" % (image, img["text"]))
+        image_actions.append("pulled image %s" % image)
         return image_actions
-    image_pull_cmd = [module_exec, "image", "pull", image]
-    if module_params["tls_verify"] is False:
-        image_pull_cmd.append("--tls-verify=false")
-    if module_params["authfile"]:
-        image_pull_cmd.extend(["--authfile", module_params["authfile"]])
-    if module_params["arch"]:
-        image_pull_cmd.append("--arch=%s" % module_params["arch"])
-    if module_params["decryption_key"]:
-        image_pull_cmd.append("--decryption-key=%s" % module_params["decryption_key"])
-    if module_params["platform"]:
-        image_pull_cmd.append("--platform=%s" % module_params["platform"])
-    if module_params["os"]:
-        image_pull_cmd.append("--os=%s" % module_params["os"])
-    if module_params["variant"]:
-        image_pull_cmd.append("--variant=%s" % module_params["variant"])
-    if module_params.get("debug"):
-        module.log("PODMAN-CONTAINER-DEBUG: %s" % " ".join(image_pull_cmd))
-    rc, out, err = module.run_command(image_pull_cmd)
-    if rc != 0:
-        module.fail_json(msg="Can't pull image %s" % image, stdout=out, stderr=err)
-    image_actions.append("pulled image %s" % image)
-    return image_actions
+    else:
+        image_pull_cmd = [module_exec, "image", "pull", image]
+        if module_params["tls_verify"] is False:
+            image_pull_cmd.append("--tls-verify=false")
+        if module_params["authfile"]:
+            image_pull_cmd.extend(["--authfile", module_params["authfile"]])
+        if module_params["arch"]:
+            image_pull_cmd.append("--arch=%s" % module_params["arch"])
+        if module_params["decryption_key"]:
+            image_pull_cmd.append("--decryption-key=%s" % module_params["decryption_key"])
+        if module_params["platform"]:
+            image_pull_cmd.append("--platform=%s" % module_params["platform"])
+        if module_params["os"]:
+            image_pull_cmd.append("--os=%s" % module_params["os"])
+        if module_params["variant"]:
+            image_pull_cmd.append("--variant=%s" % module_params["variant"])
+        if module_params.get("debug"):
+            module.log("PODMAN-CONTAINER-DEBUG: %s" % " ".join(image_pull_cmd))
+        rc, out, err = module.run_command(image_pull_cmd)
+        if rc != 0:
+            module.fail_json(msg="Can't pull image %s" % image, stdout=out, stderr=err)
+        image_actions.append("pulled image %s" % image)
+        return image_actions
 
 
 class PodmanContainer:
@@ -1603,7 +1899,7 @@ class PodmanContainer:
     Manages podman container, inspects it and checks its current state
     """
 
-    def __init__(self, module, name, module_params):
+    def __init__(self, module, name, module_params, client):
         """Initialize PodmanContainer class.
 
         Arguments:
@@ -1612,6 +1908,7 @@ class PodmanContainer:
         """
 
         self.module = module
+        self.client = client
         self.module_params = module_params
         self.name = name
         self.stdout, self.stderr = "", ""
@@ -1655,6 +1952,12 @@ class PodmanContainer:
     def get_info(self):
         """Inspect container and gather info about it."""
         # pylint: disable=unused-variable
+        if USE_API:
+            try:
+                container = self.client.containers.get(self.name)
+                return container
+            except Exception:
+                return {}
         rc, out, err = self.module.run_command([self.module_params["executable"], b"container", b"inspect", self.name])
         return json.loads(out)[0] if rc == 0 else {}
 
@@ -1664,6 +1967,13 @@ class PodmanContainer:
         is_rootfs = self.module_params["rootfs"]
         if is_rootfs:
             return {"Id": self.module_params["image"]}
+        if USE_API:
+            try:
+                image = self.client.images.get(self.module_params["image"].replace("docker://", ""))
+                return image
+            except Exception:
+                self.module.log("PODMAN-CONTAINER-DEBUG: API Can't inspect image %s" % self.module_params["image"])
+                return {}
         rc, out, err = self.module.run_command(
             [
                 self.module_params["executable"],
@@ -1689,34 +1999,68 @@ class PodmanContainer:
             action {str} -- action to perform - start, create, stop, run,
                             delete, restart
         """
-        b_command = PodmanModuleParams(
-            action,
-            self.module_params,
-            self.version,
-            self.module,
-        ).construct_command_from_params()
-        full_cmd = " ".join([self.module_params["executable"]] + [to_native(i) for i in b_command])
-        self.actions.append(full_cmd)
-        if self.module.check_mode:
-            self.module.log("PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+        if USE_API:
+            new_params = PodmanModuleParamsAPI(
+                self.module_params,
+                self.version,
+                self.module,
+            ).translate()
+
+            if action in ("start", "stop", "delete", "restart"):
+                container = self.client.containers.get(self.name)
+                if not container:
+                    self.module.fail_json(msg="Container %s doesn't exist")
+                if action == "start":
+                    self.client.containers.start(self.name)
+                elif action == "stop":
+                    self.client.containers.stop(self.name)
+                elif action == "restart":
+                    self.client.containers.restart(self.name)
+                elif action == "delete":
+                    self.client.containers.remove(self.name, force=True)
+            elif action == "create":
+                new_params.pop("detach")
+                if not new_params.get("annotations"):
+                    new_params["annotations"] = {}
+                new_params["annotations"].update({"ansible.podman.collection.cmd": json.dumps(self.module_params)})
+                try:
+                    container = self.client.containers.create(**new_params)
+                except Exception as e:
+                    self.module.fail_json(msg=str(e))
+            elif action == "run":
+                new_params.pop("detach")
+                if not new_params.get("annotations"):
+                    new_params["annotations"] = {}
+                new_params["annotations"].update({"ansible.podman.collection.cmd": json.dumps(self.module_params)})
+                try:
+                    container = self.client.containers.run(**new_params)
+                except Exception as e:
+                    self.module.fail_json(msg=str(e))
+            self.actions.append({action: new_params})
         else:
-            rc, out, err = self.module.run_command(
-                [self.module_params["executable"], b"container"] + b_command,
-                expand_user_and_vars=False,
-            )
-            self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
-            if self.module_params["debug"]:
-                self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
-                self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
-                self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
-            self.stdout = out
-            self.stderr = err
-            if rc != 0:
-                self.module.fail_json(
-                    msg="Container %s exited with code %s when %sed" % (self.name, rc, action),
-                    stdout=out,
-                    stderr=err,
+            b_command = PodmanModuleParams(
+                action,
+                self.module_params,
+                self.version,
+                self.module,
+            ).construct_command_from_params()
+            full_cmd = " ".join([self.module_params["executable"]] + [to_native(i) for i in b_command])
+            self.actions.append(full_cmd)
+            if self.module.check_mode:
+                self.module.log("PODMAN-CONTAINER-DEBUG (check_mode): %s" % full_cmd)
+            else:
+                rc, out, err = self.module.run_command(
+                    [self.module_params["executable"], b"container"] + b_command, expand_user_and_vars=False
                 )
+                self.module.log("PODMAN-CONTAINER-DEBUG: %s" % full_cmd)
+                if self.module_params["debug"]:
+                    self.module.log("PODMAN-CONTAINER-DEBUG STDOUT: %s" % out)
+                    self.module.log("PODMAN-CONTAINER-DEBUG STDERR: %s" % err)
+                    self.module.log("PODMAN-CONTAINER-DEBUG RC: %s" % rc)
+                self.stdout = out
+                self.stderr = err
+                if rc != 0:
+                    self.module.fail_json(msg="Can't %s container %s" % (action, self.name), stdout=out, stderr=err)
 
     def run(self):
         """Run the container."""
@@ -1780,12 +2124,21 @@ class PodmanManager:
         }
         self.module_params = params
         self.name = self.module_params["name"]
-        self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
+        self.client = None
+        if self.module_params["podman_socket"]:
+            global USE_API
+            USE_API = True
+            api = PodmanAPI(self.module, self.module_params)
+            self.client = api.client
+        else:
+            self.executable = self.module.get_bin_path(self.module_params["executable"], required=True)
         self.image = self.module_params["image"]
         self.state = self.module_params["state"]
         disable_image_pull = self.state in ("quadlet", "absent") or self.module_params["pull"] == "never"
         image_actions = (
-            ensure_image_exists(self.module, self.image, self.module_params) if not disable_image_pull else []
+            ensure_image_exists(self.module, self.image, self.module_params, self.client)
+            if not disable_image_pull
+            else []
         )
         self.results["actions"] += image_actions
 
@@ -1795,7 +2148,22 @@ class PodmanManager:
         if self.module_params["generate_systemd"].get("new"):
             self.module_params["rm"] = True
 
-        self.container = PodmanContainer(self.module, self.name, self.module_params)
+        self.container = PodmanContainer(self.module, self.name, self.module_params, self.client)
+
+    def api_wait(self):
+        """In case of detach=False and API call, wait until container
+        is finished.
+        """
+        if self.container.module_params.get("detach") is None or self.container.module_params.get("detach"):
+            return
+        status = True
+        time.sleep(2)  # Give time to container to start
+        while status:
+            info = self.container.get_info()
+            if not info:
+                return
+            status = info["State"]["Running"]
+            time.sleep(2)
 
     def update_container_result(self, changed=True):
         """Inspect the current container, update results with last info, exit.
@@ -1804,6 +2172,8 @@ class PodmanManager:
             changed {bool} -- whether any action was performed
                               (default: {True})
         """
+        if USE_API:
+            self.api_wait()
         facts = self.container.get_info() if changed else self.container.info
         out, err = self.container.stdout, self.container.stderr
         self.results.update(
