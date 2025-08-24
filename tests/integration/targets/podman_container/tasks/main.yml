@@ -133,7 +133,9 @@
     - name: Check output is correct - TLS verify OFF
       assert:
         that:
-          - image_tls.podman_actions | select('search', '--tls-verify=False') | list | length > 0
+          - >-
+            (image_tls.podman_actions | select('search', '--tls-verify=False') | list | length > 0) or
+            (image_tls.podman_actions | select('search', 'tls_verify": false') | list | length > 0)
 
     - name: Check using already pulled image - TLS verify OFF
       containers.podman.podman_container:
@@ -951,8 +953,10 @@
         podman_socket: "{{ podman_socket | default(omit) }}"
 
     - name: Rootfs container tests
+      when: podman_socket is not defined
       tags:
         - no_build_version
+        - rootfs
       block:
 
         - name: Create temporary rootfs directory

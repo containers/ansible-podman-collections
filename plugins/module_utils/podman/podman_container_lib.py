@@ -1441,7 +1441,7 @@ class PodmanContainerDiff:
         if "healthcheck" in self.info["config"]:
             # the "test" key is a list of 2 items where the first one is
             # "CMD-SHELL" and the second one is the actual healthcheck command.
-            if len(self.info["config"]["healthcheck"]["test"]) > 1:
+            if len(self.info["config"]["healthcheck"].get('test', '')) > 1:
                 before = self.info["config"]["healthcheck"]["test"][1]
         after = self.params["healthcheck"] or before
         return self._diff_update_and_compare("healthcheck", before, after)
