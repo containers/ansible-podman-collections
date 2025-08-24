@@ -14,6 +14,13 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
+# Try to use requests-unixsocket if available, as it handles compatibility issues
+try:
+    import requests_unixsocket
+    HAS_REQUESTS_UNIXSOCKET = True
+except ImportError:
+    HAS_REQUESTS_UNIXSOCKET = False
+
 try:
     from requests.packages import urllib3
 
@@ -93,6 +100,11 @@ if HAS_REQUESTS:
             self.timeout = timeout
             self.pools = urllib3._collections.RecentlyUsedContainer(pool_connections, dispose_func=lambda p: p.close())
 
+        def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):
+            # Fix for requests 2.32.2+:
+            # https://github.com/psf/requests/commit/c98e4d133ef29c46a9b68cd783087218a8075e05
+            return self.get_connection(request.url, proxies)
+
         def get_connection(self, url, proxies=None):
             proxies = proxies or {}
             proxy = proxies.get(urlparse(url.lower()).scheme)
@@ -122,7 +134,15 @@ if HAS_REQUESTS:
     class APISession(requests.Session):
         def __init__(self, *args, url_scheme=DEFAULT_SCHEME, **kwargs):
             super(APISession, self).__init__(*args, **kwargs)
-            self.mount(url_scheme, UnixAdapter())
+            if HAS_REQUESTS_UNIXSOCKET and url_scheme == DEFAULT_SCHEME:
+                # Use requests-unixsocket which handles newer requests versions
+                self.mount("http+unix://", requests_unixsocket.adapters.UnixAdapter())
+            else:
+                # Fallback to custom implementation
+                self.mount(url_scheme, UnixAdapter())
+                # Also mount the scheme without the '+' for new requests versions
+                if url_scheme == DEFAULT_SCHEME:
+                    self.mount("http+unix://", UnixAdapter())
 
 
 class PodmanAPIHTTP:
