@@ -16,13 +16,14 @@ pushd /tmp/docs_new_path/ansible_collections/containers/podman
 mkdir -p $DOCS_TMP
 chmod g-w $DOCS_TMP
 ANSIBLE_COLLECTIONS_PATH=../../../ antsibull-docs sphinx-init --use-current --dest-dir $DOCS_TMP containers.podman
-cd $DOCS_TMP
+pushd $DOCS_TMP
 python -m venv .env
 source .env/bin/activate
 pip install -r requirements.txt
-./build.sh
+# sed -i "s@--use-current@--squash-hierarchy --use-current@g" build.sh
+ANSIBLE_COLLECTIONS_PATH=../../../../ ./build.sh
 rm -rf "$HTML/_sources" "$HTML/.buildinfo" "$HTML/.doctrees"
 
 cp -r $HTML/* $DOCS/
 popd
-
+popd

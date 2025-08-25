@@ -7,7 +7,7 @@
 <meta content="2.21.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>containers.podman.podman_save module – Saves podman image to tar file &mdash; Ansible collections  documentation</title>
+  <title>containers.podman.podman_system_connection_info module – Gather info about podman system connections &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
@@ -22,8 +22,8 @@
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="containers.podman.podman_search module – Search for remote images using podman" href="podman_search_module.html" />
-    <link rel="prev" title="containers.podman.podman_runlabel module – Run given label from given image" href="podman_runlabel_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+    <link rel="next" title="containers.podman.podman_system_info module – Get podman system information from host machine" href="podman_system_info_module.html" />
+    <link rel="prev" title="containers.podman.podman_system_connection module – Manage podman system connections" href="podman_system_connection_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
 
 
 
@@ -117,7 +117,7 @@
           <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
           <li class="breadcrumb-item"><a href="../index.html">Collections in the Containers Namespace</a></li>
           <li class="breadcrumb-item"><a href="index.html">Containers.Podman</a></li>
-      <li class="breadcrumb-item active">containers.podman.podman_save module – Saves podman image to tar file</li>
+      <li class="breadcrumb-item active">containers.podman.podman_system_connection_info module – Gather info about podman system connections</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -128,8 +128,8 @@
   
            <div itemprop="articleBody">
              
-  <span class="target" id="ansible-collections-containers-podman-podman-save-module"></span><section id="containers-podman-podman-save-module-saves-podman-image-to-tar-file">
-<h1>containers.podman.podman_save module – Saves podman image to tar file<a class="headerlink" href="#containers-podman-podman-save-module-saves-podman-image-to-tar-file" title="Link to this heading"></a></h1>
+  <span class="target" id="ansible-collections-containers-podman-podman-system-connection-info-module"></span><section id="containers-podman-podman-system-connection-info-module-gather-info-about-podman-system-connections">
+<h1>containers.podman.podman_system_connection_info module – Gather info about podman system connections<a class="headerlink" href="#containers-podman-podman-system-connection-info-module-gather-info-about-podman-system-connections" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.17.0).</p>
@@ -137,25 +137,27 @@
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
 You need further requirements to be able to use this module,
-see <a class="reference internal" href="#ansible-collections-containers-podman-podman-save-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
-<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_save</span></code>.</p>
+see <a class="reference internal" href="#ansible-collections-containers-podman-podman-system-connection-info-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_system_connection_info</span></code>.</p>
 </div>
+<p class="ansible-version-added">New in containers.podman 1.18.0</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
 <li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
 </ul>
 </nav>
 <section id="synopsis">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>podman save saves an image to either docker-archive, oci-archive, oci-dir (directory with oci manifest type), or docker-dir (directory with v2s2 manifest type) on the local machine, default is docker-archive.</p></li>
+<li><p>Gather info about podman system connections with podman system connection list command.</p></li>
 </ul>
 </section>
 <section id="requirements">
-<span id="ansible-collections-containers-podman-podman-save-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<span id="ansible-collections-containers-podman-podman-system-connection-info-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>Podman installed on host</p></li>
@@ -171,28 +173,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-compress"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-compress"><strong>compress</strong></p>
-<a class="ansibleOptionLink" href="#parameter-compress" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Compress tarball image layers when pushing to a directory using the ‘dir’ transport. (default is same compression type, compressed or uncompressed, as source)</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-dest"></div>
-<div class="ansibleOptionAnchor" id="parameter-path"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-path"><span id="ansible-collections-containers-podman-podman-save-module-parameter-dest"></span><strong>dest</strong></p>
-<a class="ansibleOptionLink" href="#parameter-dest" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-aliases">aliases: path</span></p>
-<p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Destination file to write image to.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-executable"><strong>executable</strong></p>
+<div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-system-connection-info-module-parameter-executable"><strong>executable</strong></p>
 <a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to <code class="docutils literal notranslate"><span class="pre">podman</span></code> executable if it is not in the <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> on the machine running <code class="docutils literal notranslate"><span class="pre">podman</span></code></p>
@@ -200,48 +181,11 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-force"><strong>force</strong></p>
-<a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-system-connection-info-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Force saving to file even if it exists.</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-format"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-format"><strong>format</strong></p>
-<a class="ansibleOptionLink" href="#parameter-format" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Save image to docker-archive, oci-archive (see containers-transports(5)), oci-dir (oci transport), or docker-dir (dir transport with v2s2 manifest type).</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;docker-archive&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;oci-archive&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;oci-dir&quot;</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;docker-dir&quot;</span></code></p></li>
-</ul>
-</div></td>
-</tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-image"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-image"><strong>image</strong></p>
-<a class="ansibleOptionLink" href="#parameter-image" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span> / <span class="ansible-option-required">required</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Image to save.</p>
-</div></td>
-</tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-multi_image_archive"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-save-module-parameter-multi-image-archive"><strong>multi_image_archive</strong></p>
-<a class="ansibleOptionLink" href="#parameter-multi_image_archive" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
-</div></td>
-<td><div class="ansible-option-cell"><p>Allow for creating archives with more than one image. Additional names will be interpreted as images instead of tags. Only supported for docker-archive.</p>
-<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
-<ul class="simple">
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
-<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
-</ul>
+<td><div class="ansible-option-cell"><p>Name of the connection to gather info about</p>
+<p>If not provided, info about all connections will be returned</p>
 </div></td>
 </tr>
 </tbody>
@@ -249,18 +193,46 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 </section>
 <section id="examples">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># What modules does for example</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containers.podman.podman_save</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
-<span class="w">    </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/file123.tar</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containers.podman.podman_save</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fedora</span>
-<span class="w">    </span><span class="nt">dest</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/file456.tar</span>
-<span class="w">    </span><span class="nt">multi_image_archive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather info about all connections</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_system_connection_info</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gather info about specific connection</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_system_connection_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Get connection info and register result</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_system_connection_info</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">staging</span>
+<span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">staging_connection</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Display connection URI</span>
+<span class="w">  </span><span class="nt">debug</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Staging</span><span class="nv"> </span><span class="s">connection</span><span class="nv"> </span><span class="s">URI:</span><span class="nv"> </span><span class="cp">{{</span> <span class="nv">staging_connection.connections</span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="nv">.URI</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">staging_connection.connections | length &gt; 0</span>
 </pre></div>
 </div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-connections"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-system-connection-info-module-return-connections"><strong>connections</strong></p>
+<a class="ansibleOptionLink" href="#return-connections" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Facts from all or specified connections</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;Default&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;Identity&quot;:</span> <span class="pre">&quot;/home/user/.ssh/id_rsa&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;production&quot;,</span> <span class="pre">&quot;ReadWrite&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;URI&quot;:</span> <span class="pre">&quot;ssh://root&#64;server.example.com:22/run/user/0/podman/podman.sock&quot;},</span> <span class="pre">{&quot;Default&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;Identity&quot;:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;local&quot;,</span> <span class="pre">&quot;ReadWrite&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;URI&quot;:</span> <span class="pre">&quot;unix:///run/user/1000/podman/podman.sock&quot;},</span> <span class="pre">{&quot;Default&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;Identity&quot;:</span> <span class="pre">&quot;/home/user/.ssh/dev_rsa&quot;,</span> <span class="pre">&quot;Name&quot;:</span> <span class="pre">&quot;development&quot;,</span> <span class="pre">&quot;ReadWrite&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;URI&quot;:</span> <span class="pre">&quot;ssh://dev&#64;dev.example.com:22/run/user/1000/podman/podman.sock&quot;}]</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
 <section id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
 <ul class="simple">
@@ -283,8 +255,8 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
           
 
 <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="podman_runlabel_module.html" class="btn btn-neutral float-left" title="containers.podman.podman_runlabel module – Run given label from given image" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="podman_search_module.html" class="btn btn-neutral float-right" title="containers.podman.podman_search module – Search for remote images using podman" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="podman_system_connection_module.html" class="btn btn-neutral float-left" title="containers.podman.podman_system_connection module – Manage podman system connections" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="podman_system_info_module.html" class="btn btn-neutral float-right" title="containers.podman.podman_system_info module – Get podman system information from host machine" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
