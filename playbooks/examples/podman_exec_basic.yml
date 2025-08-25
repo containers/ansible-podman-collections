@@ -1,0 +1,27 @@
+---
+- name: Exec inside running Podman containers (basic)
+  hosts: all
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+    ansible_podman_extra_env:
+      EXAMPLE_FLAG: "true"
+  tasks:
+    - name: Show container name and id
+      raw: "sh -lc 'echo NAME=$(hostname) && cat /etc/hostname'"
+
+    - name: Check OS release
+      raw: "sh -lc 'test -f /etc/os-release && . /etc/os-release && echo \"$NAME $VERSION_ID\" || echo unknown'"
+      register: osrel
+
+    - name: Display OS release
+      debug:
+        var: osrel.stdout
+
+    - name: Print env from connection
+      raw: "sh -lc 'echo EXAMPLE_FLAG=$EXAMPLE_FLAG'"
+
+    - name: Idempotent marker create
+      raw: "sh -lc '[ -f /tmp/ansible_marker ] || touch /tmp/ansible_marker'"
+
+

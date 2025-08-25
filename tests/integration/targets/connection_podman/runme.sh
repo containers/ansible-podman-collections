@@ -19,7 +19,7 @@ ANSIBLE_VERBOSITY=4 ANSIBLE_REMOTE_TMP="/tmp" ANSIBLE_REMOTE_USER="1000" run_ans
 ${SUDO:-} grep -q "Using podman connection from collection" check_log
 ${SUDO:-} rm -f check_log
 set +o pipefail
-ANSIBLE_PODMAN_EXECUTABLE=fakepodman run_ansible "$@" 2>&1 | grep "fakepodman command not found in PATH"
+ANSIBLE_PODMAN_EXECUTABLE=fakepodman run_ansible "$@" 2>&1 | grep "Could not find fakepodman in PATH"
 set -o pipefail
 ANSIBLE_PODMAN_EXECUTABLE=fakepodman run_ansible "$@" && {
     echo "Playbook with fakepodman should fail!"
