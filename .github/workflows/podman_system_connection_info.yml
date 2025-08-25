@@ -1,0 +1,32 @@
+name: Podman system connection info
+
+on:
+  push:
+    paths:
+      - '.github/workflows/podman_system_connection_info.yml'
+      - '.github/workflows/reusable-module-test.yml'
+      - 'ci/*.yml'
+      - 'ci/run_containers_tests.sh'
+      - 'ci/playbooks/containers/podman_system_connection_info.yml'
+      - 'plugins/modules/podman_system_connection_info.py'
+      - 'tests/integration/targets/podman_system_connection_info/**'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '.github/workflows/podman_system_connection_info.yml'
+      - '.github/workflows/reusable-module-test.yml'
+      - 'ci/*.yml'
+      - 'ci/run_containers_tests.sh'
+      - 'ci/playbooks/containers/podman_system_connection_info.yml'
+      - 'plugins/modules/podman_system_connection_info.py'
+      - 'tests/integration/targets/podman_system_connection_info/**'
+  schedule:
+    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+
+jobs:
+  test_podman_system_connection_info:
+    uses: ./.github/workflows/reusable-module-test.yml
+    with:
+      module_name: 'podman_system_connection_info'
+      display_name: 'Podman system connection info'

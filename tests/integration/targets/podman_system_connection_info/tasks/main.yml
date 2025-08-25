@@ -1,0 +1,187 @@
+- name: Test podman_system_connection_info
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Generate random values for connection names
+      set_fact:
+        test_connection_1: "{{ 'ansible-test-info1-%0x' % ((2**32) | random) }}"
+        test_connection_2: "{{ 'ansible-test-info2-%0x' % ((2**32) | random) }}"
+
+    - name: Clean up any existing test connections
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      loop:
+        - "{{ test_connection_1 }}"
+        - "{{ test_connection_2 }}"
+
+    - name: Get info about all connections (empty list)
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: empty_list_result
+
+    - name: Check empty connections list
+      assert:
+        that:
+          - empty_list_result is not changed
+          - empty_list_result.connections is defined
+          - empty_list_result.connections is iterable
+
+    - name: Create test connection 1 (unix socket)
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_1 }}"
+        destination: "unix:///tmp/test-socket-1.sock"
+        state: present
+
+    - name: Create test connection 2 as default (tcp)
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+        destination: "tcp://127.0.0.1:8080"
+        default: true
+        state: present
+
+    - name: Get info about all connections
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: all_connections_result
+
+    - name: Check all connections results
+      assert:
+        that:
+          - all_connections_result is not changed
+          - all_connections_result.connections | length >= 2
+          - all_connections_result.connections | selectattr('Name', 'equalto', test_connection_1) | list | length == 1
+          - all_connections_result.connections | selectattr('Name', 'equalto', test_connection_2) | list | length == 1
+
+    - name: Get info about specific connection
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_1 }}"
+      register: specific_connection_result
+
+    - name: Check specific connection results
+      assert:
+        that:
+          - specific_connection_result is not changed
+          - specific_connection_result.connections | length == 1
+          - specific_connection_result.connections[0].Name == test_connection_1
+          - "'unix://' in specific_connection_result.connections[0].URI"
+
+    - name: Get info about default connection
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ test_connection_2 }}"
+      register: default_connection_result
+
+    - name: Check default connection results
+      assert:
+        that:
+          - default_connection_result is not changed
+          - default_connection_result.connections | length == 1
+          - default_connection_result.connections[0].Name == test_connection_2
+          - default_connection_result.connections[0].Default == true
+          - "'tcp://' in default_connection_result.connections[0].URI"
+
+    - name: Try to get info about non-existent connection
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "non-existent-connection"
+      register: non_existent_result
+
+    - name: Check non-existent connection failure
+      assert:
+        that:
+          - non_existent_result.connections | length == 0
+
+    - name: Test check mode
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+      check_mode: true
+      register: check_mode_result
+
+    - name: Check check mode results
+      assert:
+        that:
+          - check_mode_result is not changed
+          - check_mode_result.connections is defined
+
+    - name: Verify connection attributes for readwrite connections
+      set_fact:
+        test_conn_1_info: "{{ all_connections_result.connections | selectattr('Name', 'equalto', test_connection_1) | first }}"
+        test_conn_2_info: "{{ all_connections_result.connections | selectattr('Name', 'equalto', test_connection_2) | first }}"
+
+    - name: Check connection 1 attributes
+      assert:
+        that:
+          - test_conn_1_info.Name == test_connection_1
+          - test_conn_1_info.URI is defined
+          - test_conn_1_info.Default is defined
+          - test_conn_1_info.Default == false
+          # ReadWrite, Identity, and IsMachine are optional fields
+
+    - name: Check connection 2 attributes (default)
+      assert:
+        that:
+          - test_conn_2_info.Name == test_connection_2
+          - test_conn_2_info.URI is defined
+          - test_conn_2_info.Default == true
+          # ReadWrite, Identity, and IsMachine are optional fields
+
+    - name: Test with unix socket connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-unix-info"
+        destination: "unix:///run/podman/podman.sock"
+        state: present
+
+    - name: Get info about unix socket connection
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-unix-info"
+      register: unix_info_result
+
+    - name: Check unix socket connection info
+      assert:
+        that:
+          - unix_info_result.connections | length == 1
+          - unix_info_result.connections[0].Name == "test-unix-info"
+          - "'unix://' in unix_info_result.connections[0].URI"
+
+    - name: Test with TCP connection
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-tcp-info"
+        destination: "tcp://localhost:8080"
+        state: present
+
+    - name: Get info about TCP connection
+      containers.podman.podman_system_connection_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "test-tcp-info"
+      register: tcp_info_result
+
+    - name: Check TCP connection info
+      assert:
+        that:
+          - tcp_info_result.connections | length == 1
+          - tcp_info_result.connections[0].Name == "test-tcp-info"
+          - "'tcp://' in tcp_info_result.connections[0].URI"
+
+  always:
+    - name: Clean up test connections
+      containers.podman.podman_system_connection:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      ignore_errors: true
+      loop:
+        - "{{ test_connection_1 }}"
+        - "{{ test_connection_2 }}"
+        - "test-unix-info"
+        - "test-tcp-info"
