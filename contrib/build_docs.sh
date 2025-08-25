@@ -1,9 +1,9 @@
 #!/usr/bin/bash
 
 DOCS=${1:-$HOME/podman-docs}
-HTML=${2:-/tmp/html}
-DOCS_TMP=${3:-/tmp/docs}
-
+COLL_DIR="/tmp/docs_new_path/ansible_collections/containers/podman"
+DOCS_TMP="${COLL_DIR}/tmpdocs"
+HTML="${DOCS_TMP}/build/html"
 
 # Build current collection
 rm -rf /tmp/docs_new_collection
@@ -15,11 +15,14 @@ pushd /tmp/docs_new_path/ansible_collections/containers/podman
 
 mkdir -p $DOCS_TMP
 chmod g-w $DOCS_TMP
-ANSIBLE_COLLECTIONS_PATH=../../../ antsibull-docs collection --use-current --squash-hierarchy --dest-dir $DOCS_TMP containers.podman
+ANSIBLE_COLLECTIONS_PATH=../../../ antsibull-docs sphinx-init --use-current --dest-dir $DOCS_TMP containers.podman
 cd $DOCS_TMP
-echo "extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx_antsibull_ext']" > conf.py
-sphinx-build . $HTML
+python -m venv .env
+source .env/bin/activate
+pip install -r requirements.txt
+./build.sh
 rm -rf "$HTML/_sources" "$HTML/.buildinfo" "$HTML/.doctrees"
 
-popd
 cp -r $HTML/* $DOCS/
+popd
+

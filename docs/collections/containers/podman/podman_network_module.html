@@ -1,0 +1,590 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta content="2.21.0" name="antsibull-docs" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>containers.podman.podman_network module – Manage podman networks &mdash; Ansible collections  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="containers.podman.podman_network_info module – Gather info about podman networks" href="podman_network_info_module.html" />
+    <link rel="prev" title="containers.podman.podman_logout module – Log out of a container registry using podman" href="podman_logout_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../../../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">Ansible Collections Documentation</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Ansible collections
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Collections:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Collection Index</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">Collections in the Containers Namespace</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Containers.Podman</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="index.html#description">Description</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="index.html#plugin-index">Plugin Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Plugin indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index_become.html">Index of all Become Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_connection.html">Index of all Connection Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_inventory.html">Index of all Inventory Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_module.html">Index of all Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference indexes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../environment_variables.html">Index of all Collection Environment Variables</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Ansible collections</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Collection Index</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Collections in the Containers Namespace</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Containers.Podman</a></li>
+      <li class="breadcrumb-item active">containers.podman.podman_network module – Manage podman networks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <span class="target" id="ansible-collections-containers-podman-podman-network-module"></span><section id="containers-podman-podman-network-module-manage-podman-networks">
+<h1>containers.podman.podman_network module – Manage podman networks<a class="headerlink" href="#containers-podman-podman-network-module-manage-podman-networks" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.17.0).</p>
+<p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
+To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
+<p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
+You need further requirements to be able to use this module,
+see <a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-requirements"><span class="std std-ref">Requirements</span></a> for details.</p>
+<p>To use it in a playbook, specify: <code class="code docutils literal notranslate"><span class="pre">containers.podman.podman_network</span></code>.</p>
+</div>
+<p class="ansible-version-added">New in containers.podman 1.0.0</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
+<li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+</ul>
+</nav>
+<section id="synopsis">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Manage podman networks with podman network command.</p></li>
+</ul>
+</section>
+<section id="requirements">
+<span id="ansible-collections-containers-podman-podman-network-module-requirements"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Requirements</a><a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<p>The below requirements are needed on the host that executes this module.</p>
+<ul class="simple">
+<li><p>podman</p></li>
+</ul>
+</section>
+<section id="parameters">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Parameters</a><a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-debug"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-debug"><strong>debug</strong></p>
+<a class="ansibleOptionLink" href="#parameter-debug" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Return additional information which can be helpful for investigations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-disable_dns"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-disable-dns"><strong>disable_dns</strong></p>
+<a class="ansibleOptionLink" href="#parameter-disable_dns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>disable dns plugin (default “false”)</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-dns"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-dns"><strong>dns</strong></p>
+<a class="ansibleOptionLink" href="#parameter-dns" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set network-scoped DNS resolver/nameserver for containers in this network. If not set, the host servers from /etc/resolv.conf is used.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-driver"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-driver"><strong>driver</strong></p>
+<a class="ansibleOptionLink" href="#parameter-driver" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Driver to manage the network (default “bridge”)</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-executable"><strong>executable</strong></p>
+<a class="ansibleOptionLink" href="#parameter-executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path to <code class="docutils literal notranslate"><span class="pre">podman</span></code> executable if it is not in the <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> on the machine running <code class="docutils literal notranslate"><span class="pre">podman</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;podman&quot;</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-force"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-force"><strong>force</strong></p>
+<a class="ansibleOptionLink" href="#parameter-force" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Remove all containers that use the network. If the container is running, it is stopped and removed.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-gateway"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-gateway"><strong>gateway</strong></p>
+<a class="ansibleOptionLink" href="#parameter-gateway" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>IPv4 or IPv6 gateway for the subnet</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-interface_name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-interface-name"><strong>interface_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-interface_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>For bridge, it uses the bridge interface name. For macvlan, it is the parent device on the host (it is the same as ‘opt.parent’)</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-internal"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-internal"><strong>internal</strong></p>
+<a class="ansibleOptionLink" href="#parameter-internal" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Restrict external access from this network (default “false”)</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ip_range"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-ip-range"><strong>ip_range</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ip_range" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Allocate container IP from range</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ipam_driver"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-ipam-driver"><strong>ipam_driver</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ipam_driver" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set the ipam driver (IP Address Management Driver) for the network. When unset podman chooses an ipam driver automatically based on the network driver</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;host-local&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;dhcp&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;none&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ipv6"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-ipv6"><strong>ipv6</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ipv6" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enable IPv6 (Dual Stack) networking. You must pass a IPv6 subnet. The subnet option must be used with the ipv6 option. Idempotency is not supported because it generates subnets randomly.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-macvlan"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-macvlan"><strong>macvlan</strong></p>
+<a class="ansibleOptionLink" href="#parameter-macvlan" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Create a Macvlan connection based on this device</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-name"><strong>name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of the network</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-net_config"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-net-config"><strong>net_config</strong></p>
+<a class="ansibleOptionLink" href="#parameter-net_config" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>List of dictionaries with network configuration. Each dictionary should contain ‘subnet’ and ‘gateway’ keys. ‘ip_range’ is optional.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-net_config/gateway"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-net-config-gateway"><strong>gateway</strong></p>
+<a class="ansibleOptionLink" href="#parameter-net_config/gateway" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Gateway for the subnet</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-net_config/ip_range"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-net-config-ip-range"><strong>ip_range</strong></p>
+<a class="ansibleOptionLink" href="#parameter-net_config/ip_range" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Allocate container IP from range</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-net_config/subnet"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-net-config-subnet"><strong>subnet</strong></p>
+<a class="ansibleOptionLink" href="#parameter-net_config/subnet" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span> / <span class="ansible-option-required">required</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Subnet in CIDR format</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt"><strong>opt</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Add network options. Currently ‘vlan’ and ‘mtu’ are supported.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/bclim"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-bclim"><strong>bclim</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/bclim" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Set the threshold for broadcast queueing. Must be a 32 bit integer. Setting this value to -1 disables broadcast queueing altogether.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/bridge_name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-bridge-name"><strong>bridge_name</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/bridge_name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option assigns the given name to the created Linux Bridge. Sets ‘com.docker.network.bridge.name’ option.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/driver_mtu"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-driver-mtu"><strong>driver_mtu</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/driver_mtu" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Sets the Maximum Transmission Unit (MTU) and takes an integer value. Sets ‘com.docker.network.driver.mtu’ option.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/isolate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-isolate"><strong>isolate</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/isolate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option isolates networks by blocking traffic between those that have this option enabled.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/metric"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-metric"><strong>metric</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/metric" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Sets the Route Metric for the default route created in every container joined to this network. Can only be used with the Netavark network backend.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mode"><strong>mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option sets the specified ip/macvlan mode on the interface.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/mtu"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-mtu"><strong>mtu</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/mtu" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>MTU size for bridge network interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/no_default_route"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-no-default-route"><strong>no_default_route</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/no_default_route" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>If set to 1, Podman will NOT automatically add a default route to subnets.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/parent"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-parent"><strong>parent</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/parent" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The host device which should be used for the macvlan interface (it is the same as ‘interface’ in that case). Defaults to the default route interface.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/vlan"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-vlan"><strong>vlan</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/vlan" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>VLAN tag for bridge which enables vlan_filtering.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-indent"></div><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-opt/vrf"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-opt-vrf"><strong>vrf</strong></p>
+<a class="ansibleOptionLink" href="#parameter-opt/vrf" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>This option assigns a VRF to the bridge interface. It accepts the name of the VRF and defaults to none. Can only be used with the Netavark network backend.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_dir"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-dir"><strong>quadlet_dir</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_dir" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">path</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Path to the directory to write quadlet file in. By default, it will be set as <code class="docutils literal notranslate"><span class="pre">/etc/containers/systemd/</span></code> for root user, <code class="docutils literal notranslate"><span class="pre">~/.config/containers/systemd/</span></code> for non-root users.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_file_mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><strong>quadlet_file_mode</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_file_mode" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">any</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The permissions of the quadlet file.</p>
+<p>The <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> can be specied as octal numbers or as a symbolic mode (for example, <code class="ansible-value docutils literal notranslate"><span class="pre">u+rwx</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">u=rw,g=r,o=r</span></code>). For octal numbers format, you must either add a leading zero so that Ansible’s YAML parser knows it is an octal number (like <code class="ansible-value docutils literal notranslate"><span class="pre">0644</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">01777</span></code>) or quote it (like <code class="ansible-value docutils literal notranslate"><span class="pre">'644'</span></code> or <code class="ansible-value docutils literal notranslate"><span class="pre">'1777'</span></code>) so Ansible receives a string and can do its own conversion from string into number. Giving Ansible a number without following one of these rules will end up with a decimal number which will have unexpected results.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does not</strong> exist, the default <code class="ansible-value docutils literal notranslate"><span class="pre">'0640'</span></code> mask will be used when setting the mode for the newly created file.</p>
+<p>If <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is not specified and the quadlet file <strong>does</strong> exist, the mode of the existing file will be used.</p>
+<p>Specifying <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-containers-podman-podman-network-module-parameter-quadlet-file-mode"><span class="std std-ref"><span class="pre">quadlet_file_mode</span></span></a></strong></code> is the best way to ensure files are created with the correct permissions.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_filename"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-filename"><strong>quadlet_filename</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_filename" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Name of quadlet file to write. By default it takes <em>name</em> value.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-quadlet_options"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-quadlet-options"><strong>quadlet_options</strong></p>
+<a class="ansibleOptionLink" href="#parameter-quadlet_options" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Options for the quadlet file. Provide missing in usual network args options as a list of lines to add.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-recreate"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-recreate"><strong>recreate</strong></p>
+<a class="ansibleOptionLink" href="#parameter-recreate" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Recreate network even if exists.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-route"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-route"><strong>route</strong></p>
+<a class="ansibleOptionLink" href="#parameter-route" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>A static route in the format &lt;destination in CIDR notation&gt;,&lt;gateway&gt;,&lt;route metric (optional)&gt;. This route will be added to every container in this network.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-state"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-state"><strong>state</strong></p>
+<a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>State of network, default ‘present’</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;present&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;absent&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;quadlet&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-subnet"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-parameter-subnet"><strong>subnet</strong></p>
+<a class="ansibleOptionLink" href="#parameter-subnet" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Subnet in CIDR format</p>
+</div></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create a podman network</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">podman_network</span>
+<span class="w">  </span><span class="nt">become</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create internal podman network</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">podman_internal</span>
+<span class="w">    </span><span class="nt">internal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">ip_range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.22.128/25</span>
+<span class="w">    </span><span class="nt">subnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.22.0/24</span>
+<span class="w">    </span><span class="nt">gateway</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.22.1</span>
+<span class="w">  </span><span class="nt">become</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Create Quadlet file for podman network</span>
+<span class="w">  </span><span class="nt">containers.podman.podman_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">podman_network</span>
+<span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadlet</span>
+<span class="w">    </span><span class="nt">quadlet_options</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IPv6=true</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Label=&quot;ipv6 network&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="return-values">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Return Values</a><a class="headerlink" href="#return-values" title="Link to this heading"></a></h2>
+<p>Common return values are documented <a class="reference external" href="https://docs.ansible.com/ansible/devel/reference_appendices/common_return_values.html#common-return-values" title="(in Ansible vdevel)"><span class="xref std std-ref">here</span></a>, the following are the fields unique to this module:</p>
+<table class="longtable ansible-option-table docutils align-default" style="width: 100%">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="return-network"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-network-module-return-network"><strong>network</strong></p>
+<a class="ansibleOptionLink" href="#return-network" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Facts from created or updated networks</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> always</p>
+<p class="ansible-option-line ansible-option-sample"><strong class="ansible-option-sample-bold">Sample:</strong> <code class="ansible-option-sample docutils literal notranslate"><span class="pre">[{&quot;created&quot;:</span> <span class="pre">&quot;2024-07-13T15:43:36.548472483+03:00&quot;,</span> <span class="pre">&quot;dns_enabled&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;driver&quot;:</span> <span class="pre">&quot;bridge&quot;,</span> <span class="pre">&quot;id&quot;:</span> <span class="pre">&quot;3f46dc2626fe082b1ec703bc74d048765c1110c9eab7d61e33344e212279402c&quot;,</span> <span class="pre">&quot;internal&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;ipam_options&quot;:</span> <span class="pre">{&quot;driver&quot;:</span> <span class="pre">&quot;host-local&quot;},</span> <span class="pre">&quot;ipv6_enabled&quot;:</span> <span class="pre">false,</span> <span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;virtuals&quot;,</span> <span class="pre">&quot;network_interface&quot;:</span> <span class="pre">&quot;podman2&quot;,</span> <span class="pre">&quot;subnets&quot;:</span> <span class="pre">[{&quot;gateway&quot;:</span> <span class="pre">&quot;10.99.99.1&quot;,</span> <span class="pre">&quot;subnet&quot;:</span> <span class="pre">&quot;10.99.99.0/24&quot;}]}]</span></code></p>
+</div></td>
+</tr>
+</tbody>
+</table>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Sagi Shnaidman (&#64;sshnaidm)</p></li>
+</ul>
+</section>
+<section id="collection-links">
+<h3>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h3>
+<ul class="ansible-links">
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/containers/ansible-podman-collections/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc" rel="noopener external" target="_blank">Issue Tracker</a></span></li>
+<li><span><a aria-role="button" class="ansible-link reference external" href="https://github.com/containers/ansible-podman-collections.git" rel="noopener external" target="_blank">Repository (Sources)</a></span></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="podman_logout_module.html" class="btn btn-neutral float-left" title="containers.podman.podman_logout module – Log out of a container registry using podman" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="podman_network_info_module.html" class="btn btn-neutral float-right" title="containers.podman.podman_network_info module – Gather info about podman networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Ansible contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
