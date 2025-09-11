@@ -1,0 +1,17 @@
+---
+- name: Buildah stdin path on missing container
+  hosts: localhost
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.buildah
+    ansible_host: ci-missing-buildah
+  tasks:
+    - name: Cat with stdin should raise ContainerNotFoundError
+      raw: cat -n
+      register: r
+      ignore_errors: true
+
+    - assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")

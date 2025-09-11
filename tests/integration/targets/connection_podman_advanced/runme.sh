@@ -77,4 +77,16 @@ echo "Test 9: Performance test"
 time run_ansible "$@" > /tmp/performance_test.log 2>&1
 echo "Performance test completed - check /tmp/performance_test.log for timing"
 
+echo "Test 10: Missing container exec"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_exec.yml -i "test_connection.inventory"
+
+echo "Test 11: Removed between exec"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_removed_between_exec.yml -i "test_connection.inventory"
+
+echo "Test 12: Missing container put"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_put.yml -i "test_connection.inventory"
+
+echo "Test 13: Missing container fetch"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_fetch.yml -i "test_connection.inventory"
+
 echo "=== All Enhanced Podman Connection Tests Completed Successfully ==="

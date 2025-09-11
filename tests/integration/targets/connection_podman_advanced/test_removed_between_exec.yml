@@ -1,0 +1,26 @@
+---
+- name: Removed between exec for Podman
+  hosts: podman_advanced
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+  tasks:
+    - name: First exec works
+      raw: uname -s
+
+    - name: Remove this container from host
+      delegate_to: localhost
+      become: false
+      shell: podman rm -f {{ inventory_hostname }}
+      changed_when: true
+
+    - name: Second exec should fail with ContainerNotFoundError
+      raw: echo hello
+      register: r
+      ignore_errors: true
+
+    - name: Assert ContainerNotFoundError surfaced
+      assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")

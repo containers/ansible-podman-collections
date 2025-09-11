@@ -89,4 +89,16 @@ echo "Test 10: Performance test"
 time run_ansible "$@" > /tmp/buildah_performance_test.log 2>&1
 echo "Performance test completed - check /tmp/buildah_performance_test.log for timing"
 
+echo "Test 11: Missing buildah container exec"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_exec.yml -i "test_connection.inventory"
+
+echo "Test 12: Buildah removed between exec"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_removed_between_exec.yml -i "test_connection.inventory"
+
+echo "Test 13: Buildah put/fetch on missing container"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_put_fetch.yml -i "test_connection.inventory"
+
+echo "Test 14: Buildah stdin on missing container"
+${SUDO:-} ${ANSIBLECMD:-ansible-playbook} test_missing_container_stdin.yml -i "test_connection.inventory"
+
 echo "=== All Enhanced Buildah Connection Tests Completed Successfully ==="

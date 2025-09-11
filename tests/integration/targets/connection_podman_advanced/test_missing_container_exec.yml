@@ -1,0 +1,25 @@
+---
+- name: Define a missing Podman host dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add a missing container host
+      add_host:
+        name: missing_podman_host
+        ansible_connection: containers.podman.podman
+        ansible_host: ci-missing-podman
+
+- name: Exec on non-existent container should raise ContainerNotFoundError
+  hosts: missing_podman_host
+  gather_facts: false
+  tasks:
+    - name: Try exec on missing container
+      raw: id -u
+      register: r
+      ignore_errors: true
+
+    - name: Assert ContainerNotFoundError surfaced
+      assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")

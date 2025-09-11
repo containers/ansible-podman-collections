@@ -1,0 +1,25 @@
+---
+- name: Define a missing Buildah host dynamically
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Add a missing buildah container host
+      add_host:
+        name: missing_buildah_host
+        ansible_connection: containers.podman.buildah
+        ansible_host: ci-missing-buildah
+
+- name: Exec on non-existent buildah container should raise ContainerNotFoundError
+  hosts: missing_buildah_host
+  gather_facts: false
+  tasks:
+    - name: Try exec on missing container
+      raw: echo hi
+      register: r
+      ignore_errors: true
+
+    - name: Assert ContainerNotFoundError surfaced
+      assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")
