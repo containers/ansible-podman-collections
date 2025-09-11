@@ -1,0 +1,40 @@
+---
+- name: Copy files into container and fetch them back
+  hosts: all
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+  tasks:
+    - name: Compute controller time
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+      set_fact:
+        controller_now: "{{ lookup('pipe', 'date -Is') }}"
+
+    - name: Create temp file on controller
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+      copy:
+        dest: "/tmp/hello_from_controller.txt"
+        content: "Hello from controller at {{ controller_now }}\n"
+
+    - name: Upload file to container via podman cp
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+      command: >-
+        podman cp /tmp/hello_from_controller.txt {{ inventory_hostname }}:/tmp/hello_in_container.txt
+
+    - name: Show file details inside container
+      raw: "sh -lc 'ls -l /tmp/hello_in_container.txt && wc -l /tmp/hello_in_container.txt'"
+
+    - name: Fetch the file back via podman cp
+      delegate_to: localhost
+      vars:
+        ansible_connection: local
+      command: >-
+        podman cp {{ inventory_hostname }}:/tmp/hello_in_container.txt /tmp/fetched_{{ inventory_hostname }}.txt
+
+

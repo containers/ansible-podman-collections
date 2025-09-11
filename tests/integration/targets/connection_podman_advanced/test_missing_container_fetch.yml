@@ -1,0 +1,21 @@
+---
+- name: Fetch from missing Podman container
+  hosts: localhost
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+    ansible_host: ci-missing-podman
+  tasks:
+    - name: Fetch should raise ContainerNotFoundError
+      fetch:
+        src: /etc/os-release
+        dest: /tmp/os-release
+        flat: true
+      register: r
+      ignore_errors: true
+
+    - name: Assert ContainerNotFoundError surfaced
+      assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")

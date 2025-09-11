@@ -1,0 +1,32 @@
+---
+- name: Buildah container removed between tasks
+  hosts: localhost
+  gather_facts: false
+  vars:
+    wk: ci-bu-wk
+  tasks:
+    - name: Create working container
+      shell: buildah from --name {{ wk }} alpine:latest
+
+    - name: First exec via buildah connection
+      vars:
+        ansible_connection: containers.podman.buildah
+        ansible_host: "{{ wk }}"
+      raw: uname -a
+
+    - name: Remove working container
+      shell: buildah rm -f {{ wk }}
+      changed_when: true
+
+    - name: Second exec should raise ContainerNotFoundError
+      vars:
+        ansible_connection: containers.podman.buildah
+        ansible_host: "{{ wk }}"
+      raw: echo later
+      register: r
+      ignore_errors: true
+
+    - assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")

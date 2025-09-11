@@ -1,3 +1,5 @@
 tests/integration/targets/connection_buildah/runme.sh shellcheck:SC2086
 tests/integration/targets/connection_podman/runme.sh shellcheck:SC2086
+tests/integration/targets/connection_podman_advanced/runme.sh shellcheck:SC2086
+tests/integration/targets/connection_buildah_advanced/runme.sh shellcheck:SC2086
 tests/integration/targets/podman_play/tasks/files/multi-yaml.yml yamllint!skip

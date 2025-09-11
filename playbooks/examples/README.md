@@ -1,3 +1,28 @@
+### Podman connection examples (with podman_containers inventory)
+
+This folder shows practical playbooks that execute directly inside running Podman containers using the connection plugin `containers.podman.podman` and inventory plugin `containers.podman.podman_containers`.
+
+How to use
+1) Create a simple inventory source that discovers running containers:
+   - See `inventory/podman_all.yml`
+   - Adjust `label_selectors` or `name_patterns` if you want to target a subset
+
+2) Run an example, e.g. basic exec:
+```bash
+ansible-playbook -i playbooks/examples/inventory/podman_all.yml playbooks/examples/podman_exec_basic.yml
+```
+
+Examples included
+- `podman_exec_basic.yml` — Run common commands (uptime, os-release), demonstrate environment variables and idempotent checks
+- `podman_copy_fetch.yml` — Copy files into a container and fetch them back (works with rootless or root)
+- `podman_multiuser_tasks.yml` — Execute tasks as different users inside containers (root and non-root), with optional become
+- `podman_pkg_manage.yml` — Install a package using apk/apt/yum depending on detected distro (no Python required)
+
+Notes
+- The inventory plugin assigns the connection automatically; no SSH is used
+- To run as non-root, set `ansible_user` (e.g. `nobody` or a numeric UID) on hosts or in a task/role scope
+- You can inject environment variables into exec using `ansible_podman_extra_env`
+
 ### Buildah connection playbook examples
 
 This folder contains self-contained Ansible playbooks demonstrating how to build images with Buildah while executing steps inside a working container through the Buildah connection plugin (`ansible_connection: containers.podman.buildah`). Each example shows a realistic workflow and explains the options used.

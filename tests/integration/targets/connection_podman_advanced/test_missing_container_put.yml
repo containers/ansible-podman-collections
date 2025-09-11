@@ -1,0 +1,26 @@
+---
+- name: Put file to missing Podman container
+  hosts: localhost
+  gather_facts: false
+  vars:
+    ansible_connection: containers.podman.podman
+    ansible_host: ci-missing-podman
+  tasks:
+    - name: Create temp file on controller
+      copy:
+        content: podman-put-test
+        dest: /tmp/podman-put-test.txt
+      delegate_to: localhost
+
+    - name: Put file should raise ContainerNotFoundError
+      copy:
+        src: /tmp/podman-put-test.txt
+        dest: /root/put-here.txt
+      register: r
+      ignore_errors: true
+
+    - name: Assert ContainerNotFoundError surfaced
+      assert:
+        that:
+          - r is failed
+          - r.msg is search("Container .* not found")
