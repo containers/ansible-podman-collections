@@ -159,9 +159,7 @@ class Connection(ConnectionBase):
         self._executable_path = None
         self._task_uuid = to_text(kwargs.get("task_uuid", ""))
 
-        # Initialize caches
-        self._command_cache = {}
-        self._container_validation_cache = {}
+        # No pre-validation caches to preserve performance
 
         display.vvvv("Using buildah connection from collection", host=self._container_id)
 
@@ -230,14 +228,13 @@ class Connection(ConnectionBase):
             display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
             display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
 
-            stdout = to_bytes(stdout, errors="surrogate_or_strict")
-            stderr = to_bytes(stderr, errors="surrogate_or_strict")
-
-            if check_rc and process.returncode != 0:
+            if process.returncode != 0:
                 error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
-                if "no such container" in error_msg.lower() or "container not known" in error_msg.lower():
+                lower = error_msg.lower()
+                if "no such container" in lower or "container not known" in lower or "does not exist" in lower:
                     raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-                raise BuildahConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
+                if check_rc:
+                    raise BuildahConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
 
             return process.returncode, stdout, stderr
 
@@ -252,21 +249,7 @@ class Connection(ConnectionBase):
                 stdout_fd.close()
             raise BuildahConnectionError(f"Command execution failed: {e}")
 
-    def _validate_container(self):
-        """Validate that the container exists using a fast check"""
-        if self._container_id in self._container_validation_cache:
-            return self._container_validation_cache[self._container_id]
-
-        # Use inspect as an existence check only, avoid JSON parsing
-        rc, _stdout, _stderr = self._run_buildah_command(
-            ["inspect", self._container_id], include_container=False, check_rc=False
-        )
-        if rc != 0:
-            raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-
-        self._container_validation_cache[self._container_id] = True
-        display.vvv("Container validation successful", host=self._container_id)
-        return True
+    # No proactive validation; rely on operation failures for performance
 
     def _setup_mount_point(self):
         """Attempt to mount container filesystem for direct access"""
@@ -297,8 +280,7 @@ class Connection(ConnectionBase):
 
         display.vvv(f"Connecting to buildah container: {self._container_id}", host=self._container_id)
 
-        # Validate container exists and is accessible (fast)
-        self._validate_container()
+        # No proactive validation to avoid extra subprocess overhead
 
         self._connected = True
         display.vvv("Connection established successfully", host=self._container_id)
@@ -312,7 +294,6 @@ class Connection(ConnectionBase):
 
         cmd_args_list = shlex.split(to_native(cmd, errors="surrogate_or_strict"))
         run_cmd = ["run"]
-
         # Handle user specification
         if self.get_option("remote_user") and self.get_option("remote_user") != "root":
             run_cmd.extend(["--user", self.get_option("remote_user")])
@@ -339,24 +320,13 @@ class Connection(ConnectionBase):
 
         run_cmd.extend(cmd_args_list)
 
-        try:
-            # Use include_container=False since we already added container name
-            rc, stdout, stderr = self._run_buildah_command(run_cmd, input_data=in_data, include_container=False)
+        # Use include_container=False since we already added container name
+        rc, stdout, stderr = self._run_buildah_command(run_cmd, input_data=in_data, include_container=False)
 
-            # Auto-commit if enabled and command succeeded
-            if rc == 0 and self.get_option("auto_commit"):
-                self._auto_commit_changes()
-            return rc, stdout, stderr
-
-        except ContainerNotFoundError:
-            # Container might have been removed, invalidate cache and retry once
-            if self._container_id in self._container_validation_cache:
-                del self._container_validation_cache[self._container_id]
-                self._connected = False
-                self._connect()
-                rc, stdout, stderr = self._run_buildah_command(run_cmd, input_data=in_data, include_container=False)
-                return rc, stdout, stderr
-            raise
+        # Auto-commit if enabled and command succeeded
+        if rc == 0 and self.get_option("auto_commit"):
+            self._auto_commit_changes()
+        return rc, stdout, stderr
 
     def _auto_commit_changes(self):
         """Automatically commit changes if enabled"""

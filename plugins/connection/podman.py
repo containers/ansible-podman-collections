@@ -111,6 +111,12 @@ DOCUMENTATION = """
         type: str
         vars:
           - name: ansible_podman_privilege_escalation
+      working_directory:
+        description:
+          - Working directory for commands executed in the container.
+        type: str
+        vars:
+          - name: ansible_podman_working_directory
 """
 
 import os
@@ -153,9 +159,7 @@ class Connection(ConnectionBase):
         self._executable_path = None
         self._task_uuid = to_text(kwargs.get("task_uuid", ""))
 
-        # Initialize caches
-        self._command_cache = {}
-        self._container_validation_cache = {}
+        # No pre-validation caches to preserve performance
 
         display.vvvv("Using podman connection from collection", host=self._container_id)
 
@@ -215,39 +219,26 @@ class Connection(ConnectionBase):
             display.vvvvv(f"STDERR: {stderr}", host=self._container_id)
             display.vvvvv(f"RC: {process.returncode}", host=self._container_id)
 
-            stdout = to_bytes(stdout, errors="surrogate_or_strict")
-            stderr = to_bytes(stderr, errors="surrogate_or_strict")
-
-            if check_rc and process.returncode != 0:
+            if process.returncode != 0:
                 error_msg = to_text(stderr, errors="surrogate_or_strict").strip()
-                if "no such container" in error_msg.lower():
+                lower = error_msg.lower()
+                if "no such container" in lower or "does not exist" in lower or "container not known" in lower:
+                    self._connected = False
                     raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-                raise PodmanConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
+                if check_rc:
+                    raise PodmanConnectionError(f"Command failed (rc={process.returncode}): {error_msg}")
 
             return process.returncode, stdout, stderr
 
         except subprocess.TimeoutExpired:
             process.kill()
-            timeout_val = self.get_option('container_timeout')
+            timeout_val = self.get_option("container_timeout")
+            self._connected = False
             raise PodmanConnectionError(f"Command timeout after {timeout_val}s")
         except Exception as e:
             raise PodmanConnectionError(f"Command execution failed: {e}")
 
-    def _validate_container(self):
-        """Validate that the container exists using a fast check"""
-        if self._container_id in self._container_validation_cache:
-            return self._container_validation_cache[self._container_id]
-
-        # Fast existence check avoids expensive JSON parsing
-        rc, _stdout, _stderr = self._run_podman_command(
-            ["container", "exists", self._container_id], include_container=False, check_rc=False
-        )
-        if rc != 0:
-            raise ContainerNotFoundError(f"Container '{self._container_id}' not found")
-
-        self._container_validation_cache[self._container_id] = True
-        display.vvv("Container validation successful", host=self._container_id)
-        return True
+    # No proactive validation; rely on operation failures for performance
 
     def _setup_mount_point(self):
         """Attempt to mount container filesystem for direct access (lightweight)"""
@@ -280,9 +271,6 @@ class Connection(ConnectionBase):
             return
 
         display.vvv(f"Connecting to container: {self._container_id}", host=self._container_id)
-
-        # Validate container exists and is accessible (fast)
-        self._validate_container()
 
         self._connected = True
         display.vvv("Connection established successfully", host=self._container_id)
@@ -319,22 +307,16 @@ class Connection(ConnectionBase):
             elif privilege_method == "su":
                 cmd_args_list = ["su", "-c", " ".join(shlex.quote(arg) for arg in cmd_args_list)]
 
+        # Add working directory option
+        workdir = self.get_option("working_directory")
+        if workdir:
+            exec_cmd.extend(["--workdir", workdir])
+
         # Combine exec command: podman exec [options] container_id command
         full_cmd = exec_cmd + [self._container_id] + cmd_args_list
 
-        try:
-            rc, stdout, stderr = self._run_podman_command(full_cmd, input_data=in_data, include_container=False)
-            return rc, stdout, stderr
-
-        except ContainerNotFoundError:
-            # Container might have been removed, invalidate cache and retry once
-            if self._container_id in self._container_validation_cache:
-                del self._container_validation_cache[self._container_id]
-                self._connected = False
-                self._connect()
-                rc, stdout, stderr = self._run_podman_command(full_cmd, input_data=in_data, include_container=False)
-                return rc, stdout, stderr
-            raise
+        rc, stdout, stderr = self._run_podman_command(full_cmd, input_data=in_data, include_container=False)
+        return rc, stdout, stderr
 
     def put_file(self, in_path, out_path):
         """Transfer file to container using optimal method"""
@@ -357,14 +339,8 @@ class Connection(ConnectionBase):
                 display.vvv(f"Mount copy failed, falling back to podman cp: {e}", host=self._container_id)
 
         # Use podman cp command
-        copy_cmd = ["cp", in_path, f"{self._container_id}:{out_path}"]
-
-        try:
-            self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
-        except PodmanConnectionError:
-            # Try with --pause=false for running containers
-            copy_cmd.insert(1, "--pause=false")
-            self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
+        copy_cmd = ["cp", "--pause=false", in_path, f"{self._container_id}:{out_path}"]
+        self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
 
         # Change ownership if user specified
         if self.get_option("remote_user"):
@@ -404,7 +380,7 @@ class Connection(ConnectionBase):
                 display.vvv(f"Mount fetch failed, falling back to podman cp: {e}", host=self._container_id)
 
         # Use podman cp command
-        copy_cmd = ["cp", f"{self._container_id}:{in_path}", out_path]
+        copy_cmd = ["cp", "--pause=false", f"{self._container_id}:{in_path}", out_path]
         self._run_podman_command(copy_cmd, include_container=False, check_rc=True)
 
     def close(self):
@@ -418,9 +394,6 @@ class Connection(ConnectionBase):
                 display.vvvv("Container unmounted successfully", host=self._container_id)
             except Exception as e:
                 display.vvvv(f"Unmount failed (this is usually not critical): {e}", host=self._container_id)
-
-        # Clear caches
-        self._command_cache.clear()
 
         self._connected = False
         display.vvv("Connection closed", host=self._container_id)
