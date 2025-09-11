@@ -5,6 +5,47 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.18.0
+=======
+
+Major Changes
+-------------
+
+- Add inventory plugins for buildah and podman
+- Add podman system connection modules
+
+Minor Changes
+-------------
+
+- Add building Podman from source
+- Add podman image scp option
+- Add unittests for podman_image
+- Improve docs and guides
+- Rewrite podman_image and add tests
+- Update docs and script
+
+Bugfixes
+--------
+
+- Fix podman logout for newer Podman
+- Fix podman_image correct delimiter logic for version@digest tags
+- Remove quiet mode from pulling image
+
+New Plugins
+-----------
+
+Inventory
+~~~~~~~~~
+
+- containers.podman.buildah_containers - Inventory plugin that discovers Buildah working containers as hosts
+- containers.podman.podman_containers - Inventory plugin that discovers Podman containers as hosts
+
+New Modules
+-----------
+
+- containers.podman.podman_system_connection - Manage Podman system connections
+- containers.podman.podman_system_connection_info - Get info about Podman system connections
+
 v1.17.0
 =======
 
