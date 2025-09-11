@@ -449,6 +449,39 @@ releases:
       name: podman_system_info
       namespace: ''
     release_date: '2025-06-26'
+  1.18.0:
+    changes:
+      bugfixes:
+      - Fix podman logout for newer Podman
+      - Fix podman_image correct delimiter logic for version@digest tags
+      - Remove quiet mode from pulling image
+      major_changes:
+      - Add inventory plugins for buildah and podman
+      - Add podman system connection modules
+      minor_changes:
+      - Add building Podman from source
+      - Add podman image scp option
+      - Add unittests for podman_image
+      - Improve docs and guides
+      - Rewrite podman_image and add tests
+      - Update docs and script
+    modules:
+    - description: Manage Podman system connections
+      name: podman_system_connection
+      namespace: ''
+    - description: Get info about Podman system connections
+      name: podman_system_connection_info
+      namespace: ''
+    plugins:
+      inventory:
+      - description: Inventory plugin that discovers Buildah working containers as
+          hosts
+        name: buildah_containers
+        namespace: ''
+      - description: Inventory plugin that discovers Podman containers as hosts
+        name: podman_containers
+        namespace: ''
+    release_date: '2025-09-11'
   1.2.0:
     changes:
       minor_changes:
