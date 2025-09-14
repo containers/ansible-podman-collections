@@ -28,6 +28,7 @@ pushd "tests/integration/targets/connection_${CON_TYPE}"
 ANSIBLECMD=${ANSIBLECMD} SUDO="${SUDO}" ./runme.sh
 popd
 
+echo
 # Create a big file for uploading to container
 [[ ! -f  /tmp/local_file ]] && head -c 5M </dev/urandom >/tmp/local_file
 
