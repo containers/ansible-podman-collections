@@ -13,6 +13,22 @@
         target_names:
           - openjdk8
           - jdk8
+      register: tag_result
+
+    - name: Tag image again to test idempotency
+      containers.podman.podman_tag:
+        executable: "{{ test_executable | default('podman') }}"
+        image: docker.io/library/alpine
+        target_names:
+          - openjdk8
+          - jdk8
+      register: tag_result_idempotency
+
+    - name: Check idempotency
+      assert:
+        that:
+          - tag_result.changed == true
+          - tag_result_idempotency.changed == false
 
     - name: Get tagged image info
       containers.podman.podman_image_info:

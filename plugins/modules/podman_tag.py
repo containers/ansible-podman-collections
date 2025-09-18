@@ -50,19 +50,80 @@ EXAMPLES = """
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
 
+def create_full_qualified_image_name(name):
+    if "@" in name:
+        name, digest = name.split("@", 1)
+        tag_or_digest = "@" + digest
+    else:
+        tag_or_digest = ""
+
+    parts = name.split("/")
+
+    if len(parts) > 1 and (("." in parts[0] or ":" in parts[0]) or parts[0] == "localhost"):
+        registry = parts[0]
+        rest = parts[1:]
+    else:
+        registry = "localhost"
+        rest = parts
+
+    if len(rest) == 1:
+        if registry == "docker.io":
+            namespace = "library"
+        else:
+            namespace = ""
+        image_name = rest[0]
+    else:
+        namespace = "/".join(rest[:-1])
+        image_name = rest[-1]
+
+    if not tag_or_digest and ":" in image_name:
+        image_name, tag_or_digest = image_name.split(":", 1)
+        tag_or_digest = ":" + tag_or_digest
+
+    if not tag_or_digest:
+        tag_or_digest = ":latest"
+
+    if namespace == "":
+        qualified = f"{registry}/{image_name}{tag_or_digest}"
+    else:
+        qualified = f"{registry}/{namespace}/{image_name}{tag_or_digest}"
+
+    return qualified
+
+
+def get_image_id(module, executable, name):
+    command = [executable, "image", "ls", "-q", name]
+    rc, out, err = module.run_command(command)
+    if rc != 0:
+        return None
+    return out.strip()
+
+
 def tag(module, executable):
     changed = False
     command = [executable, "tag"]
     command.append(module.params["image"])
     command.extend(module.params["target_names"])
+
+    id = get_image_id(module, executable, module.params["image"])
+    if id:
+        for name in module.params["target_names"]:
+            image_id = get_image_id(module, executable, name)
+            if image_id != id or image_id == "":
+                changed = True
+
     if module.check_mode:
         return changed, "", ""
-    rc, out, err = module.run_command(command)
-    if rc == 0:
-        changed = True
+
+    if changed:
+        rc, out, err = module.run_command(command)
+        if rc == 0:
+            changed = True
+        else:
+            module.fail_json(msg="Error tagging local image %s: %s" % (module.params["image"], err))
+        return changed, out, err
     else:
-        module.fail_json(msg="Error tagging local image %s: %s" % (module.params["image"], err))
-    return changed, out, err
+        return False, "", ""
 
 
 def main():
