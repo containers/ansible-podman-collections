@@ -21,6 +21,7 @@ class Quadlet:
 
     def __init__(self, section: str, params: dict):
         self.section = section
+        self.service_section = {}
         self.custom_params = self.custom_prepare_params(params)
         self.dict_params = self.prepare_params()
 
@@ -30,6 +31,20 @@ class Quadlet:
         """
         # This should be implemented in child classes if needed.
         return params
+
+    def _map_restart_policy(self, policy: str) -> str:
+        """
+        Map Podman restart policies to systemd Restart values.
+        """
+        # Podman restart policies: no, on-failure, always, unless-stopped
+        # systemd Restart values: no, on-success, on-failure, on-abnormal, on-watchdog, on-abort, always
+        policy_map = {
+            "no": "no",
+            "on-failure": "on-failure",
+            "always": "always",
+            "unless-stopped": "always",  # systemd doesn't have unless-stopped, use always
+        }
+        return policy_map.get(policy, policy)
 
     def prepare_params(self) -> dict:
         """
@@ -55,10 +70,22 @@ class Quadlet:
         Construct the quadlet content as a string.
         """
         custom_user_options = self.custom_params.get("quadlet_options")
+
+        # Build main section
+        content = f"[{self.section}]\n" + "\n".join(f"{key}={value}" for key, value in self.dict_params)
+
+        # Add Service section if there are service parameters
+        # Check if user hasn't already added a [Service] section in quadlet_options
+        has_service_in_custom = False
+        if custom_user_options:
+            has_service_in_custom = any("[Service]" in opt for opt in custom_user_options)
+
+        if self.service_section and not has_service_in_custom:
+            service_text = "\n\n[Service]\n" + "\n".join(f"{key}={value}" for key, value in self.service_section.items())
+            content += service_text
+
         custom_text = "\n" + "\n".join(custom_user_options) if custom_user_options else ""
-        return (
-            f"[{self.section}]\n" + "\n".join(f"{key}={value}" for key, value in self.dict_params) + custom_text + "\n"
-        )
+        return content + custom_text + "\n"
 
     def write_to_file(self, path: str):
         """
@@ -341,8 +368,10 @@ class ContainerQuadlet(Quadlet):
             params["podman_args"].append(f"--rdt-class {params['rdt_class']}")
         if params["requires"]:
             params["podman_args"].append(f"--requires {','.join(params['requires'])}")
+        # restart_policy is handled in the [Service] section, not as a podman argument
+        # to avoid conflicts with --rm option in Quadlet files
         if params["restart_policy"]:
-            params["podman_args"].append(f"--restart {params['restart_policy']}")
+            self.service_section["Restart"] = self._map_restart_policy(params["restart_policy"])
         if params["retry"]:
             params["podman_args"].append(f"--retry {params['retry']}")
         if params["retry_delay"]:
@@ -530,8 +559,10 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--pid {params['pid']}")
         if params["pod_id_file"]:
             params["podman_args"].append(f"--pod-id-file {params['pod_id_file']}")
+        # restart_policy is handled in the [Service] section, not as a podman argument
+        # to avoid conflicts with --rm option in Quadlet files
         if params["restart_policy"]:
-            params["podman_args"].append(f"--restart={params['restart_policy']}")
+            self.service_section["Restart"] = self._map_restart_policy(params["restart_policy"])
         if params["security_opt"]:
             for security_opt in params["security_opt"]:
                 params["podman_args"].append(f"--security-opt {security_opt}")

@@ -1523,6 +1523,102 @@
           - quad3 is changed
           - "'127.0.0.45' in quad3.diff.after"
 
+    # Test for issue #913: restart_policy should go to [Service] section, not PodmanArgs
+    - name: Create a Quadlet for container with restart_policy
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-restart-test
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        restart_policy: always
+      register: quad_restart
+
+    - name: Check if Quadlet file contains [Service] section with Restart
+      shell: cat /tmp/container-restart-test.container
+      register: quad_restart_content
+
+    - name: Verify restart_policy is in [Service] section and not in PodmanArgs
+      assert:
+        that:
+          - quad_restart is changed
+          - "'[Service]' in quad_restart_content.stdout"
+          - "'Restart=always' in quad_restart_content.stdout"
+          - "'--restart' not in quad_restart_content.stdout"
+        fail_msg: "restart_policy should be in [Service] section, not as --restart in PodmanArgs"
+
+    - name: Test different restart policies
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "container-restart-{{ item.name }}"
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        restart_policy: "{{ item.policy }}"
+      loop:
+        - { name: "on-failure", policy: "on-failure" }
+        - { name: "unless-stopped", policy: "unless-stopped" }
+      register: quad_restart_policies
+
+    - name: Verify all restart policies are correctly mapped
+      shell: cat /tmp/container-restart-{{ item.item.name }}.container
+      loop: "{{ quad_restart_policies.results }}"
+      register: quad_restart_files
+
+    - name: Check restart policy mapping
+      assert:
+        that:
+          - "'[Service]' in item.stdout"
+          - "'Restart=' in item.stdout"
+          - "'--restart' not in item.stdout"
+      loop: "{{ quad_restart_files.results }}"
+
+    # Test for issue #913: Verify no duplicate [Service] section when user provides custom one
+    - name: Create Quadlet with restart_policy and custom Service section in quadlet_options
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-restart-custom-service
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        restart_policy: always
+        command: sleep infinity
+        quadlet_options:
+          - |
+            [Service]
+            TimeoutStopSec=70
+            Restart=on-failure
+      register: quad_custom_service
+
+    - name: Read Quadlet file with custom Service section
+      shell: cat /tmp/container-restart-custom-service.container
+      register: quad_custom_service_content
+
+    - name: Count [Service] sections in Quadlet file
+      shell: grep -c "^\[Service\]" /tmp/container-restart-custom-service.container
+      register: service_section_count
+      failed_when: false
+
+    - name: Verify only one [Service] section exists (user's custom one takes precedence)
+      assert:
+        that:
+          - quad_custom_service is changed
+          - service_section_count.stdout == "1"
+          - "'TimeoutStopSec=70' in quad_custom_service_content.stdout"
+          - "'Restart=on-failure' in quad_custom_service_content.stdout"
+          - "'--restart' not in quad_custom_service_content.stdout"
+        fail_msg: "Should have exactly one [Service] section when user provides custom one"
+
+    - name: Cleanup restart test Quadlet files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/container-restart-test.container
+        - /tmp/container-restart-on-failure.container
+        - /tmp/container-restart-unless-stopped.container
+        - /tmp/container-restart-custom-service.container
+
   always:
 
     - name: Remove container
