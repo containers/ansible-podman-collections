@@ -569,11 +569,27 @@ class PodmanImageManager:
         """Ensure image is present (pull or build if needed)."""
         image = self.find_image()
 
+        # Get digest before any operations
+        digest_before = None
+        if image:
+            inspect_data = self.inspector.inspect_image(self.repository.full_name)
+            if inspect_data and len(inspect_data) > 0:
+                digest_before = inspect_data[0].get("Digest") or inspect_data[0].get("digest")
+                # If Digest is not available, try to get from RepoDigests
+                if not digest_before:
+                    repo_digests = inspect_data[0].get("RepoDigests", [])
+                    if repo_digests:
+                        # Extract digest from first RepoDigest (format: repo@sha256:...)
+                        for repo_digest in repo_digests:
+                            if "@" in repo_digest:
+                                digest_before = repo_digest.split("@", 1)[1]
+                                break
+
         if not image or self._should_rebuild_image(image):
             if self.params.get("state") == "build" or self.params.get("path"):
                 self._build_image()
             else:
-                self._pull_image()
+                self._pull_image(digest_before)
 
         if self.params.get("push"):
             self._push_image()
@@ -611,7 +627,7 @@ class PodmanImageManager:
         self.results["changed"] = True
         self.results["actions"].append(f"Built image {self.repository.full_name} from {path or 'context'}")
 
-    def _pull_image(self):
+    def _pull_image(self, digest_before=None):
         """Pull an image."""
         if not self.params.get("pull", True):
             self.module.fail_json(msg=f"Image {self.repository.full_name} not found locally and pull is disabled")
@@ -623,8 +639,27 @@ class PodmanImageManager:
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
             self.results["podman_actions"].append(podman_command)
 
-        self.results["changed"] = True
-        self.results["actions"].append(f"Pulled image {self.repository.full_name}")
+            # Check if digest actually changed
+            digest_after = None
+            if self.results["image"] and len(self.results["image"]) > 0:
+                digest_after = self.results["image"][0].get("Digest") or self.results["image"][0].get("digest")
+                # If Digest is not available, try to get from RepoDigests
+                if not digest_after:
+                    repo_digests = self.results["image"][0].get("RepoDigests", [])
+                    if repo_digests:
+                        # Extract digest from first RepoDigest (format: repo@sha256:...)
+                        for repo_digest in repo_digests:
+                            if "@" in repo_digest:
+                                digest_after = repo_digest.split("@", 1)[1]
+                                break
+
+            changed = digest_before != digest_after
+            self.results["changed"] = changed
+            if changed:
+                self.results["actions"].append(f"Pulled image {self.repository.full_name}")
+        else:
+            self.results["changed"] = True
+            self.results["actions"].append(f"Pulled image {self.repository.full_name}")
 
     def _push_image(self):
         """Push an image."""
