@@ -1,0 +1,54 @@
+---
+# Test for issue #981: podman_image with force=true should be idempotent
+# https://github.com/containers/ansible-podman-collections/issues/981
+
+- name: Test issue  # 981 - Remove alpine image if exists
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    tag: latest
+    state: absent
+  ignore_errors: true
+
+- name: Test issue  # 981 - Pull alpine image first time
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    tag: latest
+  register: issue_981_pull1
+
+- name: Test issue  # 981 - Pull alpine with force=true (same digest, should not change)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    tag: latest
+    force: true
+  register: issue_981_pull2
+
+- name: Test issue  # 981 - Pull alpine with force=true again (same digest, should not change)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    tag: latest
+    force: true
+  register: issue_981_pull3
+
+- name: Test issue  # 981 - Verify force=true idempotency
+  assert:
+    that:
+      - issue_981_pull1 is changed
+      - issue_981_pull1.actions | length > 0
+      - "'Pulled image' in issue_981_pull1.actions[0]"
+      - issue_981_pull2 is not changed
+      - issue_981_pull2.actions | length == 0
+      - issue_981_pull3 is not changed
+      - issue_981_pull3.actions | length == 0
+    fail_msg: "Issue #981 not fixed: force=true is not idempotent when digest hasn't changed"
+    success_msg: "Issue #981 fixed: force=true is idempotent when digest hasn't changed"
+
+- name: Test issue  # 981 - Cleanup
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    tag: latest
+    state: absent
