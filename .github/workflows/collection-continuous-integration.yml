@@ -41,7 +41,7 @@ jobs:
           ~/.local/bin/ansible-galaxy collection build --output-path
           "${GITHUB_WORKSPACE}/.cache/collection-tarballs"
       - name: Store migrated collection artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: collection
           path: .cache/collection-tarballs

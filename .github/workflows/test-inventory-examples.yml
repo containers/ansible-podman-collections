@@ -351,7 +351,7 @@ jobs:
           /home/runner/.ansible/collections/ansible_collections/containers/podman
 
       - name: Upload coverage artifact (ansible-test outputs)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: inventory-coverage
           path: |
