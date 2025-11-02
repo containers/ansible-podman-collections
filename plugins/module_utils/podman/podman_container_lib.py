@@ -127,7 +127,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     kernel_memory=dict(type="str"),
     label=dict(type="dict", aliases=["labels"]),
     label_file=dict(type="str"),
-    log_driver=dict(type="str", choices=["k8s-file", "journald", "json-file"]),
+    log_driver=dict(type="str", choices=["k8s-file", "journald", "json-file", "passthrough", "none"]),
     log_level=dict(type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]),
     log_opt=dict(
         type="dict",
