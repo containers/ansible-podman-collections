@@ -661,6 +661,8 @@ options:
       - k8s-file
       - journald
       - json-file
+      - passthrough
+      - none
   log_level:
     description:
       - Logging level for Podman. Log messages above specified level
