@@ -118,6 +118,7 @@
 
     - name: Get podman version
       shell: |
+        podman version || true
         podman version
         buildah version
         podman info --debug
