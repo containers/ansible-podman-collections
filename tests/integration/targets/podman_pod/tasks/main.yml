@@ -30,6 +30,11 @@
         podman_version: 5
       when: podman_v.stdout is version('5.0.0', '>=')
 
+    - name: Set podman version to 6
+      set_fact:
+        podman_version: 6
+      when: podman_v.stdout is version('6.0.0', '>=')
+
     - name: Discover cgroups version
       shell: podman info | grep cgroupVersion | awk {'print $2'}
       register: cgroups
