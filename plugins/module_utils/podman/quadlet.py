@@ -15,6 +15,30 @@ from ansible_collections.containers.podman.plugins.module_utils.podman.common im
 QUADLET_ROOT_PATH = "/etc/containers/systemd/"
 QUADLET_NON_ROOT_PATH = "~/.config/containers/systemd/"
 
+# https://github.com/containers/podman/blob/main/pkg/systemd/quadlet/quadlet_common.go
+QUADLET_SUFFIXES = [
+    ".artifact",
+    ".container",
+    ".volume",
+    ".kube",
+    ".network",
+    ".image",
+    ".build",
+    ".pod",
+    ".quadlets",
+]
+
+
+def resolve_quadlet_dir(module):
+    quadlet_dir = module.params.get("quadlet_dir")
+    if not quadlet_dir:
+        user_is_root = os.geteuid() == 0
+        if user_is_root:
+            quadlet_dir = QUADLET_ROOT_PATH
+        else:
+            quadlet_dir = os.path.expanduser(QUADLET_NON_ROOT_PATH)
+    return quadlet_dir
+
 
 class Quadlet:
     param_map = {}

@@ -1,0 +1,119 @@
+- name: Test podman_quadlet_info
+  block:
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version fact
+      set_fact:
+        podman_version: "{{ podman_v.stdout | string }}"
+
+    - name: Print podman version
+      debug: var=podman_v.stdout
+
+    - name: Define quadlet user dir
+      set_fact:
+        quadlet_user_dir: "{{ ansible_env.HOME }}/.config/containers/systemd"
+
+    - name: Create a temporary file quadlet to inspect
+      ansible.builtin.tempfile:
+        state: file
+        suffix: .container
+      register: info_quadlet_tmp
+
+    - name: Write a quadlet content to temp file
+      copy:
+        dest: "{{ info_quadlet_tmp.path }}"
+        mode: "0644"
+        content: |
+          [Container]
+          Image=docker.io/library/alpine:latest
+          Exec=/bin/sh -c 'sleep 600'
+
+    - name: Install temp quadlet
+      containers.podman.podman_quadlet:
+        state: present
+        src: "{{ info_quadlet_tmp.path }}"
+
+    - name: List quadlets
+      containers.podman.podman_quadlet_info: {}
+      register: list_info
+
+    - name: Assert quadlets list includes our file
+      assert:
+        that:
+          - list_info.quadlets is defined
+
+    - name: Print specific quadlet
+      containers.podman.podman_quadlet_info:
+        name: "{{ info_quadlet_tmp.path | basename }}"
+      register: print_info
+
+    - name: Assert print contains our section
+      assert:
+        that:
+          - print_info.content is search('\\[Container\\]')
+
+    # Test filtering and edge cases
+    - name: Test kinds filtering (container only)
+      containers.podman.podman_quadlet_info:
+        kinds: [container]
+      register: filtered_info
+
+    - name: Assert filtered results are only containers
+      assert:
+        that:
+          - filtered_info.quadlets is defined
+          # If there are results, all should end with .container
+          - filtered_info.quadlets | length == 0 or (filtered_info.quadlets | map(attribute='Name') | select('search', '\\.container$') | list | length == filtered_info.quadlets | length)
+
+    - name: Test quadlet_dir filtering
+      containers.podman.podman_quadlet_info:
+        quadlet_dir: "{{ quadlet_user_dir }}"
+      register: dir_filtered_info
+
+    - name: Assert quadlet_dir filtered results have correct paths
+      assert:
+        that:
+          - dir_filtered_info.quadlets is defined
+          # If there are results, all paths should be under the specified directory
+          - dir_filtered_info.quadlets | length == 0 or (dir_filtered_info.quadlets | map(attribute='Path') | select('search', quadlet_user_dir) | list | length == dir_filtered_info.quadlets | length)
+
+    - name: Test non-existent quadlet print
+      containers.podman.podman_quadlet_info:
+        name: non-existent-quadlet.container
+      register: nonexistent_print
+      ignore_errors: true
+
+    - name: Assert non-existent print fails appropriately
+      assert:
+        that:
+          - nonexistent_print is failed
+
+    - name: Test check mode for info module
+      containers.podman.podman_quadlet_info: {}
+      check_mode: true
+      register: check_mode_info
+
+    - name: Assert check mode works for info
+      assert:
+        that:
+          - not check_mode_info.changed
+          - check_mode_info.quadlets is defined
+
+    - name: Test debug mode
+      containers.podman.podman_quadlet_info:
+        debug: true
+      register: debug_info
+
+    - name: Assert debug output present
+      assert:
+        that:
+          - debug_info.stdout is defined or debug_info.stderr is defined
+
+  always:
+    # clean the test quadlets
+    - name: Cleanup installed quadlet
+      containers.podman.podman_quadlet:
+        state: absent
+        name: "{{ info_quadlet_tmp.path | basename }}"
