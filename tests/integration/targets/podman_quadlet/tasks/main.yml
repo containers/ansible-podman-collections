@@ -1,0 +1,794 @@
+- name: Test podman_quadlet
+  block:
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version fact
+      set_fact:
+        podman_version: "{{ podman_v.stdout | string }}"
+
+    - name: Print podman version
+      debug: var=podman_v.stdout
+
+    - name: Define quadlet user dir
+      set_fact:
+        quadlet_user_dir: "{{ ansible_env.HOME }}/.config/containers/systemd"
+
+    - name: Create temporary directory for single-file quadlet
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: quadlet_single_
+      register: quadlet_single_dir
+
+    - name: Write a simple container quadlet file
+      copy:
+        dest: "{{ quadlet_single_dir.path }}/test-single.container"
+        mode: "0644"
+        content: |
+          [Container]
+          Image=docker.io/library/alpine:latest
+          Exec=/bin/sh -c 'sleep 600'
+
+    - name: Install quadlet from a single file
+      containers.podman.podman_quadlet:
+        state: present
+        src: "{{ quadlet_single_dir.path }}/test-single.container"
+        reload_systemd: true
+      register: install_single
+
+    - name: Assert install_single changed
+      assert:
+        that:
+          - install_single.changed
+
+    - name: Verify quadlet file exists in user dir
+      stat:
+        path: "{{ quadlet_user_dir }}/test-single.container"
+      register: single_stat
+
+    - name: Assert quadlet file present
+      assert:
+        that:
+          - single_stat.stat.exists
+
+    - name: Reinstall quadlet single file should be idempotent
+      containers.podman.podman_quadlet:
+        state: present
+        src: "{{ quadlet_single_dir.path }}/test-single.container"
+        reload_systemd: false
+      register: reinstall_single
+
+    - name: Assert reinstall_single not changed
+      assert:
+        that:
+          - not reinstall_single.changed
+
+    - name: Remove quadlet without suffix (module should resolve)
+      containers.podman.podman_quadlet:
+        state: absent
+        name:
+          - test-single
+      register: rm_no_suffix
+
+    - name: Assert rm_no_suffix changed
+      assert:
+        that:
+          - rm_no_suffix.changed
+
+    - name: Create temporary directory for quadlet application
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: quadlet_app_
+      register: quadlet_app_dir
+
+    - name: Write two quadlet files into application dir
+      copy:
+        dest: "{{ item.dest }}"
+        mode: "0644"
+        content: "{{ item.content }}"
+      loop:
+        - {
+            dest: "{{ quadlet_app_dir.path }}/app-a.container",
+            content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+          }
+        - {
+            dest: "{{ quadlet_app_dir.path }}/app-b.container",
+            content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+          }
+
+    - name: Install quadlet application (directory)
+      containers.podman.podman_quadlet:
+        state: present
+        src: "{{ quadlet_app_dir.path }}"
+      register: install_app
+
+    - name: Verify both app quadlets installed
+      stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ quadlet_user_dir }}/app-a.container"
+        - "{{ quadlet_user_dir }}/app-b.container"
+      register: app_stats
+
+    - name: Assert app files present
+      assert:
+        that:
+          - app_stats.results | map(attribute='stat.exists') | list | min
+
+    - name: Remove one quadlet from the application (should remove whole app)
+      containers.podman.podman_quadlet:
+        state: absent
+        name:
+          - app-a.container
+      register: rm_app_one
+
+    - name: Recreate two standalone quadlets and remove by names list
+      block:
+        - name: Write two standalone quadlets
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - {
+                dest: "{{ quadlet_single_dir.path }}/standalone-a.container",
+                content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+              }
+            - {
+                dest: "{{ quadlet_single_dir.path }}/standalone-b.container",
+                content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+              }
+
+        - name: Install two standalone quadlets
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ item }}"
+          loop:
+            - "{{ quadlet_single_dir.path }}/standalone-a.container"
+            - "{{ quadlet_single_dir.path }}/standalone-b.container"
+
+        - name: Remove both via names list
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - standalone-a.container
+              - standalone-b.container
+          register: rm_both
+
+        - name: Assert removal succeeded and return value structure is correct
+          assert:
+            that:
+              - rm_both.changed
+              - rm_both.quadlets is defined
+              - rm_both.quadlets | length == 2
+              - rm_both.quadlets[0].name in ['standalone-a.container', 'standalone-b.container']
+              - rm_both.quadlets[1].name in ['standalone-a.container', 'standalone-b.container']
+
+    - name: Verify both app quadlets are removed
+      stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ quadlet_user_dir }}/app-a.container"
+        - "{{ quadlet_user_dir }}/app-b.container"
+      register: app_rm_stats
+
+    - name: Assert app files absent
+      assert:
+        that:
+          - (app_rm_stats.results | map(attribute='stat.exists') | list) | select('equalto', true) | list | length == 0
+
+    - name: Remove non-existent quadlet (should be idempotent)
+      containers.podman.podman_quadlet:
+        state: absent
+        name:
+          - does-not-exist.container
+      register: rm_non_existent
+
+    - name: Assert rm_non_existent succeeded but not changed
+      assert:
+        that:
+          - not rm_non_existent.changed
+
+    # Edge case and negative tests
+    - name: Test invalid src parameter (missing file)
+      containers.podman.podman_quadlet:
+        state: present
+        src: /nonexistent/path/file.container
+      register: invalid_src
+      ignore_errors: true
+
+    - name: Assert invalid src fails appropriately
+      assert:
+        that:
+          - invalid_src is failed
+
+    - name: Test absent state without name or all (should fail)
+      containers.podman.podman_quadlet:
+        state: absent
+      register: absent_missing_args
+      ignore_errors: true
+
+    - name: Assert absent missing args fails
+      assert:
+        that:
+          - absent_missing_args is failed
+          - absent_missing_args.msg is search("must be specified")
+
+    - name: Test force parameter
+      block:
+        - name: Create a quadlet file for force test
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/force-test.container"
+            mode: "0644"
+            content: |
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+
+        - name: Install quadlet for force test
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/force-test.container"
+          register: force_install
+
+        - name: Assert install succeeded
+          assert:
+            that:
+              - force_install.changed
+
+        - name: Remove quadlet with force=false (testing non-default)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - force-test.container
+            force: false
+          register: rm_no_force
+
+        - name: Assert removal succeeded even without force
+          assert:
+            that:
+              - rm_no_force.changed
+
+    - name: Test files parameter (additional files)
+      block:
+        - name: Create main quadlet and additional config file
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - {
+                dest: "{{ quadlet_single_dir.path }}/app-with-config.container",
+                content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+              }
+            - {
+                dest: "{{ quadlet_single_dir.path }}/app.conf",
+                content: "# Configuration file\nkey=value\n",
+              }
+
+        - name: Install quadlet with additional files
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/app-with-config.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/app.conf"
+          register: install_with_files
+
+        - name: Assert install with files succeeded
+          assert:
+            that:
+              - install_with_files.changed
+
+        - name: Verify both files are installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/app-with-config.container"
+            - "{{ quadlet_user_dir }}/app.conf"
+          register: files_stats
+
+        - name: Assert both files present
+          assert:
+            that:
+              - files_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Remove quadlet with files
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - app-with-config.container
+
+    - name: Test malformed quadlet file handling
+      block:
+        - name: Create malformed quadlet file
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/malformed.container"
+            mode: "0644"
+            content: |
+              [Container
+              Image=docker.io/library/alpine:latest
+              # Missing closing bracket
+
+        - name: Try to install malformed quadlet
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/malformed.container"
+          register: malformed_install
+          ignore_errors: true
+
+        # Note: Podman may accept malformed files, so we don't assert failure
+        - name: Cleanup malformed quadlet if installed
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - malformed.container
+          ignore_errors: true
+
+    - name: Test update scenario (content change triggers remove+install)
+      block:
+        - name: Create quadlet for update test
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/update-test.container"
+            mode: "0644"
+            content: |
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 100'
+
+        - name: Install quadlet for update test
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/update-test.container"
+          register: update_install_first
+
+        - name: Assert first install changed
+          assert:
+            that:
+              - update_install_first.changed
+
+        - name: Modify the quadlet file content
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/update-test.container"
+            mode: "0644"
+            content: |
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 200'
+
+        - name: Reinstall modified quadlet (should trigger update)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/update-test.container"
+          register: update_install_second
+
+        - name: Assert update changed
+          assert:
+            that:
+              - update_install_second.changed
+
+        - name: Read installed file content
+          slurp:
+            src: "{{ quadlet_user_dir }}/update-test.container"
+          register: installed_content
+
+        - name: Assert installed file has updated content
+          assert:
+            that:
+              - "'sleep 200' in (installed_content.content | b64decode)"
+
+        - name: Reinstall same content again (should be idempotent)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/update-test.container"
+          register: update_install_third
+
+        - name: Assert idempotent after update
+          assert:
+            that:
+              - not update_install_third.changed
+
+        - name: Cleanup update test quadlet
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - update-test.container
+
+    - name: Test update with files parameter
+      block:
+        - name: Create quadlet and config for files update test
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - {
+                dest: "{{ quadlet_single_dir.path }}/files-update.container",
+                content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+              }
+            - {
+                dest: "{{ quadlet_single_dir.path }}/files-update.conf",
+                content: "# Config v1\nkey=value1\n",
+              }
+
+        - name: Install quadlet with config file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/files-update.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/files-update.conf"
+          register: files_update_first
+
+        - name: Assert first install changed
+          assert:
+            that:
+              - files_update_first.changed
+
+        - name: Modify the config file only
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/files-update.conf"
+            mode: "0644"
+            content: |
+              # Config v2
+              key=value2
+
+        - name: Reinstall with modified config file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/files-update.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/files-update.conf"
+          register: files_update_second
+
+        - name: Assert config change triggered update
+          assert:
+            that:
+              - files_update_second.changed
+
+        - name: Read installed config file content
+          slurp:
+            src: "{{ quadlet_user_dir }}/files-update.conf"
+          register: installed_conf_content
+
+        - name: Assert installed config has updated content
+          assert:
+            that:
+              - "'value2' in (installed_conf_content.content | b64decode)"
+
+        - name: Cleanup files update test
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - files-update.container
+
+    - name: Test check mode
+      block:
+        - name: Create quadlet for check mode test
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/check-mode.container"
+            mode: "0644"
+            content: |
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+
+        - name: Install quadlet in check mode
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/check-mode.container"
+          check_mode: true
+          register: check_mode_install
+
+        - name: Assert check mode shows change but doesn't install
+          assert:
+            that:
+              - check_mode_install.changed
+
+        - name: Verify file not actually installed in check mode
+          stat:
+            path: "{{ quadlet_user_dir }}/check-mode.container"
+          register: check_mode_stat
+
+        - name: Assert file not present after check mode
+          assert:
+            that:
+              - not check_mode_stat.stat.exists
+
+        - name: Remove in check mode (should show change)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - check-mode.container
+          check_mode: true
+          register: check_mode_remove
+
+        - name: Assert check mode remove shows no change (idempotent)
+          assert:
+            that:
+              - not check_mode_remove.changed
+
+        - name: Install quadlet for real to test check mode removal
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/check-mode.container"
+
+        - name: Remove in check mode (should show change now)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - check-mode.container
+          check_mode: true
+          register: check_mode_remove_existing
+
+        - name: Assert check mode remove existing shows change
+          assert:
+            that:
+              - check_mode_remove_existing.changed
+
+        - name: Verify file still exists after check mode remove
+          stat:
+            path: "{{ quadlet_user_dir }}/check-mode.container"
+          register: check_mode_stat_existing
+
+        - name: Assert file present
+          assert:
+            that:
+              - check_mode_stat_existing.stat.exists
+
+    - name: Test asset removal detection (files removed from install)
+      block:
+        - name: Create quadlet and config for asset removal test
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - {
+                dest: "{{ quadlet_single_dir.path }}/asset-removal.container",
+                content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n",
+              }
+            - {
+                dest: "{{ quadlet_single_dir.path }}/asset-removal.conf",
+                content: "# Asset config\nkey=value\n",
+              }
+
+        - name: Install quadlet with config file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/asset-removal.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/asset-removal.conf"
+          register: asset_removal_first
+
+        - name: Assert first install changed
+          assert:
+            that:
+              - asset_removal_first.changed
+
+        - name: Verify both files are installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/asset-removal.container"
+            - "{{ quadlet_user_dir }}/asset-removal.conf"
+          register: asset_files_stats
+
+        - name: Assert both files present
+          assert:
+            that:
+              - asset_files_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Reinstall without the config file (should detect asset removal)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/asset-removal.container"
+          register: asset_removal_second
+
+        - name: Assert reinstall detected change due to asset removal
+          assert:
+            that:
+              - asset_removal_second.changed
+
+        - name: Verify config file is removed
+          stat:
+            path: "{{ quadlet_user_dir }}/asset-removal.conf"
+          register: asset_conf_stat
+
+        - name: Assert config file removed
+          assert:
+            that:
+              - not asset_conf_stat.stat.exists
+
+        - name: Cleanup asset removal test
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - asset-removal.container
+          ignore_errors: true
+
+    - name: Test .quadlets file install (Podman 6.0+)
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create a .quadlets file with multiple sections
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/webapp.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=web-server
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+              ---
+              # FileName=app-storage
+              [Volume]
+              Label=app=webapp
+
+        - name: Install .quadlets file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/webapp.quadlets"
+          register: quadlets_install
+
+        - name: Assert .quadlets install changed
+          assert:
+            that:
+              - quadlets_install.changed
+
+        - name: Verify generated quadlet files exist
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/web-server.container"
+            - "{{ quadlet_user_dir }}/app-storage.volume"
+          register: quadlets_stats
+
+        - name: Assert generated files present
+          assert:
+            that:
+              - quadlets_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Reinstall same .quadlets file (should be idempotent)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/webapp.quadlets"
+          register: quadlets_reinstall
+
+        - name: Assert .quadlets reinstall idempotent
+          assert:
+            that:
+              - not quadlets_reinstall.changed
+
+        - name: Modify .quadlets file content
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/webapp.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=web-server
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 999'
+              ---
+              # FileName=app-storage
+              [Volume]
+              Label=app=webapp
+
+        - name: Reinstall modified .quadlets file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/webapp.quadlets"
+          register: quadlets_update
+
+        - name: Assert .quadlets update detected change
+          assert:
+            that:
+              - quadlets_update.changed
+
+        - name: Read installed container file content
+          slurp:
+            src: "{{ quadlet_user_dir }}/web-server.container"
+          register: quadlets_container_content
+
+        - name: Assert container file has updated content
+          assert:
+            that:
+              - "'sleep 999' in (quadlets_container_content.content | b64decode)"
+
+        - name: Cleanup .quadlets test (remove via app marker)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - web-server.container
+          ignore_errors: true
+
+    - name: Skip .quadlets test notice
+      debug:
+        msg: "Skipping .quadlets test - requires Podman 6.0+ (current: {{ podman_version }})"
+      when: podman_version is version('6.0', '<')
+
+    - name: Test nested subdirectory validation
+      block:
+        - name: Create temporary directory for subdir test
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: quadlet_subdir_
+          register: quadlet_subdir_test_dir
+
+        - name: Create a subdirectory inside the app directory
+          file:
+            path: "{{ quadlet_subdir_test_dir.path }}/nested_subdir"
+            state: directory
+
+        - name: Create a quadlet file in the parent directory
+          copy:
+            dest: "{{ quadlet_subdir_test_dir.path }}/test.container"
+            mode: "0644"
+            content: |
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+
+        - name: Create a file in the nested subdirectory
+          copy:
+            dest: "{{ quadlet_subdir_test_dir.path }}/nested_subdir/nested.conf"
+            mode: "0644"
+            content: "# Nested config\n"
+
+        - name: Try to install directory with subdirectory (should fail)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_subdir_test_dir.path }}"
+          register: subdir_install
+          ignore_errors: true
+
+        - name: Assert subdir install fails with expected message
+          assert:
+            that:
+              - subdir_install is failed
+              - subdir_install.msg is search("nested") or subdir_install.msg is search("subdirector")
+
+  always:
+    # clean the test quadlets
+    - name: Cleanup installed quadlets
+      containers.podman.podman_quadlet:
+        state: absent
+        name:
+          - test-single.container
+          - app-a.container
+          - app-b.container
+          - force-test.container
+          - app-with-config.container
+          - malformed.container
+          - check-mode.container
+          - update-test.container
+          - files-update.container
+          - asset-removal.container
+          - web-server.container
+          - app-storage.volume
+      ignore_errors: true
+
+    - name: Verify cleanup - files should be removed from filesystem
+      stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ quadlet_user_dir }}/test-single.container"
+        - "{{ quadlet_user_dir }}/app-a.container"
+        - "{{ quadlet_user_dir }}/app-b.container"
+        - "{{ quadlet_user_dir }}/force-test.container"
+        - "{{ quadlet_user_dir }}/app-with-config.container"
+        - "{{ quadlet_user_dir }}/app.conf"
+        - "{{ quadlet_user_dir }}/update-test.container"
+        - "{{ quadlet_user_dir }}/files-update.container"
+        - "{{ quadlet_user_dir }}/files-update.conf"
+        - "{{ quadlet_user_dir }}/asset-removal.container"
+        - "{{ quadlet_user_dir }}/asset-removal.conf"
+        - "{{ quadlet_user_dir }}/web-server.container"
+        - "{{ quadlet_user_dir }}/app-storage.volume"
+      register: cleanup_stats
+      ignore_errors: true
+
+    - name: Assert all test files removed from filesystem
+      assert:
+        that:
+          - (cleanup_stats.results | map(attribute='stat.exists') | list) | select('equalto', true) | list | length == 0
+        quiet: true
+      ignore_errors: true

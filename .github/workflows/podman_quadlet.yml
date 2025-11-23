@@ -1,0 +1,34 @@
+name: Podman quadlet
+
+on:
+  push:
+    paths:
+      - ".github/workflows/podman_quadlet.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - "ci/*.yml"
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_quadlet.yml"
+      - "plugins/modules/podman_quadlet.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_quadlet/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/podman_quadlet.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - "ci/*.yml"
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_quadlet.yml"
+      - "plugins/modules/podman_quadlet.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_quadlet/**"
+  schedule:
+    - cron: 4 0 * * * # Run daily at 0:04 UTC
+
+jobs:
+  test_podman_quadlet:
+    uses: ./.github/workflows/reusable-module-test.yml
+    with:
+      module_name: "podman_quadlet"
+      display_name: "Podman quadlet"
