@@ -3,30 +3,30 @@ name: Podman Container Copy module
 on:
   push:
     paths:
-      - '.github/workflows/podman_container_copy.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container_copy.yml'
-      - 'plugins/modules/podman_container_copy.py'
-      - 'tests/integration/targets/podman_container_copy/**'
+      - ".github/workflows/podman_container_copy.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container_copy.yml"
+      - "plugins/modules/podman_container_copy.py"
+      - "tests/integration/targets/podman_container_copy/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_container_copy.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container_copy.yml'
-      - 'plugins/modules/podman_container_copy.py'
-      - 'tests/integration/targets/podman_container_copy/**'
+      - ".github/workflows/podman_container_copy.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container_copy.yml"
+      - "plugins/modules/podman_container_copy.py"
+      - "tests/integration/targets/podman_container_copy/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_container_copy:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_container_copy'
-      display_name: 'Podman Container Copy module'
+      module_name: "podman_container_copy"
+      display_name: "Podman Container Copy module"

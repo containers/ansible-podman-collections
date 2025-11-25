@@ -3,30 +3,30 @@ name: Podman generate systemd
 on:
   push:
     paths:
-      - '.github/workflows/podman_generate_systemd.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_generate_systemd.yml'
-      - 'plugins/modules/podman_generate_systemd.py'
-      - 'tests/integration/targets/podman_generate_systemd/**'
+      - ".github/workflows/podman_generate_systemd.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_generate_systemd.yml"
+      - "plugins/modules/podman_generate_systemd.py"
+      - "tests/integration/targets/podman_generate_systemd/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_generate_systemd.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_generate_systemd.yml'
-      - 'plugins/modules/podman_generate_systemd.py'
-      - 'tests/integration/targets/podman_generate_systemd/**'
+      - ".github/workflows/podman_generate_systemd.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_generate_systemd.yml"
+      - "plugins/modules/podman_generate_systemd.py"
+      - "tests/integration/targets/podman_generate_systemd/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_generate_systemd:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_generate_systemd'
-      display_name: 'Podman generate systemd'
+      module_name: "podman_generate_systemd"
+      display_name: "Podman generate systemd"

@@ -3,32 +3,32 @@ name: Idempotency
 on:
   push:
     paths:
-      - '.github/workflows/podman_container_idem.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container_idempotency.yml'
-      - 'plugins/modules/podman_container.py'
-      - 'plugins/module_utils/podman/podman_container_lib.py'
-      - 'plugins/module_utils/podman/common.py'
-      - 'tests/integration/targets/podman_container_idempotency/**'
+      - ".github/workflows/podman_container_idem.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container_idempotency.yml"
+      - "plugins/modules/podman_container.py"
+      - "plugins/module_utils/podman/podman_container_lib.py"
+      - "plugins/module_utils/podman/common.py"
+      - "tests/integration/targets/podman_container_idempotency/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_container_idem.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container_idempotency.yml'
-      - 'plugins/modules/podman_container.py'
-      - 'plugins/module_utils/podman/podman_container_lib.py'
-      - 'plugins/module_utils/podman/common.py'
-      - 'tests/integration/targets/podman_container_idempotency/**'
+      - ".github/workflows/podman_container_idem.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container_idempotency.yml"
+      - "plugins/modules/podman_container.py"
+      - "plugins/module_utils/podman/podman_container_lib.py"
+      - "plugins/module_utils/podman/common.py"
+      - "tests/integration/targets/podman_container_idempotency/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_container_idem:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_container_idempotency'
-      display_name: 'Idempotency'
+      module_name: "podman_container_idempotency"
+      display_name: "Idempotency"

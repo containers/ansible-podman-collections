@@ -3,32 +3,32 @@ name: Podman volume info
 on:
   push:
     paths:
-      - '.github/workflows/podman_volume_info.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_volume_info.yml'
-      - 'plugins/modules/podman_volume_info.py'
-      - 'plugins/modules/podman_volume.py'
-      - 'tests/integration/targets/podman_volume_info/**'
+      - ".github/workflows/podman_volume_info.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_volume_info.yml"
+      - "plugins/modules/podman_volume_info.py"
+      - "plugins/modules/podman_volume.py"
+      - "tests/integration/targets/podman_volume_info/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_volume_info.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_volume_info.yml'
-      - 'plugins/modules/podman_volume_info.py'
-      - 'plugins/modules/podman_volume.py'
-      - 'tests/integration/targets/podman_volume_info/**'
+      - ".github/workflows/podman_volume_info.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_volume_info.yml"
+      - "plugins/modules/podman_volume_info.py"
+      - "plugins/modules/podman_volume.py"
+      - "tests/integration/targets/podman_volume_info/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_volume_info:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_volume_info'
-      display_name: 'Podman volume info'
+      module_name: "podman_volume_info"
+      display_name: "Podman volume info"

@@ -3,30 +3,30 @@ name: Podman play
 on:
   push:
     paths:
-      - '.github/workflows/podman_play.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_play.yml'
-      - 'plugins/modules/podman_play.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'tests/integration/targets/podman_play/**'
+      - ".github/workflows/podman_play.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_play.yml"
+      - "plugins/modules/podman_play.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_play/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_play.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_play.yml'
-      - 'plugins/modules/podman_play.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'tests/integration/targets/podman_play/**'
+      - ".github/workflows/podman_play.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_play.yml"
+      - "plugins/modules/podman_play.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_play/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_play:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_play'
-      display_name: 'Podman play'
+      module_name: "podman_play"
+      display_name: "Podman play"
