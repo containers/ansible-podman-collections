@@ -3,35 +3,34 @@ name: Podman image info
 on:
   push:
     paths:
-      - '.github/workflows/podman_image_info.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_image_info.yml'
-      - 'plugins/modules/podman_image.py'
-      - 'plugins/modules/podman_image_info.py'
-      - 'plugins/module_utils/podman/podman_image_lib.py'
-      - 'tests/integration/targets/podman_image_info/**'
+      - ".github/workflows/podman_image_info.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_image_info.yml"
+      - "plugins/modules/podman_image.py"
+      - "plugins/modules/podman_image_info.py"
+      - "plugins/module_utils/podman/podman_image_lib.py"
+      - "tests/integration/targets/podman_image_info/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_image_info.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_image_info.yml'
-      - 'plugins/modules/podman_image.py'
-      - 'plugins/modules/podman_image_info.py'
-      - 'plugins/module_utils/podman/podman_image_lib.py'
-      - 'tests/integration/targets/podman_image_info/**'
+      - ".github/workflows/podman_image_info.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_image_info.yml"
+      - "plugins/modules/podman_image.py"
+      - "plugins/modules/podman_image_info.py"
+      - "plugins/module_utils/podman/podman_image_lib.py"
+      - "tests/integration/targets/podman_image_info/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_image_info:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_image_info'
-      display_name: 'Podman image info'
-
+      module_name: "podman_image_info"
+      display_name: "Podman image info"

@@ -3,30 +3,30 @@ name: Podman runlabel module
 on:
   push:
     paths:
-      - '.github/workflows/podman_runlabel.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_runlabel.yml'
-      - 'plugins/modules/podman_runlabel.py'
-      - 'tests/integration/targets/podman_runlabel/**'
+      - ".github/workflows/podman_runlabel.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_runlabel.yml"
+      - "plugins/modules/podman_runlabel.py"
+      - "tests/integration/targets/podman_runlabel/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_runlabel.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_runlabel.yml'
-      - 'plugins/modules/podman_runlabel.py'
-      - 'tests/integration/targets/podman_runlabel/**'
+      - ".github/workflows/podman_runlabel.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_runlabel.yml"
+      - "plugins/modules/podman_runlabel.py"
+      - "tests/integration/targets/podman_runlabel/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_runlabel:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_runlabel'
-      display_name: 'Podman runlabel module'
+      module_name: "podman_runlabel"
+      display_name: "Podman runlabel module"

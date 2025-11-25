@@ -3,30 +3,30 @@ name: Podman prune
 on:
   push:
     paths:
-      - '.github/workflows/podman_prune.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_prune.yml'
-      - 'plugins/modules/podman_prune.py'
-      - 'tests/integration/targets/podman_prune/**'
+      - ".github/workflows/podman_prune.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_prune.yml"
+      - "plugins/modules/podman_prune.py"
+      - "tests/integration/targets/podman_prune/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_prune.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_prune.yml'
-      - 'plugins/modules/podman_prune.py'
-      - 'tests/integration/targets/podman_prune/**'
+      - ".github/workflows/podman_prune.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_prune.yml"
+      - "plugins/modules/podman_prune.py"
+      - "tests/integration/targets/podman_prune/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_prune:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_prune'
-      display_name: 'Podman prune'
+      module_name: "podman_prune"
+      display_name: "Podman prune"

@@ -3,30 +3,30 @@ name: Podman export
 on:
   push:
     paths:
-      - '.github/workflows/podman_export.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_export.yml'
-      - 'plugins/modules/podman_export.py'
-      - 'tests/integration/targets/podman_export/**'
+      - ".github/workflows/podman_export.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_export.yml"
+      - "plugins/modules/podman_export.py"
+      - "tests/integration/targets/podman_export/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_export.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_export.yml'
-      - 'plugins/modules/podman_export.py'
-      - 'tests/integration/targets/podman_export/**'
+      - ".github/workflows/podman_export.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_export.yml"
+      - "plugins/modules/podman_export.py"
+      - "tests/integration/targets/podman_export/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_export:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_export'
-      display_name: 'Podman export'
+      module_name: "podman_export"
+      display_name: "Podman export"

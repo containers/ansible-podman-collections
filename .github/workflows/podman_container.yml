@@ -3,38 +3,37 @@ name: Podman container
 on:
   push:
     paths:
-      - '.github/workflows/podman_container.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container.yml'
-      - 'plugins/modules/podman_container.py'
-      - 'plugins/module_utils/podman/podman_container_lib.py'
-      - 'plugins/module_utils/podman/common.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'plugins/modules/podman_container_info.py'
-      - 'tests/integration/targets/podman_container/**'
+      - ".github/workflows/podman_container.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container.yml"
+      - "plugins/modules/podman_container.py"
+      - "plugins/module_utils/podman/podman_container_lib.py"
+      - "plugins/module_utils/podman/common.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "plugins/modules/podman_container_info.py"
+      - "tests/integration/targets/podman_container/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_container.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_container.yml'
-      - 'plugins/modules/podman_container.py'
-      - 'plugins/module_utils/podman/podman_container_lib.py'
-      - 'plugins/module_utils/podman/common.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'plugins/modules/podman_container_info.py'
-      - 'tests/integration/targets/podman_container/**'
+      - ".github/workflows/podman_container.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_container.yml"
+      - "plugins/modules/podman_container.py"
+      - "plugins/module_utils/podman/podman_container_lib.py"
+      - "plugins/module_utils/podman/common.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "plugins/modules/podman_container_info.py"
+      - "tests/integration/targets/podman_container/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
-
   test_podman_container:
-    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-22.04' }}-${{ matrix.podman-version || 'unstable' }}
-    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    name: Podman container ${{ matrix.ansible-version }}-${{ matrix.os || 'ubuntu-24.04' }}-${{ matrix.podman-version || 'unstable' }}
+    runs-on: ${{ matrix.os || 'ubuntu-24.04' }}
     defaults:
       run:
         shell: bash
@@ -45,28 +44,27 @@ jobs:
           - git+https://github.com/ansible/ansible.git@stable-2.18
           - git+https://github.com/ansible/ansible.git@devel
         os:
-          - ubuntu-22.04
+          - ubuntu-24.04
         python-version:
           - "3.11"
         podman-version:
           - unstable
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             ansible-version: git+https://github.com/ansible/ansible.git@stable-2.18
             python-version: "3.11"
             podman-version: stable
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             ansible-version: git+https://github.com/ansible/ansible.git@devel
             python-version: "3.12"
             podman-version: unstable
         exclude:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             ansible-version: git+https://github.com/ansible/ansible.git@devel
             python-version: "3.11"
             podman-version: unstable
 
     steps:
-
       - name: Check out repository
         uses: actions/checkout@v6
 

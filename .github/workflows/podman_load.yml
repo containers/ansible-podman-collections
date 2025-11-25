@@ -3,30 +3,30 @@ name: Podman load
 on:
   push:
     paths:
-      - '.github/workflows/podman_load.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_load.yml'
-      - 'plugins/modules/podman_load.py'
-      - 'tests/integration/targets/podman_load/**'
+      - ".github/workflows/podman_load.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_load.yml"
+      - "plugins/modules/podman_load.py"
+      - "tests/integration/targets/podman_load/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_load.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_load.yml'
-      - 'plugins/modules/podman_load.py'
-      - 'tests/integration/targets/podman_load/**'
+      - ".github/workflows/podman_load.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_load.yml"
+      - "plugins/modules/podman_load.py"
+      - "tests/integration/targets/podman_load/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_load:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_load'
-      display_name: 'Podman load'
+      module_name: "podman_load"
+      display_name: "Podman load"

@@ -52,49 +52,41 @@
         - name: Install repositories if need
           include_tasks: install_repos.yml
 
+        - when:
+            - distro == 'Ubuntu24'
+          block:
+
+            - name: Remove existing golang-github-containers-common
+              package:
+                name:
+                  - podman
+                  - buildah
+                  - skopeo
+                  - crun
+                state: absent
+
+            - name: Remove existing golang-github-containers-common
+              package:
+                name: golang-github-containers-common
+                state: absent
+
+            - name: Run autoremove
+              command: apt-get autoremove -y
+
         - name: Install podman
           package:
             name:
               - podman
               - buildah
+              - skopeo
               - git
               - vim
               - dnsmasq
               - slirp4netns
+              - netavark
+              - uidmap
+              - passt
             state: latest
-
-        - name: Discover slirp4netns version
-          shell: slirp4netns -v | grep version | awk {'print $3'}
-          register: version
-          when:
-            - ansible_distribution == 'Ubuntu'
-            - ansible_distribution_major_version is version('22', '>=')
-
-        - name: Install newest slirp4netns version
-          shell: >-
-            curl -o /tmp/slirp4netns --fail -L https://github.com/rootless-containers/slirp4netns/releases/download/v1.2.0/slirp4netns-$(uname -m);
-            chmod +x /tmp/slirp4netns;
-            mv /tmp/slirp4netns /usr/bin/slirp4netns
-          when:
-            - ansible_distribution == 'Ubuntu'
-            - ansible_distribution_major_version is version('22', '>=')
-            - version.stdout is version('1.1.0', '<')
-
-        - name: Discover conmon version
-          shell: conmon --version | grep version | awk {'print $3'}
-          register: conmon_version
-          when:
-            - ansible_distribution == 'Ubuntu'
-            - ansible_distribution_major_version is version('22', '>=')
-
-        - name: Downgrade broken conmon
-          shell: >-
-            wget https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/amd64/conmon_2.1.2~0_amd64.deb -O /tmp/conmon_2.1.2.deb;
-            apt install -y /tmp/conmon_2.1.2.deb
-          when:
-            - ansible_distribution == 'Ubuntu'
-            - ansible_distribution_major_version is version('22', '>=')
-            - conmon_version.stdout is version('2.1.9', '==')
 
     - name: Remove virtualenv if need
       file:

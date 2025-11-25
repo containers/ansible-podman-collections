@@ -3,30 +3,30 @@ name: Podman logout
 on:
   push:
     paths:
-      - '.github/workflows/podman_logout.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_logout.yml'
-      - 'plugins/modules/podman_logout.py'
-      - 'tests/integration/targets/podman_logout/**'
+      - ".github/workflows/podman_logout.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_logout.yml"
+      - "plugins/modules/podman_logout.py"
+      - "tests/integration/targets/podman_logout/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_logout.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_logout.yml'
-      - 'plugins/modules/podman_logout.py'
-      - 'tests/integration/targets/podman_logout/**'
+      - ".github/workflows/podman_logout.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_logout.yml"
+      - "plugins/modules/podman_logout.py"
+      - "tests/integration/targets/podman_logout/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_logout:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_logout'
-      display_name: 'Podman logout'
+      module_name: "podman_logout"
+      display_name: "Podman logout"

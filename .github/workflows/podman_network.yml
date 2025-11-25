@@ -3,32 +3,32 @@ name: Podman network
 on:
   push:
     paths:
-      - '.github/workflows/podman_network.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_network.yml'
-      - 'plugins/modules/podman_network.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'tests/integration/targets/podman_network/**'
+      - ".github/workflows/podman_network.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_network.yml"
+      - "plugins/modules/podman_network.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_network/**"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/podman_network.yml'
-      - '.github/workflows/reusable-module-test.yml'
-      - 'ci/*.yml'
-      - 'ci/run_containers_tests.sh'
-      - 'ci/playbooks/containers/podman_network.yml'
-      - 'plugins/modules/podman_network.py'
-      - 'plugins/module_utils/podman/quadlet.py'
-      - 'tests/integration/targets/podman_network/**'
+      - ".github/workflows/podman_network.yml"
+      - ".github/workflows/reusable-module-test.yml"
+      - ci/playbooks/*.yml
+      - "ci/run_containers_tests.sh"
+      - "ci/playbooks/containers/podman_network.yml"
+      - "plugins/modules/podman_network.py"
+      - "plugins/module_utils/podman/quadlet.py"
+      - "tests/integration/targets/podman_network/**"
   schedule:
-    - cron: 4 0 * * *  # Run daily at 0:03 UTC
+    - cron: 4 0 * * * # Run daily at 0:03 UTC
 
 jobs:
   test_podman_network:
     uses: ./.github/workflows/reusable-module-test.yml
     with:
-      module_name: 'podman_network'
-      display_name: 'Podman network'
+      module_name: "podman_network"
+      display_name: "Podman network"
