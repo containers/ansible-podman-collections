@@ -279,7 +279,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-podman-latest
@@ -418,7 +418,7 @@ jobs:
           pip --version
 
       - name: Set up pip cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ github.ref }}-podman-latest
