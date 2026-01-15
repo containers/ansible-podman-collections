@@ -477,11 +477,26 @@ releases:
       - description: Inventory plugin that discovers Buildah working containers as
           hosts
         name: buildah_containers
-        namespace: ''
+        namespace: null
       - description: Inventory plugin that discovers Podman containers as hosts
         name: podman_containers
-        namespace: ''
+        namespace: null
     release_date: '2025-09-11'
+  1.18.1:
+    changes:
+      bugfixes:
+      - Fix idempotency for tagging local images
+      - Fix image idempotency in pull
+      - Fix issue with --rm and service in Quadlet
+      - fix(podman_prune) set top-level changed status
+      major_changes:
+      - Rewrite podman and buildah connections
+      minor_changes:
+      - Add configuration for new Ansible release
+      - Fix CI of Podman Search modul
+      - add passthrough and none log driver options
+      release_summary: New podman and buildah connections and bugfixes
+    release_date: '2026-01-15'
   1.2.0:
     changes:
       minor_changes:
