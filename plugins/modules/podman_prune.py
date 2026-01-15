@@ -252,7 +252,7 @@ def main():
         results[target] = podmanExec(module, target, system_filters, executable)
 
     # Calculate global changed status from all targets
-    changed = any(results[k].get("changed", False) for k in results)
+    changed = any(res.get("changed", False) for res in results.values())
 
     module.exit_json(changed=changed, **results)
 
