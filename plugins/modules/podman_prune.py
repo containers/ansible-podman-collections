@@ -251,7 +251,10 @@ def main():
             system_filters["system_volumes"] = "--volumes"
         results[target] = podmanExec(module, target, system_filters, executable)
 
-    module.exit_json(**results)
+    # Calculate global changed status from all targets
+    changed = any(res.get("changed", False) for res in results.values())
+
+    module.exit_json(changed=changed, **results)
 
 
 if __name__ == "__main__":
