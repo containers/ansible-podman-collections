@@ -5,6 +5,34 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.18.1
+=======
+
+Release Summary
+---------------
+
+New podman and buildah connections and bugfixes
+
+Major Changes
+-------------
+
+- Rewrite podman and buildah connections
+
+Minor Changes
+-------------
+
+- Add configuration for new Ansible release
+- Fix CI of Podman Search modul
+- add passthrough and none log driver options
+
+Bugfixes
+--------
+
+- Fix idempotency for tagging local images
+- Fix image idempotency in pull
+- Fix issue with --rm and service in Quadlet
+- fix(podman_prune) set top-level changed status
+
 v1.18.0
 =======
 

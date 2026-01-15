@@ -4,12 +4,12 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.21.0" name="antsibull-docs" />
+<meta content="2.24.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>containers.podman.buildah connection – Interact with an existing buildah container &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=41de9001" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/ansible.css?v=b54c304f" />
       <link rel="stylesheet" type="text/css" href="../../../_static/antsibull-minimal.css" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/rtd-ethical-ads.css?v=289b023e" />
 
@@ -18,8 +18,8 @@
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=7f41d439"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="containers.podman.podman connection – Interact with an existing podman container" href="podman_connection.html" />
@@ -132,7 +132,7 @@
 <h1>containers.podman.buildah connection – Interact with an existing buildah container<a class="headerlink" href="#containers-podman-buildah-connection-interact-with-an-existing-buildah-container" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This connection plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.18.0).</p>
+<p>This connection plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.18.1).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.</p>
@@ -148,6 +148,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Synopsis</a><a class="headerlink" href="#synopsis" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Run commands or put/fetch files to an existing container using buildah tool.</p></li>
+<li><p>Supports container building workflows with enhanced error handling and performance.</p></li>
 </ul>
 </section>
 <section id="parameters">
@@ -160,23 +161,150 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-remote_addr"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-remote-addr"><strong>remote_addr</strong></p>
-<a class="ansibleOptionLink" href="#parameter-remote_addr" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-auto_commit"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-auto-commit"><strong>auto_commit</strong></p>
+<a class="ansibleOptionLink" href="#parameter-auto_commit" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>The ID of the container you want to access.</p>
-<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;inventory_hostname&quot;</span></code></p>
+<td><div class="ansible-option-cell"><p>Automatically commit changes after successful operations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
+</ul>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul class="simple">
-<li><p>Variable: ansible_host</p></li>
-<li><p>Variable: inventory_hostname</p></li>
+<li><p>Variable: ansible_buildah_auto_commit</p></li>
 </ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-buildah_executable"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-buildah-executable"><strong>buildah_executable</strong></p>
+<a class="ansibleOptionLink" href="#parameter-buildah_executable" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Executable for buildah command.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;buildah&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul>
+<li><p>INI entry:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">buildah_executable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">buildah</span>
+</pre></div>
+</div>
+</li>
+<li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_EXECUTABLE"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_EXECUTABLE</span></code></a></p></li>
+<li><p>Variable: ansible_buildah_executable</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-buildah_extra_args"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-buildah-extra-args"><strong>buildah_extra_args</strong></p>
+<a class="ansibleOptionLink" href="#parameter-buildah_extra_args" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Extra arguments to pass to the buildah command line.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul>
+<li><p>INI entry:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">buildah_extra_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Environment variable: <span class="target" id="index-1"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_EXTRA_ARGS"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_EXTRA_ARGS</span></code></a></p></li>
+<li><p>Variable: ansible_buildah_extra_args</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-container_timeout"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-container-timeout"><strong>container_timeout</strong></p>
+<a class="ansibleOptionLink" href="#parameter-container_timeout" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">integer</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Timeout in seconds for container operations. 0 means no timeout.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">0</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul>
+<li><p>INI entry:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">buildah_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+</pre></div>
+</div>
+</li>
+<li><p>Environment variable: <span class="target" id="index-2"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_TIMEOUT"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_TIMEOUT</span></code></a></p></li>
+<li><p>Variable: ansible_buildah_timeout</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-extra_env_vars"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-extra-env-vars"><strong>extra_env_vars</strong></p>
+<a class="ansibleOptionLink" href="#parameter-extra_env_vars" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Additional environment variables to set in the container.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">{}</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul class="simple">
+<li><p>Variable: ansible_buildah_extra_env</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ignore_mount_errors"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-ignore-mount-errors"><strong>ignore_mount_errors</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ignore_mount_errors" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Continue with copy operations even if container mounting fails.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul class="simple">
+<li><p>Variable: ansible_buildah_ignore_mount_errors</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-mount_detection"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-mount-detection"><strong>mount_detection</strong></p>
+<a class="ansibleOptionLink" href="#parameter-mount_detection" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Enable automatic detection and use of container mount points for file operations.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">false</span></code></p></li>
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">true</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+</ul>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-3"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_MOUNT_DETECTION"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_MOUNT_DETECTION</span></code></a></p></li>
+<li><p>Variable: ansible_buildah_mount_detection</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-remote_addr"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-remote-addr"><strong>remote_addr</strong></p>
+<a class="ansibleOptionLink" href="#parameter-remote_addr" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>The ID or name of the buildah working container you want to access.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;inventory_hostname&quot;</span></code></p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul>
+<li><p>INI entry:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[defaults]</span>
+<span class="na">remote_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inventory_hostname</span>
+</pre></div>
+</div>
+</li>
+<li><p>Environment variable: <span class="target" id="index-4"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_HOST"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_HOST</span></code></a></p></li>
+<li><p>Variable: inventory_hostname</p></li>
+<li><p>Variable: ansible_host</p></li>
+<li><p>Variable: ansible_buildah_host</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-remote_user"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-remote-user"><strong>remote_user</strong></p>
 <a class="ansibleOptionLink" href="#parameter-remote_user" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>User specified via name or ID which is used to execute commands inside the container.</p>
+<td><div class="ansible-option-cell"><p>User specified via name or UID which is used to execute commands inside the container.</p>
+<p>For buildah, this affects both run commands and copy operations.</p>
 <p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
 <ul>
 <li><p>INI entry:</p>
@@ -185,8 +313,20 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </pre></div>
 </div>
 </li>
-<li><p>Environment variable: <span class="target" id="index-0"></span><a class="reference external" href="https://docs.ansible.com/ansible/devel/reference_appendices/config.html#envvar-ANSIBLE_REMOTE_USER" title="(in Ansible vdevel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_REMOTE_USER</span></code></a></p></li>
+<li><p>Environment variable: <span class="target" id="index-5"></span><a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/config.html#envvar-ANSIBLE_REMOTE_USER" title="(in Ansible devel)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_REMOTE_USER</span></code></a></p></li>
 <li><p>Variable: ansible_user</p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-working_directory"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-buildah-connection-parameter-working-directory"><strong>working_directory</strong></p>
+<a class="ansibleOptionLink" href="#parameter-working_directory" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Set working directory for commands executed in the container.</p>
+<p class="ansible-option-line"><strong class="ansible-option-configuration">Configuration:</strong></p>
+<ul class="simple">
+<li><p>Environment variable: <span class="target" id="index-6"></span><a class="reference internal" href="../../environment_variables.html#envvar-ANSIBLE_BUILDAH_WORKING_DIRECTORY"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">ANSIBLE_BUILDAH_WORKING_DIRECTORY</span></code></a></p></li>
+<li><p>Variable: ansible_buildah_working_directory</p></li>
 </ul>
 </div></td>
 </tr>

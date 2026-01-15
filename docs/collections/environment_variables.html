@@ -4,12 +4,12 @@
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.21.0" name="antsibull-docs" />
+<meta content="2.24.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Index of all Collection Environment Variables &mdash; Ansible collections  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=41de9001" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/ansible.css?v=c5b67dd2" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/ansible.css?v=b54c304f" />
       <link rel="stylesheet" type="text/css" href="../_static/antsibull-minimal.css" />
       <link rel="stylesheet" type="text/css" href="../_static/css/rtd-ethical-ads.css?v=289b023e" />
 
@@ -18,8 +18,8 @@
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=7f41d439"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Index of all Modules" href="index_module.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
@@ -117,7 +117,7 @@
   <section id="index-of-all-collection-environment-variables">
 <span id="list-of-collection-env-vars"></span><h1>Index of all Collection Environment Variables<a class="headerlink" href="#index-of-all-collection-environment-variables" title="Link to this heading"></a></h1>
 <p>The following index documents all environment variables declared by plugins in collections.
-Environment variables used by the ansible-core configuration are documented in <a class="reference external" href="https://docs.ansible.com/ansible/devel/reference_appendices/config.html#ansible-configuration-settings" title="(in Ansible vdevel)"><span>Ansible Configuration Settings</span></a>.</p>
+Environment variables used by the ansible-core configuration are documented in <a class="reference external" href="https://docs.ansible.com/projects/ansible/devel/reference_appendices/config.html#ansible-configuration-settings" title="(in Ansible devel)"><span>Ansible Configuration Settings</span></a>.</p>
 <dl class="std envvar">
 <dt class="sig sig-object std" id="envvar-ANSIBLE_BECOME_PASS">
 <span class="sig-name descname"><span class="pre">ANSIBLE_BECOME_PASS</span></span><a class="headerlink" href="#envvar-ANSIBLE_BECOME_PASS" title="Link to this definition"></a></dt>
@@ -129,9 +129,50 @@ Environment variables used by the ansible-core configuration are documented in <
 <dl class="std envvar">
 <dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_EXECUTABLE">
 <span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_EXECUTABLE</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_EXECUTABLE" title="Link to this definition"></a></dt>
-<dd><p>Path to the <code class="docutils literal notranslate"><span class="pre">buildah</span></code> executable.</p>
+<dd><p>See the documentations for the options where this environment variable is used.</p>
 <p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a>,
 <a class="reference internal" href="containers/podman/buildah_containers_inventory.html#ansible-collections-containers-podman-buildah-containers-inventory"><span class="std std-ref">containers.podman.buildah_containers inventory plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_EXTRA_ARGS">
+<span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_EXTRA_ARGS</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_EXTRA_ARGS" title="Link to this definition"></a></dt>
+<dd><p>Extra arguments to pass to the buildah command line.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_HOST">
+<span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_HOST</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_HOST" title="Link to this definition"></a></dt>
+<dd><p>The ID or name of the buildah working container you want to access.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_MOUNT_DETECTION">
+<span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_MOUNT_DETECTION</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_MOUNT_DETECTION" title="Link to this definition"></a></dt>
+<dd><p>Enable automatic detection and use of container mount points for file operations.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_TIMEOUT">
+<span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_TIMEOUT</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_TIMEOUT" title="Link to this definition"></a></dt>
+<dd><p>Timeout in seconds for container operations. 0 means no timeout.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_BUILDAH_WORKING_DIRECTORY">
+<span class="sig-name descname"><span class="pre">ANSIBLE_BUILDAH_WORKING_DIRECTORY</span></span><a class="headerlink" href="#envvar-ANSIBLE_BUILDAH_WORKING_DIRECTORY" title="Link to this definition"></a></dt>
+<dd><p>Set working directory for commands executed in the container.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/buildah_connection.html#ansible-collections-containers-podman-buildah-connection"><span class="std std-ref">containers.podman.buildah connection plugin</span></a></p>
 </dd></dl>
 
 <dl class="std envvar">
@@ -147,6 +188,30 @@ Environment variables used by the ansible-core configuration are documented in <
 <dt class="sig sig-object std" id="envvar-ANSIBLE_PODMAN_EXTRA_ARGS">
 <span class="sig-name descname"><span class="pre">ANSIBLE_PODMAN_EXTRA_ARGS</span></span><a class="headerlink" href="#envvar-ANSIBLE_PODMAN_EXTRA_ARGS" title="Link to this definition"></a></dt>
 <dd><p>Extra arguments to pass to the podman command line.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/podman_connection.html#ansible-collections-containers-podman-podman-connection"><span class="std std-ref">containers.podman.podman connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_PODMAN_HOST">
+<span class="sig-name descname"><span class="pre">ANSIBLE_PODMAN_HOST</span></span><a class="headerlink" href="#envvar-ANSIBLE_PODMAN_HOST" title="Link to this definition"></a></dt>
+<dd><p>The ID or name of the container you want to access.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/podman_connection.html#ansible-collections-containers-podman-podman-connection"><span class="std std-ref">containers.podman.podman connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_PODMAN_MOUNT_DETECTION">
+<span class="sig-name descname"><span class="pre">ANSIBLE_PODMAN_MOUNT_DETECTION</span></span><a class="headerlink" href="#envvar-ANSIBLE_PODMAN_MOUNT_DETECTION" title="Link to this definition"></a></dt>
+<dd><p>Enable automatic detection and use of container mount points for file operations.</p>
+<p><em>Used by:</em>
+<a class="reference internal" href="containers/podman/podman_connection.html#ansible-collections-containers-podman-podman-connection"><span class="std std-ref">containers.podman.podman connection plugin</span></a></p>
+</dd></dl>
+
+<dl class="std envvar">
+<dt class="sig sig-object std" id="envvar-ANSIBLE_PODMAN_TIMEOUT">
+<span class="sig-name descname"><span class="pre">ANSIBLE_PODMAN_TIMEOUT</span></span><a class="headerlink" href="#envvar-ANSIBLE_PODMAN_TIMEOUT" title="Link to this definition"></a></dt>
+<dd><p>Timeout in seconds for container operations. 0 means no timeout.</p>
 <p><em>Used by:</em>
 <a class="reference internal" href="containers/podman/podman_connection.html#ansible-collections-containers-podman-podman-connection"><span class="std std-ref">containers.podman.podman connection plugin</span></a></p>
 </dd></dl>
