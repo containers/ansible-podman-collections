@@ -126,7 +126,10 @@ import subprocess
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils.common.process import get_bin_path
-from ansible.module_utils._text import to_bytes, to_native, to_text
+try:
+    from ansible.module_utils.common.text.converters import to_native, to_bytes, to_text  # noqa: F402
+except ImportError:
+    from ansible.module_utils.common.text import to_native, to_bytes, to_text  # noqa: F402
 from ansible.plugins.connection import ConnectionBase, ensure_connect
 from ansible.utils.display import Display
 
