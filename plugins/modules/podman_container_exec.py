@@ -123,7 +123,10 @@ exec_id:
 
 
 import shlex
-from ansible.module_utils._text import to_text
+try:
+    from ansible.module_utils.common.text.converters import to_text  # noqa: F402
+except ImportError:
+    from ansible.module_utils.common.text import to_text  # noqa: F402
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
     run_podman_command,

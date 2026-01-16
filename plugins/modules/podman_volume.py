@@ -154,7 +154,10 @@ import json  # noqa: F402
 import os  # noqa: F402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
-from ansible.module_utils._text import to_bytes, to_native  # noqa: F402
+try:
+    from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
+except ImportError:
+    from ansible.module_utils.common.text import to_native, to_bytes  # noqa: F402
 from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
     LooseVersion,
 )
