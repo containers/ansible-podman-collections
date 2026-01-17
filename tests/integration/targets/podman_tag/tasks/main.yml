@@ -40,9 +40,9 @@
       assert:
         that:
           - tagged_image_result.images | length == 1
-          - "'docker.io/library/alpine' in tagged_image_result.images[0]['RepoTags'][0]"
-          - "'localhost/openjdk8:latest' in tagged_image_result.images[0]['RepoTags'][1]"
-          - "'localhost/jdk8:latest' in tagged_image_result.images[0]['RepoTags'][2]"
+          - tagged_image_result.images[0]['RepoTags'] | select('match', 'docker.io/library/alpine.*') | list | length > 0
+          - "'localhost/openjdk8:latest' in tagged_image_result.images[0]['RepoTags']"
+          - "'localhost/jdk8:latest' in tagged_image_result.images[0]['RepoTags']"
 
   always:
     - name: Cleanup image

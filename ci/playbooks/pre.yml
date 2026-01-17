@@ -86,6 +86,7 @@
               - netavark
               - uidmap
               - passt
+              - fuse-overlayfs
             state: latest
 
     - name: Remove virtualenv if need
