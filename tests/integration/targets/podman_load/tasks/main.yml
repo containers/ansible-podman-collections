@@ -58,7 +58,7 @@
   assert:
     that:
       - image.image != {}
-      # - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"  but in 5.7, NamesHistory is null
+      # - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"  bug in 5.7, NamesHistory is null
 
 - name: Pull images
   containers.podman.podman_image:
@@ -87,5 +87,6 @@
   assert:
     that:
       - image.image != {}
+      # bug in 5.7, NamesHistory is null
       # - '"registry.k8s.io/coredns/coredns:v1.9.3" in image.image.NamesHistory'
       # - '"gcr.io/kubernetes-e2e-test-images/echoserver:2.2" in image.image.NamesHistory'

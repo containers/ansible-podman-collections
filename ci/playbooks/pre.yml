@@ -56,22 +56,19 @@
             - distro == 'Ubuntu24'
           block:
 
-            - name: Remove existing golang-github-containers-common
+            - name: Remove existing container packages
               package:
                 name:
                   - podman
                   - buildah
                   - skopeo
                   - crun
-                state: absent
-
-            - name: Remove existing golang-github-containers-common
-              package:
-                name: golang-github-containers-common
+                  - golang-github-containers-common
                 state: absent
 
             - name: Run autoremove
-              command: apt-get autoremove -y
+              ansible.builtin.apt:
+                autoremove: true
 
         - name: Install podman
           package:
