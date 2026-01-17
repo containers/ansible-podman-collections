@@ -1174,7 +1174,7 @@ class PodmanContainerDiff:
     # was configured; otherwise the config key isn't part of the config.
     def diffparam_healthcheck(self):
         before = ""
-        if "healthcheck" in self.info["config"]:
+        if "healthcheck" in self.info["config"] and self.info["config"]["healthcheck"]:
             # the "test" key is a list of 2 items where the first one is
             # "CMD-SHELL" and the second one is the actual healthcheck command.
             if len(self.info["config"]["healthcheck"]["test"]) > 1:

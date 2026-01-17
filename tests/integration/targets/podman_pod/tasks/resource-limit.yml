@@ -7,7 +7,7 @@
         blkio_weight: 123
         cpuset_mems: '0-1'
         cpu_shares: 1024
-        device_write_bps: ['/dev/zero:1048576']
+        device_write_bps: ['/dev/loop0:1048576']
         shm_size: 1G
 
   - name: Create pod for limiting resources
