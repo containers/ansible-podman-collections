@@ -497,6 +497,14 @@ releases:
       - add passthrough and none log driver options
       release_summary: New podman and buildah connections and bugfixes
     release_date: '2026-01-15'
+  1.18.2:
+    changes:
+      bugfixes:
+      - Fix Ansible warning about test utils
+      minor_changes:
+      - Fix tests for new Podman
+      release_summary: Fix deprecation warnings and improve CI
+    release_date: '2026-02-01'
   1.2.0:
     changes:
       minor_changes:

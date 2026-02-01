@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.18.2
+=======
+
+Release Summary
+---------------
+
+Fix deprecation warnings and improve CI
+
+Minor Changes
+-------------
+
+- Fix tests for new Podman
+
+Bugfixes
+--------
+
+- Fix Ansible warning about test utils
+
 v1.18.1
 =======
 
