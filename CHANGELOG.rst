@@ -5,6 +5,25 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.19.0
+=======
+
+Release Summary
+---------------
+
+Add podman Quadlet modules
+
+Major Changes
+-------------
+
+- Add podman Quadlet modules
+
+New Modules
+-----------
+
+- containers.podman.podman_quadlet - Install or remove Podman Quadlets
+- containers.podman.podman_quadlet_info - Gather information about Podman Quadlets
+
 v1.18.2
 =======
 
