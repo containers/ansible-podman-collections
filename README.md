@@ -5,6 +5,8 @@
 [![Ansible Galaxy](https://img.shields.io/ansible/collection/d/containers/podman?style=for-the-badge&label=Ansible%20Galaxy)](https://galaxy.ansible.com/containers/podman)
 [![License](https://img.shields.io/github/license/containers/ansible-podman-collections?style=for-the-badge)](COPYING)
 
+> **Note:** This collection is currently in maintenance mode. We are accepting mostly bugfixes and security patches. New features might not be merged.
+
 **Manage the full lifecycle of Podman containers, images, pods, networks, and volumes with Ansible.**
 
 This collection provides a suite of powerful and flexible Ansible modules to automate the management of your [Podman](https://podman.io/) environment. Whether you are running a single container or orchestrating complex, multi-container applications, these modules give you the tools to do it idempotently and efficiently.
@@ -91,6 +93,8 @@ This collection includes:
   - `podman_network`: Manage Podman networks.
   - `podman_volume`: Manage Podman volumes.
   - `podman_secret`: Manage Podman secrets.
+  - `podman_quadlet`: Manage Systemd service files using Quadlet.
+  - `podman_generate_systemd`: Generate Systemd unit files for containers and pods.
   - `podman_login`/`podman_logout`: Authenticate with container registries.
   - ...and many more!
 
