@@ -505,6 +505,19 @@ releases:
       - Fix tests for new Podman
       release_summary: Fix deprecation warnings and improve CI
     release_date: '2026-02-01'
+  1.19.0:
+    changes:
+      major_changes:
+      - Add podman Quadlet modules
+      release_summary: Add podman Quadlet modules
+    modules:
+    - description: Install or remove Podman Quadlets
+      name: podman_quadlet
+      namespace: ''
+    - description: Gather information about Podman Quadlets
+      name: podman_quadlet_info
+      namespace: ''
+    release_date: '2026-02-02'
   1.2.0:
     changes:
       minor_changes:
