@@ -17,7 +17,7 @@ on:
       - 'contrib/publish-requirements.txt'
       - 'contrib/publish.sh'
   schedule:
-    - cron: 3 0 * * *  # Run daily at 0:03 UTC
+    - cron: 6 0 * * *  # Run daily at 0:06 UTC
 
 jobs:
   publish-collection-artifact-dry-run:

@@ -22,7 +22,7 @@ on:
       - "plugins/modules/podman_runlabel.py"
       - "tests/integration/targets/podman_runlabel/**"
   schedule:
-    - cron: 4 0 * * * # Run daily at 0:03 UTC
+    - cron: 7 0 * * * # Run daily at 0:07 UTC
 
 jobs:
   test_podman_runlabel:

@@ -24,7 +24,7 @@ on:
       - "tests/integration/targets/connection/**"
       - "tests/integration/targets/connection_*/**"
   schedule:
-    - cron: 3 0 * * * # Run daily at 0:03 UTC
+    - cron: 6 0 * * * # Run daily at 0:06 UTC
 
 jobs:
   build-collection-artifact-connection-tests:
