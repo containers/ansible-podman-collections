@@ -24,7 +24,7 @@ on:
       - "plugins/module_utils/podman/quadlet.py"
       - "tests/integration/targets/podman_quadlet/**"
   schedule:
-    - cron: 4 0 * * * # Run daily at 0:04 UTC
+    - cron: 7 0 * * * # Run daily at 0:07 UTC
 
 jobs:
   test_podman_quadlet:

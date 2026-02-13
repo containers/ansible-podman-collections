@@ -20,7 +20,7 @@ on:
       - "plugins/modules/podman_system_info.py"
       - "tests/integration/targets/podman_system_info/**"
   schedule:
-    - cron: 4 0 * * * # Run daily at 0:03 UTC
+    - cron: 7 0 * * * # Run daily at 0:07 UTC
 
 jobs:
   test_podman_system_info:
