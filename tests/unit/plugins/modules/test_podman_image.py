@@ -48,6 +48,8 @@ class TestPodmanImageModule:
             ),
             # Valid authentication parameters
             ({"name": "alpine", "username": "testuser", "password": "testpass"}, True),
+            # Valid platform parameter (issue #1003)
+            ({"name": "alpine", "platform": "linux/amd64"}, True),
         ],
     )
     def test_module_parameter_validation(self, test_params, expected_valid):
@@ -138,19 +140,22 @@ class TestPodmanImageModule:
         mutually_exclusive_combinations = [
             ({"auth_file": "/path/to/auth", "username": "user"}, True),
             ({"auth_file": "/path/to/auth", "password": "pass"}, True),
+            ({"arch": "amd64", "platform": "linux/amd64"}, True),  # arch and platform
             ({"username": "user", "password": "pass"}, False),  # This should be allowed
             ({"auth_file": "/path/to/auth"}, False),  # This should be allowed
+            ({"platform": "linux/amd64"}, False),  # platform alone is allowed
         ]
 
         for params, should_be_exclusive in mutually_exclusive_combinations:
             # This tests the logic of mutual exclusion
             has_auth_file = "auth_file" in params
             has_credentials = "username" in params or "password" in params
+            has_arch_and_platform = "arch" in params and "platform" in params
 
             if should_be_exclusive:
-                assert has_auth_file and has_credentials
+                assert (has_auth_file and has_credentials) or has_arch_and_platform
             else:
-                assert not (has_auth_file and has_credentials) or not has_auth_file
+                assert not (has_auth_file and has_credentials) and not has_arch_and_platform
 
     def test_required_together_logic(self):
         """Test that username and password are required together."""

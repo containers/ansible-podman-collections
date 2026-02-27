@@ -380,6 +380,26 @@
           - item.Architecture == "arm"
       loop: "{{ imageinfo_arch.images }}"
 
+    - name: Pull an image for a specific platform
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/etcd:v3.5.27
+        platform: linux/amd64
+      register: pull_platform1
+
+    - name: Pull the same image for the same platform
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/etcd:v3.5.27
+        platform: linux/amd64
+      register: pull_platform2
+
+    - name: Ensure platform pull is idempotent
+      assert:
+        that:
+          - pull_platform1 is changed
+          - pull_platform2 is not changed
+
     - name: Build Docker image
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
@@ -599,9 +619,11 @@
         state: absent
       loop:
         - docker.io/library/ubuntu
+        - docker.io/library/alpine
         - quay.io/sshnaidm1/alpine-sh
         - quay.io/coreos/etcd:v3.3.11
         - quay.io/coreos/etcd:v3.5.19
+        - quay.io/coreos/etcd:v3.5.27
         - localhost/testimage
         - localhost/testimage2
         - localhost/testimage2:testtag
