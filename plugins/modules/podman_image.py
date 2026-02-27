@@ -19,6 +19,12 @@ DOCUMENTATION = r"""
       description:
         - CPU architecture for the container image
       type: str
+    platform:
+      description:
+        - Platform for the container image (e.g. C(linux/amd64), C(linux/arm64)).
+        - Specify the platform for selecting the image when pulling or building.
+        - Mutually exclusive with C(arch).
+      type: str
     name:
       description:
         - Name of the image to pull, push, or delete. It may contain a tag using the format C(image:tag).
@@ -348,6 +354,11 @@ EXAMPLES = r"""
     name: nginx
     arch: amd64
 
+- name: Pull an image for a specific platform (e.g. x86 on M-series Mac)
+  containers.podman.podman_image:
+    name: nginx
+    platform: linux/amd64
+
 - name: Build a container from file inline
   containers.podman.podman_image:
     name: mycustom_image
@@ -456,6 +467,7 @@ def main():
         argument_spec=dict(
             name=dict(type="str", required=True),
             arch=dict(type="str"),
+            platform=dict(type="str"),
             tag=dict(type="str", default="latest"),
             pull=dict(type="bool", default=True),
             pull_extra_args=dict(type="str"),
@@ -528,6 +540,7 @@ def main():
         mutually_exclusive=(
             ["auth_file", "username"],
             ["auth_file", "password"],
+            ["arch", "platform"],
         ),
     )
 

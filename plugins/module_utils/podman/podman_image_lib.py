@@ -136,9 +136,9 @@ class PodmanImageBuilder:
         self.executable = executable
         self.auth_config = auth_config or {}
 
-    def build_image(self, image_name, build_config, path=None, containerfile_hash=None):
+    def build_image(self, image_name, build_config, path=None, containerfile_hash=None, platform=None):
         """Build an image with the given configuration."""
-        args = self._construct_build_args(image_name, build_config, path, containerfile_hash)
+        args = self._construct_build_args(image_name, build_config, path, containerfile_hash, platform)
 
         # Handle inline container file
         temp_file_path = None
@@ -162,12 +162,16 @@ class PodmanImageBuilder:
             if temp_file_path and os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
 
-    def _construct_build_args(self, image_name, build_config, path, containerfile_hash):
+    def _construct_build_args(self, image_name, build_config, path, containerfile_hash, platform=None):
         """Construct build command arguments."""
         args = ["build", "-t", image_name]
 
         # Add authentication
         self._add_auth_args(args)
+
+        # Add platform for cross-platform builds
+        if platform:
+            args.extend(["--platform", platform])
 
         # Add build-specific arguments
         if build_config.get("force_rm"):
@@ -268,11 +272,13 @@ class PodmanImagePuller:
         self.executable = executable
         self.auth_config = auth_config or {}
 
-    def pull_image(self, image_name, arch=None, pull_extra_args=None):
+    def pull_image(self, image_name, arch=None, platform=None, pull_extra_args=None):
         """Pull an image from a registry."""
         args = ["pull", image_name]
 
-        if arch:
+        if platform:
+            args.extend(["--platform", platform])
+        elif arch:
             args.extend(["--arch", arch])
 
         self._add_auth_args(args)
@@ -533,10 +539,28 @@ class PodmanImageManager:
 
         # Check architecture if specified
         arch = self.params.get("arch")
+        platform = self.params.get("platform")
         if arch:
             inspect_data = self.inspector.inspect_image(image_name)
             if inspect_data and inspect_data[0].get("Architecture") != arch:
                 return None
+        elif platform:
+            # Platform format: os/arch or os/arch/variant (e.g. linux/amd64)
+            inspect_data = self.inspector.inspect_image(image_name)
+            if inspect_data:
+                platform_parts = platform.split("/")
+                required_os = platform_parts[0] if len(platform_parts) >= 1 else None
+                required_arch = platform_parts[1] if len(platform_parts) >= 2 else None
+                img_os = inspect_data[0].get("Os") or inspect_data[0].get("os")
+                img_arch = inspect_data[0].get("Architecture") or inspect_data[0].get("architecture")
+                # Normalize arch for comparison (e.g. x86_64 -> amd64, aarch64 -> arm64)
+                arch_map = {"x86_64": "amd64", "aarch64": "arm64"}
+                if img_arch and img_arch in arch_map:
+                    img_arch = arch_map[img_arch]
+                if required_os and img_os != required_os:
+                    return None
+                if required_arch and img_arch != required_arch:
+                    return None
 
         return images
 
@@ -618,7 +642,8 @@ class PodmanImageManager:
         # Build the image
         if not self.module.check_mode:
             image_id, output, podman_command = self.builder.build_image(
-                self.repository.full_name, build_config, path, containerfile_hash
+                self.repository.full_name, build_config, path, containerfile_hash,
+                self.params.get("platform")
             )
             self.results["stdout"] = output
             self.results["image"] = self.inspector.inspect_image(image_id)
@@ -634,7 +659,10 @@ class PodmanImageManager:
 
         if not self.module.check_mode:
             unused, podman_command = self.puller.pull_image(
-                self.repository.full_name, self.params.get("arch"), self.params.get("pull_extra_args")
+                self.repository.full_name,
+                self.params.get("arch"),
+                self.params.get("platform"),
+                self.params.get("pull_extra_args"),
             )
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
             self.results["podman_actions"].append(podman_command)
