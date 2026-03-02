@@ -183,7 +183,7 @@ jobs:
           echo "${{ steps.build-info.outputs.version }}" > podman-artifact/VERSION
 
       - name: Upload Podman artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: podman-latest
           path: podman-artifact/
