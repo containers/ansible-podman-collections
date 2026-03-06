@@ -1,0 +1,122 @@
+- name: Test podman_quadlet_build
+  block:
+    - name: Create a Quadlet for build with filename
+      containers.podman.podman_quadlet_build:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost/myimage:1.0
+        file: /var/tmp/build/Dockerfile
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.build
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present or wrong mode
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0640'
+
+    - name: Create quadlet build file
+      containers.podman.podman_quadlet_build:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost/myimage:v1.0
+        file: /var/tmp/build/Dockerfile
+        state: quadlet
+        arch: x86_64
+        validate_certs: false
+        quadlet_dir: /tmp/
+        quadlet_file_mode: '0644'
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/myimage.build
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet image in /tmp/myimage.build file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check quadlet file mode is correct
+      assert:
+        that:
+          - quadlet_file.stat.mode == '0644'
+
+    - name: Check for the existence of lines in /tmp/myimage.build
+      lineinfile:
+        path: /tmp/myimage.build
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Build]"
+        - "ImageTag=localhost/myimage:v1.0"
+        - "WantedBy=default.target"
+        - "Arch=x86_64"
+        - "TLSVerify=false"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/myimage.build: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet image file - same
+      containers.podman.podman_quadlet_build:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost/myimage:v1.0
+        file: /var/tmp/build/Dockerfile
+        state: quadlet
+        arch: x86_64
+        validate_certs: false
+        quadlet_dir: /tmp/
+        quadlet_file_mode: '0644'
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet image file - different
+      containers.podman.podman_quadlet_build:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost/myimage:v1.0
+        file: /var/tmp/build/Dockerfile
+        state: quadlet
+        arch: arm64
+        validate_certs: false
+        quadlet_dir: /tmp/
+        quadlet_file_mode: '0644'
+        quadlet_options:
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'arm64' in quad3.diff.after"

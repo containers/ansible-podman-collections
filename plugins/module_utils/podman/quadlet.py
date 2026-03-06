@@ -728,6 +728,68 @@ class ImageQuadlet(Quadlet):
         return params
 
 
+# This is a inherited class that represents a Quadlet file for the Podman build
+class BuildQuadlet(Quadlet):
+    param_map = {
+        "annotation": "Annotation",
+        "arch": "Arch",
+        "authfile": "AuthFile",
+        "build_args": "BuildArg",
+        "ContainersConfModule": "ContainersConfModule",
+        "dns": "DNS",
+        "dns_opt": "DNSOption",
+        "dns_search": "DNSSearch",
+        "env": "Environment",
+        "file": "File",
+        "force_rm": "ForceRM",
+        "global_args": "GlobalArgs",
+        "group_add": "GroupAdd",
+        "ignore_file": "IgnoreFile",
+        "name": "ImageTag",
+        "labels": "Labels",
+        "network": "Network",
+        "podman_args": "PodmanArgs",
+        "pull": "Pull",
+        "retry": "Retry",
+        "retry_delay": "RetryDelay",
+        "set_working_directory": "SetWorkingDirectory",
+        "target": "Target",
+        "validate_certs": "TLSVerify",
+        "variant": "Variant",
+        "volume": "Volume",
+    }
+
+    def __init__(self, params: dict):
+        super().__init__("Build", params)
+
+    def custom_prepare_params(self, params: dict) -> dict:
+        """
+        Custom parameter processing for build-specific parameters.
+        """
+        # Work on params in params_map and convert them to a right form
+        params["global_args"] = []
+        params["podman_args"] = []
+
+        if params["annotation"]:
+            params["annotation"] = ["%s=%s" % (k, v) for k, v in params["annotation"].items()]
+        if params["username"] and params["password"]:
+            params["podman_args"].append(f"--creds {params['username']}:{params['password']}")
+        if params["build_args"]:
+            params["build_args"] = ["%s=%s" % (k, v) for k, v in params["build_args"].items()]
+        if params["env"]:
+            params["env"] = ["%s=%s" % (k, v) for k, v in params["env"].items()]
+        if params["labels"]:
+            params["labels"] = ["%s=%s" % (k, v) for k, v in params["labels"].items()]
+        if params["cmd_args"]:
+            params["podman_args"] += params["cmd_args"]
+        if params["ca_cert_dir"]:
+            params["podman_args"].append(f"--cert-dir {params['ca_cert_dir']}")
+        if not params["cache"]:
+            params["podman_args"].append("--no-cache")
+
+        return params
+
+
 def check_quadlet_directory(module, quadlet_dir):
     """Check if the directory exists and is writable. If not, fail the module."""
     if not os.path.exists(quadlet_dir):
@@ -742,6 +804,7 @@ def check_quadlet_directory(module, quadlet_dir):
 def create_quadlet_state(module, issuer):
     """Create a quadlet file for the specified issuer."""
     class_map = {
+        "build": BuildQuadlet,
         "container": ContainerQuadlet,
         "network": NetworkQuadlet,
         "pod": PodQuadlet,
@@ -760,7 +823,7 @@ def create_quadlet_state(module, issuer):
     # Create a filename based on the issuer
     if not module.params.get("name") and not module.params.get("quadlet_filename"):
         module.fail_json(msg=f"Filename for {issuer} is required for creating a quadlet file.")
-    if issuer == "image":
+    if issuer == "image" or issuer == "build":
         name = module.params["name"].split("/")[-1].split(":")[0]
     else:
         name = module.params.get("name")
