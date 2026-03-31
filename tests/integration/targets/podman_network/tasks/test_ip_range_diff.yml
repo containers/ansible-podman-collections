@@ -1,0 +1,263 @@
+- name: Test ip_range diff in net_config
+  block:
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    # Test 1: Create network with ip_range, then change ip_range - should detect change
+    - name: Create network with ip_range in net_config
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+      register: net_ip_range_create
+
+    - name: Check network was created
+      assert:
+        that:
+          - net_ip_range_create is changed
+
+    - name: Recreate same network with same ip_range - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+      register: net_ip_range_same
+      diff: true
+
+    - name: Check idempotency - same ip_range should not change
+      assert:
+        that:
+          - net_ip_range_same is not changed
+
+    - name: Change ip_range in net_config
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.64/26
+      register: net_ip_range_changed
+      diff: true
+
+    - name: Check ip_range change was detected
+      assert:
+        that:
+          - net_ip_range_changed is changed
+          - "'net_config' in net_ip_range_changed.diff.before"
+          - "'net_config' in net_ip_range_changed.diff.after"
+
+    # Test 2: Add ip_range where there was none
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create network without ip_range
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+
+    - name: Add ip_range to existing network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+      register: net_ip_range_added
+      diff: true
+
+    - name: Check adding ip_range was detected
+      assert:
+        that:
+          - net_ip_range_added is changed
+          - "'net_config' in net_ip_range_added.diff.before"
+          - "'net_config' in net_ip_range_added.diff.after"
+
+    # Test 3: Multiple subnets - change ip_range on one
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create network with multiple subnets and ip_range
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.1
+
+    - name: Change ip_range in one of multiple subnets
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.64/26
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.1
+      register: net_multi_ip_range_changed
+      diff: true
+
+    - name: Check ip_range change in multi-subnet was detected
+      assert:
+        that:
+          - net_multi_ip_range_changed is changed
+
+    - name: Recreate same multi-subnet network - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.64/26
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.1
+      register: net_multi_same
+      diff: true
+
+    - name: Check idempotency for multi-subnet with ip_range
+      assert:
+        that:
+          - net_multi_same is not changed
+
+    # Test 4: Subnet without ip_range then add ip_range - rstrip consistency
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create network with only subnet and gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+
+    - name: Recreate same network without ip_range - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+      register: net_no_range_same
+      diff: true
+
+    - name: Check idempotency - no ip_range should not change
+      assert:
+        that:
+          - net_no_range_same is not changed
+
+    - name: Add ip_range to network - should detect change
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+      register: net_add_range
+      diff: true
+
+    - name: Check adding ip_range was detected
+      assert:
+        that:
+          - net_add_range is changed
+
+    - name: Recreate with ip_range - idempotency after adding
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.1
+            ip_range: 10.44.44.128/30
+      register: net_added_range_same
+      diff: true
+
+    - name: Check idempotency after adding ip_range
+      assert:
+        that:
+          - net_added_range_same is not changed
+
+    # Test 5: Standalone ip_range parameter diff
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create network with standalone ip_range
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.1
+        ip_range: 10.44.44.128/30
+
+    - name: Recreate with same standalone ip_range - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.1
+        ip_range: 10.44.44.128/30
+      register: net_standalone_same
+      diff: true
+
+    - name: Check idempotency for standalone ip_range
+      assert:
+        that:
+          - net_standalone_same is not changed
+
+    - name: Change standalone ip_range
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.1
+        ip_range: 10.44.44.64/26
+      register: net_standalone_changed
+      diff: true
+
+    - name: Check standalone ip_range change was detected
+      assert:
+        that:
+          - net_standalone_changed is changed
+          - "'ip_range' in net_standalone_changed.diff.before"
+          - "'ip_range' in net_standalone_changed.diff.after"
+
+  always:
+
+    - name: Cleanup network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+      ignore_errors: true

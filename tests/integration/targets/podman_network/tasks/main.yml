@@ -829,6 +829,9 @@
           - quad3 is changed
           - "'10.123.15.0' in quad3.diff.after"
 
+    - name: Test ip_range diff
+      include_tasks: test_ip_range_diff.yml
+
   always:
 
     - name: Cleanup

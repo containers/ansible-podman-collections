@@ -18,6 +18,7 @@ description:
   - Manage podman networks with podman network command.
 requirements:
   - podman
+  - ipaddress (for ip_range idempotency checks)
 options:
   name:
     description:
@@ -305,6 +306,7 @@ except ImportError:
     HAS_IP_ADDRESS_MODULE = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
+
 try:
     from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
 except ImportError:
@@ -478,6 +480,23 @@ class PodmanNetworkDiff:
             return True
         return False
 
+    @staticmethod
+    def _lease_range_to_str(lease_range):
+        """Convert lease_range dict to normalized start-end string."""
+        return f'{lease_range["start_ip"]}-{lease_range["end_ip"]}'
+
+    @staticmethod
+    def _ip_range_to_str(ip_range_cidr):
+        """Convert CIDR ip_range to normalized start-end string.
+
+        Podman excludes the network address from the lease range,
+        so start = network_address + 1, end = broadcast_address.
+        """
+        net = ipaddress.ip_network(ip_range_cidr, strict=False)
+        start = net.network_address + 1
+        end = net.broadcast_address
+        return f"{start}-{end}"
+
     def diffparam_disable_dns(self):
         # For v3 it's impossible to find out DNS settings.
         if LooseVersion(self.version) >= LooseVersion("4.0.0"):
@@ -544,8 +563,20 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare("internal", before, after)
 
     def diffparam_ip_range(self):
-        # TODO(sshnaidm): implement IP to CIDR convert and vice versa
-        before = after = ""
+        if not HAS_IP_ADDRESS_MODULE:
+            self.module.warn(
+                "Python 'ipaddress' module is not available. "
+                "Skipping ip_range idempotency check.")
+            return False
+        before = ""
+        after = self.params["ip_range"] or ""
+        if after:
+            after = self._ip_range_to_str(after)
+            before_subs = self.info.get("subnets", [])
+            if before_subs:
+                lr = before_subs[0].get("lease_range")
+                if lr:
+                    before = self._lease_range_to_str(lr)
         return self._diff_update_and_compare("ip_range", before, after)
 
     def diffparam_ipam_driver(self):
@@ -561,10 +592,28 @@ class PodmanNetworkDiff:
             return self._diff_update_and_compare("net_config", "", "")
         before_subs = self.info.get("subnets", [])
         if before_subs:
-            before = ":".join(sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in before_subs]))
+            before_parts = []
+            for i in before_subs:
+                parts = [i["subnet"], i.get("gateway") or ""]
+                lr = i.get("lease_range")
+                if lr:
+                    parts.append(self._lease_range_to_str(lr))
+                before_parts.append(",".join(parts))
+            before = ":".join(sorted(before_parts))
         else:
             before = ""
-        after = ":".join(sorted([",".join([i["subnet"], i["gateway"]]).rstrip(",") for i in after]))
+        after_parts = []
+        for i in after:
+            parts = [i["subnet"], i.get("gateway") or ""]
+            if i.get("ip_range"):
+                if HAS_IP_ADDRESS_MODULE:
+                    parts.append(self._ip_range_to_str(i["ip_range"]))
+                else:
+                    self.module.warn(
+                        "Python 'ipaddress' module is not available. "
+                        "Skipping ip_range idempotency check in net_config.")
+            after_parts.append(",".join(parts))
+        after = ":".join(sorted(after_parts))
         return self._diff_update_and_compare("net_config", before, after)
 
     def diffparam_route(self):
