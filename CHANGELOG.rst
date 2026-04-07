@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.19.1
+=======
+
+Release Summary
+---------------
+
+Fix podman network and add platform option to podman_image
+
+Minor Changes
+-------------
+
+- Add --platform option to podman_image
+
+Bugfixes
+--------
+
+- podman_network - Add diff and idempotency to ip_ranges in net_config
+
 v1.19.0
 =======
 
