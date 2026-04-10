@@ -34,10 +34,10 @@ Valid change categories: `release_summary`, `major_changes`, `minor_changes`, `b
 Set the new version:
 
 ```bash
-python contrib/build.py X.Y.Z
+sed -i 's/^version: .*/version: X.Y.Z/' galaxy.yml
 ```
 
-This reads `galaxy.yml.in` and writes `galaxy.yml` with the version injected.
+This updates the version field directly in `galaxy.yml`.
 
 ## Step 3: Generate the CHANGELOG
 

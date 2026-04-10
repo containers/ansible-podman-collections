@@ -42,7 +42,7 @@ All commits in this repository require a **Signed-off-by** line (DCO). Always us
 
 - **Build collection**: `ansible-galaxy collection build`
 - **Build RPM**: `make rpm`
-- **Set version**: `python contrib/build.py <version>` — reads `galaxy.yml.in` template, adds version, writes `galaxy.yml`
+- **Set version**: `sed -i 's/^version: .*/version: <version>/' galaxy.yml`
 - **Publish to Galaxy**: `bash contrib/publish.sh <version>` (use `DRYRUN=1` for testing)
 
 ## Code Architecture
@@ -109,8 +109,7 @@ For simple parameters, `diffparam_*` can delegate to `self._diff_generic("module
 
 ### Build System
 
-- `galaxy.yml.in` — source template (no version field)
-- `contrib/build.py <version>` — generates `galaxy.yml` from template with version injected
+- `galaxy.yml` — collection metadata including version
 - `Makefile` — RPM packaging target
 
 ## Adding CI for a New Module
@@ -186,7 +185,7 @@ If the module has complex state management, add a library in `plugins/module_uti
 Full details are in [RELEASING.md](RELEASING.md). Summary:
 
 1. **Add a release section** in `changelogs/changelog.yaml` describing all user-facing changes since the previous release. Skip maintenance-only changes (CI, test infra, internal refactoring).
-2. **Set the version**: `python contrib/build.py X.Y.Z` — updates `galaxy.yml` from the `galaxy.yml.in` template.
+2. **Set the version**: `sed -i 's/^version: .*/version: X.Y.Z/' galaxy.yml`
 3. **Generate CHANGELOG**: `antsibull-changelog release` — regenerates `CHANGELOG.rst` from `changelogs/changelog.yaml`.
 4. **Update docs (major releases only)**: Run `contrib/build_docs.sh` to regenerate HTML docs. If new modules were added, `git add` their generated doc files first. Skip for patch releases.
 5. **Create a PR** with the changelog, galaxy.yml, and CHANGELOG.rst changes. Merge to `main`.

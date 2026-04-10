@@ -5,6 +5,19 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.19.2
+=======
+
+Release Summary
+---------------
+
+Fix quadlet_options being incorrectly placed under Service section
+
+Bugfixes
+--------
+
+- podman_container - Fix quadlet_options placement when restart_policy is set
+
 v1.19.1
 =======
 
