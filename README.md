@@ -117,6 +117,10 @@ We welcome contributions from the community! Whether you want to fix a bug, add 
 
 Please read our **[Contributing Guide](CONTRIBUTING.md)** to learn how to get started with development, testing, and submitting pull requests.
 
+## Releasing
+
+For maintainers: see the **[Releasing Guide](RELEASING.md)** for the full release process — changelog updates, versioning, documentation builds, and publishing to Galaxy.
+
 ## License
 
 This collection is licensed under the [GNU General Public License v3.0 or later](COPYING).

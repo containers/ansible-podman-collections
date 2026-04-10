@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the `containers.podman` Ansible Collection — modules, plugins, and connection plugins for managing Podman containers. Published on [Ansible Galaxy](https://galaxy.ansible.com/containers/podman) from <https://github.com/containers/ansible-podman-collections>.
 
+**The collection is currently in maintenance mode** — mostly accepting bugfixes and security patches. New features might not be merged.
+
+**Requirements:** `ansible-core >= 2.12`, `python >= 3.9`, and a working Podman installation on the target.
+
 ## Development Commands
 
 ### Testing
@@ -89,6 +93,10 @@ For simple parameters, `diffparam_*` can delegate to `self._diff_generic("module
 - `podman.py` — Execute commands inside Podman containers
 - `buildah.py` — Execute commands inside Buildah containers
 
+### Become Plugin (`plugins/become/`)
+
+- `podman_unshare.py` — Execute commands in container user namespace via `podman unshare` (for accessing files with UIDs mapped in rootless containers)
+
 ### Testing Architecture
 
 - **Integration tests**: `tests/integration/targets/<module_name>/tasks/main.yml` — the primary test mechanism. Specific issue regression tests use `tasks/test_issue_<number>.yml` included from `main.yml`
@@ -168,6 +176,21 @@ The reusable template (`.github/workflows/reusable-module-test.yml`) also accept
 ### 4. Module utilities (if needed)
 
 If the module has complex state management, add a library in `plugins/module_utils/podman/` following the convention-based dispatch pattern described above.
+
+## Release Process
+
+Full details are in [RELEASING.md](RELEASING.md). Summary:
+
+1. **Add a release section** in `changelogs/changelog.yaml` describing all user-facing changes since the previous release. Skip maintenance-only changes (CI, test infra, internal refactoring).
+2. **Set the version**: `python contrib/build.py X.Y.Z` — updates `galaxy.yml` from the `galaxy.yml.in` template.
+3. **Generate CHANGELOG**: `antsibull-changelog release` — regenerates `CHANGELOG.rst` from `changelogs/changelog.yaml`.
+4. **Update docs (major releases only)**: Run `contrib/build_docs.sh` to regenerate HTML docs. If new modules were added, `git add` their generated doc files first. Skip for patch releases.
+5. **Create a PR** with the changelog, galaxy.yml, and CHANGELOG.rst changes. Merge to `main`.
+6. **Tag the merge commit**: `git tag X.Y.Z && git push origin X.Y.Z` — this triggers the `collection-publish.yml` workflow which publishes to Galaxy.
+
+### Changelog Entry Format
+
+Each release entry in `changelogs/changelog.yaml` uses categories: `release_summary`, `major_changes`, `minor_changes`, `breaking_changes`, `deprecated_features`, `removed_features`, `security_fixes`, `bugfixes`, `known_issues`. New modules get a `modules:` section; new plugins get a `plugins:` section.
 
 ## Integration Test Best Practices
 
