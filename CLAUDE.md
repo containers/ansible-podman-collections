@@ -10,6 +10,10 @@ This is the `containers.podman` Ansible Collection — modules, plugins, and con
 
 **Requirements:** `ansible-core >= 2.12`, `python >= 3.9`, and a working Podman installation on the target.
 
+## Git Commits
+
+All commits in this repository require a **Signed-off-by** line (DCO). Always use `git commit -s` when committing.
+
 ## Development Commands
 
 ### Testing
