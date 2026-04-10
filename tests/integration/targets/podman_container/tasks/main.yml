@@ -1614,7 +1614,73 @@
           - "'--restart' not in quad_custom_service_content.stdout"
         fail_msg: "Should have exactly one [Service] section when user provides custom one"
 
-    - name: Cleanup restart test Quadlet files
+    # Test for issue #1017: quadlet_options should not be moved into [Service] section
+    - name: Create Quadlet with restart_policy and quadlet_options containing plain options
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet-options-order
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        restart_policy: always
+        quadlet_options:
+          - AutoUpdate=registry
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad_options_order
+
+    - name: Read Quadlet file for options order test
+      slurp:
+        src: /tmp/container-quadlet-options-order.container
+      register: quad_options_order_content
+
+    - name: Verify quadlet_options are placed in correct sections
+      vars:
+        content: "{{ quad_options_order_content.content | b64decode }}"
+      assert:
+        that:
+          - quad_options_order is changed
+          - "'AutoUpdate=registry' in content"
+          - "'[Service]' in content"
+          - "'Restart=always' in content"
+          - "'[Install]' in content"
+          - "'WantedBy=default.target' in content"
+          - "content.index('AutoUpdate=registry') < content.index('[Service]')"
+          - "content.index('[Service]') < content.index('[Install]')"
+        fail_msg: "Plain quadlet_options like AutoUpdate should be in [Container] section, not after [Service]"
+
+    - name: Create Quadlet without restart_policy but with quadlet_options
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet-options-no-restart
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_options:
+          - AutoUpdate=registry
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad_no_restart
+
+    - name: Read Quadlet file without restart_policy
+      slurp:
+        src: /tmp/container-quadlet-options-no-restart.container
+      register: quad_no_restart_content
+
+    - name: Verify quadlet_options work correctly without restart_policy
+      vars:
+        content: "{{ quad_no_restart_content.content | b64decode }}"
+      assert:
+        that:
+          - quad_no_restart is changed
+          - "'AutoUpdate=registry' in content"
+          - "'[Service]' not in content"
+          - "'[Install]' in content"
+        fail_msg: "quadlet_options without restart_policy should not create a [Service] section"
+
+    - name: Cleanup restart and quadlet_options test files
       file:
         path: "{{ item }}"
         state: absent
@@ -1623,6 +1689,8 @@
         - /tmp/container-restart-on-failure.container
         - /tmp/container-restart-unless-stopped.container
         - /tmp/container-restart-custom-service.container
+        - /tmp/container-quadlet-options-order.container
+        - /tmp/container-quadlet-options-no-restart.container
 
   always:
 

@@ -95,8 +95,23 @@ class Quadlet:
         """
         custom_user_options = self.custom_params.get("quadlet_options")
 
+        # Separate quadlet_options into main-section options (plain key=value)
+        # and extra sections (containing section headers like [Install])
+        main_section_options = []
+        extra_section_options = []
+        if custom_user_options:
+            for opt in custom_user_options:
+                if opt.lstrip().startswith("["):
+                    extra_section_options.append(opt)
+                else:
+                    main_section_options.append(opt)
+
         # Build main section
         content = f"[{self.section}]\n" + "\n".join(f"{key}={value}" for key, value in self.dict_params)
+
+        # Append plain key=value quadlet_options to the main section
+        if main_section_options:
+            content += "\n" + "\n".join(main_section_options)
 
         # Add Service section if there are service parameters
         # Check if user hasn't already added a [Service] section in quadlet_options
@@ -108,8 +123,11 @@ class Quadlet:
             service_text = "\n\n[Service]\n" + "\n".join(f"{key}={value}" for key, value in self.service_section.items())
             content += service_text
 
-        custom_text = "\n" + "\n".join(custom_user_options) if custom_user_options else ""
-        return content + custom_text + "\n"
+        # Append extra section options (e.g. [Install] blocks) after the Service section
+        if extra_section_options:
+            content += "\n\n" + "\n".join(extra_section_options)
+
+        return content + "\n"
 
     def write_to_file(self, path: str):
         """
