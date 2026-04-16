@@ -1,0 +1,89 @@
+- name: Test podman_pod check mode support
+  block:
+
+    - name: Delete pod1 leftover if any
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: absent
+
+    - name: Create pod in check mode on non-existing pod (should report changed, not skip)
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+      check_mode: true
+      register: pod_check_create
+
+    - name: Assert check mode reported changed and did not skip
+      assert:
+        that:
+          - pod_check_create is changed
+          - pod_check_create is not skipped
+
+    - name: Verify pod was NOT actually created in check mode
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+      register: pod_check_info
+
+    - name: Assert pod does not exist after check mode run
+      assert:
+        that:
+          - pod_check_info.pods | length == 0
+
+    - name: Create pod for next check mode tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+
+    - name: Run check mode on existing pod with same config (should not be changed)
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+      check_mode: true
+      register: pod_check_idempotent
+
+    - name: Assert check mode is idempotent on existing pod
+      assert:
+        that:
+          - pod_check_idempotent is not changed
+          - pod_check_idempotent is not skipped
+
+    - name: Run check mode on existing pod with different config (should report changed)
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+        ports:
+          - "8080:8080"
+      check_mode: true
+      register: pod_check_diff
+
+    - name: Assert check mode reports changed for config diff
+      assert:
+        that:
+          - pod_check_diff is changed
+          - pod_check_diff is not skipped
+
+    - name: Verify pod was NOT actually modified in check mode
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+      register: pod_after_diff_check
+
+    - name: Assert pod still has no ports after check mode run
+      assert:
+        that:
+          - pod_after_diff_check.pods | length == 1
+          - pod_after_diff_check.pods[0].InfraConfig.PortBindings == {}
+
+  always:
+
+    - name: Cleanup pod1
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: absent
