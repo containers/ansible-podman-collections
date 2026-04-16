@@ -701,7 +701,7 @@ from ..module_utils.podman.podman_pod_lib import ARGUMENTS_SPEC_POD  # noqa: F40
 
 
 def main():
-    module = AnsibleModule(argument_spec=ARGUMENTS_SPEC_POD)
+    module = AnsibleModule(argument_spec=ARGUMENTS_SPEC_POD, supports_check_mode=True)
     results = PodmanPodManager(module, module.params).execute()
     module.exit_json(**results)
 
