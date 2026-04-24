@@ -141,6 +141,21 @@
           # images
           - image_system_exists.images | length == 0
 
+    # Idempotency - Test "Total reclaimed space: 0B" does not report changed
+    - name: Prune objects
+      containers.podman.podman_prune:
+        system: true
+
+    - name: Prune objects - 2nd time
+      containers.podman.podman_prune:
+        system: true
+      register: podman_prune_result
+
+    - name: Assert that result.changed is false
+      ansible.builtin.assert:
+        that:
+          - podman_prune_result.system.changed == false
+
   always:
     - name: Cleanup
       ansible.builtin.command: podman system prune -a -f --volumes
