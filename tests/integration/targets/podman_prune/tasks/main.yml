@@ -144,10 +144,12 @@
     # Idempotency - Test "Total reclaimed space: 0B" does not report changed
     - name: Prune objects
       containers.podman.podman_prune:
+        executable: "{{ test_executable | default('podman') }}"
         system: true
 
     - name: Prune objects - 2nd time
       containers.podman.podman_prune:
+        executable: "{{ test_executable | default('podman') }}"
         system: true
       register: podman_prune_result
 
