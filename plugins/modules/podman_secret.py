@@ -143,7 +143,7 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
         return False
     try:
         secret = module.from_json(out)[0]
-        if data:
+        if data is not None:
             if secret["SecretData"] != data:
                 if debug:
                     diff["after"] = data
@@ -245,7 +245,7 @@ def podman_secret_create(
             cmd.append("--label")
             cmd.append("=".join([k, v]))
     cmd.append(name)
-    if data:
+    if data is not None:
         cmd.append("-")
     elif path:
         cmd.append(path)
@@ -255,7 +255,7 @@ def podman_secret_create(
         cmd.append("--env")
         cmd.append(env)
 
-    if data:
+    if data is not None:
         rc, out, err = module.run_command(cmd, data=data, binary_data=True)
     else:
         rc, out, err = module.run_command(cmd)
