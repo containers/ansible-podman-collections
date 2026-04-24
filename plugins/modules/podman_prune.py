@@ -200,7 +200,7 @@ def podmanExec(module, target, filters, executable):
     if filters is not None:
         command.extend(filtersPrepare(target, filters))
     rc, out, err = module.run_command(command)
-    changed = bool(out)
+    changed = bool(out) and 'Total reclaimed space: 0B' not in out
 
     if rc != 0:
         module.fail_json(msg="Error executing prune on {target}: {err}".format(target=target, err=err))
