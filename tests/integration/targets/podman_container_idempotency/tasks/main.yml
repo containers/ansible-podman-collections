@@ -64,6 +64,8 @@
   args:
     apply:
       become: true
+  tags:
+    - no_build_version
 
 - name: Test idempotency for root network containers
   include_tasks: root-podman-network.yml
@@ -72,6 +74,8 @@
   args:
     apply:
       become: true
+  tags:
+    - no_build_version
 
 - name: Test idempotency for rootless network containers
   include_tasks: rootless-podman-network.yml
