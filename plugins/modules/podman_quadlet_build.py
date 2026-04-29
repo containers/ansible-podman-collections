@@ -139,6 +139,13 @@ DOCUMENTATION = r"""
       type: str
       aliases:
         - retrydelay
+    secret:
+      description:
+        - Pass secret information used in Containerfile build stages in a safe way.
+          Generally has the form C(secret[,opt=opt ...]).
+          Can be specified multiple times.
+      type: list
+      elements: str
     set_working_directory:
       description:
         - Provide context (a working directory) to podman build.
@@ -265,6 +272,7 @@ def main():
             pull=dict(type="str", choices=["always", "missing", "never", "newer"]),
             retry=dict(type="int"),
             retry_delay=dict(type="str", aliases=["retrydelay"]),
+            secret=dict(type="list", elements="str", no_log=False),
             set_working_directory=dict(type="str", aliases=["setworkingdirectory"]),
             target=dict(type="str"),
             username=dict(type="str"),
@@ -283,7 +291,7 @@ def main():
             ["authfile", "username"],
             ["authfile", "password"],
         ),
-        required_one_of=(["file", "set_working_directory"],)
+        required_one_of=(["file", "set_working_directory"],),
     )
 
     results = create_quadlet_state(module, "build")

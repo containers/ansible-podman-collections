@@ -116,3 +116,37 @@
         that:
           - quad3 is changed
           - "'arm64' in quad3.diff.after"
+
+    - name: Create quadlet build file with labels and secret
+      containers.podman.podman_quadlet_build:
+        executable: "{{ test_executable | default('podman') }}"
+        name: localhost/labelimage:latest
+        file: /var/tmp/build/Dockerfile
+        labels:
+          maintainer: testuser
+          version: "1.0"
+        secret:
+          - id=mysecret,src=/run/secrets/mysecret
+        quadlet_dir: /tmp/
+
+    - name: Check for correct Label and Secret keys in /tmp/labelimage.build
+      lineinfile:
+        path: /tmp/labelimage.build
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: label_check
+      loop:
+        - "Label=maintainer=testuser"
+        - "Label=version=1.0"
+        - "Secret=id=mysecret,src=/run/secrets/mysecret"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail if Label or Secret lines are not present
+      fail:
+        msg: "The following line is not present in /tmp/labelimage.build: {{ item.item }}"
+      when: item.changed
+      loop: "{{ label_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"

@@ -120,7 +120,9 @@ class Quadlet:
             has_service_in_custom = any("[Service]" in opt for opt in custom_user_options)
 
         if self.service_section and not has_service_in_custom:
-            service_text = "\n\n[Service]\n" + "\n".join(f"{key}={value}" for key, value in self.service_section.items())
+            service_text = "\n\n[Service]\n" + "\n".join(
+                f"{key}={value}" for key, value in self.service_section.items()
+            )
             content += service_text
 
         # Append extra section options (e.g. [Install] blocks) after the Service section
@@ -764,12 +766,13 @@ class BuildQuadlet(Quadlet):
         "group_add": "GroupAdd",
         "ignore_file": "IgnoreFile",
         "name": "ImageTag",
-        "labels": "Labels",
+        "labels": "Label",
         "network": "Network",
         "podman_args": "PodmanArgs",
         "pull": "Pull",
         "retry": "Retry",
         "retry_delay": "RetryDelay",
+        "secret": "Secret",
         "set_working_directory": "SetWorkingDirectory",
         "target": "Target",
         "validate_certs": "TLSVerify",
