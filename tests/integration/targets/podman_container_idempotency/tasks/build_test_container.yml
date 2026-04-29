@@ -29,6 +29,7 @@
     path: /tmp/usr_img
     build:
       format: docker
+      extra_args: "--network=none"
   become: true
   environment:
     XDG_RUNTIME_DIR: ""
