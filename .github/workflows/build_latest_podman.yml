@@ -146,6 +146,10 @@ jobs:
           }
 
           EOF
+
+          sudo tee /etc/containers/registries.conf > /dev/null <<'EOF'
+          unqualified-search-registries = ["docker.io"]
+          EOF
           echo "Podman configured for rootless usage"
 
       - name: Install deps for Podman
@@ -269,6 +273,10 @@ jobs:
             ]
           }
 
+          EOF
+
+          sudo tee /etc/containers/registries.conf > /dev/null <<'EOF'
+          unqualified-search-registries = ["docker.io"]
           EOF
 
       - name: Upgrade pip and install dependencies
@@ -408,6 +416,10 @@ jobs:
             ]
           }
 
+          EOF
+
+          sudo tee /etc/containers/registries.conf > /dev/null <<'EOF'
+          unqualified-search-registries = ["docker.io"]
           EOF
 
       - name: Upgrade pip and install dependencies
