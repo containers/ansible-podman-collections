@@ -177,7 +177,7 @@ options:
   quadlet_file_mode:
     description:
       - The permissions of the quadlet file.
-      - The O(quadlet_file_mode) can be specied as octal numbers or as a symbolic mode (for example, V(u+rwx) or V(u=rw,g=r,o=r)).
+      - The O(quadlet_file_mode) can be specified as octal numbers or as a symbolic mode (for example, V(u+rwx) or V(u=rw,g=r,o=r)).
         For octal numbers format, you must either add a leading zero so that Ansible's YAML parser knows it is an
         octal number (like V(0644) or V(01777)) or quote it (like V('644') or V('1777')) so Ansible receives a string
         and can do its own conversion from string into number. Giving Ansible a number without following one of these

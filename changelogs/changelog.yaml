@@ -539,6 +539,22 @@ releases:
       - Add changelog file to collection.
       release_summary: Add changelog file.
     release_date: '2020-08-17'
+  1.20.0:
+    changes:
+      bugfixes:
+      - podman_pod - Fix check mode support
+      - podman_quadlet_build - Fix and add unittests
+      - podman_secret - Fix ignoring 'data' if it's an empty string
+      minor_changes:
+      - podman_prune - Add idempotency support
+      release_summary: Add podman_quadlet_build module for building images using Quadlet,
+        fix podman_pod check mode, fix podman_secret empty data, and add podman_prune
+        idempotency
+    modules:
+    - description: Build images for use by Podman Quadlets
+      name: podman_quadlet_build
+      namespace: ''
+    release_date: '2026-05-04'
   1.3.0:
     changes:
       bugfixes:

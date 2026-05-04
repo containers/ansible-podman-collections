@@ -5,6 +5,31 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.20.0
+=======
+
+Release Summary
+---------------
+
+Add podman_quadlet_build module for building images using Quadlet, fix podman_pod check mode, fix podman_secret empty data, and add podman_prune idempotency
+
+Minor Changes
+-------------
+
+- podman_prune - Add idempotency support
+
+Bugfixes
+--------
+
+- podman_pod - Fix check mode support
+- podman_quadlet_build - Fix and add unittests
+- podman_secret - Fix ignoring 'data' if it's an empty string
+
+New Modules
+-----------
+
+- containers.podman.podman_quadlet_build - Build images for use by Podman Quadlets
+
 v1.19.2
 =======
 
