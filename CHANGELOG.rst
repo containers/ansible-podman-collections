@@ -5,6 +5,19 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.20.1
+=======
+
+Release Summary
+---------------
+
+minor change
+
+Minor Changes
+-------------
+
+- Fix version in galaxy
+
 v1.20.0
 =======
 
