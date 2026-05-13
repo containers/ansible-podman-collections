@@ -172,7 +172,7 @@
             command: 1h
             state: present
             network:
-              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+              - "pasta:-t,8007,-u,4443,-T,3000"
           register: info6
 
         - name: Check info with pasta options
@@ -188,7 +188,7 @@
             command: 1h
             state: present
             network:
-              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+              - "pasta:-t,8007,-u,4443,-T,3000"
           register: info7
 
         - name: Check info with pasta options - again
@@ -204,7 +204,7 @@
             command: 1h
             state: present
             network:
-              - "pasta:-4,-t,8008,-u,4443,-T,3000"
+              - "pasta:-t,8008,-u,4443,-T,3000"
           register: info8
 
         - name: Check info with different pasta options

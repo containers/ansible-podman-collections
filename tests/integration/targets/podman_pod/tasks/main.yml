@@ -925,7 +925,7 @@
             name: pod2
             state: started
             network:
-              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+              - "pasta:-t,8007,-u,4443,-T,3000"
 
         - name: Run container1 in pod
           containers.podman.podman_container:
@@ -942,7 +942,7 @@
             name: pod2
             state: started
             network:
-              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+              - "pasta:-t,8007,-u,4443,-T,3000"
           register: pasta_pod
 
         - name: Run container1 in pod pasta
@@ -967,10 +967,10 @@
             name: pod2
             state: started
             network:
-              - "pasta:-4,-t,8008,-u,4443,-T,3000"
+              - "pasta:-t,8008,-u,4443,-T,3000"
           register: pasta_pod2
 
-        - name: Run container1 in different pod slirp4netns
+        - name: Run container1 in different pod pasta
           containers.podman.podman_container:
             executable: "{{ test_executable | default('podman') }}"
             name: container1
@@ -980,7 +980,7 @@
             state: started
           register: pasta_cont2
 
-        - name: Check that slirp4netns is idempotent and changed
+        - name: Check that pasta is idempotent and changed
           assert:
             that:
               - pasta_pod2 is changed
