@@ -606,6 +606,72 @@
           - quad3 is changed
           - "'arm64' in quad3.diff.after"
 
+    - name: Create quadlet image file with auth_file
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/coreos-installer:latest
+        state: quadlet
+        auth_file: /path/to/auth.json
+        quadlet_dir: /tmp/
+        quadlet_filename: authfile_test
+      register: quad_authfile
+
+    - name: Check AuthFile line appears exactly once
+      shell: grep -c 'AuthFile=' /tmp/authfile_test.image
+      register: authfile_count
+
+    - name: Fail if AuthFile appears more than once
+      assert:
+        that:
+          - authfile_count.stdout | int == 1
+        fail_msg: "AuthFile should appear exactly once, found {{ authfile_count.stdout }} times"
+
+    - name: Check AuthFile value is correct
+      lineinfile:
+        path: /tmp/authfile_test.image
+        line: "AuthFile=/path/to/auth.json"
+        state: present
+      check_mode: yes
+      register: authfile_line_check
+
+    - name: Fail if AuthFile line is not present
+      assert:
+        that:
+          - authfile_line_check is not changed
+
+    - name: Create quadlet image file with authfile alias
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: quay.io/coreos/coreos-installer:latest
+        state: quadlet
+        authfile: /path/to/auth2.json
+        quadlet_dir: /tmp/
+        quadlet_filename: authfile_alias_test
+      register: quad_authfile_alias
+
+    - name: Check AuthFile line appears exactly once with alias
+      shell: grep -c 'AuthFile=' /tmp/authfile_alias_test.image
+      register: authfile_alias_count
+
+    - name: Fail if AuthFile appears more than once with alias
+      assert:
+        that:
+          - authfile_alias_count.stdout | int == 1
+        fail_msg: "AuthFile should appear exactly once, found {{ authfile_alias_count.stdout }} times"
+
+    - name: Check AuthFile value is correct with alias
+      lineinfile:
+        path: /tmp/authfile_alias_test.image
+        line: "AuthFile=/path/to/auth2.json"
+        state: present
+      check_mode: yes
+      register: authfile_alias_line_check
+
+    - name: Fail if AuthFile line is not present with alias
+      assert:
+        that:
+          - authfile_alias_line_check is not changed
+
     - include_tasks: additional_tests.yml
 
     - include_tasks: test_issue_947.yml

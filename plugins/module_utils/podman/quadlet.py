@@ -75,17 +75,19 @@ class Quadlet:
         Convert parameter values as per param_map.
         """
         processed_params = []
+        seen_quadlet_keys = set()
         for param_key, quadlet_key in self.param_map.items():
+            if quadlet_key in seen_quadlet_keys:
+                continue
             value = self.custom_params.get(param_key)
             if value is not None:
+                seen_quadlet_keys.add(quadlet_key)
                 if isinstance(value, list):
-                    # Add an entry for each item in the list
                     for item in value:
                         processed_params.append([quadlet_key, item])
                 else:
                     if isinstance(value, bool):
                         value = str(value).lower()
-                    # Add a single entry for the key
                     processed_params.append([quadlet_key, value])
         return processed_params
 
@@ -716,6 +718,7 @@ class ImageQuadlet(Quadlet):
         "AllTags": "AllTags",
         "arch": "Arch",
         "authfile": "AuthFile",
+        "auth_file": "AuthFile",
         "ca_cert_dir": "CertDir",
         "creds": "Creds",
         "DecryptionKey": "DecryptionKey",
