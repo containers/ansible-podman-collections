@@ -1,0 +1,44 @@
+---
+# Test for Issue #802: podman_image build doesn't respect arch parameter
+# https://github.com/containers/ansible-podman-collections/issues/802
+- name: Test image architecture for issue #802
+  vars:
+    architectures:
+      - arm64
+      - amd64
+  block:
+    - name: Build image using arch
+      loop: "{{ architectures }}"
+      containers.podman.podman_image:
+        name: "issue-802-arch-{{ item }}"
+        arch: "{{ item }}"
+        state: build
+        build:
+          container_file: |-
+            FROM alpine:latest
+            CMD echo "Built with --arch {{ item }}"
+
+    - name: Build image using platform
+      loop: "{{ architectures }}"
+      containers.podman.podman_image:
+        name: "issue-802-platform-{{ item }}"
+        platform: "linux/{{ item }}"
+        state: build
+        build:
+          container_file: |-
+            FROM alpine:latest
+            CMD echo "Build with --platform linux/{{item}}"
+
+    - name: Inspect built images
+      register: issue_802_result
+      containers.podman.podman_image_info:
+        name: "{{ ['issue-802-arch-', 'issue-802-platform-'] | product(architectures) | map('join') | list }}"
+
+    - name: Verify issue 802 architectures are correct
+      loop: "{{ issue_802_result.images }}"
+      loop_control:
+        label: "{{ item.NamesHistory | first }}.{{ item.Architecture }}"
+      assert:
+        quiet: true
+        fail_msg: "{{ item.NamesHistory | first }} has wrong architecture {{ item.Architecture }}"
+        that: (item.Architecture | replace('x86_64', 'amd64') | replace('aarch64', 'arm64')) in (item.NamesHistory | first)

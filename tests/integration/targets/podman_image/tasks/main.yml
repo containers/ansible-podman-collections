@@ -676,6 +676,7 @@
 
     - include_tasks: test_issue_947.yml
     - include_tasks: test_issue_981.yml
+    - include_tasks: test_issue_802.yml
 
   always:
     - name: Cleanup images
