@@ -5,6 +5,24 @@ Ansible Podman modules and plugins Release Notes
 .. contents:: Topics
 
 
+v1.20.2
+=======
+
+Release Summary
+---------------
+
+Bugfixes and minor changes
+
+Minor Changes
+-------------
+
+- podman_quadlet - Add support for aliases for Quadlets
+
+Bugfixes
+--------
+
+- podman_image - Fix build ignoring arch option
+
 v1.20.1
 =======
 
