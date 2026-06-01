@@ -11,6 +11,13 @@ CON_TYPE="${1:-podman}"
 SUDO=${ROOT:+"sudo -E"}
 PODMAN_EXE="${2:-podman}"
 
+# Ensure v2 registries.conf — dpkg may keep the old v1 format after package upgrades
+if grep -q '^\[registries' /etc/containers/registries.conf 2>/dev/null; then
+    sudo tee /etc/containers/registries.conf > /dev/null <<'EOF'
+unqualified-search-registries = ["docker.io"]
+EOF
+fi
+
 echo "Print current Podman version"
 $PODMAN_EXE version
 
@@ -21,6 +28,7 @@ if [[ "$CON_TYPE" == "podman" ]]; then
     ${SUDO} $PODMAN_EXE ps | grep -q "${CON_TYPE}-container" || \
         ${SUDO} $PODMAN_EXE run -d --name "${CON_TYPE}-container" python:3.10-alpine sleep 1d
 elif [[ "$CON_TYPE" == "buildah" ]]; then
+    export BUILDAH_ISOLATION=chroot
     ${SUDO} buildah from --name=buildah-container python:3.10-alpine
 fi
 
