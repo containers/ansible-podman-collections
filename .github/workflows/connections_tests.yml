@@ -86,7 +86,7 @@ jobs:
           #- ubuntu-16.04
           #- macos-latest
         python-version:
-          - "3.12"
+          - "3.13"
           # - 3.9
           #- 3.6
           #- 3.5
@@ -155,7 +155,7 @@ jobs:
           #- macos-latest
         python-version:
           #- 3.9
-          - "3.12"
+          - "3.13"
           #- 3.6
           #- 3.5
           #- 2.7
@@ -229,7 +229,7 @@ jobs:
           #- macos-latest
         python-version:
           #- 3.9
-          - "3.12"
+          - "3.13"
           #- 3.6
           #- 3.5
           #- 2.7

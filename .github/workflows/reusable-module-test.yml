@@ -16,7 +16,7 @@ on:
         description: 'Python version to use for testing'
         required: false
         type: string
-        default: '3.12'
+        default: '3.13'
       os_matrix:
         description: 'OS matrix as JSON string'
         required: false
