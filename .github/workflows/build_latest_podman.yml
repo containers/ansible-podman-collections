@@ -204,7 +204,7 @@ jobs:
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.18
         python-version:
-          - "3.12"
+          - "3.13"
 
     steps:
       - name: Check out repository
@@ -347,7 +347,7 @@ jobs:
         ansible-version:
           - git+https://github.com/ansible/ansible.git@stable-2.18
         python-version:
-          - "3.12"
+          - "3.13"
 
     steps:
       - name: Check out repository
