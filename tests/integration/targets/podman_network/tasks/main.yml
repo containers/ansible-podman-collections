@@ -832,6 +832,9 @@
     - name: Test ip_range diff
       include_tasks: test_ip_range_diff.yml
 
+    - name: Test IPv6 normalization idempotency (issue 1041)
+      include_tasks: test_issue_1041.yml
+
   always:
 
     - name: Cleanup

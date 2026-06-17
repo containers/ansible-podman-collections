@@ -1,0 +1,175 @@
+- name: Test IPv6 address normalization idempotency (issue 1041)
+  block:
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    # Test 1: net_config with compressed IPv6 gateway (the reported bug)
+    - name: Create network with IPv6 gateway using compressed notation
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: "fcb8:b02:5b0e:bc43:aa32:8d2c::/96"
+            gateway: "fcb8:b02:5b0e:bc43:aa32:8d2c::1"
+          - subnet: "10.89.55.0/24"
+            gateway: "10.89.55.1"
+      register: ipv6_gw_create
+
+    - name: Check network was created
+      assert:
+        that:
+          - ipv6_gw_create is changed
+
+    - name: Re-run with same compressed IPv6 gateway - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: "fcb8:b02:5b0e:bc43:aa32:8d2c::/96"
+            gateway: "fcb8:b02:5b0e:bc43:aa32:8d2c::1"
+          - subnet: "10.89.55.0/24"
+            gateway: "10.89.55.1"
+      register: ipv6_gw_same
+      diff: true
+
+    - name: Check idempotency with compressed IPv6 gateway
+      assert:
+        that:
+          - ipv6_gw_same is not changed
+
+    - name: Re-run with expanded IPv6 gateway - must also be idempotent
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: "fcb8:b02:5b0e:bc43:aa32:8d2c::/96"
+            gateway: "fcb8:b02:5b0e:bc43:aa32:8d2c:0:1"
+          - subnet: "10.89.55.0/24"
+            gateway: "10.89.55.1"
+      register: ipv6_gw_expanded
+      diff: true
+
+    - name: Check idempotency with expanded IPv6 gateway
+      assert:
+        that:
+          - ipv6_gw_expanded is not changed
+
+    - name: Re-run with fully expanded IPv6 gateway and subnet
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: "fcb8:0b02:5b0e:bc43:aa32:8d2c:0000:0000/96"
+            gateway: "fcb8:0b02:5b0e:bc43:aa32:8d2c:0000:0001"
+          - subnet: "10.89.55.0/24"
+            gateway: "10.89.55.1"
+      register: ipv6_gw_full
+      diff: true
+
+    - name: Check idempotency with fully expanded IPv6
+      assert:
+        that:
+          - ipv6_gw_full is not changed
+
+    # Test 2: standalone subnet/gateway params with IPv6
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create IPv6 network with standalone subnet/gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: "fd00:dead:beef::/48"
+        gateway: "fd00:dead:beef::1"
+      register: ipv6_standalone_create
+
+    - name: Check network was created
+      assert:
+        that:
+          - ipv6_standalone_create is changed
+
+    - name: Re-run with same compressed notation - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: "fd00:dead:beef::/48"
+        gateway: "fd00:dead:beef::1"
+      register: ipv6_standalone_same
+      diff: true
+
+    - name: Check standalone IPv6 idempotency
+      assert:
+        that:
+          - ipv6_standalone_same is not changed
+
+    - name: Re-run with expanded notation - must be idempotent
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: "fd00:dead:beef:0000::/48"
+        gateway: "fd00:dead:beef:0000:0000:0000:0000:0001"
+      register: ipv6_standalone_expanded
+      diff: true
+
+    - name: Check standalone IPv6 idempotency with expanded form
+      assert:
+        that:
+          - ipv6_standalone_expanded is not changed
+
+    # Test 3: dual-stack net_config with mixed IPv4 and IPv6
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create dual-stack network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        ipv6: true
+        net_config:
+          - subnet: "172.31.55.0/24"
+            gateway: "172.31.55.1"
+          - subnet: "fd99:abcd:ef01::/64"
+            gateway: "fd99:abcd:ef01::1"
+      register: dual_create
+
+    - name: Check dual-stack was created
+      assert:
+        that:
+          - dual_create is changed
+
+    - name: Re-run dual-stack with expanded IPv6 - idempotency
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        ipv6: true
+        net_config:
+          - subnet: "172.31.55.0/24"
+            gateway: "172.31.55.1"
+          - subnet: "fd99:abcd:ef01:0000::/64"
+            gateway: "fd99:abcd:ef01:0:0:0:0:1"
+      register: dual_expanded
+      diff: true
+
+    - name: Check dual-stack idempotency with expanded IPv6
+      assert:
+        that:
+          - dual_expanded is not changed
+
+  always:
+
+    - name: Cleanup network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+      ignore_errors: true
