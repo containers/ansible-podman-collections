@@ -480,10 +480,11 @@ class PodmanNetworkDiff:
             return True
         return False
 
-    def _lease_range_to_str(self, lease_range):
+    @staticmethod
+    def _lease_range_to_str(lease_range):
         """Convert lease_range dict to normalized start-end string."""
-        start = self._normalize_ip(lease_range["start_ip"])
-        end = self._normalize_ip(lease_range["end_ip"])
+        start = PodmanNetworkDiff._normalize_ip(lease_range["start_ip"])
+        end = PodmanNetworkDiff._normalize_ip(lease_range["end_ip"])
         return f'{start}-{end}'
 
     @staticmethod
@@ -501,6 +502,8 @@ class PodmanNetworkDiff:
     @staticmethod
     def _normalize_ip(addr):
         """Normalize an IP address string to its compressed canonical form."""
+        if not HAS_IP_ADDRESS_MODULE:
+            return addr
         try:
             return str(ipaddress.ip_address(addr))
         except ValueError:
@@ -509,6 +512,8 @@ class PodmanNetworkDiff:
     @staticmethod
     def _normalize_subnet(subnet):
         """Normalize a subnet string to its compressed canonical form."""
+        if not HAS_IP_ADDRESS_MODULE:
+            return subnet
         try:
             return str(ipaddress.ip_network(subnet, strict=False))
         except ValueError:
@@ -656,7 +661,13 @@ class PodmanNetworkDiff:
             ]).rstrip(",") for r in routes]
         else:
             before = []
-        after = self.params["route"] or []
+        after = []
+        for r in (self.params["route"] or []):
+            parts = r.split(",")
+            if len(parts) >= 2:
+                parts[0] = self._normalize_subnet(parts[0])
+                parts[1] = self._normalize_ip(parts[1])
+            after.append(",".join(parts))
         return self._diff_update_and_compare("route", sorted(before), sorted(after))
 
     def diffparam_subnet(self):
