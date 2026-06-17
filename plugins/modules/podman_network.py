@@ -595,7 +595,7 @@ class PodmanNetworkDiff:
 
     def diffparam_ip_range(self):
         if not HAS_IP_ADDRESS_MODULE:
-            self.module.warn("Python 'ipaddress' module is not available. " "Skipping ip_range idempotency check.")
+            self.module.warn("Python 'ipaddress' module is not available. Skipping ip_range idempotency check.")
             return False
         before = ""
         after = self.params["ip_range"] or ""
@@ -915,7 +915,7 @@ class PodmanNetworkManager:
         }
         process_action = states_map[self.state]
         process_action()
-        self.module.fail_json(msg="Unexpected logic error happened, " "please contact maintainers ASAP!")
+        self.module.fail_json(msg="Unexpected logic error happened, please contact maintainers ASAP!")
 
     def make_present(self):
         """Run actions if desired state is 'started'."""
