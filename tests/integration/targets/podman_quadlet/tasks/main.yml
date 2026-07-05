@@ -705,6 +705,85 @@
         msg: "Skipping .quadlets test - requires Podman 6.0+ (current: {{ podman_version }})"
       when: podman_version is version('6.0', '<')
 
+    - name: Test bare name removes all matching suffixes
+      block:
+        - name: Create container and volume quadlets with same bare name
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - dest: "{{ quadlet_single_dir.path }}/multi-suffix.container"
+              content: |
+                [Container]
+                Image=docker.io/library/alpine:latest
+                Exec=/bin/sh -c 'sleep 600'
+            - dest: "{{ quadlet_single_dir.path }}/multi-suffix.volume"
+              content: |
+                [Volume]
+                Label=app=multi-suffix
+
+        - name: Install container quadlet
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/multi-suffix.container"
+
+        - name: Install volume quadlet
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/multi-suffix.volume"
+
+        - name: Verify both quadlets are installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/multi-suffix.container"
+            - "{{ quadlet_user_dir }}/multi-suffix.volume"
+          register: multi_suffix_stats
+
+        - name: Assert both files present
+          assert:
+            that:
+              - multi_suffix_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Remove using bare name without suffix (should remove both)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - multi-suffix
+          register: rm_multi_suffix
+
+        - name: Assert removal changed
+          assert:
+            that:
+              - rm_multi_suffix.changed
+
+        - name: Verify both quadlets are removed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/multi-suffix.container"
+            - "{{ quadlet_user_dir }}/multi-suffix.volume"
+          register: multi_suffix_rm_stats
+
+        - name: Assert both files absent after bare name removal
+          assert:
+            that:
+              - not multi_suffix_rm_stats.results[0].stat.exists
+              - not multi_suffix_rm_stats.results[1].stat.exists
+
+        - name: Remove again (should be idempotent)
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - multi-suffix
+          register: rm_multi_suffix_again
+
+        - name: Assert second removal is idempotent
+          assert:
+            that:
+              - not rm_multi_suffix_again.changed
+
     - name: Test nested subdirectory validation
       block:
         - name: Create temporary directory for subdir test
@@ -764,6 +843,8 @@
           - asset-removal.container
           - web-server.container
           - app-storage.volume
+          - multi-suffix.container
+          - multi-suffix.volume
       ignore_errors: true
 
     - name: Verify cleanup - files should be removed from filesystem
@@ -783,6 +864,8 @@
         - "{{ quadlet_user_dir }}/asset-removal.conf"
         - "{{ quadlet_user_dir }}/web-server.container"
         - "{{ quadlet_user_dir }}/app-storage.volume"
+        - "{{ quadlet_user_dir }}/multi-suffix.container"
+        - "{{ quadlet_user_dir }}/multi-suffix.volume"
       register: cleanup_stats
       ignore_errors: true
 
