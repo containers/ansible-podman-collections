@@ -732,7 +732,6 @@ class PodmanQuadletManager:
                     for suffix in QUADLET_SUFFIXES:
                         if name + suffix in installed:
                             resolved_names.append(name + suffix)
-                            break
                     # If not found, already absent - idempotent
 
             if not resolved_names:
