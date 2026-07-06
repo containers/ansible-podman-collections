@@ -190,6 +190,9 @@ jobs:
           -e ansible_connection=local \
           -e setup_python=false
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run buildah connection tests
         run: |
           export PATH=~/.local/bin:$PATH
