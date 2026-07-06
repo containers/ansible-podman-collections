@@ -86,6 +86,22 @@
               - fuse-overlayfs
             state: latest
 
+    - name: Configure rootless storage for podman
+      become: false
+      shell: |
+        mkdir -p ~/.config/containers
+        printf '[storage]\ndriver = "overlay"\n' > ~/.config/containers/storage.conf
+
+    - name: Ensure registries.conf is v2 format
+      become: true
+      copy:
+        dest: /etc/containers/registries.conf
+        content: |
+          unqualified-search-registries = ["docker.io"]
+        mode: '0644'
+      when:
+        - distro == 'Ubuntu24'
+
     - name: Remove virtualenv if need
       file:
         path: "{{ ansible_venv }}"
