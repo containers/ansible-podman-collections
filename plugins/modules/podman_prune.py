@@ -162,6 +162,7 @@ system:
 
 
 from ansible.module_utils.basic import AnsibleModule
+from ..module_utils.podman.common import LooseVersion, get_podman_version  # noqa: E402
 
 
 def filtersPrepare(target, filters):
@@ -197,10 +198,14 @@ def filtersPrepare(target, filters):
 
 def podmanExec(module, target, filters, executable):
     command = [executable, target, "prune", "--force"]
+    if target == "volume":
+        ver = get_podman_version(module, fail=False)
+        if ver and LooseVersion(ver) >= LooseVersion("6.0.0"):
+            command.append("--all")
     if filters is not None:
         command.extend(filtersPrepare(target, filters))
     rc, out, err = module.run_command(command)
-    changed = bool(out) and ': 0B' not in out
+    changed = bool(out) and ": 0B" not in out
 
     if rc != 0:
         module.fail_json(msg="Error executing prune on {target}: {err}".format(target=target, err=err))
