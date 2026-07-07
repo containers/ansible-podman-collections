@@ -103,18 +103,41 @@
         src: "{{ quadlet_app_dir.path }}"
       register: install_app
 
-    - name: Verify both app quadlets installed
-      stat:
-        path: "{{ item }}"
-      loop:
-        - "{{ quadlet_user_dir }}/app-a.container"
-        - "{{ quadlet_user_dir }}/app-b.container"
-      register: app_stats
+    - name: Set app name from directory basename
+      set_fact:
+        quadlet_app_name: "{{ quadlet_app_dir.path | basename }}"
 
-    - name: Assert app files present
-      assert:
-        that:
-          - app_stats.results | map(attribute='stat.exists') | list | min
+    - name: Verify app quadlets installed (podman 6.0+ subdirectory layout)
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Stat app files in subdirectory
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/{{ quadlet_app_name }}/app-a.container"
+            - "{{ quadlet_user_dir }}/{{ quadlet_app_name }}/app-b.container"
+          register: app_stats
+
+        - name: Assert app files present (subdirectory)
+          assert:
+            that:
+              - app_stats.results | map(attribute='stat.exists') | list | min
+
+    - name: Verify app quadlets installed (podman < 6.0 flat layout)
+      when: podman_version is version('6.0', '<')
+      block:
+        - name: Stat app files in flat layout
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/app-a.container"
+            - "{{ quadlet_user_dir }}/app-b.container"
+          register: app_stats
+
+        - name: Assert app files present (flat)
+          assert:
+            that:
+              - app_stats.results | map(attribute='stat.exists') | list | min
 
     - name: Remove one quadlet from the application (should remove whole app)
       containers.podman.podman_quadlet:
@@ -165,18 +188,37 @@
               - rm_both.quadlets[0].name in ['standalone-a.container', 'standalone-b.container']
               - rm_both.quadlets[1].name in ['standalone-a.container', 'standalone-b.container']
 
-    - name: Verify both app quadlets are removed
-      stat:
-        path: "{{ item }}"
-      loop:
-        - "{{ quadlet_user_dir }}/app-a.container"
-        - "{{ quadlet_user_dir }}/app-b.container"
-      register: app_rm_stats
+    - name: Verify app quadlets removed (podman 6.0+ subdirectory)
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Stat app removal paths (subdirectory)
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/{{ quadlet_app_name }}/app-a.container"
+            - "{{ quadlet_user_dir }}/{{ quadlet_app_name }}/app-b.container"
+          register: app_rm_stats
 
-    - name: Assert app files absent
-      assert:
-        that:
-          - (app_rm_stats.results | map(attribute='stat.exists') | list) | select('equalto', true) | list | length == 0
+        - name: Assert app files absent (subdirectory)
+          assert:
+            that:
+              - (app_rm_stats.results | map(attribute='stat.exists') | list) | select('equalto', true) | list | length == 0
+
+    - name: Verify app quadlets removed (podman < 6.0 flat)
+      when: podman_version is version('6.0', '<')
+      block:
+        - name: Stat app removal paths (flat)
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/app-a.container"
+            - "{{ quadlet_user_dir }}/app-b.container"
+          register: app_rm_stats
+
+        - name: Assert app files absent (flat)
+          assert:
+            that:
+              - (app_rm_stats.results | map(attribute='stat.exists') | list) | select('equalto', true) | list | length == 0
 
     - name: Remove non-existent quadlet (should be idempotent)
       containers.podman.podman_quadlet:
@@ -784,7 +826,207 @@
             that:
               - not rm_multi_suffix_again.changed
 
-    - name: Test nested subdirectory validation
+    - name: Test check-mode does not mutate companion files or markers
+      block:
+        - name: Create quadlet and config for check-mode test
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - dest: "{{ quadlet_single_dir.path }}/checkmode-comp.container"
+              content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n"
+            - dest: "{{ quadlet_single_dir.path }}/checkmode-comp.conf"
+              content: "# config v1\nkey=val1\n"
+
+        - name: Install quadlet with companion file
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/checkmode-comp.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/checkmode-comp.conf"
+
+        - name: Modify the companion config
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/checkmode-comp.conf"
+            mode: "0644"
+            content: "# config v2\nkey=val2\n"
+
+        - name: Reinstall in check_mode (should report changed but not touch files)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/checkmode-comp.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/checkmode-comp.conf"
+          check_mode: true
+          register: checkmode_comp_result
+
+        - name: Assert check_mode reports change
+          assert:
+            that:
+              - checkmode_comp_result.changed
+
+        - name: Verify installed config file was NOT modified by check_mode
+          slurp:
+            src: "{{ quadlet_user_dir }}/checkmode-comp.conf"
+          register: checkmode_conf_content
+
+        - name: Assert config still has original v1 content
+          assert:
+            that:
+              - "'val1' in (checkmode_conf_content.content | b64decode)"
+
+        - name: Cleanup check-mode companion test
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - checkmode-comp.container
+          ignore_errors: true
+
+    - name: Test state=absent cleans up companion files and markers
+      block:
+        - name: Create quadlet and config for absent-cleanup test
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - dest: "{{ quadlet_single_dir.path }}/absent-cleanup.container"
+              content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n"
+            - dest: "{{ quadlet_single_dir.path }}/absent-cleanup.conf"
+              content: "# Cleanup test config\n"
+
+        - name: Install quadlet with companion
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/absent-cleanup.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/absent-cleanup.conf"
+
+        - name: Verify companion and container are installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/absent-cleanup.container"
+            - "{{ quadlet_user_dir }}/absent-cleanup.conf"
+          register: absent_cleanup_pre_stats
+
+        - name: Assert both files present before absent
+          assert:
+            that:
+              - absent_cleanup_pre_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Remove with state=absent
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - absent-cleanup.container
+
+        - name: Verify BOTH container and companion are gone
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/absent-cleanup.container"
+            - "{{ quadlet_user_dir }}/absent-cleanup.conf"
+          register: absent_cleanup_post_stats
+
+        - name: Assert both files absent after removal
+          assert:
+            that:
+              - not absent_cleanup_post_stats.results[0].stat.exists
+              - not absent_cleanup_post_stats.results[1].stat.exists
+
+    - name: Test .quadlets section removal detection (Podman 6.0+)
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create .quadlets with two sections
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=sect-web
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+              ---
+              # FileName=sect-db
+              [Volume]
+              Label=app=sectioned
+
+        - name: Install two-section .quadlets
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
+          register: sect_install
+
+        - name: Assert install changed
+          assert:
+            that:
+              - sect_install.changed
+
+        - name: Verify both section files exist
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/sect-web.container"
+            - "{{ quadlet_user_dir }}/sect-db.volume"
+          register: sect_both_stats
+
+        - name: Assert both files present
+          assert:
+            that:
+              - sect_both_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Modify .quadlets to remove one section
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=sect-web
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+
+        - name: Reinstall reduced .quadlets (should detect removed section)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
+          register: sect_reduced
+
+        - name: Assert reinstall detected change
+          assert:
+            that:
+              - sect_reduced.changed
+
+        - name: Verify orphaned section file was removed
+          stat:
+            path: "{{ quadlet_user_dir }}/sect-db.volume"
+          register: sect_orphan_stat
+
+        - name: Assert orphan removed
+          assert:
+            that:
+              - not sect_orphan_stat.stat.exists
+
+        - name: Verify remaining section file still exists
+          stat:
+            path: "{{ quadlet_user_dir }}/sect-web.container"
+          register: sect_remaining_stat
+
+        - name: Assert remaining file present
+          assert:
+            that:
+              - sect_remaining_stat.stat.exists
+
+        - name: Cleanup sectioned test
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - sect-web.container
+          ignore_errors: true
+
+    - name: Test nested subdirectory validation (podman < 6.0 rejects)
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create temporary directory for subdir test
           ansible.builtin.tempfile:
@@ -812,60 +1054,142 @@
             mode: "0644"
             content: "# Nested config\n"
 
-        - name: Try to install directory with subdirectory (should fail)
+        - name: Try to install directory with subdirectory on v5 (should fail)
           containers.podman.podman_quadlet:
             state: present
             src: "{{ quadlet_subdir_test_dir.path }}"
-          register: subdir_install
+          register: subdir_install_v5
           ignore_errors: true
 
-        - name: Assert subdir install fails with expected message
+        - name: Assert subdir install fails on v5
           assert:
             that:
-              - subdir_install is failed
-              - subdir_install.msg is search("nested") or subdir_install.msg is search("subdirector")
+              - subdir_install_v5 is failed
+              - subdir_install_v5.msg is search("nested") or subdir_install_v5.msg is search("subdirector")
+
+    - name: Test nested subdirectory install (podman 6.0+ accepts)
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create temporary directory for nested v6 test
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: quadlet_nested_v6_
+          register: quadlet_nested_v6_dir
+
+        - name: Create a nested subdirectory
+          file:
+            path: "{{ quadlet_nested_v6_dir.path }}/conf.d"
+            state: directory
+
+        - name: Create quadlet files at various levels
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - dest: "{{ quadlet_nested_v6_dir.path }}/app.container"
+              content: "[Container]\nImage=docker.io/library/alpine:latest\nExec=/bin/sh -c 'sleep 600'\n"
+            - dest: "{{ quadlet_nested_v6_dir.path }}/conf.d/extra.conf"
+              content: "# Nested config\nkey=value\n"
+
+        - name: Install directory with nested subdirectory on v6
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_nested_v6_dir.path }}"
+          register: nested_v6_install
+
+        - name: Assert nested install succeeded
+          assert:
+            that:
+              - nested_v6_install.changed
+
+        - name: Set nested app name
+          set_fact:
+            nested_v6_app_name: "{{ quadlet_nested_v6_dir.path | basename }}"
+
+        - name: Verify nested files exist in app subdirectory
+          stat:
+            path: "{{ item }}"
+          loop:
+            - "{{ quadlet_user_dir }}/{{ nested_v6_app_name }}/app.container"
+            - "{{ quadlet_user_dir }}/{{ nested_v6_app_name }}/conf.d/extra.conf"
+          register: nested_v6_stats
+
+        - name: Assert nested files present
+          assert:
+            that:
+              - nested_v6_stats.results | map(attribute='stat.exists') | list | min
+
+        - name: Reinstall nested directory (should be idempotent)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_nested_v6_dir.path }}"
+          register: nested_v6_reinstall
+
+        - name: Assert nested reinstall is idempotent
+          assert:
+            that:
+              - not nested_v6_reinstall.changed
+
+        - name: Remove nested app by application name
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - "{{ nested_v6_app_name }}"
+          register: nested_v6_rm
+
+        - name: Assert app removal succeeded
+          assert:
+            that:
+              - nested_v6_rm.changed
+
+        - name: Verify app directory is gone
+          stat:
+            path: "{{ quadlet_user_dir }}/{{ nested_v6_app_name }}"
+          register: nested_v6_rm_stat
+
+        - name: Assert app directory absent
+          assert:
+            that:
+              - not nested_v6_rm_stat.stat.exists
 
   always:
-    # clean the test quadlets
-    - name: Cleanup installed quadlets
+    - name: Cleanup all installed quadlets
       containers.podman.podman_quadlet:
         state: absent
-        name:
-          - test-single.container
-          - app-a.container
-          - app-b.container
-          - force-test.container
-          - app-with-config.container
-          - malformed.container
-          - check-mode.container
-          - update-test.container
-          - files-update.container
-          - asset-removal.container
-          - web-server.container
-          - app-storage.volume
-          - multi-suffix.container
-          - multi-suffix.volume
+        all: true
       ignore_errors: true
 
-    - name: Verify cleanup - files should be removed from filesystem
+    - name: Remove leftover files not managed by podman quadlet rm
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ quadlet_user_dir }}/app.conf"
+        - "{{ quadlet_user_dir }}/files-update.conf"
+        - "{{ quadlet_user_dir }}/asset-removal.conf"
+        - "{{ quadlet_user_dir }}/checkmode-comp.conf"
+        - "{{ quadlet_user_dir }}/absent-cleanup.conf"
+      ignore_errors: true
+
+    - name: Verify cleanup - quadlet files should be removed from filesystem
       stat:
         path: "{{ item }}"
       loop:
         - "{{ quadlet_user_dir }}/test-single.container"
-        - "{{ quadlet_user_dir }}/app-a.container"
-        - "{{ quadlet_user_dir }}/app-b.container"
         - "{{ quadlet_user_dir }}/force-test.container"
         - "{{ quadlet_user_dir }}/app-with-config.container"
-        - "{{ quadlet_user_dir }}/app.conf"
         - "{{ quadlet_user_dir }}/update-test.container"
         - "{{ quadlet_user_dir }}/files-update.container"
-        - "{{ quadlet_user_dir }}/files-update.conf"
         - "{{ quadlet_user_dir }}/asset-removal.container"
-        - "{{ quadlet_user_dir }}/asset-removal.conf"
         - "{{ quadlet_user_dir }}/web-server.container"
         - "{{ quadlet_user_dir }}/app-storage.volume"
         - "{{ quadlet_user_dir }}/multi-suffix.container"
         - "{{ quadlet_user_dir }}/multi-suffix.volume"
+        - "{{ quadlet_user_dir }}/checkmode-comp.container"
+        - "{{ quadlet_user_dir }}/absent-cleanup.container"
+        - "{{ quadlet_user_dir }}/sect-web.container"
+        - "{{ quadlet_user_dir }}/sect-db.volume"
       register: cleanup_stats
       ignore_errors: true
 
