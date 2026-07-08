@@ -1025,6 +1025,123 @@
               - sect-web.container
           ignore_errors: true
 
+    - name: Test .quadlets parser rejects missing FileName in second section
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create .quadlets with second section missing FileName
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/bad-noname.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=good-section
+              [Container]
+              Image=docker.io/library/alpine:latest
+              ---
+              [Volume]
+              Label=app=missing-filename
+
+        - name: Try to install .quadlets with missing FileName
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/bad-noname.quadlets"
+          register: bad_noname
+          ignore_errors: true
+
+        - name: Assert failure mentions missing FileName
+          assert:
+            that:
+              - bad_noname is failed
+              - bad_noname.msg is search("FileName")
+
+    - name: Test .quadlets parser rejects path separator in FileName
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create .quadlets with path separator in FileName
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/bad-path.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=sub/dir
+              [Container]
+              Image=docker.io/library/alpine:latest
+
+        - name: Try to install .quadlets with path in FileName
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/bad-path.quadlets"
+          register: bad_path
+          ignore_errors: true
+
+        - name: Assert failure mentions path separators
+          assert:
+            that:
+              - bad_path is failed
+              - bad_path.msg is search("path")
+
+    - name: Test .quadlets FileName with existing suffix tracks as podman would
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create .quadlets where FileName already has .container suffix
+          copy:
+            dest: "{{ quadlet_single_dir.path }}/doubled.quadlets"
+            mode: "0644"
+            content: |
+              # FileName=web.container
+              [Container]
+              Image=docker.io/library/alpine:latest
+              Exec=/bin/sh -c 'sleep 600'
+
+        - name: Install .quadlets with doubled suffix
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/doubled.quadlets"
+          register: doubled_install
+
+        - name: Assert install succeeded
+          assert:
+            that:
+              - doubled_install.changed
+
+        - name: Verify podman creates web.container.container (doubled)
+          stat:
+            path: "{{ quadlet_user_dir }}/web.container.container"
+          register: doubled_stat
+
+        - name: Assert doubled filename exists (matches podman behavior)
+          assert:
+            that:
+              - doubled_stat.stat.exists
+
+        - name: Reinstall same file (should be idempotent)
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/doubled.quadlets"
+          register: doubled_reinstall
+
+        - name: Assert idempotent
+          assert:
+            that:
+              - not doubled_reinstall.changed
+
+        - name: Cleanup doubled suffix test
+          containers.podman.podman_quadlet:
+            state: absent
+            name:
+              - web.container.container
+          ignore_errors: true
+
+    - name: Test podman_prune volume works on current podman version
+      block:
+        - name: Run volume prune (must not error on v5 or v6)
+          containers.podman.podman_prune:
+            volume: true
+          register: prune_result
+
+        - name: Assert prune succeeded
+          assert:
+            that:
+              - prune_result is not failed
+
     - name: Test nested subdirectory validation (podman < 6.0 rejects)
       when: podman_version is version('6.0', '<')
       block:
