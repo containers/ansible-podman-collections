@@ -251,7 +251,7 @@ def _read_lines_if_exists(path):
     if not os.path.exists(path):
         return set()
     try:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return {line.strip() for line in f if line.strip()}
     except (IOError, OSError):
         return set()
@@ -301,7 +301,7 @@ def _parse_quadlets_file(path):
     Returns dict on success, None on IO error, or a string error message.
     """
     try:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             content = f.read()
     except (IOError, OSError):
         return None
@@ -683,10 +683,18 @@ class PodmanQuadletManager:
             installed = self._get_installed_files(spec)
             if not installed:
                 return
-            self._run_rm_safe(
-                self._build_rm_cmd(sorted(installed)),
-                "Failed to remove existing quadlets for update",
-            )
+            quadlets = [s for s in installed if any(s.endswith(sx) for sx in QUADLET_SUFFIXES)]
+            companions = [s for s in installed if s not in quadlets]
+            if quadlets:
+                self._run_rm_safe(
+                    self._build_rm_cmd(sorted(quadlets)),
+                    "Failed to remove existing quadlets for update",
+                )
+            if not self.module.check_mode:
+                for comp in companions:
+                    comp_path = os.path.join(self.quadlet_dir, comp)
+                    if os.path.exists(comp_path):
+                        os.remove(comp_path)
             self.results["actions"].append("removed existing quadlets for update")
             return
 
@@ -759,7 +767,7 @@ class PodmanQuadletManager:
             marker_path = os.path.join(self.quadlet_dir, marker_name)
             if extra_files:
                 all_names = [os.path.basename(src)] + [os.path.basename(f) for f in extra_files]
-                with open(marker_path, "w") as f:
+                with open(marker_path, "w", encoding="utf-8") as f:
                     f.write("\n".join(all_names) + "\n")
             elif os.path.exists(marker_path):
                 os.remove(marker_path)
@@ -768,7 +776,7 @@ class PodmanQuadletManager:
             manifest_name = spec["marker_name"]
             manifest_path = os.path.join(self.quadlet_dir, manifest_name)
             filenames = sorted(spec["desired_files"].keys())
-            with open(manifest_path, "w") as f:
+            with open(manifest_path, "w", encoding="utf-8") as f:
                 f.write("\n".join(filenames) + "\n")
 
     # -------------------------------------------------------------------
@@ -801,13 +809,19 @@ class PodmanQuadletManager:
                 siblings = _read_lines_if_exists(manifest_path)
                 if name not in siblings:
                     continue
-                # Remove remaining sibling quadlets through podman
+                # Remove remaining siblings — quadlets via podman, companions directly
                 remaining = [s for s in siblings if s != name and os.path.exists(os.path.join(self.quadlet_dir, s))]
-                if remaining:
+                rem_quadlets = [s for s in remaining if any(s.endswith(sx) for sx in QUADLET_SUFFIXES)]
+                rem_companions = [s for s in remaining if s not in rem_quadlets]
+                if rem_quadlets:
                     self._run_rm_safe(
-                        self._build_rm_cmd(sorted(remaining)),
+                        self._build_rm_cmd(sorted(rem_quadlets)),
                         "Failed to remove sibling quadlets from .quadlets group",
                     )
+                for comp in rem_companions:
+                    comp_path = os.path.join(self.quadlet_dir, comp)
+                    if os.path.exists(comp_path):
+                        os.remove(comp_path)
                 os.remove(manifest_path)
                 break
 
@@ -930,13 +944,14 @@ class PodmanQuadletManager:
             installed = self._get_installed_quadlets()
             app_names = []
             for name in names:
-                if name in installed:
+                if name in installed and name not in resolved_names:
                     resolved_names.append(name)
                     continue
                 found_suffix = False
                 for suffix in QUADLET_SUFFIXES:
-                    if name + suffix in installed:
-                        resolved_names.append(name + suffix)
+                    resolved = name + suffix
+                    if resolved in installed and resolved not in resolved_names:
+                        resolved_names.append(resolved)
                         found_suffix = True
                 if found_suffix:
                     continue
@@ -1000,6 +1015,11 @@ class PodmanQuadletManager:
                                 os.remove(comp_path)
                         os.remove(entry_path)
                     elif entry.endswith(".quadlets.manifest"):
+                        for comp in _read_lines_if_exists(entry_path):
+                            if not any(comp.endswith(sx) for sx in QUADLET_SUFFIXES):
+                                comp_path = os.path.join(self.quadlet_dir, comp)
+                                if os.path.exists(comp_path):
+                                    os.remove(comp_path)
                         os.remove(entry_path)
         else:
             self.results["actions"].append("removed %s" % ", ".join(resolved_names))
