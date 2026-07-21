@@ -725,6 +725,7 @@
     - name: Create quadlet network file
       containers.podman.podman_network:
         executable: "{{ test_executable | default('podman') }}"
+        interface_name: testeth
         name: testnet
         state: quadlet
         disable_dns: true
@@ -758,6 +759,7 @@
       register: line_check
       loop:
         - "[Network]"
+        - "InterfaceName=testeth"
         - "NetworkName=testnet"
         - "Subnet=10.123.12.0"
         - "DisableDNS=true"
@@ -781,6 +783,7 @@
     - name: Create quadlet network file - same
       containers.podman.podman_network:
         executable: "{{ test_executable | default('podman') }}"
+        interface_name: testeth
         name: testnet
         state: quadlet
         disable_dns: true
