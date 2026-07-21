@@ -482,6 +482,7 @@ class NetworkQuadlet(Quadlet):
         "Label": "Label",
         "global_args": "GlobalArgs",
         "podman_args": "PodmanArgs",
+        "interface_name": "InterfaceName",
     }
 
     def __init__(self, params: dict):
