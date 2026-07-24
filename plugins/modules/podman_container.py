@@ -121,6 +121,11 @@ options:
       - List of capabilities to drop from the container.
     type: list
     elements: str
+  cert_dir:
+    description:
+      - Path to a directory containing TLS certificates and keys for image
+        registry access.
+    type: path
   cgroup_parent:
     description:
       - Path to cgroups under which the cgroup for the container will be
@@ -207,6 +212,11 @@ options:
     description:
       - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
         effective on NUMA systems.
+    type: str
+  creds:
+    description:
+      - Credentials (USERNAME:PASSWORD) for authenticating to a registry
+        when pulling the container image.
     type: str
   decryption_key:
     description:
@@ -507,6 +517,21 @@ options:
     type: str
     aliases:
       - health_start_period
+  health_log_destination:
+    description:
+      - Defines the destination where health check logs are stored.
+        Values can be 'none', 'local', a directory path, or 'events_logger'.
+    type: str
+  health_max_log_count:
+    description:
+      - Maximum number of health check log entries to keep.
+        Set to 0 for infinite.
+    type: int
+  health_max_log_size:
+    description:
+      - Maximum character length of each health check log entry.
+        Set to 0 for infinite.
+    type: int
   health_startup_cmd:
     description:
       - Set a startup healthcheck command for a container.
@@ -562,6 +587,11 @@ options:
     description:
       - Container host name. Sets the container host name that is available
         inside the container.
+    type: str
+  hosts_file:
+    description:
+      - Base hosts file for the container's /etc/hosts.
+        Values can be an absolute path, 'image', or 'none'.
     type: str
   hostuser:
     description:
@@ -652,6 +682,10 @@ options:
     description:
       - Read in a line delimited file of labels
     type: str
+  link_local_ip:
+    description:
+      - Set a link-local IPv4/IPv6 address for the container.
+    type: str
   log_driver:
     description:
       - Logging driver. Used to set the log driver for the container.
@@ -677,27 +711,13 @@ options:
       - panic
   log_opt:
     description:
-      - Logging driver specific options. Used to set the path to the container
-        log file.
+      - Logging driver specific options. Accepts any key=value pair
+        supported by the log driver. Common options include 'path'
+        (log file path), 'max_size' (max log size, e.g. 10mb),
+        'tag' (custom log tag), and 'label' (journald log labels).
     type: dict
     aliases:
       - log_options
-    suboptions:
-      path:
-        description:
-          - Specify a path to the log file (e.g. /var/log/container/mycontainer.json).
-        type: str
-        required: false
-      max_size:
-        description:
-          - Specify a max size of the log file (e.g 10mb).
-        type: str
-        required: false
-      tag:
-        description:
-          - Specify a custom log tag for the container.
-        type: str
-        required: false
 
   mac_address:
     description:
@@ -765,6 +785,11 @@ options:
   no_healthcheck:
     description:
       - Disable any defined healthchecks for container.
+    type: bool
+  no_hostname:
+    description:
+      - Do not create /etc/hostname within the container, use the version
+        from the image instead.
     type: bool
   no_hosts:
     description:

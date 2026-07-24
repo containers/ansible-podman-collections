@@ -7,28 +7,28 @@ try:
     from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
 except ImportError:
     from ansible.module_utils.common.text import to_native, to_bytes  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     LooseVersion,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     lower_keys,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     generate_systemd,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     delete_systemd,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     diff_generic,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     createcommand,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from .quadlet import (
     create_quadlet_state,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from .quadlet import (
     ContainerQuadlet,
 )
 
@@ -52,6 +52,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     blkio_weight_device=dict(type="dict"),
     cap_add=dict(type="list", elements="str", aliases=["capabilities"]),
     cap_drop=dict(type="list", elements="str"),
+    cert_dir=dict(type="path"),
     cgroup_conf=dict(type="dict"),
     cgroup_parent=dict(type="path"),
     cgroupns=dict(type="str"),
@@ -69,6 +70,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     cpus=dict(type="str"),
     cpuset_cpus=dict(type="str"),
     cpuset_mems=dict(type="str"),
+    creds=dict(type="str", no_log=True),
     decryption_key=dict(type="str", no_log=False),
     delete_depend=dict(type="bool"),
     delete_time=dict(type="str"),
@@ -103,6 +105,9 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     healthcheck_interval=dict(type="str", aliases=["health_interval"]),
     healthcheck_retries=dict(type="int", aliases=["health_retries"]),
     healthcheck_start_period=dict(type="str", aliases=["health_start_period"]),
+    health_log_destination=dict(type="str"),
+    health_max_log_count=dict(type="int"),
+    health_max_log_size=dict(type="int"),
     health_startup_cmd=dict(type="str"),
     health_startup_interval=dict(type="str"),
     health_startup_retries=dict(type="int"),
@@ -116,6 +121,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     ),
     hooks_dir=dict(type="list", elements="str"),
     hostname=dict(type="str"),
+    hosts_file=dict(type="str"),
     hostuser=dict(type="str"),
     http_proxy=dict(type="bool"),
     image_volume=dict(type="str", choices=["bind", "tmpfs", "ignore"]),
@@ -129,14 +135,11 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     ipc=dict(type="str", aliases=["ipc_mode"]),
     kernel_memory=dict(type="str"),
     label=dict(type="dict", aliases=["labels"]),
+    link_local_ip=dict(type="str"),
     label_file=dict(type="str"),
     log_driver=dict(type="str", choices=["k8s-file", "journald", "json-file", "passthrough", "none"]),
     log_level=dict(type="str", choices=["debug", "info", "warn", "error", "fatal", "panic"]),
-    log_opt=dict(
-        type="dict",
-        aliases=["log_options"],
-        options=dict(max_size=dict(type="str"), path=dict(type="str"), tag=dict(type="str")),
-    ),
+    log_opt=dict(type="dict", aliases=["log_options"]),
     mac_address=dict(type="str"),
     memory=dict(type="str"),
     memory_reservation=dict(type="str"),
@@ -146,6 +149,7 @@ ARGUMENTS_SPEC_CONTAINER = dict(
     network=dict(type="list", elements="str", aliases=["net", "network_mode"]),
     network_aliases=dict(type="list", elements="str", aliases=["network_alias"]),
     no_healthcheck=dict(type="bool"),
+    no_hostname=dict(type="bool"),
     no_hosts=dict(type="bool"),
     oom_kill_disable=dict(type="bool"),
     oom_score_adj=dict(type="int"),
@@ -380,6 +384,10 @@ class PodmanModuleParams:
             c += ["--cap-drop", cap_drop]
         return c
 
+    def addparam_cert_dir(self, c):
+        self.check_version("--cert-dir", minv="5.7.0")
+        return c + ["--cert-dir", self.params["cert_dir"]]
+
     def addparam_cgroups(self, c):
         self.check_version("--cgroups", minv="1.6.0")
         return c + ["--cgroups=%s" % self.params["cgroups"]]
@@ -428,6 +436,10 @@ class PodmanModuleParams:
 
     def addparam_cpuset_mems(self, c):
         return c + ["--cpuset-mems", self.params["cpuset_mems"]]
+
+    def addparam_creds(self, c):
+        self.check_version("--creds", minv="5.7.0")
+        return c + ["--creds", self.params["creds"]]
 
     def addparam_decryption_key(self, c):
         return c + ["--decryption-key=%s" % self.params["decryption_key"]]
@@ -551,6 +563,18 @@ class PodmanModuleParams:
             self.params["healthcheck_start_period"],
         ]
 
+    def addparam_health_log_destination(self, c):
+        self.check_version("--health-log-destination", minv="5.3.0")
+        return c + ["--health-log-destination", self.params["health_log_destination"]]
+
+    def addparam_health_max_log_count(self, c):
+        self.check_version("--health-max-log-count", minv="5.3.0")
+        return c + ["--health-max-log-count", str(self.params["health_max_log_count"])]
+
+    def addparam_health_max_log_size(self, c):
+        self.check_version("--health-max-log-size", minv="5.3.0")
+        return c + ["--health-max-log-size", str(self.params["health_max_log_size"])]
+
     def addparam_health_startup_cmd(self, c):
         return c + ["--health-startup-cmd", self.params["health_startup_cmd"]]
 
@@ -579,6 +603,10 @@ class PodmanModuleParams:
 
     def addparam_hostname(self, c):
         return c + ["--hostname", self.params["hostname"]]
+
+    def addparam_hosts_file(self, c):
+        self.check_version("--hosts-file", minv="5.4.0")
+        return c + ["--hosts-file", self.params["hosts_file"]]
 
     def addparam_hostuser(self, c):
         return c + ["--hostuser", self.params["hostuser"]]
@@ -625,6 +653,9 @@ class PodmanModuleParams:
 
     def addparam_label_file(self, c):
         return c + ["--label-file", self.params["label_file"]]
+
+    def addparam_link_local_ip(self, c):
+        return c + ["--link-local-ip", self.params["link_local_ip"]]
 
     def addparam_log_driver(self, c):
         return c + ["--log-driver", self.params["log_driver"]]
@@ -682,6 +713,10 @@ class PodmanModuleParams:
         for alias in self.params["network_aliases"]:
             c += ["--network-alias", alias]
         return c
+
+    def addparam_no_hostname(self, c):
+        self.check_version("--no-hostname", minv="5.4.0")
+        return c + ["--no-hostname=%s" % self.params["no_hostname"]]
 
     def addparam_no_hosts(self, c):
         return c + ["--no-hosts=%s" % self.params["no_hosts"]]
@@ -1019,6 +1054,9 @@ class PodmanContainerDiff:
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare("cap_drop", before, after)
 
+    def diffparam_cert_dir(self):
+        return self._diff_generic("cert_dir", "--cert-dir")
+
     def diffparam_cgroup_conf(self):
         return self._diff_generic("cgroup_conf", "--cgroup-conf")
 
@@ -1104,6 +1142,9 @@ class PodmanContainerDiff:
 
     def diffparam_cpuset_mems(self):
         return self._diff_generic("cpuset_mems", "--cpuset-mems")
+
+    def diffparam_creds(self):
+        return self._diff_generic("creds", "--creds")
 
     def diffparam_decryption_key(self):
         return self._diff_generic("decryption_key", "--decryption-key")
@@ -1199,6 +1240,15 @@ class PodmanContainerDiff:
     def diffparam_healthcheck_start_period(self):
         return self._diff_generic("healthcheck_start_period", "--healthcheck-start-period")
 
+    def diffparam_health_log_destination(self):
+        return self._diff_generic("health_log_destination", "--health-log-destination")
+
+    def diffparam_health_max_log_count(self):
+        return self._diff_generic("health_max_log_count", "--health-max-log-count")
+
+    def diffparam_health_max_log_size(self):
+        return self._diff_generic("health_max_log_size", "--health-max-log-size")
+
     def diffparam_health_startup_cmd(self):
         return self._diff_generic("health_startup_cmd", "--health-startup-cmd")
 
@@ -1222,6 +1272,9 @@ class PodmanContainerDiff:
 
     def diffparam_hostname(self):
         return self._diff_generic("hostname", "--hostname")
+
+    def diffparam_hosts_file(self):
+        return self._diff_generic("hosts_file", "--hosts-file")
 
     def diffparam_hostuser(self):
         return self._diff_generic("hostuser", "--hostuser")
@@ -1287,6 +1340,9 @@ class PodmanContainerDiff:
     def diffparam_label_file(self):
         return self._diff_generic("label_file", "--label-file")
 
+    def diffparam_link_local_ip(self):
+        return self._diff_generic("link_local_ip", "--link-local-ip")
+
     def diffparam_log_driver(self):
         return self._diff_generic("log_driver", "--log-driver")
 
@@ -1306,7 +1362,16 @@ class PodmanContainerDiff:
         return self._diff_generic("memory_swap", "--memory-swap")
 
     def diffparam_memory_swappiness(self):
-        return self._diff_generic("memory_swappiness", "--memory-swappiness")
+        before = createcommand("--memory-swappiness", self.info["config"])
+        before = before[0] if before else None
+        after = self.params["memory_swappiness"]
+        if before is None and after is None:
+            return False
+        if after is not None:
+            after = str(after)
+        if before in (None, "-1") and after in (None, "-1"):
+            return False
+        return self._diff_update_and_compare("memory_swappiness", before, after)
 
     def diffparam_mount(self):
         return self._diff_generic("mount", "--mount")
@@ -1319,6 +1384,9 @@ class PodmanContainerDiff:
 
     def diffparam_no_healthcheck(self):
         return self._diff_generic("no_healthcheck", "--no-healthcheck", boolean_type=True)
+
+    def diffparam_no_hostname(self):
+        return self._diff_generic("no_hostname", "--no-hostname", boolean_type=True)
 
     def diffparam_no_hosts(self):
         return self._diff_generic("no_hosts", "--no-hosts")
@@ -1348,7 +1416,14 @@ class PodmanContainerDiff:
         return self._diff_generic("pid_file", "--pid-file")
 
     def diffparam_pids_limit(self):
-        return self._diff_generic("pids_limit", "--pids-limit")
+        before = createcommand("--pids-limit", self.info["config"])
+        before = before[0] if before else None
+        after = self.params["pids_limit"]
+        if before is None and after is None:
+            return False
+        if before in ("-1", "0") and after in ("-1", "0"):
+            return False
+        return self._diff_update_and_compare("pids_limit", before, after)
 
     def diffparam_platform(self):
         return self._diff_generic("platform", "--platform")
