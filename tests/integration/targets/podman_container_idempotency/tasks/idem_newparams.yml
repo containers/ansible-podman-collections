@@ -1,0 +1,260 @@
+---
+# Tests for new parameters added in Podman 5.3+
+- name: Remove leftovers from other tests
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent
+
+# ===== hosts_file idempotency (v5.4+) =====
+- name: Test hosts_file parameter
+  when: podman_v.stdout is version('5.4.0', '>=')
+  block:
+    - name: Run container with hosts_file none
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: started
+        hosts_file: "none"
+        command: 1h
+
+    - name: Run container with hosts_file none again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        hosts_file: "none"
+        command: 1h
+      register: hosts_file_test1
+
+    - name: Check hosts_file idempotency
+      assert:
+        that: hosts_file_test1 is not changed
+
+    - name: Change hosts_file to image
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        hosts_file: "image"
+        command: 1h
+      register: hosts_file_test2
+
+    - name: Check hosts_file changed
+      assert:
+        that: hosts_file_test2 is changed
+
+    - name: Cleanup hosts_file test
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: idempotency
+        state: absent
+
+# ===== no_hostname idempotency (v5.4+) =====
+- name: Test no_hostname parameter
+  when: podman_v.stdout is version('5.4.0', '>=')
+  block:
+    - name: Run container with no_hostname
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: started
+        no_hostname: true
+        command: 1h
+
+    - name: Run container with no_hostname again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        no_hostname: true
+        command: 1h
+      register: no_hostname_test1
+
+    - name: Check no_hostname idempotency
+      assert:
+        that: no_hostname_test1 is not changed
+
+    - name: Run container without no_hostname
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        command: 1h
+      register: no_hostname_test2
+
+    - name: Check no_hostname changed
+      assert:
+        that: no_hostname_test2 is changed
+
+    - name: Cleanup no_hostname test
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: idempotency
+        state: absent
+
+# ===== health_log_destination idempotency (v5.3+) =====
+- name: Test health_log_destination parameter
+  when: podman_v.stdout is version('5.3.0', '>=')
+  block:
+    - name: Run container with health_log_destination none
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: started
+        healthcheck: "true"
+        health_log_destination: "local"
+        command: 1h
+
+    - name: Run container with same health_log_destination again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        healthcheck: "true"
+        health_log_destination: "local"
+        command: 1h
+      register: health_log_dest_test1
+
+    - name: Check health_log_destination idempotency
+      assert:
+        that: health_log_dest_test1 is not changed
+
+    - name: Cleanup health_log_destination test
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: idempotency
+        state: absent
+
+# ===== health_max_log_count idempotency (v5.3+) =====
+- name: Test health_max_log_count parameter
+  when: podman_v.stdout is version('5.3.0', '>=')
+  block:
+    - name: Run container with health_max_log_count
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: started
+        healthcheck: "true"
+        health_max_log_count: 10
+        command: 1h
+
+    - name: Run container with same health_max_log_count again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        healthcheck: "true"
+        health_max_log_count: 10
+        command: 1h
+      register: health_max_count_test1
+
+    - name: Check health_max_log_count idempotency
+      assert:
+        that: health_max_count_test1 is not changed
+
+    - name: Change health_max_log_count
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        healthcheck: "true"
+        health_max_log_count: 20
+        command: 1h
+      register: health_max_count_test2
+
+    - name: Check health_max_log_count changed
+      assert:
+        that: health_max_count_test2 is changed
+
+    - name: Cleanup health_max_log_count test
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: idempotency
+        state: absent
+
+# ===== health_max_log_size idempotency (v5.3+) =====
+- name: Test health_max_log_size parameter
+  when: podman_v.stdout is version('5.3.0', '>=')
+  block:
+    - name: Run container with health_max_log_size
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: started
+        healthcheck: "true"
+        health_max_log_size: 1000
+        command: 1h
+
+    - name: Run container with same health_max_log_size again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        image: "{{ idem_image }}"
+        name: idempotency
+        state: present
+        healthcheck: "true"
+        health_max_log_size: 1000
+        command: 1h
+      register: health_max_size_test1
+
+    - name: Check health_max_log_size idempotency
+      assert:
+        that: health_max_size_test1 is not changed
+
+    - name: Cleanup health_max_log_size test
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: idempotency
+        state: absent
+
+# ===== log_opt freeform dict test =====
+- name: Run container with log_opt tag
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    log_driver: journald
+    log_opt:
+      tag: "mycontainer"
+    command: 1h
+
+- name: Run container with same log_opt again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_driver: journald
+    log_opt:
+      tag: "mycontainer"
+    command: 1h
+  register: log_opt_test1
+
+- name: Check log_opt idempotency
+  assert:
+    that: log_opt_test1 is not changed
+
+- name: Cleanup log_opt test
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent
+
+- name: Final cleanup
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent
