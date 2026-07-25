@@ -84,6 +84,10 @@ options:
         The subnet option must be used with the ipv6 option.
         Idempotency is not supported because it generates subnets randomly.
     type: bool
+  label:
+    description:
+      - Add metadata labels to the network.
+    type: dict
   route:
     description:
       - A static route in the format <destination in CIDR notation>,<gateway>,<route metric (optional)>.
@@ -147,8 +151,11 @@ options:
       isolate:
         description:
           - This option isolates networks by blocking traffic between those
-            that have this option enabled.
-        type: bool
+            that have this option enabled. On Podman v6+ with Netavark 2,
+            accepts 'strict' (default, blocks all inter-bridge traffic),
+            'true' (blocks between isolated networks only), or 'false'
+            (no isolation).
+        type: str
         required: false
       metric:
         description:
@@ -311,13 +318,13 @@ try:
     from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
 except ImportError:
     from ansible.module_utils.common.text import to_native, to_bytes  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     LooseVersion,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     lower_keys,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from ..module_utils.podman.quadlet import (
     create_quadlet_state,
 )
 
@@ -398,6 +405,11 @@ class PodmanNetworkModuleParams:
     def addparam_ipv6(self, c):
         return c + ["--ipv6=%s" % self.params["ipv6"]]
 
+    def addparam_label(self, c):
+        for k, v in self.params["label"].items():
+            c += ["--label", "%s=%s" % (k, v)]
+        return c
+
     def addparam_macvlan(self, c):
         return c + ["--macvlan", self.params["macvlan"]]
 
@@ -417,13 +429,15 @@ class PodmanNetworkModuleParams:
     def addparam_opt(self, c):
         for opt in self.params["opt"].items():
             if opt[1] is not None:
-                if opt[0] == "bridge_name":
-                    opt = ("com.docker.network.bridge.name", opt[1])
-                if opt[0] == "driver_mtu":
-                    opt = ("com.docker.network.driver.mtu", opt[1])
+                key, val = opt[0], opt[1]
+                if key == "bridge_name":
+                    key = "com.docker.network.bridge.name"
+                if key == "driver_mtu":
+                    key = "com.docker.network.driver.mtu"
+                val = str(val).lower() if str(val).lower() in ("true", "false") else str(val)
                 c += [
                     "--opt",
-                    b"=".join([to_bytes(k, errors="surrogate_or_strict") for k in opt]),
+                    b"=".join([to_bytes(k, errors="surrogate_or_strict") for k in (key, val)]),
                 ]
         return c
 
@@ -714,29 +728,26 @@ class PodmanNetworkDiff:
         return self._diff_update_and_compare("macvlan", before, after)
 
     def diffparam_opt(self):
-        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
-            vlan_before = self.info.get("options", {}).get("vlan")
-        else:
-            try:
-                vlan_before = self.info["plugins"][0].get("vlan")
-            except (IndexError, KeyError):
-                vlan_before = None
-        vlan_after = self.params["opt"].get("vlan") if self.params["opt"] else None
-        if vlan_before or vlan_after:
-            before, after = {"vlan": str(vlan_before)}, {"vlan": str(vlan_after)}
-        else:
-            before, after = {}, {}
-        if LooseVersion(self.version) >= LooseVersion("4.0.0"):
-            mtu_before = self.info.get("options", {}).get("mtu")
-        else:
-            try:
-                mtu_before = self.info["plugins"][0].get("mtu")
-            except (IndexError, KeyError):
-                mtu_before = None
-        mtu_after = self.params["opt"].get("mtu") if self.params["opt"] else None
-        if mtu_before or mtu_after:
-            before.update({"mtu": str(mtu_before)})
-            after.update({"mtu": str(mtu_after)})
+        if LooseVersion(self.version) < LooseVersion("4.0.0"):
+            return False
+        before = {}
+        after = {}
+        opts_info = self.info.get("options", {})
+        opt_params = self.params.get("opt") or {}
+        key_map = {
+            "bridge_name": "com.docker.network.bridge.name",
+            "driver_mtu": "com.docker.network.driver.mtu",
+        }
+        for key, value in opt_params.items():
+            if value is not None:
+                info_key = key_map.get(key, key)
+                before_val = opts_info.get(info_key)
+                after_val = str(value).lower()
+                if before_val is not None:
+                    before_val = str(before_val).lower()
+                if before_val != after_val:
+                    before[key] = before_val
+                    after[key] = after_val
         return self._diff_update_and_compare("opt", before, after)
 
     def is_different(self):
@@ -962,13 +973,14 @@ def main():
             ip_range=dict(type="str", required=False),
             ipam_driver=dict(type="str", required=False, choices=["host-local", "dhcp", "none"]),
             ipv6=dict(type="bool", required=False),
+            label=dict(type="dict", required=False),
             subnet=dict(type="str", required=False),
             macvlan=dict(type="str", required=False),
             opt=dict(
                 type="dict",
                 required=False,
                 options=dict(
-                    isolate=dict(type="bool", required=False),
+                    isolate=dict(type="str", required=False),
                     mtu=dict(type="int", required=False),
                     metric=dict(type="int", required=False),
                     mode=dict(type="str", required=False),
