@@ -97,10 +97,10 @@ EXAMPLES = r"""
 import hashlib
 import os
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     LooseVersion,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     get_podman_version,
 )
 

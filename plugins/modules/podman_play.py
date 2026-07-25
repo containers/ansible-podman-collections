@@ -127,6 +127,16 @@ options:
       - List of the names of CNI networks the pod should join.
     type: list
     elements: str
+  no_hostname:
+    description:
+      - Do not create /etc/hostname within the pod containers, use the
+        version from the image instead.
+    type: bool
+  no_pod_prefix:
+    description:
+      - Do not prefix container name with pod name when creating containers
+        from a kube YAML.
+    type: bool
   state:
     description:
       - Start the pod after creating it, or to leave it created only.
@@ -240,11 +250,11 @@ except ImportError:
     HAS_YAML = False
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     LooseVersion,
     get_podman_version,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from ..module_utils.podman.quadlet import (
     create_quadlet_state,
 )  # noqa: F402
 
@@ -279,6 +289,10 @@ class PodmanKubeManagement:
                 self.command.extend(["--log-opt", "{k}={v}".format(k=k.replace("_", "-"), v=v)])
         start = self.module.params["state"] == "started"
         self.command.extend(["--start=%s" % str(start).lower()])
+        if self.module.params["no_hostname"]:
+            self.command.extend(["--no-hostname"])
+        if self.module.params["no_pod_prefix"]:
+            self.command.extend(["--no-pod-prefix"])
         for arg, param in {
             "--authfile": "authfile",
             "--build": "build",
@@ -447,6 +461,8 @@ def main():
                 ),
             ),
             network=dict(type="list", elements="str"),
+            no_hostname=dict(type="bool"),
+            no_pod_prefix=dict(type="bool"),
             state=dict(
                 type="str",
                 choices=["started", "created", "absent", "quadlet"],
