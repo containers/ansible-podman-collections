@@ -55,6 +55,14 @@ options:
     type: list
     elements: str
     required: false
+  uid:
+    description:
+      - Set the UID of the volume owner.
+    type: int
+  gid:
+    description:
+      - Set the GID of the volume owner.
+    type: int
   executable:
     description:
       - Path to C(podman) executable if it is not in the C($PATH) on the
@@ -158,13 +166,13 @@ try:
     from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
 except ImportError:
     from ansible.module_utils.common.text import to_native, to_bytes  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     LooseVersion,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     lower_keys,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from ..module_utils.podman.quadlet import (
     create_quadlet_state,
 )
 
@@ -246,6 +254,14 @@ class PodmanVolumeModuleParams:
             c += ["--opt", opt]
         return c
 
+    def addparam_uid(self, c):
+        self.check_version("--uid", minv="5.6.0")
+        return c + ["--uid", str(self.params["uid"])]
+
+    def addparam_gid(self, c):
+        self.check_version("--gid", minv="5.6.0")
+        return c + ["--gid", str(self.params["gid"])]
+
 
 class PodmanVolumeDefaults:
     def __init__(self, module, podman_version):
@@ -320,6 +336,20 @@ class PodmanVolumeDiff:
         #     after += ids
         before, after = sorted(list(set(before))), sorted(list(set(after)))
         return self._diff_update_and_compare("options", before, after)
+
+    def diffparam_uid(self):
+        if self.module.params["uid"] is None:
+            return False
+        before = self.info.get("uid", 0)
+        after = self.params["uid"]
+        return self._diff_update_and_compare("uid", before, after)
+
+    def diffparam_gid(self):
+        if self.module.params["gid"] is None:
+            return False
+        before = self.info.get("gid", 0)
+        after = self.params["gid"]
+        return self._diff_update_and_compare("gid", before, after)
 
     def is_different(self):
         diff_func_list = [func for func in dir(self) if callable(getattr(self, func)) and func.startswith("diffparam")]
@@ -582,6 +612,8 @@ def main():
             label=dict(type="dict", required=False),
             driver=dict(type="str", required=False),
             options=dict(type="list", elements="str", required=False),
+            uid=dict(type="int", required=False),
+            gid=dict(type="int", required=False),
             recreate=dict(type="bool", default=False),
             executable=dict(type="str", required=False, default="podman"),
             debug=dict(type="bool", default=False),

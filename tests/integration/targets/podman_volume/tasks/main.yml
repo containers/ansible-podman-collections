@@ -1,3 +1,7 @@
+- name: Discover podman version
+  shell: podman version | grep "^Version:" | awk '{print $2}'
+  register: podman_v
+
 - name: Test podman_volume
   block:
 
@@ -363,6 +367,61 @@
         that:
           - quad3 is changed
           - "'loop5' in quad3.diff.after"
+
+    # ===== uid/gid tests (v5.6+) =====
+    - name: Test uid and gid parameters
+      when: podman_v.stdout is version('5.6.0', '>=')
+      block:
+        - name: Remove uid test volume
+          containers.podman.podman_volume:
+            executable: "{{ test_executable | default('podman') }}"
+            name: test-uid-vol
+            state: absent
+
+        - name: Create volume with uid and gid
+          containers.podman.podman_volume:
+            executable: "{{ test_executable | default('podman') }}"
+            name: test-uid-vol
+            state: present
+            uid: 1000
+            gid: 1000
+          register: uid_vol1
+
+        - name: Check uid/gid volume created
+          assert:
+            that: uid_vol1 is changed
+
+        - name: Create volume with same uid/gid again
+          containers.podman.podman_volume:
+            executable: "{{ test_executable | default('podman') }}"
+            name: test-uid-vol
+            state: present
+            uid: 1000
+            gid: 1000
+          register: uid_vol2
+
+        - name: Check uid/gid idempotent
+          assert:
+            that: uid_vol2 is not changed
+
+        - name: Change uid value
+          containers.podman.podman_volume:
+            executable: "{{ test_executable | default('podman') }}"
+            name: test-uid-vol
+            state: present
+            uid: 1001
+            gid: 1000
+          register: uid_vol3
+
+        - name: Check uid changed
+          assert:
+            that: uid_vol3 is changed
+
+        - name: Remove uid test volume
+          containers.podman.podman_volume:
+            executable: "{{ test_executable | default('podman') }}"
+            name: test-uid-vol
+            state: absent
 
   always:
 
