@@ -1140,6 +1140,82 @@
           - quad3 is changed
           - "'newdata' in quad3.diff.after"
 
+    # ===== hosts_file and no_hostname tests (v5.4+) =====
+    - name: Test hosts_file and no_hostname parameters
+      when: podman_v.stdout is version('5.4.0', '>=')
+      block:
+        - name: Remove hosts_file test pod
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-hosts-file
+            state: absent
+
+        - name: Create pod with hosts_file none
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-hosts-file
+            state: created
+            hosts_file: "none"
+          register: hf_pod1
+
+        - name: Check pod created with hosts_file
+          assert:
+            that: hf_pod1 is changed
+
+        - name: Create pod with same hosts_file again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-hosts-file
+            state: created
+            hosts_file: "none"
+          register: hf_pod2
+
+        - name: Check hosts_file idempotent
+          assert:
+            that: hf_pod2 is not changed
+
+        - name: Remove hosts_file test pod
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-hosts-file
+            state: absent
+
+        - name: Remove no_hostname test pod
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-no-hostname
+            state: absent
+
+        - name: Create pod with no_hostname
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-no-hostname
+            state: created
+            no_hostname: true
+          register: nh_pod1
+
+        - name: Check pod created with no_hostname
+          assert:
+            that: nh_pod1 is changed
+
+        - name: Create pod with same no_hostname again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-no-hostname
+            state: created
+            no_hostname: true
+          register: nh_pod2
+
+        - name: Check no_hostname idempotent
+          assert:
+            that: nh_pod2 is not changed
+
+        - name: Remove no_hostname test pod
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod-no-hostname
+            state: absent
+
   always:
 
     - name: Delete all pods leftovers from tests
