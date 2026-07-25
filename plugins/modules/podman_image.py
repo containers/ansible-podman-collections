@@ -52,6 +52,26 @@ DOCUMENTATION = r"""
       description:
         - Extra arguments to pass to the pull command.
       type: str
+    pull_policy:
+      description:
+        - Pull policy for the image. C(always) always pulls, C(missing) pulls
+          only if not present locally, C(never) never pulls, C(newer) pulls
+          only if the registry has a newer version.
+      type: str
+      choices:
+        - always
+        - missing
+        - never
+        - newer
+    retry:
+      description:
+        - Number of times to retry pulling or pushing an image in case of failure.
+      type: int
+    retry_delay:
+      description:
+        - Delay between retries for pulling or pushing an image.
+          Accepts a time string like '5s' or '1m'.
+      type: str
     push:
       description: Whether or not to push an image.
       default: False
@@ -182,6 +202,15 @@ DOCUMENTATION = r"""
         sign_by:
           description:
             - Path to a key file to use to sign the image.
+          type: str
+        sign_by_sq_fingerprint:
+          description:
+            - Sign the image using a Sequoia-PGP key identified by its fingerprint.
+          type: str
+        compression_format:
+          description:
+            - Compression format to use for image layers. Accepts 'gzip', 'zstd',
+              or 'zstd:chunked'.
           type: str
         dest:
           description: Path or URL where image will be pushed.
@@ -471,6 +500,9 @@ def main():
             tag=dict(type="str", default="latest"),
             pull=dict(type="bool", default=True),
             pull_extra_args=dict(type="str"),
+            pull_policy=dict(type="str", choices=["always", "missing", "never", "newer"]),
+            retry=dict(type="int"),
+            retry_delay=dict(type="str"),
             push=dict(type="bool", default=False),
             path=dict(type="str"),
             force=dict(type="bool", default=False),
@@ -515,6 +547,8 @@ def main():
                     format=dict(type="str", choices=["oci", "v2s1", "v2s2"]),
                     remove_signatures=dict(type="bool"),
                     sign_by=dict(type="str"),
+                    sign_by_sq_fingerprint=dict(type="str"),
+                    compression_format=dict(type="str"),
                     dest=dict(
                         type="str",
                         aliases=["destination"],
