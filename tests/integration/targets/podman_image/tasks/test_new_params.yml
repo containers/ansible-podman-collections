@@ -1,0 +1,119 @@
+---
+# Tests for new image module parameters: pull_policy, retry, retry_delay,
+# push compression_format, sign_by_sq_fingerprint
+
+# ===== pull_policy tests =====
+- name: Remove alpine image for pull_policy test
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    state: absent
+
+- name: Pull image with policy=always
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: always
+  register: pull_policy_always
+
+- name: Check image pulled
+  assert:
+    that: pull_policy_always is changed
+
+- name: Pull image with policy=missing (image exists)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: missing
+  register: pull_policy_missing
+
+- name: Check policy=missing skipped pull (image exists)
+  assert:
+    that: pull_policy_missing is not changed
+
+- name: Remove alpine for policy=missing test
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    state: absent
+
+- name: Pull image with policy=missing (image absent)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: missing
+  register: pull_policy_missing2
+
+- name: Check policy=missing pulled (image was absent)
+  assert:
+    that: pull_policy_missing2 is changed
+
+- name: Pull image with policy=never (image exists)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: never
+  register: pull_policy_never
+
+- name: Check policy=never skipped pull
+  assert:
+    that: pull_policy_never is not changed
+
+- name: Pull image with policy=newer (image exists, should check registry)
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: newer
+  register: pull_policy_newer
+
+- name: Check policy=newer result (may or may not change depending on registry)
+  assert:
+    that: pull_policy_newer is success
+
+# ===== retry tests =====
+- name: Pull image with retry
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: docker.io/library/alpine
+    pull_policy: always
+    retry: 3
+    retry_delay: "2s"
+  register: pull_retry
+
+- name: Check retry pull succeeded
+  assert:
+    that: pull_retry is success
+
+# ===== push compression_format test =====
+- name: Tag alpine for local push test
+  containers.podman.podman_tag:
+    executable: "{{ test_executable | default('podman') }}"
+    image: docker.io/library/alpine
+    target_names:
+      - localhost/test-push-compress:latest
+
+- name: Push image with compression_format to dir
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: localhost/test-push-compress:latest
+    push: true
+    push_args:
+      transport: dir
+      dest: /tmp/test-push-compress
+      compression_format: gzip
+  register: push_compress
+
+- name: Check push succeeded
+  assert:
+    that: push_compress is success
+
+- name: Cleanup push dir
+  file:
+    path: /tmp/test-push-compress
+    state: absent
+
+- name: Cleanup test image
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: localhost/test-push-compress
+    state: absent

@@ -275,7 +275,8 @@ class PodmanImagePuller:
         self.executable = executable
         self.auth_config = auth_config or {}
 
-    def pull_image(self, image_name, arch=None, platform=None, pull_extra_args=None):
+    def pull_image(self, image_name, arch=None, platform=None,
+                   pull_extra_args=None, pull_policy=None, retry=None, retry_delay=None):
         """Pull an image from a registry."""
         args = ["pull", image_name]
 
@@ -283,6 +284,13 @@ class PodmanImagePuller:
             args.extend(["--platform", platform])
         elif arch:
             args.extend(["--arch", arch])
+
+        if pull_policy:
+            args.extend(["--policy", pull_policy])
+        if retry is not None:
+            args.extend(["--retry", str(retry)])
+        if retry_delay:
+            args.extend(["--retry-delay", retry_delay])
 
         self._add_auth_args(args)
 
@@ -370,6 +378,13 @@ class PodmanImagePusher:
         self._add_auth_args(args)
         self._add_push_args(args, push_config)
 
+        retry = self.module.params.get("retry")
+        retry_delay = self.module.params.get("retry_delay")
+        if retry is not None:
+            args.extend(["--retry", str(retry)])
+        if retry_delay:
+            args.extend(["--retry-delay", retry_delay])
+
         args.append(image_name)
 
         # Build destination
@@ -415,6 +430,12 @@ class PodmanImagePusher:
 
         if push_config.get("sign_by"):
             args.extend(["--sign-by", push_config["sign_by"]])
+
+        if push_config.get("sign_by_sq_fingerprint"):
+            args.extend(["--sign-by-sq-fingerprint", push_config["sign_by_sq_fingerprint"]])
+
+        if push_config.get("compression_format"):
+            args.extend(["--compression-format", push_config["compression_format"]])
 
         if push_config.get("extra_args"):
             args.extend(shlex.split(push_config["extra_args"]))
@@ -667,6 +688,9 @@ class PodmanImageManager:
                 self.params.get("arch"),
                 self.params.get("platform"),
                 self.params.get("pull_extra_args"),
+                self.params.get("pull_policy"),
+                self.params.get("retry"),
+                self.params.get("retry_delay"),
             )
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
             self.results["podman_actions"].append(podman_command)
