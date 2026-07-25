@@ -10,7 +10,7 @@ import time
 import hashlib
 import sys
 
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import run_podman_command
+from .common import run_podman_command
 
 __metaclass__ = type
 

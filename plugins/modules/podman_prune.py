@@ -75,6 +75,12 @@ options:
             - Whether to prune all unused images, not only dangling images.
         type: bool
         default: false
+    system_build:
+        description:
+            - Whether to remove build containers created during builds that
+              were not removed due to unexpected termination.
+        type: bool
+        default: false
     system_volumes:
         description:
             - Whether to prune volumes currently unused by any container.
@@ -230,6 +236,7 @@ def main():
         volume_filters=dict(type="dict"),
         system=dict(type="bool", default=False),
         system_all=dict(type="bool", default=False),
+        system_build=dict(type="bool", default=False),
         system_volumes=dict(type="bool", default=False),
         executable=dict(type="str", default="podman"),
     )
@@ -252,6 +259,8 @@ def main():
         system_filters = {}
         if module.params["system_all"]:
             system_filters["system_all"] = "--all"
+        if module.params["system_build"]:
+            system_filters["system_build"] = "--build"
         if module.params["system_volumes"]:
             system_filters["system_volumes"] = "--volumes"
         results[target] = podmanExec(module, target, system_filters, executable)

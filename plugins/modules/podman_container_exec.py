@@ -128,7 +128,7 @@ try:
 except ImportError:
     from ansible.module_utils.common.text import to_text  # noqa: F402
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from ..module_utils.podman.common import (
     run_podman_command,
 )
 
