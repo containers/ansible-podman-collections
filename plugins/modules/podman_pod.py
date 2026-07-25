@@ -248,6 +248,11 @@ options:
     - Set a hostname to the pod
     type: str
     required: false
+  hosts_file:
+    description:
+    - Base hosts file for the pod's /etc/hosts.
+      Values can be an absolute path, 'image', or 'none'.
+    type: str
   infra:
     description:
     - Create an infra container and associate it with the pod. An infra container is
@@ -338,6 +343,11 @@ options:
     type: list
     aliases:
       - network_aliases
+  no_hostname:
+    description:
+    - Do not create /etc/hostname within the pod, use the version
+      from the image instead.
+    type: bool
   no_hosts:
     description:
     - Disable creation of /etc/hosts for the pod.

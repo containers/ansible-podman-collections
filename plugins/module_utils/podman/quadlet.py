@@ -594,6 +594,8 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--gpus {params['gpus']}")
         if params["hostname"]:
             params["podman_args"].append(f"--hostname {params['hostname']}")
+        if params["hosts_file"]:
+            params["podman_args"].append(f"--hosts-file {params['hosts_file']}")
         if params["infra"]:
             params["podman_args"].append(f"--infra {params['infra']}")
         if params["infra_command"]:
@@ -619,6 +621,8 @@ class PodQuadlet(Quadlet):
             params["podman_args"].append(f"--memory {params['memory']}")
         if params["memory_swap"]:
             params["podman_args"].append(f"--memory-swap {params['memory_swap']}")
+        if params["no_hostname"] is not None:
+            params["podman_args"].append(f"--no-hostname={params['no_hostname']}")
         if params["no_hosts"]:
             params["podman_args"].append(f"--no-hosts {params['no_hosts']}")
         if params["pid"]:

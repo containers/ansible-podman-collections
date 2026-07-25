@@ -5,25 +5,25 @@ try:
     from ansible.module_utils.common.text.converters import to_native, to_bytes  # noqa: F402
 except ImportError:
     from ansible.module_utils.common.text import to_native, to_bytes  # noqa: F402
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     LooseVersion,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     lower_keys,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     generate_systemd,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     delete_systemd,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     diff_generic,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.common import (
+from .common import (
     createcommand,
 )
-from ansible_collections.containers.podman.plugins.module_utils.podman.quadlet import (
+from .quadlet import (
     create_quadlet_state,
     PodQuadlet,
 )
@@ -67,6 +67,7 @@ ARGUMENTS_SPEC_POD = dict(
     gidmap=dict(type="list", elements="str", required=False),
     gpus=dict(type="str", required=False),
     hostname=dict(type="str", required=False),
+    hosts_file=dict(type="str", required=False),
     infra=dict(type="bool", required=False),
     infra_conmon_pidfile=dict(type="str", required=False),
     infra_command=dict(type="str", required=False),
@@ -82,6 +83,7 @@ ARGUMENTS_SPEC_POD = dict(
     name=dict(type="str", required=True),
     network=dict(type="list", elements="str", required=False),
     network_alias=dict(type="list", elements="str", required=False, aliases=["network_aliases"]),
+    no_hostname=dict(type="bool", required=False),
     no_hosts=dict(type="bool", required=False),
     pid=dict(type="str", required=False),
     pod_id_file=dict(type="str", required=False),
@@ -259,6 +261,10 @@ class PodmanPodModuleParams:
     def addparam_hostname(self, c):
         return c + ["--hostname", self.params["hostname"]]
 
+    def addparam_hosts_file(self, c):
+        self.check_version("--hosts-file", minv="5.4.0")
+        return c + ["--hosts-file", self.params["hosts_file"]]
+
     def addparam_infra(self, c):
         return c + [
             b"=".join(
@@ -323,6 +329,10 @@ class PodmanPodModuleParams:
         for alias in self.params["network_aliases"]:
             c += ["--network-alias", alias]
         return c
+
+    def addparam_no_hostname(self, c):
+        self.check_version("--no-hostname", minv="5.4.0")
+        return c + ["--no-hostname=%s" % self.params["no_hostname"]]
 
     def addparam_no_hosts(self, c):
         return c + ["=".join(["--no-hosts", self.params["no_hosts"]])]
@@ -515,6 +525,9 @@ class PodmanPodDiff:
     def diffparam_hostname(self):
         return self._diff_generic("hostname", "--hostname")
 
+    def diffparam_hosts_file(self):
+        return self._diff_generic("hosts_file", "--hosts-file")
+
     # TODO(sshnaidm): https://github.com/containers/podman/issues/6968
     def diffparam_infra(self):
         if "state" in self.info and "infracontainerid" in self.info["state"]:
@@ -575,6 +588,9 @@ class PodmanPodDiff:
 
     def diffparam_network_alias(self):
         return self._diff_generic("network_alias", "--network-alias")
+
+    def diffparam_no_hostname(self):
+        return self._diff_generic("no_hostname", "--no-hostname", boolean_type=True)
 
     def diffparam_no_hosts(self):
         return self._diff_generic("no_hosts", "--no-hosts", boolean_type=True)
