@@ -495,7 +495,7 @@ class NetworkQuadlet(Quadlet):
         "ContainersConfModule": "ContainersConfModule",
         "dns": "DNS",
         "ipam_driver": "IPAMDriver",
-        "Label": "Label",
+        "label": "Label",
         "global_args": "GlobalArgs",
         "podman_args": "PodmanArgs",
         "interface_name": "InterfaceName",
@@ -511,11 +511,14 @@ class NetworkQuadlet(Quadlet):
         # Work on params in params_map and convert them to a right form
         if params["debug"]:
             params["global_args"].append("--log-level debug")
+        if params["label"]:
+            params["label"] = ["%s=%s" % (k, v) for k, v in params["label"].items()]
         if params["opt"]:
             new_opt = []
             for k, v in params["opt"].items():
                 if v is not None:
-                    new_opt.append(f"{k}={v}")
+                    sv = str(v).lower() if str(v).lower() in ("true", "false") else str(v)
+                    new_opt.append(f"{k}={sv}")
             params["opt"] = new_opt
         return params
 

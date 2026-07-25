@@ -732,7 +732,7 @@
         subnet: "10.123.12.0"
         internal: false
         opt:
-          isolate: true
+          isolate: "true"
           mtu: 1511
           vlan: 111
         quadlet_dir: /tmp
@@ -764,7 +764,7 @@
         - "Subnet=10.123.12.0"
         - "DisableDNS=true"
         - "Internal=false"
-        - "Options=isolate=True"
+        - "Options=isolate=true"
         - "Options=mtu=1511"
         - "Options=vlan=111"
         - "Label=Test=network"
@@ -790,7 +790,7 @@
         subnet: "10.123.12.0"
         internal: false
         opt:
-          isolate: true
+          isolate: "true"
           mtu: 1511
           vlan: 111
         quadlet_dir: /tmp
@@ -813,7 +813,7 @@
         subnet: "10.123.15.0"
         internal: false
         opt:
-          isolate: true
+          isolate: "true"
           mtu: 1511
           vlan: 111
         quadlet_dir: /tmp
@@ -831,6 +831,143 @@
         that:
           - quad3 is changed
           - "'10.123.15.0' in quad3.diff.after"
+
+    # ===== label parameter tests =====
+    - name: Remove label test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-label-net
+        state: absent
+
+    - name: Create network with labels
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-label-net
+        state: present
+        label:
+          env: test
+          purpose: ci
+      register: label_net1
+
+    - name: Check label network created
+      assert:
+        that: label_net1 is changed
+
+    - name: Create network with same labels again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-label-net
+        state: present
+        label:
+          env: test
+          purpose: ci
+      register: label_net2
+
+    - name: Check label network idempotent
+      assert:
+        that: label_net2 is not changed
+
+    - name: Remove label test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-label-net
+        state: absent
+
+    # ===== opt idempotency tests =====
+    - name: Remove opt test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-opt-net
+        state: absent
+
+    - name: Create network with opt mtu
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-opt-net
+        state: present
+        subnet: 10.100.0.0/24
+        opt:
+          mtu: 1400
+      register: opt_net1
+
+    - name: Check opt network created
+      assert:
+        that: opt_net1 is changed
+
+    - name: Create network with same opt mtu again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-opt-net
+        state: present
+        subnet: 10.100.0.0/24
+        opt:
+          mtu: 1400
+      register: opt_net2
+
+    - name: Check opt mtu idempotent
+      assert:
+        that: opt_net2 is not changed
+
+    - name: Change opt mtu value
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-opt-net
+        state: present
+        subnet: 10.100.0.0/24
+        opt:
+          mtu: 9000
+      register: opt_net3
+
+    - name: Check opt mtu changed
+      assert:
+        that: opt_net3 is changed
+
+    - name: Remove opt test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-opt-net
+        state: absent
+
+    # ===== opt.isolate idempotency tests =====
+    - name: Remove isolate test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-isolate-net
+        state: absent
+
+    - name: Create network with isolate true
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-isolate-net
+        state: present
+        subnet: 10.101.0.0/24
+        opt:
+          isolate: "true"
+      register: isolate_net1
+
+    - name: Check isolate network created
+      assert:
+        that: isolate_net1 is changed
+
+    - name: Create network with same isolate again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-isolate-net
+        state: present
+        subnet: 10.101.0.0/24
+        opt:
+          isolate: "true"
+      register: isolate_net2
+
+    - name: Check isolate idempotent
+      assert:
+        that: isolate_net2 is not changed
+
+    - name: Remove isolate test network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-isolate-net
+        state: absent
 
     - name: Test ip_range diff
       include_tasks: test_ip_range_diff.yml
