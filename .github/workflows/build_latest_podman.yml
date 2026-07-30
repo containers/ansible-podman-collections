@@ -156,8 +156,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y uidmap \
-            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            slirp4netns catatonit netavark aardvark-dns conmon \
             containernetworking-plugins crun
+
+      - name: Build and install passt from source
+        run: |
+          sudo apt-get install -y libcap-dev libcap2-bin
+          git clone https://passt.top/passt /tmp/passt
+          cd /tmp/passt
+          make
+          sudo make install PREFIX=/usr/local
+          pasta --version || echo "pasta installed"
 
       - name: Test Podman installation
         run: |
@@ -225,8 +234,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y uidmap \
-            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            slirp4netns catatonit netavark aardvark-dns conmon \
             containernetworking-plugins crun
+
+      - name: Build and install passt from source
+        run: |
+          sudo apt-get install -y libcap-dev libcap2-bin
+          git clone https://passt.top/passt /tmp/passt
+          cd /tmp/passt
+          make
+          sudo make install PREFIX=/usr/local
+          pasta --version || echo "pasta installed"
 
       - name: Install custom Podman
         run: |
@@ -368,8 +386,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y uidmap \
-            slirp4netns catatonit netavark aardvark-dns passt conmon \
+            slirp4netns catatonit netavark aardvark-dns conmon \
             containernetworking-plugins crun
+
+      - name: Build and install passt from source
+        run: |
+          sudo apt-get install -y libcap-dev libcap2-bin
+          git clone https://passt.top/passt /tmp/passt
+          cd /tmp/passt
+          make
+          sudo make install PREFIX=/usr/local
+          pasta --version || echo "pasta installed"
 
       - name: Install custom Podman
         run: |
