@@ -110,7 +110,6 @@ jobs:
 
           # Verify installation
           /usr/local/bin/podman --version
-          /usr/local/bin/podman info --format json | jq -r '.version.Version'
 
       - name: Configure Podman for rootless
         run: |
