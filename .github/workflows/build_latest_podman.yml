@@ -125,12 +125,17 @@ jobs:
           mkdir -p ~/.config/containers
 
           # Basic containers.conf with netavark configuration
+          # Use k8s-file log driver because Ubuntu conmon lacks journald support
           cat > ~/.config/containers/containers.conf << EOF
 
           [engine]
 
           runtime = "runc"
           helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          [containers]
+
+          log_driver = "k8s-file"
 
           EOF
 
@@ -272,11 +277,15 @@ jobs:
           mkdir -p ~/.config/containers
 
           # Basic containers.conf with netavark configuration
+          # Use k8s-file log driver because Ubuntu conmon lacks journald support
           cat > ~/.config/containers/containers.conf << EOF
 
           [engine]
           runtime = "runc"
           helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          [containers]
+          log_driver = "k8s-file"
 
           EOF
 
@@ -424,11 +433,15 @@ jobs:
           mkdir -p ~/.config/containers
 
           # Basic containers.conf with netavark configuration
+          # Use k8s-file log driver because Ubuntu conmon lacks journald support
           cat > ~/.config/containers/containers.conf << EOF
 
           [engine]
           runtime = "runc"
           helper_binaries_dir = ["/usr/lib/podman", "/usr/local/libexec/podman", "/usr/local/bin"]
+
+          [containers]
+          log_driver = "k8s-file"
 
           EOF
 
