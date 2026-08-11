@@ -635,7 +635,13 @@ class PodmanImageManager:
 
         if not image or self._should_rebuild_image(image):
             if self.params.get("state") == "build" or self.params.get("path"):
-                self._build_image()
+                # Get image ID before build for change detection
+                id_before = None
+                if image:
+                    inspect_data = self.inspector.inspect_image(self.repository.full_name)
+                    if inspect_data and len(inspect_data) > 0:
+                        id_before = inspect_data[0].get("Id") or inspect_data[0].get("id")
+                self._build_image(id_before)
             else:
                 self._pull_image(digest_before)
 
@@ -647,7 +653,7 @@ class PodmanImageManager:
         if final_image:
             self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
 
-    def _build_image(self):
+    def _build_image(self, id_before=None):
         """Build an image."""
         build_config = self.params.get("build", {})
         path = self.params.get("path")
@@ -671,10 +677,16 @@ class PodmanImageManager:
                 self.params.get("arch"),
             )
             self.results["stdout"] = output
-            self.results["image"] = self.inspector.inspect_image(image_id)
+            self.results["image"] = self.inspector.inspect_image(self.repository.full_name)
             self.results["podman_actions"].append(podman_command)
 
-        self.results["changed"] = True
+            # Compare image ID before and after build for accurate change detection
+            id_after = None
+            if self.results["image"] and len(self.results["image"]) > 0:
+                id_after = self.results["image"][0].get("Id") or self.results["image"][0].get("id")
+            self.results["changed"] = id_before != id_after
+        else:
+            self.results["changed"] = True
         self.results["actions"].append(f"Built image {self.repository.full_name} from {path or 'context'}")
 
     def _pull_image(self, digest_before=None):
