@@ -83,6 +83,9 @@ DOCUMENTATION = r"""
       description:
         - Whether or not to force push or pull an image.
         - When building, force the build even if the image already exists.
+          The C(changed) status is determined by comparing the image ID
+          before and after the build, so it accurately reflects whether
+          the build produced a new image.
       type: bool
       default: False
     state:

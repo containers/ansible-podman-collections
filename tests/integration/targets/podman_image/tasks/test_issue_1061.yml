@@ -1,0 +1,520 @@
+---
+# Test force build change detection (issue #1061)
+# When force=true, changed should reflect whether the image actually changed
+# by comparing image IDs before and after the build.
+- name: Test force build change detection
+  block:
+    - name: Create build context for issue 1061
+      file:
+        path: /tmp/build_1061
+        state: directory
+
+    # =========================================================
+    # Test 1: First build with no existing image => changed=true
+    # =========================================================
+    - name: "1061 - Remove image if exists"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - First build (no existing image)"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "hello"
+      register: first_build
+
+    - name: "1061 - Verify first build is changed"
+      assert:
+        that:
+          - first_build is changed
+          - first_build.image[0].Id is defined
+
+    # =========================================================
+    # Test 2: Force rebuild same content => changed=false
+    # =========================================================
+    - name: "1061 - Force rebuild identical Containerfile"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "hello"
+      register: force_same
+
+    - name: "1061 - Verify force rebuild of identical content is not changed"
+      assert:
+        that:
+          - force_same is not changed
+          - force_same.image[0].Id == first_build.image[0].Id
+
+    # =========================================================
+    # Test 3: Force rebuild with functional change => changed=true
+    # =========================================================
+    - name: "1061 - Force rebuild with functional change"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "hello world"
+      register: force_changed
+
+    - name: "1061 - Verify functional change is detected"
+      assert:
+        that:
+          - force_changed is changed
+          - force_changed.image[0].Id != first_build.image[0].Id
+
+    # =========================================================
+    # Test 4: Two consecutive force builds => second is not changed
+    # =========================================================
+    - name: "1061 - Force build run 1"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "idempotent"
+      register: consec_1
+
+    - name: "1061 - Force build run 2 (same content)"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "idempotent"
+      register: consec_2
+
+    - name: "1061 - Verify consecutive force builds are idempotent"
+      assert:
+        that:
+          - consec_1 is changed
+          - consec_2 is not changed
+          - consec_1.image[0].Id == consec_2.image[0].Id
+
+    # =========================================================
+    # Test 5: Force build with COPY - same context => not changed
+    # =========================================================
+    - name: "1061 - Create file to COPY"
+      copy:
+        dest: /tmp/build_1061/data.txt
+        content: "version 1"
+
+    - name: "1061 - Remove copy-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-copy
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build with COPY"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-copy
+        path: /tmp/build_1061
+        state: build
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            COPY data.txt /data.txt
+      register: copy_build_1
+
+    - name: "1061 - Force rebuild COPY same context"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-copy
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            COPY data.txt /data.txt
+      register: copy_build_same
+
+    - name: "1061 - Verify COPY with same context is not changed"
+      assert:
+        that:
+          - copy_build_1 is changed
+          - copy_build_same is not changed
+          - copy_build_1.image[0].Id == copy_build_same.image[0].Id
+
+    # =========================================================
+    # Test 6: Force build with COPY - changed file => changed=true
+    # =========================================================
+    - name: "1061 - Change COPY source file"
+      copy:
+        dest: /tmp/build_1061/data.txt
+        content: "version 2"
+
+    - name: "1061 - Force rebuild after COPY source change"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-copy
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            COPY data.txt /data.txt
+      register: copy_build_changed
+
+    - name: "1061 - Verify COPY source change is detected"
+      assert:
+        that:
+          - copy_build_changed is changed
+          - copy_build_changed.image[0].Id != copy_build_same.image[0].Id
+
+    # =========================================================
+    # Test 7: Force build with different build ARG => changed=true
+    # =========================================================
+    - name: "1061 - Remove arg-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-arg
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build with ARG=value1"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-arg
+        path: /tmp/build_1061
+        state: build
+        build:
+          extra_args: "--build-arg MY_VAR=value1"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            ARG MY_VAR=default
+            RUN echo "$MY_VAR" > /tmp/var.txt
+      register: arg_build_1
+
+    - name: "1061 - Force rebuild with same ARG=value1"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-arg
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          extra_args: "--build-arg MY_VAR=value1"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            ARG MY_VAR=default
+            RUN echo "$MY_VAR" > /tmp/var.txt
+      register: arg_build_same
+
+    - name: "1061 - Force rebuild with ARG=value2"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-arg
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          extra_args: "--build-arg MY_VAR=value2"
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            ARG MY_VAR=default
+            RUN echo "$MY_VAR" > /tmp/var.txt
+      register: arg_build_diff
+
+    - name: "1061 - Verify ARG change detection"
+      assert:
+        that:
+          - arg_build_same is not changed
+          - arg_build_diff is changed
+          - arg_build_same.image[0].Id == arg_build_1.image[0].Id
+          - arg_build_diff.image[0].Id != arg_build_1.image[0].Id
+
+    # =========================================================
+    # Test 8: Force build with no-cache => changed=true
+    # =========================================================
+    - name: "1061 - Remove nocache-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-nocache
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build image for no-cache test"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-nocache
+        path: /tmp/build_1061
+        state: build
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "nocache test"
+      register: nocache_first
+
+    - name: "1061 - Force rebuild with no-cache"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-nocache
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          cache: false
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "nocache test"
+      register: nocache_rebuild
+
+    - name: "1061 - Verify no-cache rebuild is changed (new layers)"
+      assert:
+        that:
+          - nocache_rebuild is changed
+          - nocache_rebuild.image[0].Id != nocache_first.image[0].Id
+
+    # =========================================================
+    # Test 9: Hash-based idempotency still works without force
+    # =========================================================
+    - name: "1061 - Rebuild without force (same Containerfile hash)"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061
+        path: /tmp/build_1061
+        state: build
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "idempotent"
+      register: hash_idem
+
+    - name: "1061 - Verify hash-based idempotency is preserved"
+      assert:
+        that:
+          - hash_idem is not changed
+
+    # =========================================================
+    # Test 10: Force build using path with Containerfile on disk
+    # =========================================================
+    - name: "1061 - Write Containerfile to disk"
+      copy:
+        dest: /tmp/build_1061/Containerfile
+        content: |
+          FROM quay.io/sshnaidm1/alpine:latest
+          RUN echo "from disk"
+
+    - name: "1061 - Remove disk-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-disk
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build from Containerfile on disk"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-disk
+        path: /tmp/build_1061
+        state: build
+      register: disk_build_1
+
+    - name: "1061 - Force rebuild from same Containerfile on disk"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-disk
+        path: /tmp/build_1061
+        state: build
+        force: true
+      register: disk_build_same
+
+    - name: "1061 - Verify disk Containerfile force rebuild is not changed"
+      assert:
+        that:
+          - disk_build_1 is changed
+          - disk_build_same is not changed
+          - disk_build_1.image[0].Id == disk_build_same.image[0].Id
+
+    # =========================================================
+    # Test 11: Force build using build.file parameter
+    # =========================================================
+    - name: "1061 - Write Dockerfile for file param test"
+      copy:
+        dest: /tmp/build_1061/MyDockerfile
+        content: |
+          FROM quay.io/sshnaidm1/alpine:latest
+          RUN echo "build file param"
+
+    - name: "1061 - Remove file-param image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-file
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build with build.file parameter"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-file
+        path: /tmp/build_1061
+        state: build
+        build:
+          file: /tmp/build_1061/MyDockerfile
+      register: file_build_1
+
+    - name: "1061 - Force rebuild with same build.file"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-file
+        path: /tmp/build_1061
+        state: build
+        force: true
+        build:
+          file: /tmp/build_1061/MyDockerfile
+      register: file_build_same
+
+    - name: "1061 - Verify build.file force rebuild is not changed"
+      assert:
+        that:
+          - file_build_1 is changed
+          - file_build_same is not changed
+
+    # =========================================================
+    # Test 12: Force build with state=present and path set
+    # =========================================================
+    - name: "1061 - Remove present-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-present
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build with state=present and path"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-present
+        path: /tmp/build_1061
+        state: present
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "present build"
+      register: present_build_1
+
+    - name: "1061 - Force rebuild with state=present and path"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-present
+        path: /tmp/build_1061
+        state: present
+        force: true
+        build:
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest
+            RUN echo "present build"
+      register: present_build_same
+
+    - name: "1061 - Verify state=present force rebuild is not changed"
+      assert:
+        that:
+          - present_build_1 is changed
+          - present_build_same is not changed
+
+    # =========================================================
+    # Test 13: Force build with multi-stage and target
+    # =========================================================
+    - name: "1061 - Remove multistage-test image"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-multistage
+        state: absent
+      ignore_errors: true
+
+    - name: "1061 - Build multi-stage with target"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-multistage
+        state: build
+        build:
+          target: runtime
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest AS builder
+            RUN echo "builder" > /tmp/build.txt
+            FROM quay.io/sshnaidm1/alpine:latest AS runtime
+            COPY --from=builder /tmp/build.txt /tmp/runtime.txt
+      register: multi_build_1
+
+    - name: "1061 - Force rebuild multi-stage with same target"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-1061-multistage
+        state: build
+        force: true
+        build:
+          target: runtime
+          container_file: |
+            FROM quay.io/sshnaidm1/alpine:latest AS builder
+            RUN echo "builder" > /tmp/build.txt
+            FROM quay.io/sshnaidm1/alpine:latest AS runtime
+            COPY --from=builder /tmp/build.txt /tmp/runtime.txt
+      register: multi_build_same
+
+    - name: "1061 - Verify multi-stage force rebuild is not changed"
+      assert:
+        that:
+          - multi_build_1 is changed
+          - multi_build_same is not changed
+
+    # =========================================================
+    # Test 14: actions list is populated even when not changed
+    # =========================================================
+    - name: "1061 - Verify actions are reported even when not changed"
+      assert:
+        that:
+          - force_same.actions | length > 0
+          - "'Built image' in force_same.actions[0]"
+          - force_same.podman_actions | length > 0
+
+  always:
+    - name: "1061 - Cleanup test images"
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - test-1061
+        - test-1061-copy
+        - test-1061-arg
+        - test-1061-nocache
+        - test-1061-disk
+        - test-1061-file
+        - test-1061-present
+        - test-1061-multistage
+      ignore_errors: true
+
+    - name: "1061 - Cleanup build directory"
+      file:
+        path: /tmp/build_1061
+        state: absent
+      ignore_errors: true
