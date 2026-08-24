@@ -220,12 +220,16 @@
         state: absent
 
 # ===== log_opt freeform dict test =====
+# Use state: present (create only) rather than started so the container is not
+# actually run: the journald log driver needs a conmon compiled with journald
+# support, which the Ubuntu-packaged conmon used in some CI jobs lacks. The
+# log_opt idempotency check inspects CreateCommand, so it works without running.
 - name: Run container with log_opt tag
   containers.podman.podman_container:
     executable: "{{ test_executable | default('podman') }}"
     image: "{{ idem_image }}"
     name: idempotency
-    state: started
+    state: present
     log_driver: journald
     log_opt:
       tag: "mycontainer"

@@ -126,6 +126,19 @@ jobs:
           # Create podman directories
           mkdir -p ~/.config/containers
 
+          # Rootless storage.conf pinning graphroot into the user's home.
+          # Some transitive deps (crun/netavark/containers-common) ship an
+          # /etc/containers/storage.conf whose graphroot is /var/lib/containers/storage.
+          # For rootless podman an explicit graphroot is used as-is with no home
+          # remapping, so the unprivileged runner user cannot create it and podman
+          # fails with "permission denied". A user storage.conf takes precedence.
+          cat > ~/.config/containers/storage.conf << EOF
+          [storage]
+          driver = "overlay"
+          graphroot = "$HOME/.local/share/containers/storage"
+          runroot = "$HOME/.local/share/containers/runroot"
+          EOF
+
           # Basic containers.conf with netavark configuration
           # Use k8s-file log driver because Ubuntu conmon lacks journald support
           cat > ~/.config/containers/containers.conf << EOF
@@ -277,6 +290,19 @@ jobs:
 
           # Create podman directories
           mkdir -p ~/.config/containers
+
+          # Rootless storage.conf pinning graphroot into the user's home.
+          # Some transitive deps (crun/netavark/containers-common) ship an
+          # /etc/containers/storage.conf whose graphroot is /var/lib/containers/storage.
+          # For rootless podman an explicit graphroot is used as-is with no home
+          # remapping, so the unprivileged runner user cannot create it and podman
+          # fails with "permission denied". A user storage.conf takes precedence.
+          cat > ~/.config/containers/storage.conf << EOF
+          [storage]
+          driver = "overlay"
+          graphroot = "$HOME/.local/share/containers/storage"
+          runroot = "$HOME/.local/share/containers/runroot"
+          EOF
 
           # Basic containers.conf with netavark configuration
           # Use k8s-file log driver because Ubuntu conmon lacks journald support
@@ -433,6 +459,19 @@ jobs:
 
           # Create podman directories
           mkdir -p ~/.config/containers
+
+          # Rootless storage.conf pinning graphroot into the user's home.
+          # Some transitive deps (crun/netavark/containers-common) ship an
+          # /etc/containers/storage.conf whose graphroot is /var/lib/containers/storage.
+          # For rootless podman an explicit graphroot is used as-is with no home
+          # remapping, so the unprivileged runner user cannot create it and podman
+          # fails with "permission denied". A user storage.conf takes precedence.
+          cat > ~/.config/containers/storage.conf << EOF
+          [storage]
+          driver = "overlay"
+          graphroot = "$HOME/.local/share/containers/storage"
+          runroot = "$HOME/.local/share/containers/runroot"
+          EOF
 
           # Basic containers.conf with netavark configuration
           # Use k8s-file log driver because Ubuntu conmon lacks journald support
