@@ -104,12 +104,14 @@ jobs:
           sudo make install PREFIX=/usr/local
 
           # Get version info
-          VERSION=$(/usr/local/bin/podman version --format "{{.Client.Version}}")
+          # Use `podman --version` (client-only string) instead of `podman version`,
+          # which initializes the runtime engine and would try to create
+          # /var/lib/containers/storage as the non-root runner user before rootless
+          # is configured, failing with a permission denied error.
+          /usr/local/bin/podman --version
+          VERSION=$(/usr/local/bin/podman --version | awk '{print $3}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Built Podman version: $VERSION"
-
-          # Verify installation
-          /usr/local/bin/podman --version
 
       - name: Configure Podman for rootless
         run: |
