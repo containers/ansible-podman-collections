@@ -52,7 +52,9 @@ options:
   files:
     description:
       - Additional non-quadlet files or URLs to install along with the primary I(src) (quadlet application use-case).
-      - Passed positionally to C(podman quadlet install) after I(src).
+      - Passed positionally to C(podman quadlet install) after I(src) when supported.
+      - On Podman 6.0 or later, local companion files used with a non-directory I(src) are copied directly
+        into the target Quadlet directory to preserve the Podman 5 flat-file layout.
       - For local files, full idempotency is provided.
       - If any file is a URL, the entire install always reports C(changed=true) since remote content cannot be verified.
     type: list
@@ -213,6 +215,8 @@ EXAMPLES = r"""
 
 import os  # noqa: E402
 import json  # noqa: E402
+import tempfile  # noqa: E402
+from urllib.parse import urlparse  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
@@ -269,6 +273,13 @@ def _read_file_bytes(path):
 def _asset_marker_name(quadlet_name):
     """Get the .asset marker filename for a single quadlet file."""
     return ".%s.asset" % quadlet_name
+
+
+def _source_basename(src):
+    """Get the local filename Podman derives from a path or URL."""
+    if _is_remote_ref(src):
+        return os.path.basename(urlparse(src).path)
+    return os.path.basename(src)
 
 
 def _quadlets_manifest_name(quadlets_basename):
@@ -509,9 +520,47 @@ class PodmanQuadletManager:
             app_name = os.path.basename(src.rstrip("/"))
             cmd.extend(["--application", app_name])
         cmd.append(src)
-        if self.module.params.get("files"):
-            cmd.extend(self.module.params["files"])
+        files = self.module.params.get("files") or []
+        local_companions = set(self._local_companion_files(src, files))
+        cmd.extend(f for f in files if f not in local_companions)
         return cmd
+
+    def _local_companion_files(self, src, files):
+        """Return local non-Quadlet files Podman 6 rejects without --application."""
+        if not self.podman_v6 or os.path.isdir(src):
+            return []
+        return [
+            f
+            for f in files
+            if not _is_remote_ref(f) and not any(f.endswith(suffix) for suffix in QUADLET_SUFFIXES)
+        ]
+
+    def _install_local_companions(self, src, files):
+        """Atomically install Podman 6 local companion files in the flat layout."""
+        if self.module.check_mode:
+            return
+
+        for source in self._local_companion_files(src, files):
+            content = _read_file_bytes(source)
+            if content is None:
+                self.module.fail_json(msg="Failed to read companion file %s" % source, **self.results)
+
+            destination = os.path.join(self.quadlet_dir, os.path.basename(source))
+            temp_path = None
+            try:
+                temp_fd, temp_path = tempfile.mkstemp(prefix=".podman-quadlet-", dir=self.quadlet_dir)
+                with os.fdopen(temp_fd, "wb") as temp_file:
+                    temp_file.write(content)
+                os.chmod(temp_path, 0o644)
+                os.replace(temp_path, destination)
+                temp_path = None
+            except (IOError, OSError) as exc:
+                if temp_path and os.path.exists(temp_path):
+                    os.remove(temp_path)
+                self.module.fail_json(
+                    msg="Failed to install companion file %s: %s" % (source, to_native(exc)),
+                    **self.results,
+                )
 
     def _build_rm_cmd(self, names=None, recursive=False):
         cmd = self._build_base_cmd()
@@ -762,11 +811,18 @@ class PodmanQuadletManager:
 
         mode = spec["mode"]
 
-        if mode == MODE_SINGLE_FILE and self.podman_v6:
-            marker_name = _asset_marker_name(os.path.basename(src))
+        if mode in (MODE_SINGLE_FILE, MODE_REMOTE) and self.podman_v6:
+            primary_name = _source_basename(src)
+            if not primary_name:
+                return
+
+            marker_name = _asset_marker_name(primary_name)
             marker_path = os.path.join(self.quadlet_dir, marker_name)
-            if extra_files:
-                all_names = [os.path.basename(src)] + [os.path.basename(f) for f in extra_files]
+            marker_files = (
+                extra_files if mode == MODE_SINGLE_FILE else self._local_companion_files(src, extra_files)
+            )
+            if marker_files:
+                all_names = [primary_name] + [os.path.basename(f) for f in marker_files]
                 with open(marker_path, "w", encoding="utf-8") as f:
                     f.write("\n".join(all_names) + "\n")
             elif os.path.exists(marker_path):
@@ -904,6 +960,8 @@ class PodmanQuadletManager:
                         stderr=err,
                         **self.results,
                     )
+            self._install_local_companions(src, extra_files)
+            self._write_install_markers(spec, src, extra_files)
             self.results["changed"] = True
             self.results["actions"].append("installed quadlets from %s" % src)
             self.results["quadlets"].append({"source": src, "path": self.quadlet_dir})
@@ -924,6 +982,7 @@ class PodmanQuadletManager:
                 **self.results,
             )
 
+        self._install_local_companions(src, extra_files)
         self._write_install_markers(spec, src, extra_files)
 
         self.results["changed"] = True
