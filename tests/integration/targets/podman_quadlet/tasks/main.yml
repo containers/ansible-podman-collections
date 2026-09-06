@@ -322,6 +322,19 @@
             that:
               - install_with_files.changed
 
+        - name: Reinstall unchanged quadlet with additional files
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/app-with-config.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/app.conf"
+          register: reinstall_with_files
+
+        - name: Assert install with files is idempotent
+          assert:
+            that:
+              - not reinstall_with_files.changed
+
         - name: Verify both files are installed
           stat:
             path: "{{ item }}"
