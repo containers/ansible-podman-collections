@@ -17,10 +17,11 @@ description:
   - Install or remove Podman Quadlets using C(podman quadlet install) and C(podman quadlet rm).
   - Creation of quadlet files is handled by resource modules with I(state=quadlet).
   - Updates are handled by removing the existing quadlet and installing the new one.
-  - Idempotency for local sources uses content comparison and module-managed manifest files.
-  - "For remote URLs, the module always reinstalls to ensure the host matches the configured source (reports changed=true)."
-  - Supports C(.quadlets) files containing multiple quadlet sections separated by C(---) delimiter (requires Podman 6.0+).
-  - Each section in a C(.quadlets) file must include a C(# FileName=<name>) comment to specify the output filename.
+  - Idempotency for ordinary local files and directories uses content comparison.
+  - "For remote URLs, the module always reinstalls to ensure the host matches the configured source
+    (reports changed=true)."
+  - C(.quadlets) files are passed directly to Podman 6.0+ and always report C(changed=true).
+    Generated units removed from a later version of the file must be removed explicitly with I(state=absent).
   - Directory installs on Podman 6.0+ support nested subdirectories.
 requirements:
   - podman
@@ -44,7 +45,7 @@ options:
   src:
     description:
       - Path to a quadlet file, a directory containing a quadlet application, or a URL to install when I(state=present).
-      - For local files and directories, full idempotency is provided (content comparison).
+      - Except for C(.quadlets), local files and directories provide idempotency through content comparison.
       - For remote URLs, the module always installs fresh and reports C(changed=true) since content cannot be verified.
       - Directory installs on Podman 6.0+ support nested subdirectories.
       - Directory installs on Podman < 6.0 require a flat directory (no subdirectories).
@@ -53,9 +54,10 @@ options:
     description:
       - Additional non-quadlet files or URLs to install along with the primary I(src) (quadlet application use-case).
       - Passed positionally to C(podman quadlet install) after I(src) when supported.
-      - On Podman 6.0 or later, local companion files used with a non-directory I(src) are copied directly
-        into the target Quadlet directory to preserve the Podman 5 flat-file layout.
-      - For local files, full idempotency is provided.
+      - On Podman 6.0 or later, local non-quadlet files require a directory I(src). The module fails with
+        an explanatory message when they are supplied with a file or URL I(src).
+      - Content changes to local files are detected. Previously installed files that are later omitted from
+        this option must be removed explicitly with I(state=absent).
       - If any file is a URL, the entire install always reports C(changed=true) since remote content cannot be verified.
     type: list
     elements: str
@@ -132,10 +134,10 @@ _debug_spec:
   type: dict
   contains:
     mode:
-      description: Install mode (dir_app, quadlets_app, single_file, or remote)
+      description: Install mode (dir_app, quadlets_file, single_file, or remote)
       type: str
     marker_name:
-      description: The manifest or marker filename used for tracking
+      description: Podman tracking filename, when applicable
       type: str
     desired_files:
       description: List of filenames that should be installed
@@ -144,8 +146,8 @@ _debug_spec:
       description: What will be passed to 'podman quadlet rm' for updates
       type: str
 _debug_installed_files:
-  description: List of currently installed files detected from manifests
-  returned: when debug=true and state=present and mode is not remote
+  description: List of currently installed files detected for content comparison
+  returned: when debug=true and state=present and the source supports content comparison
   type: list
 """
 
@@ -156,10 +158,10 @@ EXAMPLES = r"""
     state: present
     src: /tmp/myapp.container
 
-- name: Install a quadlet application with additional config files
+- name: Install a directory application with additional config files
   containers.podman.podman_quadlet:
     state: present
-    src: /tmp/myapp.container
+    src: /tmp/myapp_dir/
     files:
       - /tmp/myapp.conf
       - /tmp/secrets.env
@@ -215,8 +217,6 @@ EXAMPLES = r"""
 
 import os  # noqa: E402
 import json  # noqa: E402
-import tempfile  # noqa: E402
-from urllib.parse import urlparse  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 
@@ -232,7 +232,7 @@ from ..module_utils.podman.common import LooseVersion, get_podman_version
 
 # Install modes
 MODE_DIR_APP = "dir_app"
-MODE_QUADLETS_APP = "quadlets_app"
+MODE_QUADLETS_FILE = "quadlets_file"
 MODE_SINGLE_FILE = "single_file"
 MODE_REMOTE = "remote"
 
@@ -270,22 +270,18 @@ def _read_file_bytes(path):
         return None
 
 
+def _read_required_file_bytes(module, path, description):
+    """Read a required input file or fail with an actionable message."""
+    try:
+        with open(path, "rb") as f:
+            return f.read()
+    except (IOError, OSError) as exc:
+        module.fail_json(msg="Failed to read %s %s: %s" % (description, path, to_native(exc)))
+
+
 def _asset_marker_name(quadlet_name):
     """Get the .asset marker filename for a single quadlet file."""
     return ".%s.asset" % quadlet_name
-
-
-def _source_basename(src):
-    """Get the local filename Podman derives from a path or URL."""
-    if _is_remote_ref(src):
-        return os.path.basename(urlparse(src).path)
-    return os.path.basename(src)
-
-
-def _quadlets_manifest_name(quadlets_basename):
-    """Get the .quadlets.manifest filename for a .quadlets install."""
-    stem = os.path.splitext(quadlets_basename)[0]
-    return ".%s.quadlets.manifest" % stem
 
 
 def _add_extra_files(module, extra_files, desired_files):
@@ -296,75 +292,7 @@ def _add_extra_files(module, extra_files, desired_files):
         basename = os.path.basename(f)
         if basename in desired_files:
             module.fail_json(msg="Duplicate basename '%s' in files list" % basename)
-        content = _read_file_bytes(f)
-        if content is not None:
-            desired_files[basename] = content
-
-
-def _parse_quadlets_file(path):
-    """Parse a .quadlets file and return a dict of {filename: content}.
-
-    Each section is separated by '---' and must have a '# FileName=<name>' comment.
-    The extension is detected from the first recognized quadlet type header.
-    Mirrors podman's strict parsing: fails on missing FileName, unrecognized
-    type, or path separators in FileName.
-
-    Returns dict on success, None on IO error, or a string error message.
-    """
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            content = f.read()
-    except (IOError, OSError):
-        return None
-
-    sections = []
-    current_section = []
-
-    for line in content.split("\n"):
-        if line.strip() == "---":
-            if current_section:
-                sections.append("\n".join(current_section))
-                current_section = []
-        else:
-            current_section.append(line)
-
-    if current_section:
-        sections.append("\n".join(current_section))
-
-    result = {}
-    for idx, section in enumerate(sections):
-        section = section.strip()
-        if not section:
-            continue
-
-        filename = None
-        extension = None
-        for line in section.split("\n"):
-            line_stripped = line.strip()
-            if line_stripped.startswith("#"):
-                comment_content = line_stripped[1:].strip()
-                if comment_content.startswith("FileName="):
-                    filename = comment_content[9:].strip()
-            elif line_stripped.startswith("[") and line_stripped.endswith("]") and extension is None:
-                candidate = ".%s" % line_stripped[1:-1].lower()
-                if candidate in QUADLET_SUFFIXES:
-                    extension = candidate
-
-        if not filename:
-            return "section %d has no '# FileName=<name>' comment" % (idx + 1)
-        if "/" in filename or "\\" in filename or filename in (".", ".."):
-            return "section %d FileName '%s' contains path separators" % (idx + 1, filename)
-        if not extension:
-            return (
-                "section %d (FileName=%s) has no recognized quadlet type "
-                "(expected [Container], [Volume], etc.)" % (idx + 1, filename)
-            )
-
-        # Mirror podman: destName = section.name + section.extension
-        full_filename = filename + extension
-        result[full_filename] = section.encode("utf-8")
-
-    return result
+        desired_files[basename] = _read_required_file_bytes(module, f, "extra file")
 
 
 # ---------------------------------------------------------------------------
@@ -376,8 +304,8 @@ def _build_desired_spec(module, src, extra_files, podman_v6=False):
     """Build a specification of what should be installed.
 
     Returns a dict with:
-    - mode: one of MODE_DIR_APP, MODE_QUADLETS_APP, MODE_SINGLE_FILE, MODE_REMOTE
-    - marker_name: the manifest/marker filename (None for remote)
+    - mode: one of MODE_DIR_APP, MODE_QUADLETS_FILE, MODE_SINGLE_FILE, MODE_REMOTE
+    - marker_name: Podman tracking filename when applicable
     - desired_files: dict of {installed_filename: bytes} for local sources
     - removal_target: what to pass to 'podman quadlet rm' for updates
     """
@@ -402,16 +330,21 @@ def _build_desired_spec(module, src, extra_files, podman_v6=False):
 
         if podman_v6:
             # v6 supports nested directories via findNestedQuadlets
-            for dirpath, _dirnames, filenames in os.walk(src):
+            def fail_walk(exc):
+                module.fail_json(msg="Failed to read source directory %s: %s" % (src, to_native(exc)))
+
+            for dirpath, _dirnames, filenames in os.walk(src, onerror=fail_walk):
                 for fname in filenames:
                     full_path = os.path.join(dirpath, fname)
                     rel_path = os.path.relpath(full_path, src)
-                    content = _read_file_bytes(full_path)
-                    if content is not None:
-                        desired_files[rel_path] = content
+                    desired_files[rel_path] = _read_required_file_bytes(module, full_path, "source file")
         else:
             # v5: flat directory only — reject subdirectories
-            for entry in os.listdir(src):
+            try:
+                entries = os.listdir(src)
+            except (IOError, OSError) as exc:
+                module.fail_json(msg="Failed to read source directory %s: %s" % (src, to_native(exc)))
+            for entry in entries:
                 full_path = os.path.join(src, entry)
                 if os.path.isdir(full_path):
                     module.fail_json(
@@ -420,9 +353,7 @@ def _build_desired_spec(module, src, extra_files, podman_v6=False):
                         "quadlet application installs." % (src, entry)
                     )
                 if os.path.isfile(full_path):
-                    content = _read_file_bytes(full_path)
-                    if content is not None:
-                        desired_files[entry] = content
+                    desired_files[entry] = _read_required_file_bytes(module, full_path, "source file")
 
         _add_extra_files(module, extra_files, desired_files)
         return {
@@ -438,37 +369,22 @@ def _build_desired_spec(module, src, extra_files, podman_v6=False):
 
         # .quadlets multi-section file (Podman 6.0+ only)
         if src.endswith(".quadlets"):
-            version_str = get_podman_version(module, fail=False)
-            if version_str and LooseVersion(version_str) < LooseVersion("6.0.0"):
-                module.fail_json(msg=".quadlets files require Podman 6.0 or later (current: %s)" % version_str)
-
-            parsed = _parse_quadlets_file(src)
-            if parsed is None:
-                module.fail_json(msg="Failed to read .quadlets file %s" % src)
-            if isinstance(parsed, str):
-                module.fail_json(msg="Invalid .quadlets file %s: %s" % (src, parsed))
-            if not parsed:
-                module.fail_json(msg=".quadlets file %s has no sections" % src)
-            desired_files = parsed
-            _add_extra_files(module, extra_files, desired_files)
-
-            stem = os.path.splitext(basename)[0]
-            manifest = _quadlets_manifest_name(basename)
+            if not podman_v6:
+                module.fail_json(msg=".quadlets files require Podman 6.0 or later")
+            _read_required_file_bytes(module, src, "source file")
             return {
-                "mode": MODE_QUADLETS_APP,
-                "marker_name": manifest,
-                "desired_files": desired_files,
-                "removal_target": stem,
+                "mode": MODE_QUADLETS_FILE,
+                "marker_name": None,
+                "desired_files": {},
+                "removal_target": None,
             }
 
         # Single quadlet file
         else:
-            content = _read_file_bytes(src)
-            if content is not None:
-                desired_files[basename] = content
+            desired_files[basename] = _read_required_file_bytes(module, src, "source file")
             _add_extra_files(module, extra_files, desired_files)
 
-            marker = _asset_marker_name(basename) if extra_files else None
+            marker = _asset_marker_name(basename) if extra_files and not podman_v6 else None
             return {
                 "mode": MODE_SINGLE_FILE,
                 "marker_name": marker,
@@ -519,48 +435,29 @@ class PodmanQuadletManager:
         if os.path.isdir(src) and self.podman_v6:
             app_name = os.path.basename(src.rstrip("/"))
             cmd.extend(["--application", app_name])
+        elif self.podman_v6 and src.endswith(".quadlets"):
+            cmd.append("--replace")
         cmd.append(src)
-        files = self.module.params.get("files") or []
-        local_companions = set(self._local_companion_files(src, files))
-        cmd.extend(f for f in files if f not in local_companions)
+        if self.module.params.get("files"):
+            cmd.extend(self.module.params["files"])
         return cmd
 
-    def _local_companion_files(self, src, files):
-        """Return local non-Quadlet files Podman 6 rejects without --application."""
+    def _validate_install_layout(self, src, files):
+        """Reject file layouts unsupported by the selected Podman version."""
         if not self.podman_v6 or os.path.isdir(src):
-            return []
-        return [
-            f
-            for f in files
-            if not _is_remote_ref(f) and not any(f.endswith(suffix) for suffix in QUADLET_SUFFIXES)
-        ]
-
-    def _install_local_companions(self, src, files):
-        """Atomically install Podman 6 local companion files in the flat layout."""
-        if self.module.check_mode:
             return
-
-        for source in self._local_companion_files(src, files):
-            content = _read_file_bytes(source)
-            if content is None:
-                self.module.fail_json(msg="Failed to read companion file %s" % source, **self.results)
-
-            destination = os.path.join(self.quadlet_dir, os.path.basename(source))
-            temp_path = None
-            try:
-                temp_fd, temp_path = tempfile.mkstemp(prefix=".podman-quadlet-", dir=self.quadlet_dir)
-                with os.fdopen(temp_fd, "wb") as temp_file:
-                    temp_file.write(content)
-                os.chmod(temp_path, 0o644)
-                os.replace(temp_path, destination)
-                temp_path = None
-            except (IOError, OSError) as exc:
-                if temp_path and os.path.exists(temp_path):
-                    os.remove(temp_path)
-                self.module.fail_json(
-                    msg="Failed to install companion file %s: %s" % (source, to_native(exc)),
-                    **self.results,
+        unsupported = [
+            path
+            for path in files
+            if not _is_remote_ref(path) and not any(path.endswith(suffix) for suffix in QUADLET_SUFFIXES)
+        ]
+        if unsupported:
+            self.module.fail_json(
+                msg=(
+                    "Podman 6 does not support local non-Quadlet files with a file or URL src: %s. "
+                    "Use a directory as src so Podman can install the files as an application." % ", ".join(unsupported)
                 )
+            )
 
     def _build_rm_cmd(self, names=None, recursive=False):
         cmd = self._build_base_cmd()
@@ -628,12 +525,8 @@ class PodmanQuadletManager:
             return (
                 self._get_installed_files_dir_app_v6(spec) if self.podman_v6 else self._get_installed_files_marker(spec)
             )
-        if mode == MODE_QUADLETS_APP:
-            return (
-                self._get_installed_files_quadlets_v6(spec)
-                if self.podman_v6
-                else self._get_installed_files_marker(spec)
-            )
+        if mode == MODE_QUADLETS_FILE:
+            return set()
         if mode == MODE_SINGLE_FILE:
             return self._get_installed_files_single(spec)
         return set()
@@ -655,32 +548,17 @@ class PodmanQuadletManager:
                 installed.add(os.path.relpath(full, app_dir))
         return installed
 
-    def _get_installed_files_quadlets_v6(self, spec):
-        """v6 QUADLETS_APP: read the module-managed .quadlets.manifest.
-
-        Falls back to checking desired files on disk when no manifest
-        exists (upgrade from older module version or manual install).
-        """
-        manifest_path = os.path.join(self.quadlet_dir, spec["marker_name"])
-        from_manifest = _read_lines_if_exists(manifest_path)
-        if from_manifest:
-            return from_manifest
-        return {name for name in spec["desired_files"] if os.path.exists(os.path.join(self.quadlet_dir, name))}
-
     def _get_installed_files_single(self, spec):
-        """SINGLE_FILE: the primary quadlet file + contents of .asset marker."""
+        """Return installed files for a single-file invocation."""
+        if self.podman_v6:
+            return {name for name in spec["desired_files"] if os.path.exists(os.path.join(self.quadlet_dir, name))}
+
         installed = set()
-        primary_name = None
-        for name in spec["desired_files"]:
-            for suffix in QUADLET_SUFFIXES:
-                if name.endswith(suffix):
-                    primary_name = name
-                    if os.path.exists(os.path.join(self.quadlet_dir, name)):
-                        installed.add(name)
-                    break
-        if primary_name:
-            marker_path = os.path.join(self.quadlet_dir, _asset_marker_name(primary_name))
-            installed.update(_read_lines_if_exists(marker_path))
+        primary_name = spec["removal_target"]
+        if os.path.exists(os.path.join(self.quadlet_dir, primary_name)):
+            installed.add(primary_name)
+        marker_path = os.path.join(self.quadlet_dir, _asset_marker_name(primary_name))
+        installed.update(_read_lines_if_exists(marker_path))
         return installed
 
     # -------------------------------------------------------------------
@@ -699,7 +577,7 @@ class PodmanQuadletManager:
 
     def _needs_change(self, spec):
         """Determine if installation/update is needed."""
-        if spec["mode"] == MODE_REMOTE:
+        if spec["mode"] in (MODE_REMOTE, MODE_QUADLETS_FILE):
             return True
 
         desired_set = set(spec["desired_files"].keys())
@@ -727,26 +605,6 @@ class PodmanQuadletManager:
 
         mode = spec["mode"]
 
-        # --- v6 QUADLETS_APP: flat files, remove individually ---
-        if mode == MODE_QUADLETS_APP and self.podman_v6:
-            installed = self._get_installed_files(spec)
-            if not installed:
-                return
-            quadlets = [s for s in installed if any(s.endswith(sx) for sx in QUADLET_SUFFIXES)]
-            companions = [s for s in installed if s not in quadlets]
-            if quadlets:
-                self._run_rm_safe(
-                    self._build_rm_cmd(sorted(quadlets)),
-                    "Failed to remove existing quadlets for update",
-                )
-            if not self.module.check_mode:
-                for comp in companions:
-                    comp_path = os.path.join(self.quadlet_dir, comp)
-                    if os.path.exists(comp_path):
-                        os.remove(comp_path)
-            self.results["actions"].append("removed existing quadlets for update")
-            return
-
         # --- DIR_APP ---
         if mode == MODE_DIR_APP:
             if self.podman_v6:
@@ -770,116 +628,21 @@ class PodmanQuadletManager:
             self.results["actions"].append("removed existing quadlet %s for update" % removal_target)
             return
 
-        # --- QUADLETS_APP v5 ---
-        if mode == MODE_QUADLETS_APP and not self.podman_v6:
-            marker = os.path.join(self.quadlet_dir, spec["marker_name"])
-            if not os.path.exists(marker):
-                return
-            self._run_rm_safe(
-                self._build_rm_cmd([removal_target]),
-                "Failed to remove existing quadlet for update",
-            )
-            self.results["actions"].append("removed existing quadlet %s for update" % removal_target)
-            return
-
         # --- SINGLE_FILE ---
         if mode == MODE_SINGLE_FILE:
-            quadlet_path = os.path.join(self.quadlet_dir, removal_target)
-            if not os.path.exists(quadlet_path):
+            installed = self._get_installed_files(spec)
+            if not installed:
                 return
+            removal_names = (
+                sorted(name for name in installed if any(name.endswith(suffix) for suffix in QUADLET_SUFFIXES))
+                if self.podman_v6
+                else [removal_target]
+            )
             self._run_rm_safe(
-                self._build_rm_cmd([removal_target]),
+                self._build_rm_cmd(removal_names),
                 "Failed to remove existing quadlet for update",
             )
             self.results["actions"].append("removed existing quadlet %s for update" % removal_target)
-            # podman rm only removes unit files — clean up companions
-            if not self.module.check_mode:
-                installed = self._get_installed_files(spec)
-                for fname in installed:
-                    fpath = os.path.join(self.quadlet_dir, fname)
-                    if os.path.exists(fpath) and not any(fname.endswith(s) for s in QUADLET_SUFFIXES):
-                        os.remove(fpath)
-
-    # -------------------------------------------------------------------
-    # Post-install marker writing (check_mode guarded)
-    # -------------------------------------------------------------------
-
-    def _write_install_markers(self, spec, src, extra_files):
-        """Write module-managed markers/manifests after a successful install."""
-        if self.module.check_mode:
-            return
-
-        mode = spec["mode"]
-
-        if mode in (MODE_SINGLE_FILE, MODE_REMOTE) and self.podman_v6:
-            primary_name = _source_basename(src)
-            if not primary_name:
-                return
-
-            marker_name = _asset_marker_name(primary_name)
-            marker_path = os.path.join(self.quadlet_dir, marker_name)
-            marker_files = (
-                extra_files if mode == MODE_SINGLE_FILE else self._local_companion_files(src, extra_files)
-            )
-            if marker_files:
-                all_names = [primary_name] + [os.path.basename(f) for f in marker_files]
-                with open(marker_path, "w", encoding="utf-8") as f:
-                    f.write("\n".join(all_names) + "\n")
-            elif os.path.exists(marker_path):
-                os.remove(marker_path)
-
-        elif mode == MODE_QUADLETS_APP and self.podman_v6:
-            manifest_name = spec["marker_name"]
-            manifest_path = os.path.join(self.quadlet_dir, manifest_name)
-            filenames = sorted(spec["desired_files"].keys())
-            with open(manifest_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(filenames) + "\n")
-
-    # -------------------------------------------------------------------
-    # Post-absent cleanup (check_mode guarded)
-    # -------------------------------------------------------------------
-
-    def _cleanup_after_absent(self, names):
-        """Remove companion files and module-managed markers after absent."""
-        if self.module.check_mode:
-            return
-        if not os.path.isdir(self.quadlet_dir):
-            return
-        for name in names:
-            # Remove .asset marker and its listed companions
-            asset_path = os.path.join(self.quadlet_dir, _asset_marker_name(name))
-            if os.path.exists(asset_path):
-                companions = _read_lines_if_exists(asset_path)
-                for comp in companions:
-                    comp_path = os.path.join(self.quadlet_dir, comp)
-                    if os.path.exists(comp_path) and comp != name:
-                        os.remove(comp_path)
-                os.remove(asset_path)
-            # Scan .quadlets.manifest files — if any manifest lists
-            # this name, remove all sibling quadlets via podman and
-            # clean up the manifest.
-            for entry in os.listdir(self.quadlet_dir):
-                if not entry.endswith(".quadlets.manifest"):
-                    continue
-                manifest_path = os.path.join(self.quadlet_dir, entry)
-                siblings = _read_lines_if_exists(manifest_path)
-                if name not in siblings:
-                    continue
-                # Remove remaining siblings — quadlets via podman, companions directly
-                remaining = [s for s in siblings if s != name and os.path.exists(os.path.join(self.quadlet_dir, s))]
-                rem_quadlets = [s for s in remaining if any(s.endswith(sx) for sx in QUADLET_SUFFIXES)]
-                rem_companions = [s for s in remaining if s not in rem_quadlets]
-                if rem_quadlets:
-                    self._run_rm_safe(
-                        self._build_rm_cmd(sorted(rem_quadlets)),
-                        "Failed to remove sibling quadlets from .quadlets group",
-                    )
-                for comp in rem_companions:
-                    comp_path = os.path.join(self.quadlet_dir, comp)
-                    if os.path.exists(comp_path):
-                        os.remove(comp_path)
-                os.remove(manifest_path)
-                break
 
     # -------------------------------------------------------------------
     # Installed quadlet listing (for absent state)
@@ -916,6 +679,7 @@ class PodmanQuadletManager:
         src = self.module.params["src"]
         extra_files = self.module.params.get("files") or []
 
+        self._validate_install_layout(src, extra_files)
         spec = _build_desired_spec(self.module, src, extra_files, self.podman_v6)
 
         if self.module.params["debug"]:
@@ -925,7 +689,7 @@ class PodmanQuadletManager:
                 "desired_files": list(spec["desired_files"].keys()),
                 "removal_target": spec["removal_target"],
             }
-            if spec["mode"] != MODE_REMOTE:
+            if spec["mode"] not in (MODE_REMOTE, MODE_QUADLETS_FILE):
                 self.results["_debug_installed_files"] = list(self._get_installed_files(spec))
 
         if not self._needs_change(spec):
@@ -960,8 +724,6 @@ class PodmanQuadletManager:
                         stderr=err,
                         **self.results,
                     )
-            self._install_local_companions(src, extra_files)
-            self._write_install_markers(spec, src, extra_files)
             self.results["changed"] = True
             self.results["actions"].append("installed quadlets from %s" % src)
             self.results["quadlets"].append({"source": src, "path": self.quadlet_dir})
@@ -981,9 +743,6 @@ class PodmanQuadletManager:
                 stderr=err,
                 **self.results,
             )
-
-        self._install_local_companions(src, extra_files)
-        self._write_install_markers(spec, src, extra_files)
 
         self.results["changed"] = True
         self.results["actions"].append("installed quadlets from %s" % src)
@@ -1063,28 +822,10 @@ class PodmanQuadletManager:
         if self.module.params.get("all"):
             self.results["actions"].append("removed all quadlets")
             self.results["quadlets"].append({"name": "all", "path": self.quadlet_dir})
-            # Clean up companion files listed in markers, then the markers
-            if not self.module.check_mode and os.path.isdir(self.quadlet_dir):
-                for entry in os.listdir(self.quadlet_dir):
-                    entry_path = os.path.join(self.quadlet_dir, entry)
-                    if entry.endswith(".asset"):
-                        for comp in _read_lines_if_exists(entry_path):
-                            comp_path = os.path.join(self.quadlet_dir, comp)
-                            if os.path.exists(comp_path):
-                                os.remove(comp_path)
-                        os.remove(entry_path)
-                    elif entry.endswith(".quadlets.manifest"):
-                        for comp in _read_lines_if_exists(entry_path):
-                            if not any(comp.endswith(sx) for sx in QUADLET_SUFFIXES):
-                                comp_path = os.path.join(self.quadlet_dir, comp)
-                                if os.path.exists(comp_path):
-                                    os.remove(comp_path)
-                        os.remove(entry_path)
         else:
             self.results["actions"].append("removed %s" % ", ".join(resolved_names))
             for name in resolved_names:
                 self.results["quadlets"].append({"name": name, "path": self.quadlet_dir})
-            self._cleanup_after_absent(resolved_names)
 
         if self.module.params["debug"]:
             self.results.update({"stdout": out, "stderr": err})
@@ -1100,6 +841,26 @@ class PodmanQuadletManager:
         elif state == "absent":
             self._absent()
         self.module.exit_json(**self.results)
+
+
+def _validate_state_params(module):
+    """Reject parameters that do not apply to the requested state."""
+    state = module.params["state"]
+    if state == "present":
+        invalid = []
+        if module.params.get("name") is not None:
+            invalid.append("name")
+        if module.params.get("all"):
+            invalid.append("all")
+        if invalid:
+            module.fail_json(msg="The following options are not valid with state='present': %s" % ", ".join(invalid))
+        return
+
+    invalid = [name for name in ("src", "files") if module.params.get(name) is not None]
+    if invalid:
+        module.fail_json(msg="The following options are not valid with state='absent': %s" % ", ".join(invalid))
+    if not module.params["name"] and not module.params["all"]:
+        module.fail_json(msg="For state='absent', either 'name' or 'all' must be specified.")
 
 
 def main():
@@ -1126,10 +887,7 @@ def main():
         supports_check_mode=True,
     )
 
-    if module.params["state"] == "absent":
-        if not module.params["name"] and not module.params["all"]:
-            module.fail_json(msg="For state='absent', either 'name' or 'all' must be specified.")
-
+    _validate_state_params(module)
     PodmanQuadletManager(module).execute()
 
 

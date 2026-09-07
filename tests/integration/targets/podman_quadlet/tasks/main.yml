@@ -292,7 +292,8 @@
             that:
               - rm_no_force.changed
 
-    - name: Test files parameter (additional files)
+    - name: Test files parameter on Podman 5
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create main quadlet and additional config file
           copy:
@@ -353,6 +354,35 @@
             state: absent
             name:
               - app-with-config.container
+
+    - name: Test unsupported flat companion layout on Podman 6
+      when: podman_version is version('6.0', '>=')
+      block:
+        - name: Create unsupported flat companion inputs
+          copy:
+            dest: "{{ item.dest }}"
+            mode: "0644"
+            content: "{{ item.content }}"
+          loop:
+            - dest: "{{ quadlet_single_dir.path }}/unsupported-companion.container"
+              content: "[Container]\nImage=docker.io/library/alpine:latest\n"
+            - dest: "{{ quadlet_single_dir.path }}/unsupported-companion.conf"
+              content: "key=value\n"
+
+        - name: Try unsupported flat companion install
+          containers.podman.podman_quadlet:
+            state: present
+            src: "{{ quadlet_single_dir.path }}/unsupported-companion.container"
+            files:
+              - "{{ quadlet_single_dir.path }}/unsupported-companion.conf"
+          register: unsupported_companion
+          ignore_errors: true
+
+        - name: Assert unsupported layout fails with guidance
+          assert:
+            that:
+              - unsupported_companion is failed
+              - unsupported_companion.msg is search("Use a directory as src")
 
     - name: Test malformed quadlet file handling
       block:
@@ -450,6 +480,7 @@
               - update-test.container
 
     - name: Test update with files parameter
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create quadlet and config for files update test
           copy:
@@ -591,6 +622,7 @@
               - check_mode_stat_existing.stat.exists
 
     - name: Test asset removal detection (files removed from install)
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create quadlet and config for asset removal test
           copy:
@@ -702,16 +734,16 @@
             that:
               - quadlets_stats.results | map(attribute='stat.exists') | list | min
 
-        - name: Reinstall same .quadlets file (should be idempotent)
+        - name: Reinstall same .quadlets file
           containers.podman.podman_quadlet:
             state: present
             src: "{{ quadlet_single_dir.path }}/webapp.quadlets"
           register: quadlets_reinstall
 
-        - name: Assert .quadlets reinstall idempotent
+        - name: Assert .quadlets pass-through reinstall reports changed
           assert:
             that:
-              - not quadlets_reinstall.changed
+              - quadlets_reinstall.changed
 
         - name: Modify .quadlets file content
           copy:
@@ -748,11 +780,12 @@
             that:
               - "'sleep 999' in (quadlets_container_content.content | b64decode)"
 
-        - name: Cleanup .quadlets test (remove via app marker)
+        - name: Cleanup generated .quadlets units explicitly
           containers.podman.podman_quadlet:
             state: absent
             name:
               - web-server.container
+              - app-storage.volume
           ignore_errors: true
 
     - name: Skip .quadlets test notice
@@ -840,6 +873,7 @@
               - not rm_multi_suffix_again.changed
 
     - name: Test check-mode does not mutate companion files or markers
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create quadlet and config for check-mode test
           copy:
@@ -897,6 +931,7 @@
           ignore_errors: true
 
     - name: Test state=absent cleans up companion files and markers
+      when: podman_version is version('6.0', '<')
       block:
         - name: Create quadlet and config for absent-cleanup test
           copy:
@@ -949,96 +984,7 @@
               - not absent_cleanup_post_stats.results[0].stat.exists
               - not absent_cleanup_post_stats.results[1].stat.exists
 
-    - name: Test .quadlets section removal detection (Podman 6.0+)
-      when: podman_version is version('6.0', '>=')
-      block:
-        - name: Create .quadlets with two sections
-          copy:
-            dest: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
-            mode: "0644"
-            content: |
-              # FileName=sect-web
-              [Container]
-              Image=docker.io/library/alpine:latest
-              Exec=/bin/sh -c 'sleep 600'
-              ---
-              # FileName=sect-db
-              [Volume]
-              Label=app=sectioned
-
-        - name: Install two-section .quadlets
-          containers.podman.podman_quadlet:
-            state: present
-            src: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
-          register: sect_install
-
-        - name: Assert install changed
-          assert:
-            that:
-              - sect_install.changed
-
-        - name: Verify both section files exist
-          stat:
-            path: "{{ item }}"
-          loop:
-            - "{{ quadlet_user_dir }}/sect-web.container"
-            - "{{ quadlet_user_dir }}/sect-db.volume"
-          register: sect_both_stats
-
-        - name: Assert both files present
-          assert:
-            that:
-              - sect_both_stats.results | map(attribute='stat.exists') | list | min
-
-        - name: Modify .quadlets to remove one section
-          copy:
-            dest: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
-            mode: "0644"
-            content: |
-              # FileName=sect-web
-              [Container]
-              Image=docker.io/library/alpine:latest
-              Exec=/bin/sh -c 'sleep 600'
-
-        - name: Reinstall reduced .quadlets (should detect removed section)
-          containers.podman.podman_quadlet:
-            state: present
-            src: "{{ quadlet_single_dir.path }}/sectioned.quadlets"
-          register: sect_reduced
-
-        - name: Assert reinstall detected change
-          assert:
-            that:
-              - sect_reduced.changed
-
-        - name: Verify orphaned section file was removed
-          stat:
-            path: "{{ quadlet_user_dir }}/sect-db.volume"
-          register: sect_orphan_stat
-
-        - name: Assert orphan removed
-          assert:
-            that:
-              - not sect_orphan_stat.stat.exists
-
-        - name: Verify remaining section file still exists
-          stat:
-            path: "{{ quadlet_user_dir }}/sect-web.container"
-          register: sect_remaining_stat
-
-        - name: Assert remaining file present
-          assert:
-            that:
-              - sect_remaining_stat.stat.exists
-
-        - name: Cleanup sectioned test
-          containers.podman.podman_quadlet:
-            state: absent
-            name:
-              - sect-web.container
-          ignore_errors: true
-
-    - name: Test .quadlets parser rejects missing FileName in second section
+    - name: Test Podman rejects missing FileName in second .quadlets section
       when: podman_version is version('6.0', '>=')
       block:
         - name: Create .quadlets with second section missing FileName
@@ -1066,7 +1012,7 @@
               - bad_noname is failed
               - bad_noname.msg is search("FileName")
 
-    - name: Test .quadlets parser rejects path separator in FileName
+    - name: Test Podman rejects path separator in .quadlets FileName
       when: podman_version is version('6.0', '>=')
       block:
         - name: Create .quadlets with path separator in FileName
@@ -1125,16 +1071,16 @@
             that:
               - doubled_stat.stat.exists
 
-        - name: Reinstall same file (should be idempotent)
+        - name: Reinstall same file through Podman
           containers.podman.podman_quadlet:
             state: present
             src: "{{ quadlet_single_dir.path }}/doubled.quadlets"
           register: doubled_reinstall
 
-        - name: Assert idempotent
+        - name: Assert pass-through reinstall reports changed
           assert:
             that:
-              - not doubled_reinstall.changed
+              - doubled_reinstall.changed
 
         - name: Cleanup doubled suffix test
           containers.podman.podman_quadlet:
