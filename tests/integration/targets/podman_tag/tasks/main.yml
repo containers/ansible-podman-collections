@@ -44,6 +44,21 @@
           - "'localhost/openjdk8:latest' in tagged_image_result.images[0]['RepoTags']"
           - "'localhost/jdk8:latest' in tagged_image_result.images[0]['RepoTags']"
 
+    - name: Tag a source image that does not exist locally
+      containers.podman.podman_tag:
+        executable: "{{ test_executable | default('podman') }}"
+        image: localhost/does-not-exist-locally
+        target_names:
+          - does-not-exist-target
+      register: tag_missing_source_result
+      ignore_errors: true
+
+    - name: Check tagging a missing source image fails instead of silently succeeding
+      assert:
+        that:
+          - tag_missing_source_result is failed
+          - "'image not known' in tag_missing_source_result.msg"
+
   always:
     - name: Cleanup image
       containers.podman.podman_image:

@@ -106,11 +106,16 @@ def tag(module, executable):
     command.extend(module.params["target_names"])
 
     id = get_image_id(module, executable, module.params["image"])
-    if id:
-        for name in module.params["target_names"]:
-            image_id = get_image_id(module, executable, name)
-            if image_id != id or image_id == "":
-                changed = True
+    if not id:
+        module.fail_json(
+            msg="Error tagging local image %s: image not known" % module.params["image"]
+        )
+        return False, "", ""
+
+    for name in module.params["target_names"]:
+        image_id = get_image_id(module, executable, name)
+        if image_id != id or image_id == "":
+            changed = True
 
     if module.check_mode:
         return changed, "", ""
