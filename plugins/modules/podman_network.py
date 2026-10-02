@@ -80,9 +80,9 @@ options:
       - none
   ipv6:
     description:
-      - Enable IPv6 (Dual Stack) networking. You must pass a IPv6 subnet.
-        The subnet option must be used with the ipv6 option.
-        Idempotency is not supported because it generates subnets randomly.
+      - Enable IPv6 (Dual Stack) networking.
+      - Podman allocates an IPv4 and an IPv6 subnet, unless those are provided.
+      - Only idempotent when either no subnets are given or both subnet types are defined in C(net_config).
     type: bool
   label:
     description:
