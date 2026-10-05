@@ -31,7 +31,7 @@ Valid change categories: `release_summary`, `major_changes`, `minor_changes`, `b
 
 ## Step 2: Update the Version in galaxy.yml
 
-Raise the major release version only when a new module or plugin has been added since the previous release tag. In this guide, a major release includes increments such as `1.20.x` -> `1.21.0`. New options, Podman compatibility updates, bugfixes, and refactoring in existing modules or plugins use the next patch version instead (for example, `1.20.2` -> `1.20.3`). Verify module and plugin additions before choosing the version.
+Raise the major release version only when a new module or plugin has been added since the previous release tag. In this guide, a major release includes increments such as `1.20.x` -> `1.21.0`. Otherwise, increase only the minor release version: new options, Podman compatibility updates, bugfixes, and refactoring in existing modules or plugins use the next minor version (for example, `1.20.2` -> `1.20.3`). Verify module and plugin additions before choosing the version.
 
 Set the new version:
 
@@ -59,12 +59,12 @@ For major releases (e.g., 1.18.0 -> 1.19.0), regenerate the documentation:
 2. Run:
 
     ```bash
-    contrib/build_docs.sh [output_dir]
+    contrib/build_docs.sh "$PWD/docs"
     ```
 
-    The default output directory is `$HOME/podman-docs`. The script builds the collection, installs it to a temp path, and runs `antsibull-docs` + Sphinx to generate HTML docs.
+    Run this from the repository root. Use an absolute output path because the script changes directory before copying the generated files. The default output directory is `$HOME/podman-docs`. The script builds the collection, installs it to a temp path, and runs `antsibull-docs` + Sphinx to generate HTML docs. Verify the documentation build reports success.
 
-Skip this step for patch/minor releases (e.g., 1.19.0 -> 1.19.1).
+Skip this step for minor releases (e.g., 1.19.0 -> 1.19.1).
 
 ## Step 5: Create a PR
 
