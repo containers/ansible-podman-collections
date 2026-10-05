@@ -4,7 +4,7 @@
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta content="2.24.0" name="antsibull-docs" />
+<meta content="2.27.0" name="antsibull-docs" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>containers.podman.podman_quadlet module – Install or remove Podman Quadlets &mdash; Ansible collections  documentation</title>
@@ -132,7 +132,7 @@
 <h1>containers.podman.podman_quadlet module – Install or remove Podman Quadlets<a class="headerlink" href="#containers-podman-podman-quadlet-module-install-or-remove-podman-quadlets" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.20.0).</p>
+<p>This module is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/containers/podman/">containers.podman collection</a> (version 1.21.0).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">containers.podman</span></code>.
@@ -155,10 +155,10 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <li><p>Install or remove Podman Quadlets using <code class="docutils literal notranslate"><span class="pre">podman</span> <span class="pre">quadlet</span> <span class="pre">install</span></code> and <code class="docutils literal notranslate"><span class="pre">podman</span> <span class="pre">quadlet</span> <span class="pre">rm</span></code>.</p></li>
 <li><p>Creation of quadlet files is handled by resource modules with <em>state=quadlet</em>.</p></li>
 <li><p>Updates are handled by removing the existing quadlet and installing the new one.</p></li>
-<li><p>Idempotency for local sources uses Podman’s .app/.asset manifest files and direct content comparison.</p></li>
+<li><p>Idempotency for ordinary local files and directories uses content comparison.</p></li>
 <li><p>For remote URLs, the module always reinstalls to ensure the host matches the configured source (reports changed=true).</p></li>
-<li><p>Supports <code class="docutils literal notranslate"><span class="pre">.quadlets</span></code> files containing multiple quadlet sections separated by <code class="docutils literal notranslate"><span class="pre">---</span></code> delimiter (requires Podman 6.0+).</p></li>
-<li><p>Each section in a <code class="docutils literal notranslate"><span class="pre">.quadlets</span></code> file must include a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">FileName=&lt;name&gt;</span></code> comment to specify the output filename.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.quadlets</span></code> files are passed directly to Podman 6.0+ and always report <code class="docutils literal notranslate"><span class="pre">changed=true</span></code>. Generated units removed from a later version of the file must be removed explicitly with <em>state=absent</em>.</p></li>
+<li><p>Directory installs on Podman 6.0+ support nested subdirectories.</p></li>
 </ul>
 </section>
 <section id="requirements">
@@ -222,8 +222,9 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <a class="ansibleOptionLink" href="#parameter-files" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Additional non-quadlet files or URLs to install along with the primary <em>src</em> (quadlet application use-case).</p>
-<p>Passed positionally to <code class="docutils literal notranslate"><span class="pre">podman</span> <span class="pre">quadlet</span> <span class="pre">install</span></code> after <em>src</em>.</p>
-<p>For local files, full idempotency is provided.</p>
+<p>Passed positionally to <code class="docutils literal notranslate"><span class="pre">podman</span> <span class="pre">quadlet</span> <span class="pre">install</span></code> after <em>src</em> when supported.</p>
+<p>On Podman 6.0 or later, local non-quadlet files require a directory <em>src</em>. The module fails with an explanatory message when they are supplied with a file or URL <em>src</em>.</p>
+<p>Content changes to local files are detected. Previously installed files that are later omitted from this option must be removed explicitly with <em>state=absent</em>.</p>
 <p>If any file is a URL, the entire install always reports <code class="docutils literal notranslate"><span class="pre">changed=true</span></code> since remote content cannot be verified.</p>
 </div></td>
 </tr>
@@ -244,7 +245,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Name (filename without path) of an installed quadlet to remove when <em>state=absent</em>.</p>
-<p>If the name does not include the type suffix (e.g. <code class="docutils literal notranslate"><span class="pre">.container</span></code>), the module will attempt to find a matching quadlet file.</p>
+<p>If the name does not include the type suffix (e.g. <code class="docutils literal notranslate"><span class="pre">.container</span></code>), the module will attempt to find a matching quadlet file. When exactly one match is found it is used; when multiple suffixes match, all are removed.</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -275,9 +276,10 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <a class="ansibleOptionLink" href="#parameter-src" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Path to a quadlet file, a directory containing a quadlet application, or a URL to install when <em>state=present</em>.</p>
-<p>For local files and directories, full idempotency is provided (content comparison).</p>
+<p>Except for <code class="docutils literal notranslate"><span class="pre">.quadlets</span></code>, local files and directories provide idempotency through content comparison.</p>
 <p>For remote URLs, the module always installs fresh and reports <code class="docutils literal notranslate"><span class="pre">changed=true</span></code> since content cannot be verified.</p>
-<p>Directory installs support only top-level files; nested subdirectories will cause an error.</p>
+<p>Directory installs on Podman 6.0+ support nested subdirectories.</p>
+<p>Directory installs on Podman &lt; 6.0 require a flat directory (no subdirectories).</p>
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
@@ -302,10 +304,10 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
 <span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/myapp.container</span>
 
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install a quadlet application with additional config files</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install a directory application with additional config files</span>
 <span class="w">  </span><span class="nt">containers.podman.podman_quadlet</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">present</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/myapp.container</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/myapp_dir/</span>
 <span class="w">    </span><span class="nt">files</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/myapp.conf</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/secrets.env</span>
@@ -373,8 +375,8 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <div class="ansibleOptionAnchor" id="return-_debug_installed_files"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-quadlet-module-return-debug-installed-files"><strong>_debug_installed_files</strong></p>
 <a class="ansibleOptionLink" href="#return-_debug_installed_files" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>List of currently installed files detected from Podman manifests</p>
-<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when debug=true and state=present and mode is not remote</p>
+<td><div class="ansible-option-cell"><p>List of currently installed files detected for content comparison</p>
+<p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> when debug=true and state=present and the source supports content comparison</p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
@@ -397,7 +399,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <div class="ansibleOptionAnchor" id="return-_debug_spec/marker_name"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-quadlet-module-return-debug-spec-marker-name"><strong>marker_name</strong></p>
 <a class="ansibleOptionLink" href="#return-_debug_spec/marker_name" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>The .app or .asset marker filename used by Podman</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Podman tracking filename, when applicable</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
@@ -405,7 +407,7 @@ see <a class="reference internal" href="#ansible-collections-containers-podman-p
 <div class="ansibleOptionAnchor" id="return-_debug_spec/mode"></div><p class="ansible-option-title" id="ansible-collections-containers-podman-podman-quadlet-module-return-debug-spec-mode"><strong>mode</strong></p>
 <a class="ansibleOptionLink" href="#return-_debug_spec/mode" title="Permalink to this return value"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Install mode (dir_app, quadlets_app, single_file, or remote)</p>
+<td><div class="ansible-option-indent-desc"></div><div class="ansible-option-cell"><p>Install mode (dir_app, quadlets_file, single_file, or remote)</p>
 <p class="ansible-option-line"><strong class="ansible-option-returned-bold">Returned:</strong> success</p>
 </div></td>
 </tr>
