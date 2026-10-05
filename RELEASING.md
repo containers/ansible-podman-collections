@@ -31,6 +31,8 @@ Valid change categories: `release_summary`, `major_changes`, `minor_changes`, `b
 
 ## Step 2: Update the Version in galaxy.yml
 
+Raise the major release version only when a new module or plugin has been added since the previous release tag. In this guide, a major release includes increments such as `1.20.x` -> `1.21.0`. New options, Podman compatibility updates, bugfixes, and refactoring in existing modules or plugins use the next patch version instead (for example, `1.20.2` -> `1.20.3`). Verify module and plugin additions before choosing the version.
+
 Set the new version:
 
 ```bash
