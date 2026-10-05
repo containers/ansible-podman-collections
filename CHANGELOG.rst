@@ -4,6 +4,37 @@ Ansible Podman modules and plugins Release Notes
 
 .. contents:: Topics
 
+v1.21.0
+=======
+
+Release Summary
+---------------
+
+Add Podman 6 support, new container, image, network, pod, volume, play and prune options, and fixes for Quadlet management and idempotency.
+
+Minor Changes
+-------------
+
+- podman_container - Add cert_dir, creds, health_log_destination, health_max_log_count, health_max_log_size, hosts_file, link_local_ip and no_hostname options, including support in Quadlet output.
+- podman_container - Allow arbitrary logging driver options in log_opt.
+- podman_image - Add pull_policy, retry and retry_delay options, and sign_by_sq_fingerprint and compression_format push options.
+- podman_network - Add network labels and support strict isolation with Podman 6 and Netavark 2.
+- podman_network - Emit InterfaceName in generated Quadlet network files.
+- podman_play - Add no_hostname and no_pod_prefix options.
+- podman_pod - Add hosts_file and no_hostname options.
+- podman_prune - Add system_build to prune interrupted build containers.
+- podman_quadlet - Add Podman 6 support for application directories, nested subdirectories and .quadlets files.
+- podman_volume - Add uid and gid options for volume ownership.
+
+Bugfixes
+--------
+
+- podman_image - Determine build changes by comparing image IDs before and after the build, including forced builds.
+- podman_network - Compare all explicitly configured network driver options for idempotency.
+- podman_network - Normalize IPv6 addresses, subnets, gateways and routes to avoid unnecessary network recreation.
+- podman_prune - Preserve pruning of all unused volumes on Podman 6.
+- podman_quadlet - Fix installed file detection, companion file handling, content comparison and removal of multiple Quadlets with the same name.
+- podman_tag - Fail when the source image cannot be resolved instead of silently returning unchanged.
 
 v1.20.2
 =======
