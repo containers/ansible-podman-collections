@@ -969,6 +969,92 @@
         name: test-isolate-net
         state: absent
 
+    # ===== opt.parent / opt.bridge_name idempotency tests (issue 1071) =====
+    - name: Remove parent test networks
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - test-parent-net
+        - test-bridge-name-net
+
+    - name: Create ipvlan network with opt parent
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-parent-net
+        state: present
+        driver: ipvlan
+        opt:
+          mode: l3s
+          parent: lo
+        net_config:
+          - subnet: 10.128.0.0/18
+            gateway: 10.128.0.0
+      register: parent_net1
+
+    - name: Create ipvlan network with same opt parent again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-parent-net
+        state: present
+        driver: ipvlan
+        opt:
+          mode: l3s
+          parent: lo
+        net_config:
+          - subnet: 10.128.0.0/18
+            gateway: 10.128.0.0
+      register: parent_net2
+
+    - name: Create bridge network with opt bridge_name and driver_mtu
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-bridge-name-net
+        state: present
+        opt:
+          bridge_name: testbr1071
+          driver_mtu: "1400"
+      register: bridge_name_net1
+
+    - name: Create bridge network with same opt bridge_name and driver_mtu again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-bridge-name-net
+        state: present
+        opt:
+          bridge_name: testbr1071
+          driver_mtu: "1400"
+      register: bridge_name_net2
+
+    - name: Change opt bridge_name
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: test-bridge-name-net
+        state: present
+        opt:
+          bridge_name: testbr1072
+          driver_mtu: "1400"
+      register: bridge_name_net3
+
+    - name: Check opt parent and bridge_name idempotency
+      assert:
+        that:
+          - parent_net1 is changed
+          - parent_net2 is not changed
+          - bridge_name_net1 is changed
+          - bridge_name_net2 is not changed
+          - bridge_name_net3 is changed
+
+    - name: Remove parent test networks
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - test-parent-net
+        - test-bridge-name-net
+
     - name: Test ip_range diff
       include_tasks: test_ip_range_diff.yml
 
