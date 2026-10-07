@@ -732,16 +732,19 @@ class PodmanNetworkDiff:
             return False
         before = {}
         after = {}
-        opts_info = self.info.get("options", {})
+        opts_info = self.info.get("options", {}) or {}
         opt_params = self.params.get("opt") or {}
-        key_map = {
-            "bridge_name": "com.docker.network.bridge.name",
-            "driver_mtu": "com.docker.network.driver.mtu",
-        }
         for key, value in opt_params.items():
             if value is not None:
-                info_key = key_map.get(key, key)
-                before_val = opts_info.get(info_key)
+                # Podman does not store all options in the "options" dict of
+                # the inspect output: "parent" and "bridge_name" become the
+                # top-level "network_interface", "driver_mtu" is saved as "mtu".
+                if key in ("parent", "bridge_name"):
+                    before_val = self.info.get("network_interface")
+                elif key == "driver_mtu":
+                    before_val = opts_info.get("mtu")
+                else:
+                    before_val = opts_info.get(key)
                 after_val = str(value).lower()
                 if before_val is not None:
                     before_val = str(before_val).lower()
