@@ -4,6 +4,19 @@ Ansible Podman modules and plugins Release Notes
 
 .. contents:: Topics
 
+v1.21.1
+=======
+
+Release Summary
+---------------
+
+Fix network driver option idempotency.
+
+Bugfixes
+--------
+
+- podman_network - Fix idempotency for parent, bridge_name and driver_mtu options by comparing their normalized values in network inspect output.
+
 v1.21.0
 =======
 
