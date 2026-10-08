@@ -13,6 +13,10 @@
       set_fact:
         podman_version_gt470: "{{ podman_version is version('4.7.0', '>=') }}"
 
+    - name: Test binary secret files
+      ansible.builtin.include_tasks: binary.yml
+      when: podman_version_gt470
+
     - name: Make sure secret doesn't exist
       containers.podman.podman_secret:
         executable: "{{ test_executable | default('podman') }}"

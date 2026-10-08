@@ -1,0 +1,94 @@
+---
+- name: Test binary secret idempotency
+  block:
+    - name: Create temporary secret file
+      ansible.builtin.tempfile:
+        state: file
+        prefix: podman-binary-secret-
+      register: binary_secret_file
+
+    - name: Write binary secret containing invalid UTF-8 and trailing newlines
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_python_interpreter | default(ansible_playbook_python) }}"
+          - -c
+          - "import base64, sys; open(sys.argv[1], 'wb').write(base64.b64decode(sys.argv[2]))"
+          - "{{ binary_secret_file.path }}"
+          - AP/+wyhzZWNyZXQKCg==
+
+    - name: Create binary secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ binary_secret_file.path | basename }}"
+        path: "{{ binary_secret_file.path }}"
+      register: binary_created
+
+    - name: Repeat binary secret creation
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ binary_secret_file.path | basename }}"
+        path: "{{ binary_secret_file.path }}"
+      register: binary_unchanged
+
+    - name: Change invalid UTF-8 bytes that JSON decodes to the same replacement characters
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_python_interpreter | default(ansible_playbook_python) }}"
+          - -c
+          - "import base64, sys; open(sys.argv[1], 'wb').write(base64.b64decode(sys.argv[2]))"
+          - "{{ binary_secret_file.path }}"
+          - AP7/wyhzZWNyZXQKCg==
+
+    - name: Update binary secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ binary_secret_file.path | basename }}"
+        path: "{{ binary_secret_file.path }}"
+        debug: true
+      register: binary_updated
+
+    - name: Repeat binary secret update
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ binary_secret_file.path | basename }}"
+        path: "{{ binary_secret_file.path }}"
+        debug: true
+      register: binary_updated_unchanged
+
+    - name: Inspect stored binary secret bytes
+      ansible.builtin.command:
+        argv:
+          - "{{ test_executable | default('podman') }}"
+          - secret
+          - inspect
+          - --showsecret
+          - --format
+          - !unsafe '{{ printf "%x" .SecretData }}'
+          - "{{ binary_secret_file.path | basename }}"
+      changed_when: false
+      register: binary_inspected
+
+    - name: Verify binary secret changes and exact stored bytes
+      ansible.builtin.assert:
+        that:
+          - binary_created is changed
+          - binary_unchanged is not changed
+          - binary_updated is changed
+          - binary_updated_unchanged is not changed
+          - binary_inspected.stdout == '00feffc3287365637265740a0a'
+          - binary_updated.diff.before == '<secret>\n'
+          - binary_updated.diff.after == '<different-secret>\n'
+
+  always:
+    - name: Remove binary secret
+      containers.podman.podman_secret:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ binary_secret_file.path | basename }}"
+        state: absent
+      when: binary_secret_file.path is defined
+
+    - name: Remove temporary secret file
+      ansible.builtin.file:
+        path: "{{ binary_secret_file.path }}"
+        state: absent
+      when: binary_secret_file.path is defined
