@@ -602,6 +602,13 @@ releases:
       release_summary: Add Podman 6 support, new container, image, network, pod, volume,
         play and prune options, and fixes for Quadlet management and idempotency.
     release_date: '2026-10-05'
+  1.21.1:
+    changes:
+      bugfixes:
+      - podman_network - Fix idempotency for parent, bridge_name and driver_mtu options
+        by comparing their normalized values in network inspect output.
+      release_summary: Fix network driver option idempotency.
+    release_date: '2026-10-08'
   1.3.0:
     changes:
       bugfixes:
