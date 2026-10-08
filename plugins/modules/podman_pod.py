@@ -138,7 +138,13 @@ options:
     required: false
   generate_systemd:
     description:
-      - Generate systemd unit file for container.
+      - Generate systemd unit files for the pod and its containers.
+      - With O(state) set to V(created) or V(started), the module reconciles the pod configuration before generating units.
+        Configuration differences can recreate the pod, removing all containers belonging to it.
+        Omitting previously configured parameters, such as O(publish), can also cause a difference.
+      - When creating a pod and generating its units in separate tasks, supply the same pod configuration to both tasks.
+        Use C(module_defaults) to share these parameters without duplicating them; see the example below.
+      - Setting O(recreate) to V(false) disables forced recreation; configuration differences can still trigger recreation.
     type: dict
     default: {}
     suboptions:
@@ -694,6 +700,33 @@ EXAMPLES = r"""
       somekey: someval
     add_host:
       - "google:5.5.5.5"
+
+# Share pod configuration when creating a pod and generating its systemd units
+- name: Create the application pod and generate its units
+  module_defaults:
+    containers.podman.podman_pod:
+      name: app
+      publish:
+        - "127.0.0.1:9000:80"
+      # Add other pod configuration here, such as network or userns.
+  block:
+    - name: Create the pod
+      containers.podman.podman_pod:
+        state: created
+
+    - name: Create the application container
+      containers.podman.podman_container:
+        name: app-web
+        pod: app
+        image: docker.io/library/nginx:alpine
+        state: created
+
+    - name: Generate units after adding containers
+      containers.podman.podman_pod:
+        state: created
+        generate_systemd:
+          path: /etc/systemd/system
+          restart_policy: always
 
 # Create a Quadlet file for a pod
 - containers.podman.podman_pod:
