@@ -64,6 +64,8 @@ options:
     description:
       - Path to the file that contains the secret.
         Mutually exclusive with C(data) and C(env).
+      - With local Podman, file contents are compared as bytes, including binary secrets.
+        Podman's remote API does not preserve non-UTF-8 secret bytes.
     type: path
   state:
     description:
@@ -80,6 +82,7 @@ options:
   debug:
     description:
       - Enable debug mode for module. It prints secrets diff.
+      - Non-UTF-8 secret contents are hidden even when debug mode is enabled.
     type: bool
     default: False
 """
@@ -141,23 +144,43 @@ def need_update(module, executable, name, data, path, env, skip, driver, driver_
         return True
     if skip:
         return False
+    if path:
+        try:
+            with open(path, "rb") as f:
+                file_data = f.read()
+        except (IOError, OSError) as exc:
+            module.fail_json(msg="Unable to read secret file %s: %s" % (path, exc))
+
+        # JSON replaces invalid UTF-8 in SecretData. Format the original Go
+        # string as hex before it is serialized to preserve every byte.
+        rc, secret_hex, err = module.run_command(
+            [executable, "secret", "inspect", "--showsecret", "--format", '{{ printf "%x" .SecretData }}', name]
+        )
+        if rc != 0:
+            module.fail_json(msg="Unable to inspect secret data for %s" % name)
+        try:
+            secret_data = bytes.fromhex(secret_hex.strip())
+        except ValueError:
+            module.fail_json(msg="Unable to inspect secret data for %s: invalid hexadecimal output" % name)
+        if secret_data != file_data:
+            diff["after"] = "<different-secret>"
+            diff["before"] = "<secret>"
+            if debug:
+                try:
+                    text_before = secret_data.decode("utf-8")
+                    text_after = file_data.decode("utf-8")
+                except UnicodeDecodeError:
+                    pass
+                else:
+                    diff["before"] = text_before
+                    diff["after"] = text_after
+            return True
     try:
         secret = module.from_json(out)[0]
         if data is not None:
             if secret["SecretData"] != data:
                 if debug:
                     diff["after"] = data
-                    diff["before"] = secret["SecretData"]
-                else:
-                    diff["after"] = "<different-secret>"
-                    diff["before"] = "<secret>"
-                return True
-        if path:
-            with open(path, "rb") as f:
-                text = f.read().decode("utf-8")
-            if secret["SecretData"] != text:
-                if debug:
-                    diff["after"] = text
                     diff["before"] = secret["SecretData"]
                 else:
                     diff["after"] = "<different-secret>"
