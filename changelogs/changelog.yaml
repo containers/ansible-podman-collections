@@ -609,6 +609,19 @@ releases:
         by comparing their normalized values in network inspect output.
       release_summary: Fix network driver option idempotency.
     release_date: '2026-10-08'
+  1.21.2:
+    changes:
+      bugfixes:
+      - podman_secret - Fix idempotency for binary file secrets by comparing their
+        contents as bytes, fail on file read or secret inspection errors before removing
+        an existing secret, and hide non-UTF-8 contents in debug diffs.
+      minor_changes:
+      - podman_pod - Document that configuration differences can recreate a pod and
+        remove its containers before generating systemd units, and show how to share
+        pod configuration between tasks with module_defaults.
+      release_summary: Fix binary file secret idempotency and clarify safe pod systemd
+        unit generation.
+    release_date: '2026-10-20'
   1.3.0:
     changes:
       bugfixes:

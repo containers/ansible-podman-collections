@@ -4,6 +4,24 @@ Ansible Podman modules and plugins Release Notes
 
 .. contents:: Topics
 
+v1.21.2
+=======
+
+Release Summary
+---------------
+
+Fix binary file secret idempotency and clarify safe pod systemd unit generation.
+
+Minor Changes
+-------------
+
+- podman_pod - Document that configuration differences can recreate a pod and remove its containers before generating systemd units, and show how to share pod configuration between tasks with module_defaults.
+
+Bugfixes
+--------
+
+- podman_secret - Fix idempotency for binary file secrets by comparing their contents as bytes, fail on file read or secret inspection errors before removing an existing secret, and hide non-UTF-8 contents in debug diffs.
+
 v1.21.1
 =======
 
