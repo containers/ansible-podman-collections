@@ -103,8 +103,8 @@ options:
 EXAMPLES = r"""
 - name: Prune containers older than 24h
   containers.podman.podman_prune:
-      containers: true
-      containers_filters:
+      container: true
+      container_filters:
           # only consider containers created more than 24 hours ago
           until: 24h
 
