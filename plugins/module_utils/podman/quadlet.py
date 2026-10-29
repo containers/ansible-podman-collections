@@ -361,8 +361,8 @@ class ContainerQuadlet(Quadlet):
         if params["hooks_dir"]:
             for hook in params["hooks_dir"]:
                 params["podman_args"].append(f"--hooks-dir {hook}")
-        if params["http_proxy"]:
-            params["podman_args"].append(f"--http-proxy {params['http_proxy']}")
+        if params["http_proxy"] is not None:
+            params["podman_args"].append(f"--http-proxy={str(params['http_proxy']).lower()}")
         if params["image_volume"]:
             params["podman_args"].append(f"--image-volume {params['image_volume']}")
         if params["init_ctr"]:
@@ -449,13 +449,13 @@ class ContainerQuadlet(Quadlet):
                 params["podman_args"].append(f"--security-opt {security_opt}")
         if params["shm_size_systemd"]:
             params["podman_args"].append(f"--shm-size-systemd {params['shm_size_systemd']}")
-        if params["sig_proxy"]:
-            params["podman_args"].append(f"--sig-proxy {params['sig_proxy']}")
+        if params["sig_proxy"] is not None:
+            params["podman_args"].append(f"--sig-proxy={str(params['sig_proxy']).lower()}")
         if params["systemd"]:
             params["podman_args"].append(f"--systemd={str(params['systemd']).lower()}")
         if params["timeout"]:
             params["podman_args"].append(f"--timeout {params['timeout']}")
-        if params["tls_verify"]:
+        if params["tls_verify"] is not None:
             params["podman_args"].append(f"--tls-verify={str(params['tls_verify']).lower()}")
         if params["tty"]:
             params["podman_args"].append("--tty")
