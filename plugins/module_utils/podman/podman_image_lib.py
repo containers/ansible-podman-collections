@@ -95,7 +95,7 @@ class PodmanImageInspector:
 
     def inspect_image(self, image_name):
         """Inspect an image and return its data."""
-        args = ["inspect", image_name, "--format", "json"]
+        args = ["image", "inspect", image_name, "--format", "json"]
         rc, out, unused = run_podman_command(self.module, self.executable, args, ignore_errors=True)
 
         if rc != 0:
@@ -554,39 +554,33 @@ class PodmanImageManager:
         """Find an image and return its information."""
         image_name = image_name or self.repository.full_name
 
-        if not self.inspector.image_exists(image_name):
-            return None
-
-        images = self.inspector.list_images(image_name)
-        if not images:
+        inspect_data = self.inspector.inspect_image(image_name)
+        if not inspect_data:
             return None
 
         # Check architecture if specified
         arch = self.params.get("arch")
         platform = self.params.get("platform")
         if arch:
-            inspect_data = self.inspector.inspect_image(image_name)
-            if inspect_data and inspect_data[0].get("Architecture") != arch:
+            if inspect_data[0].get("Architecture") != arch:
                 return None
         elif platform:
             # Platform format: os/arch or os/arch/variant (e.g. linux/amd64)
-            inspect_data = self.inspector.inspect_image(image_name)
-            if inspect_data:
-                platform_parts = platform.split("/")
-                required_os = platform_parts[0] if len(platform_parts) >= 1 else None
-                required_arch = platform_parts[1] if len(platform_parts) >= 2 else None
-                img_os = inspect_data[0].get("Os") or inspect_data[0].get("os")
-                img_arch = inspect_data[0].get("Architecture") or inspect_data[0].get("architecture")
-                # Normalize arch for comparison (e.g. x86_64 -> amd64, aarch64 -> arm64)
-                arch_map = {"x86_64": "amd64", "aarch64": "arm64"}
-                if img_arch and img_arch in arch_map:
-                    img_arch = arch_map[img_arch]
-                if required_os and img_os != required_os:
-                    return None
-                if required_arch and img_arch != required_arch:
-                    return None
+            platform_parts = platform.split("/")
+            required_os = platform_parts[0] if len(platform_parts) >= 1 else None
+            required_arch = platform_parts[1] if len(platform_parts) >= 2 else None
+            img_os = inspect_data[0].get("Os") or inspect_data[0].get("os")
+            img_arch = inspect_data[0].get("Architecture") or inspect_data[0].get("architecture")
+            # Normalize arch for comparison (e.g. x86_64 -> amd64, aarch64 -> arm64)
+            arch_map = {"x86_64": "amd64", "aarch64": "arm64"}
+            if img_arch and img_arch in arch_map:
+                img_arch = arch_map[img_arch]
+            if required_os and img_os != required_os:
+                return None
+            if required_arch and img_arch != required_arch:
+                return None
 
-        return images
+        return inspect_data
 
     def _should_rebuild_image(self, existing_image):
         """Determine if an image should be rebuilt based on Containerfile changes."""
