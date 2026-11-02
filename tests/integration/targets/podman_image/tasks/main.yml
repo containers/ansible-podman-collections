@@ -37,6 +37,13 @@
         name: docker.io/alpine
       register: pull4
 
+    - name: Check present image from docker.io with short url in check mode
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: docker.io/alpine
+      check_mode: true
+      register: pull_short_check
+
     - name: Pull image from docker.io with official/normalised url again
       containers.podman.podman_image:
         executable: "{{ test_executable | default('podman') }}"
@@ -61,6 +68,9 @@
           - pull2 is not changed
           - pull3 is changed
           - pull4 is not changed
+          - pull4.podman_actions | length == 0
+          - pull_short_check is not changed
+          - pull_short_check.podman_actions | length == 0
           - pull5 is not changed
           - pull6 is changed
           - "'alpine-sh' in images.stdout"
